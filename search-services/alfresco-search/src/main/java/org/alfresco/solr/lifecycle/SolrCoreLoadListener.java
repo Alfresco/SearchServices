@@ -18,6 +18,7 @@
  */
 package org.alfresco.solr.lifecycle;
 
+import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
@@ -34,6 +35,7 @@ import org.alfresco.solr.tracker.CommitTracker;
 import org.alfresco.solr.tracker.ContentTracker;
 import org.alfresco.solr.tracker.MetadataTracker;
 import org.alfresco.solr.tracker.ModelTracker;
+import org.alfresco.solr.tracker.SlaveNodeStatePublisher;
 import org.alfresco.solr.tracker.SolrTrackerScheduler;
 import org.alfresco.solr.tracker.Tracker;
 import org.alfresco.solr.tracker.TrackerRegistry;
@@ -82,6 +84,20 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
     @Override
     public void newSearcher(SolrIndexSearcher newSearcher, SolrIndexSearcher currentSearcher)
     {
+        if (getCore().isReloaded())
+        {
+            LOGGER.info("Solr Core {}, instance {} has been reloaded. " +
+                    "The previous tracking subsystem will be stopped and another set of trackers will be registered on this new instance.",
+                    getCore().getName(),
+                    getCore().hashCode());
+        }
+        else
+        {
+            LOGGER.info("Solr Core {}, instance {}, has been registered for the first time.",
+                    getCore().getName(),
+                    getCore().hashCode());
+        }
+
         CoreContainer coreContainer = getCore().getCoreContainer();
         AlfrescoCoreAdminHandler admin = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
         SolrCore core = getCore();
@@ -117,14 +133,62 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
                     scheduler);
         }
 
+        /*
+         * The shutdown hook needs to be registered regardless we are slave or masters.
+         * This because if we are master all trackers will be scheduled, if we are slave the node state publisher
+         * will be scheduled.
+         *
+         * As consequence of that, regardless the node role, we will always have something to shutdown in the tracker
+         * registry.
+         */
+        final List<Tracker> trackers = new ArrayList<>();
+        core.addCloseHook(new CloseHook()
+        {
+            @Override
+            public void preClose(SolrCore core)
+            {
+                LOGGER.info("Solr Core instance {} with name {} is going to be closed. Tracking Subsystem shutdown callback procedure has been started.", core.hashCode(), core.getName());
+
+                // IMPORTANT: the closure needs to be created with the trackers created in this method
+                shutdownTrackers(core, trackers, scheduler, false);
+            }
+
+            @Override
+            public void postClose(SolrCore core)
+            {
+                LOGGER.info("Solr Core instance {} with name {} has been closed. Tracking Subsystem shutdown callback procedure has been completed.", core.hashCode(), core.getName());
+            }
+        });
+
         boolean trackersHaveBeenEnabled = Boolean.parseBoolean(coreProperties.getProperty("enable.alfresco.tracking", "true"));
         boolean owningCoreIsSlave = isSlaveModeEnabledFor(core);
+
+        if (trackerRegistry.hasTrackersForCore(core.getName()))
+        {
+            LOGGER.info("Trackers (it could be only the node state publisher in case this node is a slave) for " + core.getName() + " are already registered, shutting them down.");
+            Collection<Tracker> alreadyRegisteredTrackers = trackerRegistry.getTrackersForCore(core.getName());
+            trackerRegistry.removeTrackersForCore(core.getName());
+
+            shutdownTrackers(core, alreadyRegisteredTrackers, scheduler, core.isReloaded());
+            admin.getInformationServers().remove(core.getName());
+        }
+
+        // Re-put the information server in the map because a Core reload (see above) could have removed the reference.
+        admin.getInformationServers().put(core.getName(), informationServer);
 
         // Guard conditions: if trackers must be disabled then immediately return, we've done here.
         // Case #1: trackers have been explicitly disabled.
         if (!trackersHaveBeenEnabled)
         {
             LOGGER.info("SearchServices Core Trackers have been explicitly disabled on core \"{}\" through \"enable.alfresco.tracking\" configuration property.", core.getName());
+
+            SlaveNodeStatePublisher statePublisher = new SlaveNodeStatePublisher(false, coreProperties, repositoryClient, core.getName(), informationServer);
+            trackerRegistry.register(core.getName(), statePublisher);
+            scheduler.schedule(statePublisher, core.getName(), coreProperties);
+            trackers.add(statePublisher);
+
+            LOGGER.info("SearchServices Slave Node Provider have been created and scheduled for core \"{}\".", core.getName());
+
             return;
         }
 
@@ -132,81 +196,104 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
         if (owningCoreIsSlave)
         {
             LOGGER.info("SearchServices Core Trackers have been disabled on core \"{}\" because it is a slave core.", core.getName());
+
+            SlaveNodeStatePublisher statePublisher = new SlaveNodeStatePublisher(false, coreProperties, repositoryClient, core.getName(), informationServer);
+            trackerRegistry.register(core.getName(), statePublisher);
+            scheduler.schedule(statePublisher, core.getName(), coreProperties);
+            trackers.add(statePublisher);
+
+            LOGGER.info("SearchServices Slave Node Provider have been created and scheduled for Core instance {} with name {}.", core.hashCode(), core.getName());
+
             return;
         }
 
-        LOGGER.info("SearchServices Tracking Subsystem starts on core {}", core.getName());
-        if (trackerRegistry.hasTrackersForCore(core.getName()))
-        {
-            LOGGER.info("Trackers for " + core.getName()+ " is already registered, shutting them down.");
-            shutdownTrackers(core.getName(), trackerRegistry.getTrackersForCore(core.getName()), scheduler);
-            trackerRegistry.removeTrackersForCore(core.getName());
-            admin.getInformationServers().remove(core.getName());
-        }
+        LOGGER.info("SearchServices Tracking Subsystem starts on Solr Core instance {} with name {}", core.hashCode(), core.getName());
 
-        final List<Tracker> trackers = createCoreTrackers(core.getName(), trackerRegistry, coreProperties, scheduler, repositoryClient, informationServer);
+        trackers.addAll(createAndScheduleCoreTrackers(core, trackerRegistry, coreProperties, scheduler, repositoryClient, informationServer));
 
         CommitTracker commitTracker = new CommitTracker(coreProperties, repositoryClient, core.getName(), informationServer, trackers);
         trackerRegistry.register(core.getName(), commitTracker);
         scheduler.schedule(commitTracker, core.getName(), coreProperties);
 
-        LOGGER.info("SearchServices Core Trackers have been correctly registered and scheduled.");
+        LOGGER.info("Tracker {}, instance {}, belonging to Core {}, instance {} has been registered and scheduled.",
+                commitTracker.getClass().getSimpleName(),
+                commitTracker.hashCode(),
+                core.getName(),
+                core.hashCode());
 
         //Add the commitTracker to the list of scheduled trackers that can be shutdown
         trackers.add(commitTracker);
-
-        core.addCloseHook(new CloseHook()
-        {
-            @Override
-            public void preClose(SolrCore core)
-            {
-                LOGGER.info("Tracking Subsystem shutdown procedure for core {} has been started.", core.getName());
-                shutdownTrackers(core.getName(), trackers, scheduler);
-            }
-
-            @Override
-            public void postClose(SolrCore core)
-            {
-                LOGGER.info("Shutdown procedure for core {} has been completed.", core.getName());
-            }
-        });
-
     }
 
-    List<Tracker> createCoreTrackers(String coreName,
-                                                    TrackerRegistry trackerRegistry,
-                                                    Properties props,
-                                                    SolrTrackerScheduler scheduler,
-                                                    SOLRAPIClient repositoryClient,
-                                                    SolrInformationServer srv)
+    List<Tracker> createAndScheduleCoreTrackers(SolrCore core,
+                                                TrackerRegistry trackerRegistry,
+                                                Properties props,
+                                                SolrTrackerScheduler scheduler,
+                                                SOLRAPIClient repositoryClient,
+                                                SolrInformationServer srv)
     {
-        List<Tracker> trackers = new ArrayList<>();
+        AclTracker aclTracker =
+                registerAndSchedule(
+                        new AclTracker(props, repositoryClient, core.getName(), srv),
+                        core,
+                        props,
+                        trackerRegistry,
+                        scheduler);
 
-        AclTracker aclTracker = new AclTracker(props, repositoryClient, coreName, srv);
-        trackerRegistry.register(coreName, aclTracker);
-        scheduler.schedule(aclTracker, coreName, props);
+        ContentTracker contentTracker =
+                registerAndSchedule(
+                    new ContentTracker(props, repositoryClient, core.getName(), srv),
+                        core,
+                        props,
+                        trackerRegistry,
+                        scheduler);
 
-        ContentTracker contentTrkr = new ContentTracker(props, repositoryClient, coreName, srv);
-        trackerRegistry.register(coreName, contentTrkr);
-        scheduler.schedule(contentTrkr, coreName, props);
+        MetadataTracker metadataTracker =
+                registerAndSchedule(
+                    new MetadataTracker(true, props, repositoryClient, core.getName(), srv),
+                        core,
+                        props,
+                        trackerRegistry,
+                        scheduler);
 
-        MetadataTracker metaTrkr = new MetadataTracker(props, repositoryClient, coreName, srv);
-        trackerRegistry.register(coreName, metaTrkr);
-        scheduler.schedule(metaTrkr, coreName, props);
-
-        CascadeTracker cascadeTrkr = new CascadeTracker(props, repositoryClient, coreName, srv);
-        trackerRegistry.register(coreName, cascadeTrkr);
-        scheduler.schedule(cascadeTrkr, coreName, props);
+        CascadeTracker cascadeTracker =
+                registerAndSchedule(
+                    new CascadeTracker(props, repositoryClient, core.getName(), srv),
+                        core,
+                        props,
+                        trackerRegistry,
+                        scheduler);
 
         //The CommitTracker will acquire these locks in order
         //The ContentTracker will likely have the longest runs so put it first to ensure the MetadataTracker is not paused while
         //waiting for the ContentTracker to release it's lock.
         //The aclTracker will likely have the shortest runs so put it last.
-        trackers.add(cascadeTrkr);
-        trackers.add(contentTrkr);
-        trackers.add(metaTrkr);
-        trackers.add(aclTracker);
-        return trackers;
+        return asList(cascadeTracker, contentTracker, metadataTracker, aclTracker);
+    }
+
+    /**
+     * Accepts a {@link Tracker} instance, registers and schedules it.
+     *
+     * @param tracker the tracker that will be scheduled and registered.
+     * @param core the owning core.
+     * @param properties configuration properties.
+     * @param registry the tracker registry instance.
+     * @param scheduler the tracker schedule instance.
+     * @param <T> the tracker instance.
+     * @return the registered and scheduled tracker instance.
+     */
+    private <T extends Tracker> T registerAndSchedule(T tracker, SolrCore core, Properties properties, TrackerRegistry registry, SolrTrackerScheduler scheduler)
+    {
+        registry.register(core.getName(), tracker);
+        scheduler.schedule(tracker, core.getName(), properties);
+
+        LOGGER.info("Tracker {}, instance {}, belonging to Core {}, instance {} has been registered and scheduled.",
+                tracker.getClass().getSimpleName(),
+                tracker.hashCode(),
+                core.getName(),
+                core.hashCode());
+
+        return tracker;
     }
 
     private void createModelTracker(String coreName,
@@ -246,34 +333,79 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
      * have multiple cores of the same name running.  Left over trackers in the registry are cleaned up by the CoreContainer
      * shutdown, that happens in the the AlfrescoCoreAdminHandler.shutdown().
      *
-     * @param coreName The name of the core
+     * The coreHasBeenReloaded flag is used just for logging out meaningful messages about the owning core instance.
+     * If we are in a RELOAD scenario (coreHasBeenReloaded = true) we no longer have the reference of the closed core
+     * so we print only its name. Instead in case we are here because a core has been closed, we can print out the core
+     * reference in order to add meaningful information in the log.
+     *
+     * @param core The owning core name.
      * @param coreTrackers A collection of trackers
      * @param scheduler The scheduler
+     * @param coreHasBeenReloaded a flag indicating if we are on a Core RELOAD scenario.
      */
-    void shutdownTrackers(String coreName, Collection<Tracker> coreTrackers, SolrTrackerScheduler scheduler)
+    void shutdownTrackers(SolrCore core, Collection<Tracker> coreTrackers, SolrTrackerScheduler scheduler, boolean coreHasBeenReloaded)
     {
+        coreTrackers.forEach(tracker -> shutdownTracker(core, tracker, scheduler, coreHasBeenReloaded));
+    }
+
+    /**
+     * Shutdown procedure for a single tracker.
+     * The coreHasBeenReloaded flag is used just for logging out meaningful messages about the owning core instance.
+     * If we are in a RELOAD scenario (coreHasBeenReloaded = true) we no longer have the reference of the closed core
+     * so we print only its name. Instead in case we are here because a core has been closed, we can print out the core
+     * reference in order to add meaningful information in the log.
+     *
+     * @param core the owning {@link SolrCore}
+     * @param tracker the {@link Tracker} instance we want to stop.
+     * @param scheduler the scheduler.
+     * @param coreHasBeenReloaded a flag indicating if we are on a Core RELOAD scenario.
+     */
+    private void shutdownTracker(SolrCore core, Tracker tracker, SolrTrackerScheduler scheduler, boolean coreHasBeenReloaded)
+    {
+        // In case of reload the input core is not the owner: the owner is instead the previous (closed) core and we don't have its reference here.
+        String coreReference = core.getName() + (coreHasBeenReloaded ? "" : ", instance " + core.hashCode());
+
+        if (tracker.isAlreadyInShutDownMode())
+        {
+            LOGGER.info("Tracker {}, instance {} belonging to core {}, is already in shutdown mode.",
+                    tracker.getClass().getSimpleName(),
+                    tracker.hashCode(),
+                    coreReference);
+            return;
+        }
+
+        LOGGER.info("Tracker {}, instance {} belonging to core {} shutdown procedure initiated.",
+                tracker.getClass().getSimpleName(),
+                tracker.hashCode(),
+                coreReference);
         try
         {
-            LOGGER.info("Shutting down Trackers Subsystem for core \"{}\" which contains {} core trackers.", coreName, coreTrackers.size());
-
-            // Sets the shutdown flag on the trackers to stop them from doing any more work
-            coreTrackers.forEach(tracker -> tracker.setShutdown(true));
-
+            tracker.setShutdown(true);
             if (!scheduler.isShutdown())
             {
-                coreTrackers.forEach(tracker -> scheduler.deleteJobForTrackerInstance(coreName, tracker) );
+                scheduler.deleteJobForTrackerInstance(core.getName(), tracker);
             }
 
-            coreTrackers.forEach(Tracker::shutdown);
+            tracker.shutdown();
+
+            LOGGER.info("Tracker {}, instance {}, belonging to core {} shutdown procedure correctly terminated.",
+                    tracker.getClass().getSimpleName(),
+                    tracker.hashCode(),
+                    coreReference);
         }
-        catch (Exception e)
+        catch (Exception exception)
         {
-            LOGGER.error("Tracking Subsystem shutdown procedure failed to shutdown trackers for core {}. See the stacktrace below for further details.", coreName, e);
+            LOGGER.error("Tracker {}, instance {} belonging to core {}, shutdown procedure failed. " +
+                            "See the stacktrace below for further details.",
+                    tracker.getClass().getSimpleName(),
+                    tracker.hashCode(),
+                    coreReference,
+                    exception);
         }
     }
 
     /**
-     * Checks if the content store belonging to the hosting Solr node must be set in read only mode.
+     * Checks if the configuration declares this node as a slave.
      *
      * @param core the hosting {@link SolrCore} instance.
      * @return true if the content store must be set in read only mode, false otherwise.
