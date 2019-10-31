@@ -620,16 +620,11 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
 
     String cfileName = solrParams.get(CONF_FILE_SHORT);
     String tlogFileName = solrParams.get(TLOG_FILE);
-    String contentStoreFileName = solrParams.get(CONTENT_STORE_FILE);
     if (cfileName != null) {
       rsp.add(FILE_STREAM, new LocalFsConfFileStream(solrParams));
     } else if (tlogFileName != null ) {
       rsp.add(FILE_STREAM, new LocalFsTlogFileStream(solrParams));
-    }
-    else if (contentStoreFileName != null) {
-      rsp.add(FILE_STREAM, new LocalContentStoreFileStream(solrParams));
-    }
-    else {
+    } else {
       rsp.add(FILE_STREAM, new DirectoryFileStream(solrParams));
     }
   }
@@ -1502,8 +1497,7 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
       fileName = validateFilenameOrError(params.get(FILE));
       cfileName = validateFilenameOrError(params.get(CONF_FILE_SHORT));
       tlogFileName = validateFilenameOrError(params.get(TLOG_FILE));
-      contentStoreFilename = validateFilenameOrError(params.get(CONTENT_STORE_FILE));
-      
+
       sOffset = params.get(OFFSET);
       sLen = params.get(LEN);
       compress = params.get(COMPRESSION);
@@ -1913,8 +1907,6 @@ public class ReplicationHandler extends RequestHandlerBase implements SolrCoreAw
   static final String TLOG_FILES = "tlogFiles";
 
   static final String CONTENT_STORE_FILES = "contentStoreFiles";
-
-  private static final String CONTENT_STORE_FILE = "csf";
 
   private static final String REPLICATE_AFTER = "replicateAfter";
 
