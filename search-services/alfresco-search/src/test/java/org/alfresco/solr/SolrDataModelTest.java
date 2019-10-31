@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2019 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,16 +18,19 @@
  */
 package org.alfresco.solr;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.io.InputStream;
-
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel.FieldUse;
 import org.alfresco.solr.AlfrescoSolrDataModel.TenantAclIdDbId;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.InputStream;
+import java.net.URISyntaxException;
+
+import static org.alfresco.solr.SolrTestFiles.TEST_FILES_LOCATION;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Andy
@@ -41,6 +44,11 @@ public class SolrDataModelTest
     private static final QName CREATION_DATE = QName.createQName("{http://www.alfresco.org/model/cmis/1.0/cs01}creationDate");
     private static final QName NAME = QName.createQName("{http://www.alfresco.org/model/cmis/1.0/cs01}name");
     private static QName OBJECT_ID = QName.createQName("{http://www.alfresco.org/model/cmis/1.0/cs01}objectId");
+
+    @BeforeClass
+    public static void initEnvironment(){
+        System.setProperty("solr.solr.home", TEST_FILES_LOCATION);
+    }
 
     @Test
     public void testDecodeSolr4id()
@@ -90,7 +98,14 @@ public class SolrDataModelTest
         assertNotNull(modelStream);
         model = M2Model.createModel(modelStream);
         dataModel.putModel(model);
-        
+
+
+        try {
+            System.err.println(cl.getResource("alfresco/model/cmisModel.xml").toURI());
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
         assertEquals(2, dataModel.getAlfrescoModels().size());
         
         assertEquals(1, dataModel.getIndexedFieldNamesForProperty(OBJECT_ID).getFields().size());
@@ -144,7 +159,5 @@ public class SolrDataModelTest
         assertEquals(1, dataModel .getQueryableFields(CONTENT_STREAM_LENGTH, null, FieldUse.SORT).getFields().size());
         assertEquals(1, dataModel .getQueryableFields(CONTENT_STREAM_LENGTH, null, FieldUse.STATS).getFields().size());
         assertEquals(1, dataModel .getQueryableFields(CONTENT_STREAM_LENGTH, null, FieldUse.SUGGESTION).getFields().size());
-        
-        
     }
 }
