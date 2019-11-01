@@ -27,7 +27,7 @@ import org.junit.Test;
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 @SolrTestCaseJ4.SuppressSSL
-public class AlfrescoCMISQParserPluginTest extends LoadCMISData implements QueryConstants 
+public class AlfrescoCMISQParserPluginIT extends LoadCMISData implements QueryConstants
 {
     @Test
     public void cmisBasic() throws Exception
