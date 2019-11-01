@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -38,10 +37,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static java.util.Collections.emptyMap;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
@@ -53,7 +50,8 @@ import static org.mockito.Mockito.mock;
  * Tests {@link SolrContentStoreTest}
  *
  * @author Derek Hulley
- * @since 5.0
+ * @author Andrea Gazzarini
+ * @since 1.5
  */
 @RunWith(MockitoJUnitRunner.class) 
 public class SolrContentStoreTest

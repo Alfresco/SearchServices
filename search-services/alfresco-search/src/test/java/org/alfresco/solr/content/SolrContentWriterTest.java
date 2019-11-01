@@ -1,6 +1,5 @@
 package org.alfresco.solr.content;
 
-import org.alfresco.repo.content.ContentContext;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.apache.commons.io.FileUtils;
@@ -13,11 +12,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 
-public class SolrContentWriterTest {
-
-
+public class SolrContentWriterTest
+{
     private String solrHome = new File("./target/contentwriter/").getAbsolutePath();
-
 
     @After
     public void tearDown() throws IOException
@@ -26,37 +23,20 @@ public class SolrContentWriterTest {
         FileUtils.deleteDirectory(rootDir);
     }
 
-
-    /**
-     * Generates a content context using a string.  The URL part will be the same if the
-     * data provided is the same.
-     */
-    private ContentContext createContentContext(String data)
-    {
-        return SolrContentUrlBuilder.start().add("data", data).getContentContext();
-    }
-
-    ContentWriter getContentWriter(String name)
+    private ContentWriter getContentWriter(String name)
     {
         return new SolrFileContentWriter(new File(solrHome, name), solrHome + "/" + name);
     }
 
-
-
-    ContentReader getContentReader(String name)
+    private ContentReader getContentReader(String name)
     {
-
         return new SolrFileContentReader(new File(solrHome, name), solrHome + "/" + name);
     }
-
 
     @Test
     public void contentByString()
     {
-
         String filename = "abc";
-        SolrContentStore store = new SolrContentStore(solrHome);
-
         ContentWriter writer = getContentWriter(filename);
 
         File file = new File(solrHome, filename);
@@ -84,7 +64,7 @@ public class SolrContentWriterTest {
     }
 
     @Test
-    public void contentByStream() throws Exception
+    public void contentByStream()
     {
 
         String filename = "cbs";
@@ -103,6 +83,4 @@ public class SolrContentWriterTest {
         Assert.assertEquals(bytes[1], bos.toByteArray()[1]);
         Assert.assertEquals(bytes[2], bos.toByteArray()[2]);
     }
-
-
 }

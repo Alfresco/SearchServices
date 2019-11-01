@@ -42,6 +42,7 @@ import static org.mockito.Mockito.when;
  * Solr ContentStore {@link ChangeSet} test case.
  *
  * @author Andrea Gazzarini
+ * @since 1.5
  */
 @RunWith(MockitoJUnitRunner.class) 
 public class SolrContentStoreChangeSetTest

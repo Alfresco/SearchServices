@@ -54,7 +54,30 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 
 /**
- * Encapsulates changes occurred in the hosting content store since the last commit.
+ * Stores and manages changes occurred in a content store.
+ *
+ * Note this entity is part of the content store only when it is set on writable mode (i.e. only when the hosting node
+ * is a standalone instance or it is a master node).
+ *
+ * That means if the hosting node has at least one standalone core or one master node, then the managed content store
+ * will be set in write mode and therefore a {@link ChangeSet} instance will track all changes applied to it.
+ *
+ * In that mode, each change is associated to a given (incremental) version; changes consist of adds/updates and deletes.
+ * Each time the {@link org.alfresco.solr.tracker.CommitTracker} executes a commit in the main index, all content store
+ * changes accumulated in the meantime in the current {@link ChangeSet} instance are flushed in an auxiliary Lucene index
+ * and therefore persisted.
+ *
+ * On the other side, when all cores on a given node are configured as slaves, the content store is in read-only mode,
+ * and there's no need to track any change (i.e. changes are coming from master through the replication procedure).
+ *
+ * As a side note: we can have a persistent or transient {@link ChangeSet} instance. The first one is used to manage, as
+ * the name suggests, in a persistent way the content store changes accumulated during the indexing operations (see the
+ * description above about its behaviour in master nodes).
+ *
+ * The second one is used instead for computing/reducing the "merged" list of changes that we need to communicate to slave nodes:
+ * as part of the replication mechanism, a slave communicates its last synched content store version; on the master side,
+ * we need to compute and communicate back all changes that the slave needs to apply since that version in order to be in
+ * synch with master.
  *
  * @author Andrea Gazzarini
  * @since 1.5
@@ -66,12 +89,28 @@ public class ChangeSet implements AutoCloseable
 
     /**
      * Builds class for creating {@link ChangeSet} instances.
+     * The builder is here for creating three kind of {@link ChangeSet} instances:
+     *
+     * <ul>
+     *     <li>Persistent: used for tracking and persisting content store changes.</li>
+     *     <li>Transient: used for computing the merged list of changes a slave should apply for being in synch with master.</li>
+     *     <li>Empty: an immutable "NullObject" used for denoting an empty {@link ChangeSet} instance.</li>
+     * </ul>
+     *
+     * @see <a href="https://en.wikipedia.org/wiki/Null_object_pattern">Null Object Design Pattern</a>
      */
     public static class Builder
     {
         private String root;
         private boolean immutable;
 
+        /**
+         * Adds a content store root folder to this builder.
+         * This automatically implies we are creating a persistent {@link ChangeSet} instance.
+         *
+         * @param root the absolute path of the content store root folder.
+         * @return this builder, for being used in a fluent mode.
+         */
         Builder withContentStoreRoot(String root)
         {
             if (root == null) throw new IllegalArgumentException("Unable to build the Changeset structures with a null content store root folder.");
@@ -81,6 +120,11 @@ public class ChangeSet implements AutoCloseable
             return this;
         }
 
+        /**
+         * We are interested in building an empty, immutable {@link ChangeSet} instance.
+         *
+         * @return this builder, for being used in a fluent mode.
+         */
         Builder empty()
         {
             this.root = null;
@@ -88,6 +132,11 @@ public class ChangeSet implements AutoCloseable
             return this;
         }
 
+        /**
+         * Builds the product of this builder (i.e. the {@link ChangeSet} instance).
+         *
+         * @return the product of this builder (i.e. the {@link ChangeSet} instance).
+         */
         ChangeSet build()
         {
             if (root == null)
@@ -252,6 +301,12 @@ public class ChangeSet implements AutoCloseable
         LOGGER.debug("New Changeset entry have been added (version = {}, deletes = {}, adds = {})", version, deletes.size(), adds.size());
     }
 
+    /**
+     * Sanity check for making sure the requestor sent a valid and known content store version.
+     *
+     * @param version the content store version (sent by a requestor)
+     * @return true if the given version is unknown, that is, is not part of the content store version history.
+     */
     boolean isUnknownVersion(long version)
     {
         try

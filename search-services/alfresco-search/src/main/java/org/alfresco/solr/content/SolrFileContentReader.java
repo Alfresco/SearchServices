@@ -42,7 +42,7 @@ import org.springframework.util.FileCopyUtils;
  * @author Derek Hulley
  * @since 5.0
  */
-public class SolrFileContentReader implements ContentReader
+class SolrFileContentReader implements ContentReader
 {
     private final File file;
     private final String contentUrl;
@@ -51,7 +51,7 @@ public class SolrFileContentReader implements ContentReader
      * @param file          the file to write to
      * @param contentUrl    the content URL for information purposes
      */
-    protected SolrFileContentReader(File file, String contentUrl)
+    SolrFileContentReader(File file, String contentUrl)
     {
         this.file = file;
         this.contentUrl = contentUrl;
@@ -120,9 +120,8 @@ public class SolrFileContentReader implements ContentReader
         }
         try
         {
-            InputStream is = new BufferedInputStream(new FileInputStream(file));
             // done
-            return is;
+            return new BufferedInputStream(new FileInputStream(file));
         }
         catch (Throwable e)
         {
@@ -192,12 +191,9 @@ public class SolrFileContentReader implements ContentReader
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             FileCopyUtils.copy(is, os);  // both streams are closed
             byte[] bytes = os.toByteArray();
-            // get the encoding for the string
+
             String encoding = "UTF-8";
-            // create the string from the byte[] using encoding if necessary
-            String content = (encoding == null) ? new String(bytes) : new String(bytes, encoding);
-            // done
-            return content;
+            return new String(bytes, encoding);
         }
         catch (IOException e)
         {

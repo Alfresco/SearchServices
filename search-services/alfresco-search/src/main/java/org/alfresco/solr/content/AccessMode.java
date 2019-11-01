@@ -27,15 +27,18 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Behavioural interface for denoting a given role in a replication scenario.
- * A replication interaction is composed at least by 2 nodes: a master and one or more slaves.
+ * Behavioural interface which indicates the type of content store access mode for the owning node.
+ * A replication interaction is composed at least by 2 roles: a master and a slave.
  *
  * Despite the same interface, the behaviour of the content store management changes depending on the node kind:
  *
  * <ul>
- *     <li>Master Node: READ + WRITE and changes tracking</li>
- *     <li>Slave Node: READ ONLY</li>
+ *     <li>Master Node: READ + WRITE + Changes tracking. Writes and changes tracking are a direct consequence of the "indexing" nature of the master node.</li>
+ *     <li>Slave Node: READ ONLY (i.e. never write: changes are applied on the master and replicated on slaves)</li>
  * </ul>
+ *
+ * Important: the owning entity *is not* the SolrCore instance: the Content store is shared across all cores of
+ * A node can transit from Read to Write mode
  *
  * @author Andrea Gazzarini
  * @since 1.5

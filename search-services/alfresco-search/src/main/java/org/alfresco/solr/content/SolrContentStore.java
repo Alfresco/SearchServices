@@ -64,6 +64,7 @@ import static org.alfresco.solr.content.SolrContentUrlBuilder.logger;
 /**
  * A content store specific to SOLR's requirements: The URL is generated from a
  * set of properties such as:
+ *
  * <ul>
  *  <li>ACL ID</li>
  *  <li>DB ID</li>
@@ -72,20 +73,50 @@ import static org.alfresco.solr.content.SolrContentUrlBuilder.logger;
  *
  * The URL, if not known, can be reliably regenerated using the {@link SolrContentUrlBuilder}.
  * <br/>
- * Since version 1.5 this class acts as a singleton, there will be just one instance for each hosting Solr node.
- * The unique instance is created at startup in {@link org.alfresco.solr.AlfrescoCoreAdminHandler} and then given to
- * each registered core.
- * The state pattern implemented by means of the {@link AccessMode} interface allows for a given instance to act:
+ *
+ * Since version 1.5 this class acts as a logical singleton: there will be only one instance per node.
+ * That reflects exactly what we physically have in the filesystem (i.e. there's only one content store per node).
+ *
+ * That unique instance is created at startup in {@link org.alfresco.solr.AlfrescoCoreAdminHandler} and then passed to
+ * each registered core (see {@link org.alfresco.solr.lifecycle.SolrCoreLoadListener})
+ *
+ * The State pattern implemented by means of the {@link AccessMode} interface allows for a given {@link SolrContentStore} instance to act:
  *
  * <ul>
  *     <li>in READ/WRITE mode: when <b>at least one core</b> of the hosting node is a master or it is a standalone shard/instance.</li>
  *     <li>in READ ONLY mode: when <b>all cores</b>  of the hosting node are slaves.</li>
  * </ul>
  *
+ * The Finite State Machine (FST) provides three possible states: Initial, Read Only, Read/Write.
+ * The allowed transitions are:
+ *
+ * <ul>
+ *     <li>Initial -> ReadOnly: a slave core has been registered, the content store hasn't been yet initialised.</li>
+ *     <li>
+ *          ReadOnly -> Read/Write: this scenario is unusual because we should have on the same instance a mixed set of cores
+ *          (some master/standalone, some slaves). It happens when a first slave core registers and causes the transition
+ *          described in the first point (initial -> read only). Then a master or standalone core registers so we need to
+ *          move from a read only to a complete readable/writable managed content store.
+ *     </li>
+ *     <li> Initial -> Read/Write: a master or standalone core has been registered, and the content store hasn't been yet initialised.</li>
+ * </ul>
+ *
+ * Note the following transitions are not allowed:
+ *
+ * <ul>
+ *     <li>Coming back to Initial state: once it has been initialised the Content Store cannot return back to the "Initial" state.</li>
+ *     <li>
+ *         Read/Write -> ReadOnly: if at least one master or standalone core registers, the content store is permanently moved in Read/Write mode.
+ *         So even a further slave node registers (not very usually as described above) the content store remains in RW mode.
+ *     </li>
+ * </ul>
+ *
  * @author Derek Hulley
  * @author Michael Suzuki
  * @author Andrea Gazzarini
  * @since 1.5
+ * @see org.alfresco.solr.lifecycle.SolrCoreLoadListener
+ * @see <a href="https://it.wikipedia.org/wiki/State_pattern">State Pattern</a>
  */
 public final class SolrContentStore implements Closeable, AccessMode
 {

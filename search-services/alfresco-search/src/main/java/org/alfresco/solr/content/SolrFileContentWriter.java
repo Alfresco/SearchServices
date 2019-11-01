@@ -41,7 +41,7 @@ import org.apache.commons.io.FileUtils;
  * @author Derek Hulley
  * @since 5.0
  */
-public class SolrFileContentWriter implements ContentWriter
+class SolrFileContentWriter implements ContentWriter
 {
     private final File file;
     private final String contentUrl;
@@ -51,11 +51,10 @@ public class SolrFileContentWriter implements ContentWriter
      * @param file          the file to write to
      * @param contentUrl    the content URL for information purposes
      */
-    protected SolrFileContentWriter(File file, String contentUrl)
+    SolrFileContentWriter(File file, String contentUrl)
     {
         this.file = file;
         this.contentUrl = contentUrl;
-        this.written = false;
     }
     
     @Override
@@ -109,7 +108,7 @@ public class SolrFileContentWriter implements ContentWriter
     @Override
     public synchronized OutputStream getContentOutputStream() throws ContentIOException
     {
-        if (written == true)
+        if (written)
         {
             throw new IllegalStateException("The writer has already been used: " + file);
         }
@@ -117,6 +116,7 @@ public class SolrFileContentWriter implements ContentWriter
         {
             throw new IllegalStateException("The file already exists: " + file);
         }
+
         try
         {
             OutputStream is = new BufferedOutputStream(FileUtils.openOutputStream(file));
@@ -139,7 +139,7 @@ public class SolrFileContentWriter implements ContentWriter
     @Override
     public synchronized void putContent(InputStream is) throws ContentIOException
     {
-        if (written == true)
+        if (written)
         {
             throw new IllegalStateException("The writer has already been used: " + file);
         }
@@ -147,6 +147,7 @@ public class SolrFileContentWriter implements ContentWriter
         {
             throw new IllegalStateException("The file already exists: " + file);
         }
+
         try
         {
             FileUtils.copyInputStreamToFile(is, file);
@@ -161,7 +162,7 @@ public class SolrFileContentWriter implements ContentWriter
     @Override
     public synchronized void putContent(File sourceFile) throws ContentIOException
     {
-        if (written == true)
+        if (written)
         {
             throw new IllegalStateException("The writer has already been used: " + this.file);
         }
@@ -173,6 +174,7 @@ public class SolrFileContentWriter implements ContentWriter
         {
             throw new IllegalStateException("The source file does not exist: " + sourceFile);
         }
+
         try
         {
             FileUtils.copyFile(sourceFile, this.file, false);
