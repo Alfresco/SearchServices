@@ -188,7 +188,7 @@
     <queryResponseWriter name="xml" default="true"
                          class="solr.XMLResponseWriter" />
 
-    <requestHandler name="/replication" class="org.alfresco.solr.handler.ReplicationHandler">
+    <requestHandler name="/replication" class="org.alfresco.solr.handler.AlfrescoReplicationHandler">
         <lst name="slave">
             <str name="masterUrl">{masterURL}</str>
             <str name="pollInterval">00:00:02</str>

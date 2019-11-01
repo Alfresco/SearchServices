@@ -24,7 +24,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.config.ConfigUtil;
-import org.alfresco.solr.handler.ReplicationHandler;
+import org.alfresco.solr.handler.AlfrescoReplicationHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.util.BytesRef;
 import org.apache.solr.common.SolrInputDocument;
@@ -326,8 +326,8 @@ public final class SolrContentStore implements Closeable, AccessMode
                     changes.adds.stream()
                             .map(relativePath -> root + relativePath)
                             .map(File::new)
-                            .map(file -> new ReplicationHandler.FileInfo(file, file.getAbsolutePath().replace(root, "")))
-                            .map(ReplicationHandler.FileInfo::getAsMap)
+                            .map(file -> new AlfrescoReplicationHandler.FileInfo(file, file.getAbsolutePath().replace(root, "")))
+                            .map(AlfrescoReplicationHandler.FileInfo::getAsMap)
                             .collect(toList()));
         }
 
@@ -414,8 +414,8 @@ public final class SolrContentStore implements Closeable, AccessMode
                 return Files.walk(Paths.get(root))
                         .map(Path::toFile)
                         .filter(onlyDatafiles)
-                        .map(file -> new ReplicationHandler.FileInfo(file, file.getAbsolutePath().replace(root, "")))
-                        .map(ReplicationHandler.FileInfo::getAsMap)
+                        .map(file -> new AlfrescoReplicationHandler.FileInfo(file, file.getAbsolutePath().replace(root, "")))
+                        .map(AlfrescoReplicationHandler.FileInfo::getAsMap)
                         .collect(toList());
             }
             catch (Exception e)
