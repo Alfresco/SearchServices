@@ -52,7 +52,7 @@ public class AdminHandlerDistributedIT extends AbstractAlfrescoDistributedIT
     @BeforeClass
     private static void initData() throws Throwable
     {
-        initSolrServers(2, "AdminHandlerDistributedTest", null);
+        initSolrServers(2, "AdminHandlerDistributedIT", null);
     }
 
     @AfterClass
