@@ -109,7 +109,6 @@ public class AuthQueryIT extends AuthDataLoad
             searchParameters.setQuery(queryString);
             Query query = dataModel.getFTSQuery(new Pair<SearchParameters, Boolean>(searchParameters, Boolean.FALSE),
                     solrQueryRequest, FTSQueryParser.RerankPhase.SINGLE_PASS);
-            System.out.println("##################### Query:"+query);
             TopDocs docs = solrIndexSearcher.search(query, count * 2 + 10);
         
             Assert.assertEquals(count, docs.totalHits);
