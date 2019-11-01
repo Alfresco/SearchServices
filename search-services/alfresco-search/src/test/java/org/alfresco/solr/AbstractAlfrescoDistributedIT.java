@@ -760,8 +760,6 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
             params.remove("distrib");
             setDistributedParams(params);
             QueryResponse rsp = queryRandomShard(json, params);
-            System.out.println("Cluster Response:"+rsp);
-            System.out.println("Control Response:"+controlRsp);
             solrComparator.compareResponses(rsp, controlRsp);
             return rsp;
         }
