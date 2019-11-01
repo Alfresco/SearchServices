@@ -156,10 +156,12 @@ import java.util.zip.InflaterInputStream;
  * <p> Provides functionality of downloading changed index files as well as config files and a timer for scheduling fetches from the
  * master. </p>
  *
+ * This class has been modified in order to allow the alfresco contentstore to be efficiently replicated in a master slave environment.
+ * @author Elia
  */
 class AlfrescoIndexFetcher
 {
-    public static final String REPLICATION_PROPERTIES = "replication.properties";
+    static final String REPLICATION_PROPERTIES = "replication.properties";
     static final String INDEX_REPLICATED_AT = "indexReplicatedAt";
     static final String TIMES_INDEX_REPLICATED = "timesIndexReplicated";
     static final String CONF_FILES_REPLICATED = "confFilesReplicated";
@@ -330,7 +332,7 @@ class AlfrescoIndexFetcher
 
                 // we have checksums to compare
 
-                if (indexFileLen == backupIndexFileLen && indexFileChecksum == backupIndexFileChecksum)
+                if (indexFileLen == backupIndexFileLen && backupIndexFileChecksum!= null && indexFileChecksum == backupIndexFileChecksum)
                 {
                     compareResult.equal = true;
                     return compareResult;
@@ -377,7 +379,7 @@ class AlfrescoIndexFetcher
         }
     }
 
-    static boolean delTree(File dir)
+    private static boolean delTree(File dir)
     {
         try
         {
@@ -402,7 +404,6 @@ class AlfrescoIndexFetcher
         params.set(CommonParams.QT, AlfrescoReplicationHandler.PATH);
         QueryRequest req = new QueryRequest(params);
 
-        // TODO modify to use shardhandler
         try (HttpSolrClient client = new HttpSolrClient.Builder(masterUrl).withHttpClient(myHttpClient).build())
         {
             client.setSoTimeout(60000);
@@ -418,6 +419,11 @@ class AlfrescoIndexFetcher
 
     /**
      * Fetches the list of files in a given index commit point and updates internal list of files to download.
+     * The list is composed by:
+     *      - Index file list
+     *      - Conf file list
+     *      - TLog file list
+     *      - Content store file list
      */
     @SuppressWarnings("unchecked")
     private void fetchFileList(long indexGeneration, long contentStoreGeneration) throws IOException
@@ -469,7 +475,7 @@ class AlfrescoIndexFetcher
                 List<Map<String, Object>> infomap = contentStoreMap.get(SolrContentStore.INFO);
                 fullContentStoreReplication = of(infomap).stream().flatMap(List::stream)
                         .map(e -> e.get(SolrContentStore.FULL_REPLICATION))
-                        .map(e -> Boolean.class.isInstance(e) ? (Boolean) e : false).findFirst().orElse(false);
+                        .map(e -> e instanceof Boolean ? (Boolean) e : false).findFirst().orElse(false);
 
             }
 
@@ -492,6 +498,7 @@ class AlfrescoIndexFetcher
      *
      * @param forceReplication force a replication in all cases
      * @param forceCoreReload  force a core reload in all cases
+     * @param replicateContentStore  downloads the changed content store files
      * @return true on success, false if slave is already in sync
      * @throws IOException if an exception occurs
      */
@@ -763,6 +770,7 @@ class AlfrescoIndexFetcher
 
                         if (tlogFilesToDownload != null)
                         {
+                            assert tmpTlogDir != null;
                             bytesDownloaded += downloadTlogFiles(tmpTlogDir, latestGeneration);
                             reloadCore = true; // reload update log
                         }
@@ -783,19 +791,17 @@ class AlfrescoIndexFetcher
 
                         if (fullContentStoreReplication)
                         {
-                            deleteUnnecessaryContentStoreFiles(contentStore.getRootLocation());
+                            cleanUpContentStore(contentStore.getRootLocation());
                         }
 
                         contentStore.setLastCommittedVersion(masterContentStoreVersion);
                     }
 
                     final long timeTakenSeconds = getReplicationTimeElapsed();
-                    final Long bytesDownloadedPerSecond = (timeTakenSeconds != 0 ?
-                            new Long(bytesDownloaded / timeTakenSeconds) :
+                    final Long bytesDownloadedPerSecond = (timeTakenSeconds != 0 ? bytesDownloaded / timeTakenSeconds :
                             null);
                     LOG.info("Total time taken for download (fullCopy={},bytesDownloaded={}) : {} secs ({} bytes/sec)",
-                            new Object[] { isFullCopyNeeded, bytesDownloaded, timeTakenSeconds,
-                                    bytesDownloadedPerSecond });
+                            isFullCopyNeeded, bytesDownloaded, timeTakenSeconds, bytesDownloadedPerSecond);
 
                     if (indexReplicationNeeded)
                     {
@@ -809,7 +815,9 @@ class AlfrescoIndexFetcher
                             {
                                 successfulInstall = solrCore.modifyIndexProps(tmpIdxDirName);
                                 if (successfulInstall)
+                                {
                                     deleteTmpIdxDir = false;
+                                }
                             }
                             else
                             {
@@ -847,7 +855,9 @@ class AlfrescoIndexFetcher
                             {
                                 successfulInstall = solrCore.modifyIndexProps(tmpIdxDirName);
                                 if (successfulInstall)
+                                {
                                     deleteTmpIdxDir = false;
+                                }
                             }
                             else
                             {
@@ -992,7 +1002,12 @@ class AlfrescoIndexFetcher
         return bytesDownloaded;
     }
 
-    private void cleanup(final SolrCore core, Directory tmpIndexDir, Directory indexDir, boolean deleteTmpIdxDir, File tmpTlogDir, boolean successfulInstall)
+    private void cleanup(final SolrCore core,
+            Directory tmpIndexDir,
+            Directory indexDir,
+            boolean deleteTmpIdxDir,
+            File tmpTlogDir,
+            boolean successfulInstall)
     {
         try
         {
@@ -1263,9 +1278,7 @@ class AlfrescoIndexFetcher
         RefCounted<SolrIndexSearcher> searcher = null;
         IndexCommit commitPoint;
         // must get the latest solrCore object because the one we have might be closed because of a reload
-        // todo stop keeping solrCore around
-        SolrCore core = solrCore.getCoreContainer().getCore(solrCore.getName());
-        try
+        try (SolrCore core = solrCore.getCoreContainer().getCore(solrCore.getName()))
         {
             Future[] waitSearcher = new Future[1];
             searcher = core.getSearcher(true, true, waitSearcher, true);
@@ -1288,7 +1301,6 @@ class AlfrescoIndexFetcher
             {
                 searcher.decref();
             }
-            core.close();
         }
 
         // update the commit point in replication handler
@@ -1601,15 +1613,19 @@ class AlfrescoIndexFetcher
     private List<File> makeTmpConfDirFileList(File dir, List<File> fileList)
     {
         File[] files = dir.listFiles();
-        for (File file : files)
+
+        if (files != null)
         {
-            if (file.isFile())
+            for (File file : files)
             {
-                fileList.add(file);
-            }
-            else if (file.isDirectory())
-            {
-                fileList = makeTmpConfDirFileList(file, fileList);
+                if (file.isFile())
+                {
+                    fileList.add(file);
+                }
+                else if (file.isDirectory())
+                {
+                    fileList = makeTmpConfDirFileList(file, fileList);
+                }
             }
         }
         return fileList;
@@ -1661,6 +1677,12 @@ class AlfrescoIndexFetcher
         }
     }
 
+    /**
+     * Copy the downloaded content store files into the contentstore directory
+     * @param tmpContentStoreDir
+     * @param contentStorePath
+     * @throws IOException
+     */
     private void copyTmpContentStoreToContentStore(File tmpContentStoreDir, String contentStorePath) throws IOException
     {
 
@@ -1692,6 +1714,11 @@ class AlfrescoIndexFetcher
         }
     }
 
+    /**
+     * Deletes the files in filesToDelete list from contentStore
+     * @param contentStorePath
+     * @param filesToDelete
+     */
     private void deleteContentStoreFiles(String contentStorePath, List<Map<String, Object>> filesToDelete)
     {
         filesToDelete.stream().map(f -> (String) f.get(NAME)).forEach(p -> {
@@ -1702,9 +1729,12 @@ class AlfrescoIndexFetcher
         LOG.info("deleted {} files from content store", filesToDelete.size());
     }
 
-    private void deleteUnnecessaryContentStoreFiles(String contentStorePath)
+    /**
+     * Deletes from contentstore all the files that has not been updated.
+     * @param contentStorePath
+     */
+    private void cleanUpContentStore(String contentStorePath)
     {
-
         AtomicInteger fileDeleted = new AtomicInteger();
         Set<String> fileNames = contentStoreFilesToDownload.stream().map(e -> (String) e.get(NAME))
                 .collect(Collectors.toSet());
@@ -1949,7 +1979,7 @@ class AlfrescoIndexFetcher
         }
     }
 
-    public void destroy()
+    void destroy()
     {
         abortFetch();
     }
@@ -2076,14 +2106,12 @@ class AlfrescoIndexFetcher
     {
         FileChannel fileChannel;
         File file;
-        private File copy2Dir;
         private FileOutputStream fileOutputStream;
 
         LocalFsFile(File dir, String saveAs) throws IOException
         {
-            this.copy2Dir = dir;
 
-            this.file = new File(copy2Dir, saveAs);
+            this.file = new File(dir, saveAs);
 
             File parentDir = this.file.getParentFile();
             if (!parentDir.exists())
@@ -2281,6 +2309,7 @@ class AlfrescoIndexFetcher
                     //compare the checksum as sent from the master
                     if (includeChecksum)
                     {
+                        assert checksum != null;
                         checksum.reset();
                         checksum.update(buf, 0, packetSize);
                         long checkSumClient = checksum.getValue();
@@ -2436,6 +2465,9 @@ class AlfrescoIndexFetcher
         }
     }
 
+    /**
+     * File fetcher specialized for downloading index files
+     */
     private class DirectoryFileFetcher extends FileFetcher
     {
         DirectoryFileFetcher(Directory tmpIndexDir, Map<String, Object> fileDetails, String saveAs, String solrParamOutput, long latestGen)
@@ -2445,6 +2477,10 @@ class AlfrescoIndexFetcher
         }
     }
 
+
+    /**
+     * File fetcher specialized for downloading conf and tlogs files
+     */
     class LocalFsFileFetcher extends FileFetcher
     {
         LocalFsFileFetcher(File dir, Map<String, Object> fileDetails, String saveAs, String solrParamOutput, long latestGen)
@@ -2454,13 +2490,18 @@ class AlfrescoIndexFetcher
         }
     }
 
+
+    /**
+     * File fetcher specialized for downloading conf and contentstore files.
+     * In order to handle the possibly high number of files, the requested files are downloaded in a single stream.
+     */
     class ContentStoreFetcher extends FileFetcher
     {
         private final File dir;
         private final Set<String> filesToDownload;
         private final Set<String> filesDownloaded;
 
-        ContentStoreFetcher(File dir, String solrParamOutput, List<Map<String, Object>> filesDetails) throws IOException
+        ContentStoreFetcher(File dir, String solrParamOutput, List<Map<String, Object>> filesDetails)
         {
             super(solrParamOutput, 0);
             this.dir = dir;
@@ -2494,7 +2535,7 @@ class AlfrescoIndexFetcher
             }
         }
 
-        public void fetchContentStore() throws Exception
+        void fetchContentStore() throws Exception
         {
             this.fetchFile();
         }
@@ -2509,7 +2550,6 @@ class AlfrescoIndexFetcher
             params.set(GENERATION, Long.toString(indexGen));
             params.set(CommonParams.QT, AlfrescoReplicationHandler.PATH);
 
-            List<String> l = new ArrayList<>();
             params.set(CONTENT_STORE_FILE_LIST, filesToDownload.toArray(String[]::new));
 
             //add the version to download. This is used to reserve the download
@@ -2637,6 +2677,7 @@ class AlfrescoIndexFetcher
                         //compare the checksum as sent from the master
                         if (includeChecksum)
                         {
+                            assert checksum != null;
                             checksum.reset();
                             checksum.update(buf, 0, packetSize);
                             long checkSumClient = checksum.getValue();
@@ -2684,8 +2725,7 @@ class AlfrescoIndexFetcher
             }
             catch (Exception e)
             {
-                LOG.warn("Error in fetching file: {} (downloaded {} of {} bytes)",
-                        new Object[] { fileName, bytesDownloaded, size, e });
+                LOG.warn("Error in fetching file: {} (downloaded {} of {} bytes)", fileName, bytesDownloaded, size, e);
                 //for any failure, increment the error count
                 errorCount++;
                 //if it fails for the same packet for MAX_RETRIES fail and come out
@@ -2699,6 +2739,5 @@ class AlfrescoIndexFetcher
                 return ERR;
             }
         }
-
     }
 }

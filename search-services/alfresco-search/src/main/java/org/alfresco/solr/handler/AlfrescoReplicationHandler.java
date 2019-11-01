@@ -144,6 +144,11 @@ import static org.apache.solr.common.params.CommonParams.NAME;
  * or command=disablepoll)</li> </ol>
  *
  * @since solr 1.4
+ *
+ *
+ * This class has been modified in order to allow the alfresco contentstore to be efficiently replicated in a master slave environment.
+ * @author Elia
+ *
  */
 public class AlfrescoReplicationHandler extends RequestHandlerBase implements SolrCoreAware
 {
@@ -496,7 +501,7 @@ public class AlfrescoReplicationHandler extends RequestHandlerBase implements So
 
     private volatile AlfrescoIndexFetcher currentAlfrescoIndexFetcher;
 
-    boolean acquireContentStoreReplicationTask()
+    private boolean acquireContentStoreReplicationTask()
     {
         contentStoreReplicationLock.lock();
         if (!isContentStoreReplicating)
@@ -1361,7 +1366,7 @@ public class AlfrescoReplicationHandler extends RequestHandlerBase implements So
                     float totalPercent = 0;
                     long downloadSpeed = 0;
                     if (bytesToDownload > 0)
-                        totalPercent = (bytesDownloaded * 100) / bytesToDownload;
+                        totalPercent = (bytesDownloaded * 100.f) / bytesToDownload;
                     if (elapsed > 0)
                         downloadSpeed = (bytesDownloaded / elapsed);
                     if (currFile != null)

@@ -56,7 +56,7 @@ class OldBackupDirectory implements Comparable<OldBackupDirectory>
     private String dirName;
     private Optional<Date> timestamp = Optional.empty();
 
-    public OldBackupDirectory(URI basePath, String dirName)
+    OldBackupDirectory(URI basePath, String dirName)
     {
         this.dirName = Objects.requireNonNull(dirName);
         this.basePath = Objects.requireNonNull(basePath);
@@ -79,7 +79,7 @@ class OldBackupDirectory implements Comparable<OldBackupDirectory>
         return this.basePath.resolve(dirName);
     }
 
-    public String getDirName()
+    String getDirName()
     {
         return dirName;
     }

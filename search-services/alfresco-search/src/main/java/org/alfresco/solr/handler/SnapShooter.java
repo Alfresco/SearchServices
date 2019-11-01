@@ -87,7 +87,7 @@ public class SnapShooter
     @Deprecated
     public SnapShooter(SolrCore core, String location, String snapshotName)
     {
-        String snapDirStr = null;
+        String snapDirStr;
         // Note - This logic is only applicable to the usecase where a shared file-system is exposed via
         // local file-system interface (primarily for backwards compatibility). For other use-cases, users
         // will be required to specify "location" where the backup should be stored.
@@ -102,7 +102,7 @@ public class SnapShooter
         initialize(new LocalFileSystemRepository(), core, Paths.get(snapDirStr).toUri(), snapshotName, null);
     }
 
-    public SnapShooter(BackupRepository backupRepo, SolrCore core, URI location, String snapshotName, String commitName)
+    SnapShooter(BackupRepository backupRepo, SolrCore core, URI location, String snapshotName, String commitName)
     {
         initialize(backupRepo, core, location, snapshotName, commitName);
     }
@@ -140,7 +140,7 @@ public class SnapShooter
         return this.baseSnapDirPath;
     }
 
-    public void validateDeleteSnapshot()
+    void validateDeleteSnapshot()
     {
         Objects.requireNonNull(this.snapshotName);
 
@@ -158,7 +158,7 @@ public class SnapShooter
                     break;
                 }
             }
-            if (dirFound == false)
+            if (!dirFound)
             {
                 throw new SolrException(SolrException.ErrorCode.BAD_REQUEST,
                         "Snapshot " + snapshotName + " cannot be found in directory: " + baseSnapDirPath);
@@ -171,12 +171,12 @@ public class SnapShooter
         }
     }
 
-    protected void deleteSnapAsync(final AlfrescoReplicationHandler alfrescoReplicationHandler)
+    void deleteSnapAsync(final AlfrescoReplicationHandler alfrescoReplicationHandler)
     {
         new Thread(() -> deleteNamedSnapshot(alfrescoReplicationHandler)).start();
     }
 
-    public void validateCreateSnapshot() throws IOException
+    void validateCreateSnapshot() throws IOException
     {
         // Note - Removed the current behavior of creating the directory hierarchy.
         // Do we really need to provide this support?
@@ -231,7 +231,7 @@ public class SnapShooter
         }
     }
 
-    public void createSnapAsync(final IndexCommit indexCommit, final int numberToKeep, Consumer<NamedList> result)
+    void createSnapAsync(final IndexCommit indexCommit, final int numberToKeep, Consumer<NamedList> result)
     {
         solrCore.getDeletionPolicy().saveCommitPoint(indexCommit.getGeneration());
 
@@ -267,7 +267,7 @@ public class SnapShooter
     }
 
     // note: remember to reserve the indexCommit first so it won't get deleted concurrently
-    protected NamedList createSnapshot(final IndexCommit indexCommit) throws Exception
+    private NamedList createSnapshot(final IndexCommit indexCommit) throws Exception
     {
         LOG.info("Creating backup snapshot " + (snapshotName == null ? "<not named>" : snapshotName) + " at "
                 + baseSnapDirPath);
@@ -372,6 +372,6 @@ public class SnapShooter
         alfrescoReplicationHandler.snapShootDetails = details;
     }
 
-    public static final String DATE_FMT = "yyyyMMddHHmmssSSS";
+    private static final String DATE_FMT = "yyyyMMddHHmmssSSS";
 
 }
