@@ -74,19 +74,19 @@ guessencoding-1.4.jar   http://docs.codehaus.org/display/GUESSENC/
 xml-apis-1.4.01.jar     https://github.com/FasterXML/jackson
 jug-2.0.0-asl.jar   http://jug.safehaus.org/
 acegi-security-0.8.2_patched.jar        http://sourceforge.net/projects/acegisecurity/
-jetty-continuation-9.3.27.v20190418.jar
-jetty-deploy-9.3.27.v20190418.jar
-jetty-http-9.3.27.v20190418.jar
-jetty-io-9.3.27.v20190418.jar
-jetty-jmx-9.3.27.v20190418.jar
-jetty-rewrite-9.3.27.v20190418.jar
-jetty-security-9.3.27.v20190418.jar
-jetty-server-9.3.27.v20190418.jar
-jetty-servlet-9.3.27.v20190418.jar
-jetty-servlets-9.3.27.v20190418.jar
-jetty-util-9.3.27.v20190418.jar
-jetty-webapp-9.3.27.v20190418.jar
-jetty-xml-9.3.27.v20190418.jar
+jetty-continuation-9.3.27.v20190418.jar https://www.eclipse.org/jetty/licenses.html
+jetty-deploy-9.3.27.v20190418.jar https://www.eclipse.org/jetty/licenses.html
+jetty-http-9.3.27.v20190418.jar https://www.eclipse.org/jetty/licenses.html
+jetty-io-9.3.27.v20190418.jar https://www.eclipse.org/jetty/licenses.html
+jetty-jmx-9.3.27.v20190418.jar https://www.eclipse.org/jetty/licenses.html
+jetty-rewrite-9.3.27.v20190418.jar https://www.eclipse.org/jetty/licenses.html
+jetty-security-9.3.27.v20190418.jar https://www.eclipse.org/jetty/licenses.html
+jetty-server-9.3.27.v20190418.jar https://www.eclipse.org/jetty/licenses.html
+jetty-servlet-9.3.27.v20190418.jar https://www.eclipse.org/jetty/licenses.html
+jetty-servlets-9.3.27.v20190418.jar https://www.eclipse.org/jetty/licenses.html
+jetty-util-9.3.27.v20190418.jar https://www.eclipse.org/jetty/licenses.html
+jetty-webapp-9.3.27.v20190418.jar https://www.eclipse.org/jetty/licenses.html
+jetty-xml-9.3.27.v20190418.jar https://www.eclipse.org/jetty/licenses.html
 
 
 === CDDL 1.0 ===
