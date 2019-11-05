@@ -27,7 +27,8 @@ import static org.alfresco.solr.HandlerOfResources.getSafeLong;
 import static org.alfresco.solr.HandlerOfResources.openResource;
 import static org.alfresco.solr.HandlerOfResources.updatePropertiesFile;
 import static org.alfresco.solr.HandlerOfResources.updateSharedProperties;
-import static org.alfresco.solr.HandlerReportBuilder.addCoreSummary;
+import static org.alfresco.solr.HandlerReportBuilder.addMasterOrStandaloneCoreSummary;
+import static org.alfresco.solr.HandlerReportBuilder.addSlaveCoreSummary;
 import static org.alfresco.solr.HandlerReportBuilder.buildAclReport;
 import static org.alfresco.solr.HandlerReportBuilder.buildAclTxReport;
 import static org.alfresco.solr.HandlerReportBuilder.buildNodeReport;
@@ -36,7 +37,6 @@ import static org.alfresco.solr.HandlerReportBuilder.buildTxReport;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,6 +66,8 @@ import org.alfresco.solr.tracker.DBIDRangeRouter;
 import org.alfresco.solr.tracker.DocRouter;
 import org.alfresco.solr.tracker.IndexHealthReport;
 import org.alfresco.solr.tracker.MetadataTracker;
+import org.alfresco.solr.tracker.CoreStatePublisher;
+import org.alfresco.solr.tracker.SlaveCoreStatePublisher;
 import org.alfresco.solr.tracker.SolrTrackerScheduler;
 import org.alfresco.solr.tracker.Tracker;
 import org.alfresco.solr.tracker.TrackerRegistry;
@@ -92,15 +94,15 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     protected static final Logger LOGGER = LoggerFactory.getLogger(AlfrescoCoreAdminHandler.class);
     
     private static final String ARG_ACLTXID = "acltxid";
-    protected static final String ARG_TXID = "txid";
+    static final String ARG_TXID = "txid";
     private static final String ARG_ACLID = "aclid";
     private static final String ARG_NODEID = "nodeid";
     private static final String ARG_QUERY = "query";
-    public static final String DATA_DIR_ROOT = "data.dir.root";
+    private static final String DATA_DIR_ROOT = "data.dir.root";
     public static final String ALFRESCO_DEFAULTS = "create.alfresco.defaults";
-    public static final String NUM_SHARDS = "num.shards";
-    public static final String SHARD_IDS = "shard.ids";
-    public static final String DEFAULT_TEMPLATE = "rerank";
+    private static final String NUM_SHARDS = "num.shards";
+    private static final String SHARD_IDS = "shard.ids";
+    static final String DEFAULT_TEMPLATE = "rerank";
 
     static final String ALFRESCO_CORE_NAME = "alfresco";
     static final String ARCHIVE_CORE_NAME = "archive";
@@ -130,31 +132,22 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      */
     public void startup(CoreContainer coreContainer)
     {
-        LOGGER.info("Starting Alfresco core container services");
+        LOGGER.info("Starting Alfresco Core Administration Services");
 
         trackerRegistry = new TrackerRegistry();
         informationServers = new ConcurrentHashMap<>();
         this.scheduler = new SolrTrackerScheduler(this);
 
         String createDefaultCores = ConfigUtil.locateProperty(ALFRESCO_DEFAULTS, "");
-        int numShards = Integer.valueOf(ConfigUtil.locateProperty(NUM_SHARDS, "1"));
+        int numShards = Integer.parseInt(ConfigUtil.locateProperty(NUM_SHARDS, "1"));
         String shardIds = ConfigUtil.locateProperty(SHARD_IDS, null);
         if (createDefaultCores != null && !createDefaultCores.isEmpty())
         {
-            Runnable runnable = () ->
+            Thread thread = new Thread(() ->
             {
-                try
-                {
-                    TimeUnit.SECONDS.sleep(10); //Wait a little for the container to start up
-                }
-                catch (InterruptedException e)
-                {
-                    //Don't care
-                }
+                waitForTenSeconds();
                 setupNewDefaultCores(createDefaultCores, numShards, 1, 1, 1, shardIds);
-            };
-
-            Thread thread = new Thread(runnable);
+            });
             thread.start();
         }
     }
@@ -179,7 +172,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * @param numNodes - Not sure why the core needs to know this.
      * @param shardIds A comma separated list of shard ids for this core (or null).
      */
-    void setupNewDefaultCores(String names, int numShards, int replicationFactor, int nodeInstance, int numNodes, String shardIds)
+    private void setupNewDefaultCores(String names, int numShards, int replicationFactor, int nodeInstance, int numNodes, String shardIds)
     {
         try
         {
@@ -195,7 +188,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     .filter(coreName -> !coreName.isEmpty())
                     .forEach(coreName -> {
                         LOGGER.info("Attempting to create default alfresco core: {}", coreName);
-                        if (!STORE_REF_MAP.keySet().contains(coreName))
+                        if (!STORE_REF_MAP.containsKey(coreName))
                         {
                             throw new AlfrescoRuntimeException("Invalid '" + ALFRESCO_DEFAULTS + "' permitted values are " + STORE_REF_MAP.keySet());
                         }
@@ -257,7 +250,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
         catch (ClassNotFoundException e)
         {
-            return;
+            // Do nothing here
         }
         catch (Exception e)
         {
@@ -267,25 +260,25 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
     protected void handleCustomAction(SolrQueryRequest req, SolrQueryResponse rsp)
     {
-        LOGGER.info("######## Handle Custom Action ###########");
         SolrParams params = req.getParams();
         String cname = params.get(CoreAdminParams.CORE);
         String action = params.get(CoreAdminParams.ACTION);
         action = action==null?"":action.toUpperCase();
         try
         {
-            switch (action) {
+            switch (action)
+            {
                 case "NEWCORE":
                     newCore(req, rsp);
                     break;
                 case "UPDATECORE":
-                    updateCore(req, rsp);
+                    updateCore(req);
                     break;
                 case "UPDATESHARED":
-                    updateShared(req, rsp);
+                    updateShared(req);
                     break;
                 case "REMOVECORE":
-                    removeCore(req, rsp);
+                    removeCore(req);
                     break;
                 case "NEWDEFAULTINDEX":
                     newDefaultCore(req, rsp);
@@ -315,58 +308,82 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     actionREPORT(rsp, params, cname);
                     break;
                 case "PURGE":
-                    if (cname != null) {
+                    if (cname != null)
+                    {
                         actionPURGE(params, cname);
-                    } else {
-                        for (String coreName : getTrackerRegistry().getCoreNames()) {
+                    }
+                    else
+                    {
+                        for (String coreName : getTrackerRegistry().getCoreNames())
+                        {
                             actionPURGE(params, coreName);
                         }
                     }
                     break;
                 case "REINDEX":
-                    if (cname != null) {
+                    if (cname != null)
+                    {
                         actionREINDEX(params, cname);
-                    } else {
-                        for (String coreName : getTrackerRegistry().getCoreNames()) {
+                    }
+                    else
+                    {
+                        for (String coreName : getTrackerRegistry().getCoreNames())
+                        {
                             actionREINDEX(params, coreName);
                         }
                     }
                     break;
                 case "RETRY":
-                    if (cname != null) {
+                    if (cname != null)
+                    {
                         actionRETRY(rsp, cname);
-                    } else {
-                        for (String coreName : getTrackerRegistry().getCoreNames()) {
+                    }
+                    else
+                    {
+                        for (String coreName : getTrackerRegistry().getCoreNames())
+                        {
                             actionRETRY(rsp, coreName);
                         }
                     }
                     break;
                 case "INDEX":
-                    if (cname != null) {
+                    if (cname != null)
+                    {
                         actionINDEX(params, cname);
-                    } else {
-                        for (String coreName : getTrackerRegistry().getCoreNames()) {
+                    }
+                    else
+                    {
+                        for (String coreName : getTrackerRegistry().getCoreNames())
+                        {
                             actionINDEX(params, coreName);
                         }
                     }
                     break;
                 case "FIX":
-                    if (cname != null) {
+                    if (cname != null)
+                    {
                         actionFIX(cname);
-                    } else {
-                        for (String coreName : getTrackerRegistry().getCoreNames()) {
+                    }
+                    else
+                    {
+                        for (String coreName : getTrackerRegistry().getCoreNames())
+                        {
                             actionFIX(coreName);
                         }
                     }
                     break;
                 case "SUMMARY":
-                    if (cname != null) {
-                        NamedList<Object> report = new SimpleOrderedMap<Object>();
+                    if (cname != null)
+                    {
+                        NamedList<Object> report = new SimpleOrderedMap<>();
                         actionSUMMARY(params, report, cname);
                         rsp.add("Summary", report);
-                    } else {
-                        NamedList<Object> report = new SimpleOrderedMap<Object>();
-                        for (String coreName : getTrackerRegistry().getCoreNames()) {
+                    }
+                    else
+                    {
+                        NamedList<Object> report = new SimpleOrderedMap<>();
+                        for (String coreName : getTrackerRegistry().getCoreNames())
+                        {
                             actionSUMMARY(params, report, coreName);
                         }
                         rsp.add("Summary", report);
@@ -374,7 +391,8 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     break;
                 case "LOG4J":
                     String resource = "log4j-solr.properties";
-                    if (params.get("resource") != null) {
+                    if (params.get("resource") != null)
+                    {
                         resource = params.get("resource");
                     }
                     initResourceBasedLogging(resource);
@@ -391,26 +409,23 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
-    private boolean newCore(SolrQueryRequest req, SolrQueryResponse rsp) {
+    private boolean newCore(SolrQueryRequest req, SolrQueryResponse rsp)
+    {
         SolrParams params = req.getParams();
         req.getContext();
 
-        // If numCore > 1 we are createing a collection of cores for a sole node in a cluster
+        // If numCore > 1 we are creating a collection of cores for a sole node in a cluster
         int numShards = params.getInt("numShards", 1);
 
-        String store = "";
-        if (params.get("storeRef") != null) {
-            store = params.get("storeRef");
-        }
-        if ((store == null) || (store.length() == 0)) {
+        String store = params.get("storeRef");
+        if (store == null || store.trim().length() == 0)
+        {
             return false;
         }
+
         StoreRef storeRef = new StoreRef(store);
 
-        String templateName = "vanilla";
-        if (params.get("template") != null) {
-            templateName = params.get("template");
-        }
+        String templateName = ofNullable(params.get("template")).orElse("vanilla");
 
         int replicationFactor =  params.getInt("replicationFactor", 1);
         int nodeInstance =  params.getInt("nodeInstance", -1);
@@ -423,23 +438,25 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         return newCore(coreName, numShards, storeRef, templateName, replicationFactor, nodeInstance, numNodes, shardIds, properties, rsp);
     }
 
-    private boolean newDefaultCore(SolrQueryRequest req, SolrQueryResponse rsp) {
-
+    private boolean newDefaultCore(SolrQueryRequest req, SolrQueryResponse response)
+    {
         SolrParams params = req.getParams();
         String coreName = params.get("coreName") != null?params.get("coreName"):"alfresco";
-        StoreRef storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
         String templateName = params.get("template") != null?params.get("template"): DEFAULT_TEMPLATE;
+
         Properties extraProperties = extractCustomProperties(params);
 
-        if (params.get("storeRef") != null) {
-            String store = params.get("storeRef");
-            storeRef = new StoreRef(store);
-        }
-
-        return newDefaultCore(coreName, storeRef, templateName, extraProperties, rsp);
+        return newDefaultCore(
+                coreName,
+                ofNullable(params.get("storeRef"))
+                        .map(StoreRef::new)
+                        .orElse(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE),
+                templateName,
+                extraProperties,
+                response);
     }
 
-    protected boolean newDefaultCore(String coreName, StoreRef storeRef, String templateName, Properties extraProperties, SolrQueryResponse rsp)
+    private boolean newDefaultCore(String coreName, StoreRef storeRef, String templateName, Properties extraProperties, SolrQueryResponse rsp)
     {
         return newCore(coreName, 1, storeRef, templateName, 1, 1, 1, null, extraProperties, rsp);
     }
@@ -453,9 +470,8 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             File templates = new File(solrHome, "templates");
             File template = new File(templates, templateName);
 
-            if(numShards > 1 )
+            if(numShards > 1)
             {
-
                 String collectionName = templateName + "--" + storeRef.getProtocol() + "-" + storeRef.getIdentifier() + "--shards--"+numShards + "-x-"+replicationFactor+"--node--"+nodeInstance+"-of-"+numNodes;
                 String coreBase = storeRef.getProtocol() + "-" + storeRef.getIdentifier() + "-";
                 if (coreName != null)
@@ -488,18 +504,18 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 
                 for(Integer shard : shards)
                 {
-                    coreName = coreBase+shard;
+                    coreName = coreBase + shard;
                     File newCore = new File(baseDirectory, coreName);
                     String solrCoreName = coreName;
                     if (coreName == null)
                     {
                         if(storeRef.equals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE))
                         {
-                            solrCoreName = "alfresco-"+shard;
+                            solrCoreName = "alfresco-" + shard;
                         }
                         else if(storeRef.equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE))
                         {
-                            solrCoreName = "archive-"+shard;
+                            solrCoreName = "archive-" + shard;
                         }
                     }
                     createAndRegisterNewCore(rsp, extraProperties, storeRef, template, solrCoreName, newCore, numShards, shard, templateName);
@@ -527,19 +543,15 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
-    /**
-     * @param shardIds
-     * @return
-     */
     private List<Integer> extractShards(String shardIds, int numShards)
     {
-        ArrayList<Integer> shards = new ArrayList<Integer>();
+        List<Integer> shards = new ArrayList<>();
         for(String shardId : shardIds.split(","))
         {
             try
             {
-                Integer shard = Integer.valueOf(shardId);
-                if(shard.intValue() < numShards)
+                int shard = Integer.parseInt(shardId);
+                if(shard < numShards)
                 {
                     shards.add(shard);
                 }
@@ -552,17 +564,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         return shards;
     }
 
-    /**
-     * @param rsp
-     * @param storeRef
-     * @param template
-     * @param coreName
-     * @param newCore
-     * @throws IOException
-     * @throws FileNotFoundException
-     */
-    private void createAndRegisterNewCore(SolrQueryResponse rsp, Properties extraProperties, StoreRef storeRef, File template, String coreName, File newCore, int shardCount, int shardInstance, String templateName) throws IOException,
-            FileNotFoundException
+    private void createAndRegisterNewCore(SolrQueryResponse rsp, Properties extraProperties, StoreRef storeRef, File template, String coreName, File newCore, int shardCount, int shardInstance, String templateName) throws IOException
     {
         if (coreContainer.getLoadedCoreNames().contains(coreName))
         {
@@ -613,16 +615,11 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             properties.store(fileOutputStream, null);
         }
 
-        SolrCore core = coreContainer.create(coreName, newCore.toPath(), new HashMap<String, String>(), false);
+        SolrCore core = coreContainer.create(coreName, newCore.toPath(), new HashMap<>(), false);
         rsp.add("core", core.getName());
     }
 
-    /**
-     * Tests to see if one of the cores is an Alfresco special core!
-     * @param cores
-     * @return
-     */
-    public boolean hasAlfrescoCore(Collection<SolrCore> cores)
+    private boolean hasAlfrescoCore(Collection<SolrCore> cores)
     {
         if (cores == null || cores.isEmpty()) return false;
         for (SolrCore core:cores)
@@ -632,26 +629,24 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         return false;
     }
 
-    private boolean updateShared(SolrQueryRequest req, SolrQueryResponse rsp)
+    private void updateShared(SolrQueryRequest req)
     {
         SolrParams params = req.getParams();
 
-        try {
-
+        try
+        {
             File config = new File(AlfrescoSolrDataModel.getResourceDirectory(), AlfrescoSolrDataModel.SHARED_PROPERTIES);
             updateSharedProperties(params, config, hasAlfrescoCore(coreContainer.getCores()));
 
             coreContainer.getCores().forEach(aCore -> coreContainer.reload(aCore.getName()));
-
-            return true;
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             LOGGER.error("Failed to update Shared properties ", e);
         }
-        return false;
     }
 
-    private boolean updateCore(SolrQueryRequest req, SolrQueryResponse rsp)
+    private void updateCore(SolrQueryRequest req)
     {
             String coreName = null;
             SolrParams params = req.getParams();
@@ -661,36 +656,28 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 coreName = params.get("coreName");
             }
             
-            if ((coreName == null) || (coreName.length() == 0)) { return false; }
-
-            SolrCore core = null;
-            try {
-                core = coreContainer.getCore(coreName);
-
-                if(core == null)
-                {
-                    return false;
-                }
-
-                String  configLocaltion = core.getResourceLoader().getConfigDir();
-                File config = new File(configLocaltion, "solrcore.properties");
-                updatePropertiesFile(params, config, null);
-
-                coreContainer.reload(coreName);
-                
-                return true;
-            }
-            finally
+            if ((coreName == null) || (coreName.length() == 0))
             {
-                //Decrement core open count
-                if(core != null)
-                {
-                    core.close();
-                }
+                return;
             }
+
+        try (SolrCore core = coreContainer.getCore(coreName))
+        {
+
+            if (core == null)
+            {
+                return;
+            }
+
+            String configLocaltion = core.getResourceLoader().getConfigDir();
+            File config = new File(configLocaltion, "solrcore.properties");
+            updatePropertiesFile(params, config, null);
+
+            coreContainer.reload(coreName);
+        }
     }
 
-    private boolean removeCore(SolrQueryRequest req, SolrQueryResponse rsp)
+    private void removeCore(SolrQueryRequest req)
     {
         String store = "";
         SolrParams params = req.getParams();
@@ -699,7 +686,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             store = params.get("storeRef");
         }
 
-        if ((store == null) || (store.length() == 0)) { return false; }
+        if ((store == null) || (store.length() == 0)) { return; }
 
         StoreRef storeRef = new StoreRef(store);
         String coreName = storeRef.getProtocol() + "-" + storeRef.getIdentifier();
@@ -710,142 +697,146 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
         // remove core
         coreContainer.unload(coreName, true, true, true);
-
-        return true;
     }
-
-
 
     private void actionFIX(String coreName) throws AuthenticationException, IOException, JSONException, EncoderException
     {
-        // Gets Metadata health and fixes any problems
-        MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-        IndexHealthReport indexHealthReport = metadataTracker.checkIndex(null, null, null, null);
-        IOpenBitSet toReindex = indexHealthReport.getTxInIndexButNotInDb();
-        toReindex.or(indexHealthReport.getDuplicatedTxInIndex());
-        toReindex.or(indexHealthReport.getMissingTxFromIndex());
-        long current = -1;
-        // Goes through problems in the index
-        while ((current = toReindex.nextSetBit(current + 1)) != -1)
+        if (isMasterOrStandalone(coreName))
         {
-            metadataTracker.addTransactionToReindex(current);
-        }
-        
-        // Gets the Acl health and fixes any problems
-        AclTracker aclTracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-        indexHealthReport = aclTracker.checkIndex(null, null, null, null);
-        toReindex = indexHealthReport.getAclTxInIndexButNotInDb();
-        toReindex.or(indexHealthReport.getDuplicatedAclTxInIndex());
-        toReindex.or(indexHealthReport.getMissingAclTxFromIndex());
-        current = -1;
-        // Goes through the problems in the index
-        while ((current = toReindex.nextSetBit(current + 1)) != -1)
-        {
-            aclTracker.addAclChangeSetToReindex(current);
+            // Gets Metadata health and fixes any problems
+            MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
+            IndexHealthReport indexHealthReport = metadataTracker.checkIndex(null, null, null, null);
+            IOpenBitSet toReindex = indexHealthReport.getTxInIndexButNotInDb();
+            toReindex.or(indexHealthReport.getDuplicatedTxInIndex());
+            toReindex.or(indexHealthReport.getMissingTxFromIndex());
+            long current = -1;
+            // Goes through problems in the index
+            while ((current = toReindex.nextSetBit(current + 1)) != -1)
+            {
+                metadataTracker.addTransactionToReindex(current);
+            }
+
+            // Gets the Acl health and fixes any problems
+            AclTracker aclTracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
+            indexHealthReport = aclTracker.checkIndex(null, null, null, null);
+            toReindex = indexHealthReport.getAclTxInIndexButNotInDb();
+            toReindex.or(indexHealthReport.getDuplicatedAclTxInIndex());
+            toReindex.or(indexHealthReport.getMissingAclTxFromIndex());
+            current = -1;
+            // Goes through the problems in the index
+            while ((current = toReindex.nextSetBit(current + 1)) != -1)
+            {
+                aclTracker.addAclChangeSetToReindex(current);
+            }
         }
     }
 
     private void actionCHECK(String cname)
     {
+        trackerRegistry.getCoreNames()
+                .stream()
+                .filter(coreName -> cname == null || coreName.equals(cname))
+                .map(trackerRegistry::getTrackersForCore)
+                .flatMap(Collection::stream)
+                .map(Tracker::getTrackerState)
+                .forEach(state -> state.setCheck(true));
+    }
+
+    private void actionACLREPORT(SolrQueryResponse rsp, SolrParams params, String cname) throws JSONException
+    {
+        NamedList<Object> report = new SimpleOrderedMap<>();
+        rsp.add("report", report);
+
+        Long aclid =
+                ofNullable(params.get(ARG_ACLID))
+                        .map(Long::valueOf)
+                        .orElseThrow(() -> new AlfrescoRuntimeException("No " + ARG_ACLID + " parameter set."));
+
         if (cname != null)
         {
-            for (Tracker tracker : trackerRegistry.getTrackersForCore(cname))
-            {
-                tracker.getTrackerState().setCheck(true);
-            }
+            ofNullable(trackerRegistry.getTrackerForCore(cname, AclTracker.class))
+                    .ifPresent(tracker -> report.add(cname, buildAclReport(tracker, aclid)));
         }
         else
         {
-            for (String core : trackerRegistry.getCoreNames())
-            {
-                for (Tracker tracker : trackerRegistry.getTrackersForCore(core))
-                {
-                    tracker.getTrackerState().setCheck(true);
-                }
-            }
+            trackerRegistry.getCoreNames()
+                    .forEach(coreName ->
+                            ofNullable(trackerRegistry.getTrackerForCore(coreName, AclTracker.class))
+                                .ifPresent(tracker -> report.add(coreName, buildAclReport(tracker, aclid))));
+        }
+
+        if (report.size() == 0)
+        {
+            report.add("WARNING", "This response comes from a slave core. Please consider to ask the same request to its corresponding master core, in order to get more information about the requested Node");
         }
     }
 
-    private void actionACLREPORT(SolrQueryResponse rsp, SolrParams params, String cname) throws IOException,
-                JSONException
+    private void actionTXREPORT(SolrQueryResponse rsp, SolrParams params, String cname)
+            throws AuthenticationException, IOException, JSONException, EncoderException
     {
-        if (params.get(ARG_ACLID) == null)
-        {
-            throw new AlfrescoRuntimeException("No aclid parameter set");
-        }
-        
-        if (cname != null)
-        {
-            Long aclid = Long.valueOf(params.get(ARG_ACLID));
-            NamedList<Object> report = new SimpleOrderedMap<Object>();
-            AclTracker tracker = trackerRegistry.getTrackerForCore(cname, AclTracker.class);
-            report.add(cname, buildAclReport(tracker, aclid));
-            rsp.add("report", report);
-        }
-        else
-        {
-            Long aclid = Long.valueOf(params.get(ARG_ACLID));
-            NamedList<Object> report = new SimpleOrderedMap<Object>();
-            for (String coreName : trackerRegistry.getCoreNames())
-            {
-                AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-                report.add(coreName, buildAclReport(tracker, aclid));
-            }
-            rsp.add("report", report);
-        }
-    }
-
-    private void actionTXREPORT(SolrQueryResponse rsp, SolrParams params, String cname) throws AuthenticationException,
-                IOException, JSONException, EncoderException
-    {
-        if (params.get(ARG_TXID) == null)
-        {
-            throw new AlfrescoRuntimeException("No txid parameter set");
-        }
-        if (cname == null)
-        {
-            throw new AlfrescoRuntimeException("No cname parameter set");
-        }
+        NamedList<Object> report = new SimpleOrderedMap<>();
+        rsp.add("report", report);
 
         MetadataTracker tracker = trackerRegistry.getTrackerForCore(cname, MetadataTracker.class);
-        Long txid = Long.valueOf(params.get(ARG_TXID));
-        NamedList<Object> report = new SimpleOrderedMap<Object>();
-        report.add(cname, buildTxReport(getTrackerRegistry(), informationServers.get(cname), cname, tracker, txid));
-        rsp.add("report", report);
+        if (tracker != null)
+        {
+            Long txid =
+                    ofNullable(params.get(ARG_TXID))
+                            .map(Long::valueOf)
+                            .orElseThrow(() -> new AlfrescoRuntimeException("No " + ARG_TXID + " parameter set."));
+
+            if (cname == null)
+            {
+                throw new AlfrescoRuntimeException("No cname parameter set");
+            }
+
+            report.add(cname, buildTxReport(getTrackerRegistry(), informationServers.get(cname), cname, tracker, txid));
+        }
+        else
+        {
+            report.add("WARNING", "This response comes from a slave core. Please consider to ask the same request to its corresponding master core, in order to get more information about the requested Node");
+        }
     }
 
-    private void actionACLTXREPORT(SolrQueryResponse rsp, SolrParams params, String cname)
-                throws AuthenticationException, IOException, JSONException, EncoderException
+    private void actionACLTXREPORT(SolrQueryResponse rsp, SolrParams params, String cname) throws JSONException
     {
         if (params.get(ARG_ACLTXID) == null)
         {
             throw new AlfrescoRuntimeException("No acltxid parameter set");
         }
-        
+
+        NamedList<Object> report = new SimpleOrderedMap<>();
+        rsp.add("report", report);
+
+        Long acltxid =
+                ofNullable(params.get(ARG_ACLTXID))
+                        .map(Long::valueOf)
+                        .orElseThrow(() -> new AlfrescoRuntimeException("No " + ARG_ACLTXID + " parameter set."));
+
         if (cname != null)
         {
-            AclTracker tracker = trackerRegistry.getTrackerForCore(cname, AclTracker.class);
-            Long acltxid = Long.valueOf(params.get(ARG_ACLTXID));
-            NamedList<Object> report = new SimpleOrderedMap<Object>();
-            report.add(cname, buildAclTxReport(getTrackerRegistry(), informationServers.get(cname), cname, tracker, acltxid));
-            rsp.add("report", report);
+            ofNullable(trackerRegistry.getTrackerForCore(cname, AclTracker.class))
+                    .ifPresent(tracker -> report.add(cname, buildAclTxReport(trackerRegistry, informationServers.get(cname), cname, tracker, acltxid)));
         }
         else
         {
-            Long acltxid = Long.valueOf(params.get(ARG_ACLTXID));
-            NamedList<Object> report = new SimpleOrderedMap<Object>();
-            for (String coreName : trackerRegistry.getCoreNames())
-            {
-                AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-                report.add(coreName, buildAclTxReport(getTrackerRegistry(), informationServers.get(coreName), coreName, tracker, acltxid));
-            }
-            rsp.add("report", report);
+            trackerRegistry.getCoreNames()
+                    .forEach(coreName ->
+                            ofNullable(trackerRegistry.getTrackerForCore(coreName, AclTracker.class))
+                                    .ifPresent(tracker -> report.add(cname, buildAclTxReport(trackerRegistry, informationServers.get(cname), cname, tracker, acltxid))));
+        }
+
+        if (report.size() == 0)
+        {
+            report.add("WARNING", "This response comes from a slave core. Please consider to ask the same request to its corresponding master core, in order to get more information about the requested Node");
         }
     }
 
-    private void actionREPORT(SolrQueryResponse rsp, SolrParams params, String cname) throws IOException,
-                JSONException, AuthenticationException, EncoderException
+    private void actionREPORT(SolrQueryResponse rsp, SolrParams params, String cname) throws JSONException
     {
+        NamedList<Object> report = new SimpleOrderedMap<>();
+        rsp.add("report", report);
+
         Long fromTime = getSafeLong(params, "fromTime");
         Long toTime = getSafeLong(params, "toTime");
         Long fromTx = getSafeLong(params, "fromTx");
@@ -855,32 +846,17 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         
         if (cname != null)
         {
-            NamedList<Object> report = new SimpleOrderedMap<Object>();
-            if (trackerRegistry.hasTrackersForCore(cname))
+            if (trackerRegistry.hasTrackersForCore(cname) && isMasterOrStandalone(cname))
             {
-                report.add(cname, buildTrackerReport(getTrackerRegistry(), informationServers.get(cname),cname, fromTx, toTx, fromAclTx, toAclTx, fromTime, toTime));
-                rsp.add("report", report);
-            }
-            else 
-            {
-                report.add(cname, "Core unknown");
+                report.add(cname, buildTrackerReport(trackerRegistry, informationServers.get(cname),cname, fromTx, toTx, fromAclTx, toAclTx, fromTime, toTime));
             }
         }
         else
         {
-            NamedList<Object> report = new SimpleOrderedMap<Object>();
-            for (String coreName : trackerRegistry.getCoreNames())
-            {
-                if (trackerRegistry.hasTrackersForCore(coreName))
-                {
-                    report.add(coreName, buildTrackerReport(getTrackerRegistry(), informationServers.get(coreName), coreName, fromTx, toTx, fromAclTx, toAclTx, fromTime, toTime));
-                }
-                else 
-                {
-                    report.add(coreName, "Core unknown");
-                }
-            }
-            rsp.add("report", report);
+            trackerRegistry.getCoreNames().stream()
+                    .filter(trackerRegistry::hasTrackersForCore)
+                    .filter(this::isMasterOrStandalone)
+                    .forEach(coreName -> report.add(coreName, buildTrackerReport(trackerRegistry, informationServers.get(coreName), coreName, fromTx, toTx, fromAclTx, toAclTx, fromTime, toTime)));
         }
     }
 
@@ -896,8 +872,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             }
         }
 
-        DocRouter docRouter = metadataTracker.getDocRouter();
-        return docRouter;
+        return metadataTracker.getDocRouter();
     }
 
 
@@ -907,8 +882,8 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
         DocRouter docRouter = getDocRouter(cname);
 
-        if(docRouter instanceof DBIDRangeRouter) {
-
+        if(docRouter instanceof DBIDRangeRouter)
+        {
             DBIDRangeRouter dbidRangeRouter = (DBIDRangeRouter) docRouter;
 
             if(!dbidRangeRouter.getInitialized())
@@ -938,7 +913,8 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
             double density = 0;
 
-            if(offset > 0) {
+            if(offset > 0)
+            {
                 density = ((double)nodeCount) / ((double)offset); // This is how dense we are so far.
             }
 
@@ -975,15 +951,15 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             rsp.add("density", Math.abs(density));
             rsp.add("expand", bestGuess);
             rsp.add("expanded", dbidRangeRouter.getExpanded());
-        } else {
+        }
+        else
+        {
             rsp.add("expand", -1);
             rsp.add("exception", "ERROR: Wrong document router type:"+docRouter.getClass().getSimpleName());
-            return;
         }
     }
 
-    private synchronized void expand(SolrQueryResponse rsp, SolrParams params, String cname)
-        throws IOException
+    private synchronized void expand(SolrQueryResponse rsp, SolrParams params, String cname) throws IOException
     {
         InformationServer informationServer = informationServers.get(cname);
         DocRouter docRouter = getDocRouter(cname);
@@ -1011,7 +987,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             long startRange = dbidRangeRouter.getStartRange();
             long maxNodeId = informationServer.maxNodeId();
 
-            long range = currentEndRange-startRange;
+            long range = currentEndRange - startRange;
             long safe = startRange + ((long) (range * .75));
 
             if(maxNodeId > safe)
@@ -1030,65 +1006,38 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 dbidRangeRouter.setExpanded(true);
                 assert newEndRange == dbidRangeRouter.getEndRange();
                 rsp.add("expand", dbidRangeRouter.getEndRange());
-                return;
             }
             catch(Throwable t)
             {
                 rsp.add("expand", -1);
                 rsp.add("exception", t.getMessage());
                 LOGGER.error("exception expanding", t);
-                return;
             }
         }
         else
         {
             rsp.add("expand", -1);
-            rsp.add("exception", "Wrong document router type:"+docRouter.getClass().getSimpleName());
-            return;
+            rsp.add("exception", "Wrong document router type:" + docRouter.getClass().getSimpleName());
         }
     }
 
-    private void actionNODEREPORTS(SolrQueryResponse rsp, SolrParams params, String cname) throws IOException,
-                JSONException
+    private void actionNODEREPORTS(SolrQueryResponse rsp, SolrParams params, String cname) throws JSONException
     {
+        Long dbid =
+                ofNullable(params.get(ARG_NODEID))
+                    .map(Long::valueOf)
+                    .orElseThrow(() -> new AlfrescoRuntimeException("No dbid parameter set."));
+
+        NamedList<Object> report = new SimpleOrderedMap<>();
+        rsp.add("report", report);
+
         if (cname != null)
         {
-            MetadataTracker tracker = trackerRegistry.getTrackerForCore(cname,
-                        MetadataTracker.class);
-            Long dbid = null;
-            if (params.get(ARG_NODEID) != null)
-            {
-                dbid = Long.valueOf(params.get(ARG_NODEID));
-                NamedList<Object> report = new SimpleOrderedMap<Object>();
-                report.add(cname, buildNodeReport(tracker, dbid));
-                rsp.add("report", report);
-
-            }
-            else
-            {
-                throw new AlfrescoRuntimeException("No dbid parameter set");
-            }
+            report.add(cname, buildNodeReport(nodeStatePublisher(cname), dbid));
         }
         else
         {
-            Long dbid = null;
-            if (params.get(ARG_NODEID) != null)
-            {
-                dbid = Long.valueOf(params.get(ARG_NODEID));
-                NamedList<Object> report = new SimpleOrderedMap<Object>();
-                for (String coreName : trackerRegistry.getCoreNames())
-                {
-                    MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName,
-                                MetadataTracker.class);
-                    report.add(coreName, buildNodeReport(tracker, dbid));
-                }
-                rsp.add("report", report);
-            }
-            else
-            {
-                throw new AlfrescoRuntimeException("No dbid parameter set");
-            }
-
+            trackerRegistry.getCoreNames().forEach(coreName -> report.add(coreName, buildNodeReport(nodeStatePublisher(coreName), dbid)));
         }
     }
 
@@ -1102,11 +1051,18 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         InformationServer srv = informationServers.get(coreName);
         if (srv != null)
         {
-            addCoreSummary(trackerRegistry, coreName, detail, hist, values, srv, report);
-
-            if (reset)
+            if (isMasterOrStandalone(coreName))
             {
-                srv.getTrackerStats().reset();
+                addMasterOrStandaloneCoreSummary(trackerRegistry, coreName, detail, hist, values, srv, report);
+
+                if (reset)
+                {
+                    srv.getTrackerStats().reset();
+                }
+            }
+            else
+            {
+                addSlaveCoreSummary(trackerRegistry, coreName, detail, hist, values, srv, report);
             }
         }
         else
@@ -1115,106 +1071,128 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
-
     private void actionINDEX(SolrParams params, String coreName)
     {
-        if (params.get(ARG_TXID) != null)
+        if (isMasterOrStandalone(coreName))
         {
-            Long txid = Long.valueOf(params.get(ARG_TXID));
-            MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-            tracker.addTransactionToIndex(txid);
-        }
-        if (params.get(ARG_ACLTXID) != null)
-        {
-            Long acltxid = Long.valueOf(params.get(ARG_ACLTXID));
-            AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-            tracker.addAclChangeSetToIndex(acltxid);
-        }
-        if (params.get(ARG_NODEID) != null)
-        {
-            Long nodeid = Long.valueOf(params.get(ARG_NODEID));
-            MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-            tracker.addNodeToIndex(nodeid);
-        }
-        if (params.get(ARG_ACLID) != null)
-        {
-            Long aclid = Long.valueOf(params.get(ARG_ACLID));
-            AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-            tracker.addAclToIndex(aclid);
+            if (params.get(ARG_TXID) != null)
+            {
+                Long txid = Long.valueOf(params.get(ARG_TXID));
+                MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
+                tracker.addTransactionToIndex(txid);
+            }
+
+            if (params.get(ARG_ACLTXID) != null)
+            {
+                Long acltxid = Long.valueOf(params.get(ARG_ACLTXID));
+                AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
+                tracker.addAclChangeSetToIndex(acltxid);
+            }
+
+            if (params.get(ARG_NODEID) != null)
+            {
+                Long nodeid = Long.valueOf(params.get(ARG_NODEID));
+                MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
+                tracker.addNodeToIndex(nodeid);
+            }
+
+            if (params.get(ARG_ACLID) != null)
+            {
+                Long aclid = Long.valueOf(params.get(ARG_ACLID));
+                AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
+                tracker.addAclToIndex(aclid);
+            }
         }
     }
 
     private void actionRETRY(SolrQueryResponse rsp, String coreName) throws IOException
     {
-        MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-        InformationServer srv = informationServers.get(coreName);
-        Set<Long> errorDocIds = srv.getErrorDocIds();
-        for (Long nodeid : errorDocIds)
+        if (isMasterOrStandalone(coreName))
         {
-            tracker.addNodeToReindex(nodeid);
+            MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
+            InformationServer srv = informationServers.get(coreName);
+
+            Set<Long> errorDocIds = srv.getErrorDocIds();
+            for (Long nodeid : errorDocIds)
+            {
+                tracker.addNodeToReindex(nodeid);
+            }
+            rsp.add(coreName, errorDocIds);
         }
-        rsp.add(coreName, errorDocIds);
     }
 
     private void actionREINDEX(SolrParams params, String coreName)
     {
-        if (params.get(ARG_TXID) != null)
+        if (isMasterOrStandalone(coreName))
         {
-            Long txid = Long.valueOf(params.get(ARG_TXID));
-            MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-            tracker.addTransactionToReindex(txid);
-        }
-        if (params.get(ARG_ACLTXID) != null)
-        {
-            Long acltxid = Long.valueOf(params.get(ARG_ACLTXID));
-            AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-            tracker.addAclChangeSetToReindex(acltxid);
-        }
-        if (params.get(ARG_NODEID) != null)
-        {
-            Long nodeid = Long.valueOf(params.get(ARG_NODEID));
-            MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-            tracker.addNodeToReindex(nodeid);
-        }
-        if (params.get(ARG_ACLID) != null)
-        {
-            Long aclid = Long.valueOf(params.get(ARG_ACLID));
-            AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-            tracker.addAclToReindex(aclid);
-        }
-        if (params.get(ARG_QUERY) != null)
-        {
-            String query = params.get(ARG_QUERY);
-            MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-            tracker.addQueryToReindex(query);
+            if (params.get(ARG_TXID) != null)
+            {
+                Long txid = Long.valueOf(params.get(ARG_TXID));
+                MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
+                tracker.addTransactionToReindex(txid);
+            }
+
+            if (params.get(ARG_ACLTXID) != null)
+            {
+                Long acltxid = Long.valueOf(params.get(ARG_ACLTXID));
+                AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
+                tracker.addAclChangeSetToReindex(acltxid);
+            }
+
+            if (params.get(ARG_NODEID) != null)
+            {
+                Long nodeid = Long.valueOf(params.get(ARG_NODEID));
+                MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
+                tracker.addNodeToReindex(nodeid);
+            }
+
+            if (params.get(ARG_ACLID) != null)
+            {
+                Long aclid = Long.valueOf(params.get(ARG_ACLID));
+                AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
+                tracker.addAclToReindex(aclid);
+            }
+
+            if (params.get(ARG_QUERY) != null)
+            {
+                String query = params.get(ARG_QUERY);
+                MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
+                tracker.addQueryToReindex(query);
+            }
         }
     }
 
     private void actionPURGE(SolrParams params, String coreName)
     {
-        if (params.get(ARG_TXID) != null)
+        if (isMasterOrStandalone(coreName))
         {
-            Long txid = Long.valueOf(params.get(ARG_TXID));
-            MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-            tracker.addTransactionToPurge(txid);
-        }
-        if (params.get(ARG_ACLTXID) != null)
-        {
-            Long acltxid = Long.valueOf(params.get(ARG_ACLTXID));
-            AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-            tracker.addAclChangeSetToPurge(acltxid);
-        }
-        if (params.get(ARG_NODEID) != null)
-        {
-            Long nodeid = Long.valueOf(params.get(ARG_NODEID));
-            MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-            tracker.addNodeToPurge(nodeid);
-        }
-        if (params.get(ARG_ACLID) != null)
-        {
-            Long aclid = Long.valueOf(params.get(ARG_ACLID));
-            AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-            tracker.addAclToPurge(aclid);
+            if (params.get(ARG_TXID) != null)
+            {
+                Long txid = Long.valueOf(params.get(ARG_TXID));
+                MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
+                tracker.addTransactionToPurge(txid);
+            }
+
+            if (params.get(ARG_ACLTXID) != null)
+            {
+                Long acltxid = Long.valueOf(params.get(ARG_ACLTXID));
+                AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
+                tracker.addAclChangeSetToPurge(acltxid);
+            }
+
+            if (params.get(ARG_NODEID) != null)
+            {
+                Long nodeid = Long.valueOf(params.get(ARG_NODEID));
+                MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
+                tracker.addNodeToPurge(nodeid);
+            }
+
+            if (params.get(ARG_ACLID) != null)
+            {
+                Long aclid = Long.valueOf(params.get(ARG_ACLID));
+                AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
+                tracker.addAclToPurge(aclid);
+            }
         }
     }
 
@@ -1228,7 +1206,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         return trackerRegistry;
     }
 
-    protected void setTrackerRegistry(TrackerRegistry trackerRegistry)
+    void setTrackerRegistry(TrackerRegistry trackerRegistry)
     {
         this.trackerRegistry = trackerRegistry;
     }
@@ -1236,5 +1214,35 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     public SolrTrackerScheduler getScheduler()
     {
         return scheduler;
+    }
+
+    private void waitForTenSeconds()
+    {
+        try
+        {
+            TimeUnit.SECONDS.sleep(10);
+        }
+        catch (InterruptedException e)
+        {
+            //Don't care
+        }
+    }
+
+    /**
+     * Returns, for the given core, the component which is in charge to publish the core state.
+     *
+     * @param coreName the owning core name.
+     * @return the component which is in charge to publish the core state.
+     */
+    private CoreStatePublisher nodeStatePublisher(String coreName)
+    {
+        return ofNullable(trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class))
+                .map(CoreStatePublisher.class::cast)
+                .orElse(trackerRegistry.getTrackerForCore(coreName, SlaveCoreStatePublisher.class));
+    }
+
+    private boolean isMasterOrStandalone(String coreName)
+    {
+        return trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class) != null;
     }
 }

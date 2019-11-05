@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  * This tracks two things: transactions and metadata nodes
  * @author Ahmed Owian
  */
-public class MetadataTracker extends NodeStatePublisher implements Tracker
+public class MetadataTracker extends CoreStatePublisher implements Tracker
 {
     protected final static Logger log = LoggerFactory.getLogger(MetadataTracker.class);
     private static final int DEFAULT_TRANSACTION_DOCS_BATCH_SIZE = 100;
@@ -888,24 +888,18 @@ public class MetadataTracker extends NodeStatePublisher implements Tracker
         }
     }
 
-
-
-    
-    
+    @Override
     public NodeReport checkNode(Long dbid)
     {
-        NodeReport nodeReport = new NodeReport();
-        nodeReport.setDbid(dbid);
+        NodeReport nodeReport = super.checkNode(dbid);
 
         // In DB
-
         GetNodesParameters parameters = new GetNodesParameters();
         parameters.setFromNodeId(dbid);
         parameters.setToNodeId(dbid);
-        List<Node> dbnodes;
         try
         {
-            dbnodes = client.getNodes(parameters, 1);
+            List<Node> dbnodes = client.getNodes(parameters, 1);
             if (dbnodes.size() == 1)
             {
                 Node dbnode = dbnodes.get(0);
@@ -915,41 +909,31 @@ public class MetadataTracker extends NodeStatePublisher implements Tracker
             else
             {
                 nodeReport.setDbNodeStatus(SolrApiNodeStatus.UNKNOWN);
-                nodeReport.setDbTx(-1l);
+                nodeReport.setDbTx(-1L);
             }
         }
         catch (IOException e)
         {
             nodeReport.setDbNodeStatus(SolrApiNodeStatus.UNKNOWN);
-            nodeReport.setDbTx(-2l);
+            nodeReport.setDbTx(-2L);
         }
         catch (JSONException e)
         {
             nodeReport.setDbNodeStatus(SolrApiNodeStatus.UNKNOWN);
-            nodeReport.setDbTx(-3l);
+            nodeReport.setDbTx(-3L);
         }
         catch (AuthenticationException e1)
         {
             nodeReport.setDbNodeStatus(SolrApiNodeStatus.UNKNOWN);
-            nodeReport.setDbTx(-4l);
+            nodeReport.setDbTx(-4L);
         }
-        
-        this.infoSrv.addCommonNodeReportInfo(nodeReport);
 
         return nodeReport;
     }
 
     public NodeReport checkNode(Node node)
     {
-        NodeReport nodeReport = new NodeReport();
-        nodeReport.setDbid(node.getId());
-
-        nodeReport.setDbNodeStatus(node.getStatus());
-        nodeReport.setDbTx(node.getTxnId());
-
-        this.infoSrv.addCommonNodeReportInfo(nodeReport);
-        
-        return nodeReport;
+        return checkNode(node.getId());
     }
 
     public List<Node> getFullNodesForDbTransaction(Long txid)

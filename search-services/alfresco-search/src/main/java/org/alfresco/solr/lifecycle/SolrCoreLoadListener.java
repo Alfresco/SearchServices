@@ -35,7 +35,7 @@ import org.alfresco.solr.tracker.CommitTracker;
 import org.alfresco.solr.tracker.ContentTracker;
 import org.alfresco.solr.tracker.MetadataTracker;
 import org.alfresco.solr.tracker.ModelTracker;
-import org.alfresco.solr.tracker.SlaveNodeStatePublisher;
+import org.alfresco.solr.tracker.SlaveCoreStatePublisher;
 import org.alfresco.solr.tracker.SolrTrackerScheduler;
 import org.alfresco.solr.tracker.Tracker;
 import org.alfresco.solr.tracker.TrackerRegistry;
@@ -182,7 +182,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
         {
             LOGGER.info("SearchServices Core Trackers have been explicitly disabled on core \"{}\" through \"enable.alfresco.tracking\" configuration property.", core.getName());
 
-            SlaveNodeStatePublisher statePublisher = new SlaveNodeStatePublisher(false, coreProperties, repositoryClient, core.getName(), informationServer);
+            SlaveCoreStatePublisher statePublisher = new SlaveCoreStatePublisher(false, coreProperties, repositoryClient, core.getName(), informationServer);
             trackerRegistry.register(core.getName(), statePublisher);
             scheduler.schedule(statePublisher, core.getName(), coreProperties);
             trackers.add(statePublisher);
@@ -197,7 +197,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
         {
             LOGGER.info("SearchServices Core Trackers have been disabled on core \"{}\" because it is a slave core.", core.getName());
 
-            SlaveNodeStatePublisher statePublisher = new SlaveNodeStatePublisher(false, coreProperties, repositoryClient, core.getName(), informationServer);
+            SlaveCoreStatePublisher statePublisher = new SlaveCoreStatePublisher(false, coreProperties, repositoryClient, core.getName(), informationServer);
             trackerRegistry.register(core.getName(), statePublisher);
             scheduler.schedule(statePublisher, core.getName(), coreProperties);
             trackers.add(statePublisher);

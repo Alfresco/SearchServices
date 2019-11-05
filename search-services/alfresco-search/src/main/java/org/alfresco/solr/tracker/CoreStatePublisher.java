@@ -41,6 +41,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.InformationServer;
+import org.alfresco.solr.NodeReport;
 import org.alfresco.solr.TrackerState;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.apache.commons.lang3.StringUtils;
@@ -59,7 +60,7 @@ import java.util.Properties;
  * @since 1.5
  * @see <a href="https://issues.alfresco.com/jira/browse/SEARCH-1752">SEARCH-1752</a>
  */
-public abstract class NodeStatePublisher extends AbstractTracker
+public abstract class CoreStatePublisher extends AbstractTracker
 {
     DocRouter docRouter;
     private final boolean isMaster;
@@ -70,7 +71,7 @@ public abstract class NodeStatePublisher extends AbstractTracker
     /** The property to use for determining the shard. */
     protected Optional<QName> shardProperty = Optional.empty();
 
-    NodeStatePublisher(
+    CoreStatePublisher(
             boolean isMaster,
             Properties p,
             SOLRAPIClient client,
@@ -88,10 +89,26 @@ public abstract class NodeStatePublisher extends AbstractTracker
         docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
     }
 
-    NodeStatePublisher(Type type)
+    CoreStatePublisher(Type type)
     {
         super(type);
         this.isMaster = false;
+    }
+
+    /**
+     * Returns information about the {@link org.alfresco.solr.client.Node} associated with the given dbid.
+     *
+     * @param dbid the node identifier.
+     * @return the {@link org.alfresco.solr.client.Node} associated with the given dbid.
+     */
+    public NodeReport checkNode(Long dbid)
+    {
+        NodeReport nodeReport = new NodeReport();
+        nodeReport.setDbid(dbid);
+
+        this.infoSrv.addCommonNodeReportInfo(nodeReport);
+
+        return nodeReport;
     }
 
     private void firstUpdateShardProperty()
@@ -221,5 +238,15 @@ public abstract class NodeStatePublisher extends AbstractTracker
     public DocRouter getDocRouter()
     {
         return this.docRouter;
+    }
+
+    /**
+     * Returns true if the hosting core is master or standalone.
+     *
+     * @return true if the hosting core is master or standalone.
+     */
+    public boolean isOnMasterOrStandalone()
+    {
+        return isMaster;
     }
 }
