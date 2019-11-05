@@ -163,13 +163,13 @@
                         </goals>
                         <configuration>
                             <target>
-                                <delete file="${project.build.directory}/solr-6.6.5-patched/server/solr-webapp/webapp/WEB-INF/lib/jackson-annotations-2.5.4.jar" />
-                                <delete file="${project.build.directory}/solr-6.6.5-patched/server/solr-webapp/webapp/WEB-INF/lib/jackson-core-2.5.4.jar" />
-                                <delete file="${project.build.directory}/solr-6.6.5-patched/server/solr-webapp/webapp/WEB-INF/lib/jackson-databind-2.5.4.jar" />
-                                <delete file="${project.build.directory}/solr-6.6.5-patched/server/solr-webapp/webapp/WEB-INF/lib/jackson-dataformat-smile-2.5.4.jar" />
-                                <delete file="${project.build.directory}/solr-6.6.5-patched/server/solr-webapp/webapp/WEB-INF/lib/jackson-core-asl-1.9.13.jar" />
-                                <delete file="${project.build.directory}/solr-6.6.5-patched/server/solr-webapp/webapp/WEB-INF/lib/jackson-mapper-asl-1.9.13.jar" />
-                                <delete file="${project.build.directory}/solr-6.6.5-patched/server/solr-webapp/webapp/WEB-INF/lib/dom4j-1.6.1.jar" />
+                                <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/jackson-annotations-2.5.4.jar" />
+                                <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/jackson-core-2.5.4.jar" />
+                                <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/jackson-databind-2.5.4.jar" />
+                                <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/jackson-dataformat-smile-2.5.4.jar" />
+                                <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/jackson-core-asl-1.9.13.jar" />
+                                <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/jackson-mapper-asl-1.9.13.jar" />
+                                <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/dom4j-1.6.1.jar" />
                             </target>
                         </configuration>
                     </execution>
