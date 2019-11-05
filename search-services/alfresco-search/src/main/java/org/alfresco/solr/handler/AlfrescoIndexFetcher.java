@@ -975,7 +975,7 @@ class AlfrescoIndexFetcher
 
         if (contentStoreFilesToDownloadFiltered.size() != contentStoreFilesToDownload.size())
         {
-            LOG.warn("content store replication: some of the files are already in sync. {} files to download",
+            LOG.info("content store replication: some of the files are already in sync. {} files to download",
                     contentStoreFilesToDownloadFiltered.size());
         }
 
