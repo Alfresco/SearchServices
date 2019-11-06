@@ -89,6 +89,10 @@ import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Alfresco Solr administration endpoints provider.
+ * A customisation of the existing Solr {@link CoreAdminHandler} which offers additional administration endpoints.
+ */
 public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 {
     protected static final Logger LOGGER = LoggerFactory.getLogger(AlfrescoCoreAdminHandler.class);
@@ -124,14 +128,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     public AlfrescoCoreAdminHandler(CoreContainer coreContainer)
     {
         super(coreContainer);
-        startup(coreContainer);
-    }
 
-    /**
-     * Startup services that exist outside of the core.
-     */
-    public void startup(CoreContainer coreContainer)
-    {
         LOGGER.info("Starting Alfresco Core Administration Services");
 
         trackerRegistry = new TrackerRegistry();
