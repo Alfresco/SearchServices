@@ -37,7 +37,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.solr.AbstractAlfrescoSolrTests;
+import org.alfresco.solr.AbstractAlfrescoSolrIT;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.client.ContentPropertyValue;
 import org.alfresco.solr.client.MLTextPropertyValue;
@@ -51,7 +51,7 @@ import org.junit.BeforeClass;
  * @author Michael Suzuki
  *
  */
-public class LoadCMISData extends AbstractAlfrescoSolrTests
+public class LoadCMISData extends AbstractAlfrescoSolrIT
 {
     protected static NodeRef testCMISContent00NodeRef;
     protected static NodeRef testCMISRootNodeRef;
