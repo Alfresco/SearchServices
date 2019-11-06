@@ -83,7 +83,7 @@ public class MetadataTrackerTest
     }
 
     @Test
-    @Ignore("Superseded by AlfrescoSolrTrackerTest")
+    @Ignore("Superseded by AlfrescoSolrTrackerIT")
     public void doTrackWithOneTransactionUpdatesOnce() throws AuthenticationException, IOException, JSONException, EncoderException
     {
         TrackerState state = new TrackerState();
@@ -123,7 +123,7 @@ public class MetadataTrackerTest
     }
 
     @Test
-    @Ignore("Superseded by AlfrescoSolrTrackerTest")
+    @Ignore("Superseded by AlfrescoSolrTrackerIT")
     public void doTrackWithNoTransactionsDoesNothing() throws AuthenticationException, IOException, JSONException, EncoderException
     {
         TrackerState state = new TrackerState();
@@ -144,7 +144,7 @@ public class MetadataTrackerTest
     }
 
     @Test
-    @Ignore("Superseded by AlfrescoSolrTrackerTest")
+    @Ignore("Superseded by AlfrescoSolrTrackerIT")
     public void testCheckNodeLong() throws AuthenticationException, IOException, JSONException
     {
         List<Node> nodes = getNodes();
@@ -166,7 +166,7 @@ public class MetadataTrackerTest
     }
     
     @Test
-    @Ignore("Superseded by AlfrescoSolrTrackerTest")
+    @Ignore("Superseded by AlfrescoSolrTrackerIT")
     public void testCheckNodeNode()
     {
         Node node = getNode();
@@ -187,7 +187,7 @@ public class MetadataTrackerTest
     }
     
     @Test
-    @Ignore("Superseded by AlfrescoSolrTrackerTest")
+    @Ignore("Superseded by AlfrescoSolrTrackerIT")
     public void testGetFullNodesForDbTransaction() throws AuthenticationException, IOException, JSONException
     {
         List<Node> nodes = getNodes();
