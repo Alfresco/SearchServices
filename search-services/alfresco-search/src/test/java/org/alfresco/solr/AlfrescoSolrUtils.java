@@ -76,7 +76,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.solr.AbstractAlfrescoSolrTests.SolrServletRequest;
+import org.alfresco.solr.AbstractAlfrescoSolrIT.SolrServletRequest;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.AclChangeSet;
 import org.alfresco.solr.client.AclReaders;

@@ -18,9 +18,7 @@
  */
 package org.alfresco.solr.query;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.search.GeneralHighlightParameters;
-import org.alfresco.solr.AbstractAlfrescoSolrTests;
+import org.alfresco.solr.AbstractAlfrescoSolrIT;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,7 +30,7 @@ import org.junit.Test;
  * @author Michael Suzuki
  *
  */
-public class UntokenisedFieldTest extends AbstractAlfrescoSolrTests
+public class UntokenisedFieldTest extends AbstractAlfrescoSolrIT
 {
     String nodeRef = "workspace://SpacesStore/00000000-0000-1-4731-76966678";
     String nodeRefS = "noderef@s_@mytest" ;

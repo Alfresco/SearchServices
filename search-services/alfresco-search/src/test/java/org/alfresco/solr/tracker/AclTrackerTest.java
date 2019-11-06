@@ -95,7 +95,7 @@ public class AclTrackerTest
     
     // High level test of doTrack() workflow.
     @Test
-    @Ignore("Superseded by AlfrescoSolrTrackerTest")
+    @Ignore("Superseded by AlfrescoSolrTrackerIT")
     public void checkTrackingOperaionsPerformed() throws Throwable
     {
         testTrackChangesRan();
@@ -116,7 +116,7 @@ public class AclTrackerTest
     // Tests the purgeAclChangeSets() call made in AclTracker.doTrack()
     // TODO: the other operations in doTrack().
     @Test
-    @Ignore("Superseded by AlfrescoSolrTrackerTest")
+    @Ignore("Superseded by AlfrescoSolrTrackerIT")
     public void checkTrackingWhenAclChangeSetsToPurge() throws IllegalAccessException, IOException
     {
         @SuppressWarnings("unchecked")
@@ -139,7 +139,7 @@ public class AclTrackerTest
     }
     
     @Test
-    @Ignore("Superseded by AlfrescoSolrTrackerTest")
+    @Ignore("Superseded by AlfrescoSolrTrackerIT")
     public void checkTrackingWhenAclsToPurge() throws IllegalAccessException, IOException
     {
         @SuppressWarnings("unchecked")
@@ -204,7 +204,7 @@ public class AclTrackerTest
     }
 
     @Test
-    @Ignore("Superseded by AlfrescoSolrTrackerTest")
+    @Ignore("Superseded by AlfrescoSolrTrackerIT")
     public void trackingAbortsWhenAlreadyRunning() throws Throwable
     {
         trackerState.setRunning(true);
@@ -223,7 +223,7 @@ public class AclTrackerTest
     }
     
     @Test
-    @Ignore("Superseded by AlfrescoSolrTrackerTest")
+    @Ignore("Superseded by AlfrescoSolrTrackerIT")
     public void willRollbackOnThrowableDuringTracking() throws Throwable
     {
         doThrow(new RuntimeException("Simulated problem during tracking")).when(tracker).doTrack();
@@ -234,7 +234,7 @@ public class AclTrackerTest
     }
     
     @Test
-    @Ignore("Superseded by AlfrescoSolrTrackerTest")
+    @Ignore("Superseded by AlfrescoSolrTrackerIT")
     public void willRollbackOnIndexTrackingShutdownException() throws Throwable
     {
         doThrow(new IndexTrackingShutdownException()).when(tracker).doTrack();
@@ -253,7 +253,7 @@ public class AclTrackerTest
     }
     
     @Test
-    @Ignore("Superseded by AlfrescoSolrTrackerTest")
+    @Ignore("Superseded by AlfrescoSolrTrackerIT")
     public void canGetAlfrescoVersion()
     {
         // Check we're testing something useful
@@ -264,7 +264,7 @@ public class AclTrackerTest
     
     
     @Test
-    @Ignore("Superseded by AlfrescoSolrTrackerTest")
+    @Ignore("Superseded by AlfrescoSolrTrackerIT")
     public void canClose() throws IllegalAccessException
     {
         ThreadHandler threadHandler = (ThreadHandler) FieldUtils.readField(tracker, "threadHandler", true);

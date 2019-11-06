@@ -5,7 +5,6 @@ import static org.alfresco.solr.AlfrescoSolrUtils.addStoreRoot;
 import static org.alfresco.solr.AlfrescoSolrUtils.createGUID;
 
 import java.util.HashMap;
-import java.util.Locale;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -13,14 +12,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.solr.AbstractAlfrescoSolrTests;
+import org.alfresco.solr.AbstractAlfrescoSolrIT;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.client.PropertyValue;
 import org.alfresco.solr.client.StringPropertyValue;
-import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.core.SolrCore;
-import org.apache.solr.request.SolrQueryRequest;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -29,7 +25,7 @@ import org.junit.Test;
  * @author msuzuki
  *
  */
-public class AFTSDisjunctionTest extends AbstractAlfrescoSolrTests
+public class AFTSDisjunctionTest extends AbstractAlfrescoSolrIT
 {
     @BeforeClass
     public static void beforeClass() throws Exception

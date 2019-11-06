@@ -38,7 +38,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.solr.AbstractAlfrescoSolrTests;
+import org.alfresco.solr.AbstractAlfrescoSolrIT;
 import org.alfresco.solr.AlfrecsoSolrConstants;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.client.ContentPropertyValue;
@@ -54,7 +54,7 @@ import org.junit.BeforeClass;
  * @author Michael Suzuki
  *
  */
-public class LoadAFTSTestData extends AbstractAlfrescoSolrTests implements AlfrecsoSolrConstants
+public class LoadAFTSTestData extends AbstractAlfrescoSolrIT implements AlfrecsoSolrConstants
 {
 
     protected static final String COMPLEX_LOCAL_NAME = "\u0020\u0060\u00ac\u00a6\u0021\"\u00a3\u0024\u0025\u005e\u0026\u002a\u0028\u0029\u002d\u005f\u003d\u002b\t\n\\\u0000\u005b\u005d\u007b\u007d\u003b\u0027\u0023\u003a\u0040\u007e\u002c\u002e\u002f\u003c\u003e\u003f\\u007c\u005f\u0078\u0054\u0036\u0035\u0041\u005f";

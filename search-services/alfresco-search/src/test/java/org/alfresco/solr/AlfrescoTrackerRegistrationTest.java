@@ -30,7 +30,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 @SolrTestCaseJ4.SuppressSSL
-public class AlfrescoTrackerRegistrationTest extends AbstractAlfrescoSolrTests
+public class AlfrescoTrackerRegistrationTest extends AbstractAlfrescoSolrIT
 {
     @BeforeClass
     public static void beforeClass() throws Exception {

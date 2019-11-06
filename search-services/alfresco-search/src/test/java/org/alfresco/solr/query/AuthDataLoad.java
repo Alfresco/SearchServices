@@ -34,7 +34,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.solr.AbstractAlfrescoSolrTests;
+import org.alfresco.solr.AbstractAlfrescoSolrIT;
 import org.alfresco.solr.client.ContentPropertyValue;
 import org.alfresco.solr.client.MLTextPropertyValue;
 import org.alfresco.solr.client.PropertyValue;
@@ -46,7 +46,7 @@ import org.junit.BeforeClass;
  * @author Michael Suzuki
  *
  */
-public class AuthDataLoad extends AbstractAlfrescoSolrTests
+public class AuthDataLoad extends AbstractAlfrescoSolrIT
 {
     static int count = 100;
     static long maxReader = 1000;

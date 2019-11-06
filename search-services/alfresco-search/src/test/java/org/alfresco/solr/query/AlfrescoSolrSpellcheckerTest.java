@@ -19,31 +19,17 @@
 
 package org.alfresco.solr.query;
 
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
-import org.alfresco.solr.AbstractAlfrescoSolrTests;
+import org.alfresco.solr.AbstractAlfrescoSolrIT;
 import org.apache.lucene.util.LuceneTestCase;
-import org.apache.lucene.util.RefCount;
 import org.apache.solr.common.params.ModifiableSolrParams;
-import org.apache.solr.common.util.NamedList;
 import org.apache.solr.request.SolrQueryRequest;
-import org.apache.solr.response.ResultContext;
-import org.apache.solr.response.SolrQueryResponse;
-import org.apache.solr.search.DocIterator;
-import org.apache.solr.search.DocList;
-import org.apache.solr.search.SolrIndexSearcher;
-import org.apache.solr.util.RefCounted;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class AlfrescoSolrSpellcheckerTest extends AbstractAlfrescoSolrTests
+public class AlfrescoSolrSpellcheckerTest extends AbstractAlfrescoSolrIT
 {
     @BeforeClass
     public static void beforeClass() throws Exception

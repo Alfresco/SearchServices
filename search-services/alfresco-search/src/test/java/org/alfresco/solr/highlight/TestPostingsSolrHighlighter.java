@@ -16,12 +16,10 @@
  */
 package org.alfresco.solr.highlight;
 
-import org.alfresco.solr.AbstractAlfrescoSolrTests;
+import org.alfresco.solr.AbstractAlfrescoSolrIT;
 import org.apache.lucene.util.LuceneTestCase;
-import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.handler.component.AlfrescoSolrHighlighter;
 import org.apache.solr.handler.component.HighlightComponent;
-import org.apache.solr.highlight.PostingsSolrHighlighter;
 import org.apache.solr.highlight.SolrHighlighter;
 import org.apache.solr.schema.IndexSchema;
 import org.junit.Before;
@@ -31,7 +29,7 @@ import org.junit.Test;
 import static junit.framework.TestCase.*;
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class TestPostingsSolrHighlighter extends AbstractAlfrescoSolrTests
+public class TestPostingsSolrHighlighter extends AbstractAlfrescoSolrIT
 {
   @BeforeClass
   public static void beforeClass() throws Exception

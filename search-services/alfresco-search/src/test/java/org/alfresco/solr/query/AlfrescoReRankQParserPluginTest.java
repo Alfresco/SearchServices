@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.alfresco.solr.AbstractAlfrescoSolrTests;
+import org.alfresco.solr.AbstractAlfrescoSolrIT;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.util.NamedList;
@@ -40,7 +40,7 @@ import org.junit.Test;
 
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
-public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrTests
+public class AlfrescoReRankQParserPluginTest extends AbstractAlfrescoSolrIT
 {
     @BeforeClass
     public static void beforeClass() throws Exception
