@@ -18,6 +18,7 @@
  */
 package org.alfresco.solr.tracker;
 
+import java.lang.invoke.MethodHandles;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.util.Properties;
@@ -31,7 +32,6 @@ import org.alfresco.solr.client.SOLRAPIClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * Abstract base class that provides common {@link Tracker} behaviour.
  * 
@@ -39,20 +39,18 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractTracker implements Tracker
 {
-    public static final long TIME_STEP_32_DAYS_IN_MS = 1000 * 60 * 60 * 24 * 32L;
-    public static final long TIME_STEP_1_HR_IN_MS = 60 * 60 * 1000L;
-    public static final String SHARD_METHOD_ACLID = "ACL_ID";
-    public static final String SHARD_METHOD_DBID = "DB_ID";
-    protected final static Logger log = LoggerFactory.getLogger(AbstractTracker.class);
+    static final long TIME_STEP_32_DAYS_IN_MS = 1000 * 60 * 60 * 24 * 32L;
+    static final long TIME_STEP_1_HR_IN_MS = 60 * 60 * 1000L;
+    static final String SHARD_METHOD_DBID = "DB_ID";
+
+    protected final static Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     
     protected Properties props;    
     protected SOLRAPIClient client;
-    protected InformationServer infoSrv;
+    InformationServer infoSrv;
     protected String coreName;
     protected StoreRef storeRef;
     protected long batchCount;
-    protected boolean isSlave = false;
-    protected boolean isMaster = true;
     protected String alfrescoVersion;
     protected TrackerStats trackerStats;
     protected boolean runPostModelLoadInit = true;
@@ -71,14 +69,10 @@ public abstract class AbstractTracker implements Tracker
     protected volatile boolean rollback;
     protected final Type type;
 
-    
     /*
      * A thread handler can be used by subclasses, but they have to intentionally instantiate it.
      */
-    protected ThreadHandler threadHandler;
-   
-   
-   
+    ThreadHandler threadHandler;
 
     /**
      * Default constructor, strictly for testing.
@@ -98,8 +92,6 @@ public abstract class AbstractTracker implements Tracker
         storeRef = new StoreRef(p.getProperty("alfresco.stores", "workspace://SpacesStore"));
         batchCount = Integer.parseInt(p.getProperty("alfresco.batch.count", "5000"));
         maxLiveSearchers =  Integer.parseInt(p.getProperty("alfresco.maxLiveSearchers", "2"));
-        isSlave =  Boolean.parseBoolean(p.getProperty("enable.slave", "false"));
-        isMaster =  Boolean.parseBoolean(p.getProperty("enable.master", "true"));
         
         shardCount =  Integer.parseInt(p.getProperty("shard.count", "1"));
         shardInstance =  Integer.parseInt(p.getProperty("shard.instance", "0"));
@@ -115,19 +107,19 @@ public abstract class AbstractTracker implements Tracker
         
         this.type = type;
         
-        log.info("Solr built for Alfresco version: " + alfrescoVersion);
+        LOGGER.info("Solr built for Alfresco version: {}", alfrescoVersion);
     }
 
     
     /**
      * Subclasses must implement behaviour that completes the following steps, in order:
+     *
      * <ol>
      *     <li>Purge</li>
      *     <li>Reindex</li>
      *     <li>Index</li>
      *     <li>Track repository</li>
      * </ol>
-     * @throws Throwable
      */
     protected abstract void doTrack() throws Throwable;
 
@@ -146,7 +138,7 @@ public abstract class AbstractTracker implements Tracker
         }
         catch(Exception e)
         {
-
+            // Ignore
         }
 
 
@@ -158,12 +150,7 @@ public abstract class AbstractTracker implements Tracker
 
         getTrackerState();
 
-
-        if(state == null) {
-            return true;
-        } else {
-            return false;
-        }
+        return state == null;
 
     }
     /**
@@ -173,8 +160,9 @@ public abstract class AbstractTracker implements Tracker
     @Override
     public void track()
     {
-        if(runLock.availablePermits() == 0) {
-            log.info("... " + this.getClass().getSimpleName() + " for core [" + coreName + "] is already in use "+ this.getClass());
+        if(runLock.availablePermits() == 0)
+        {
+            LOGGER.info("... {}  for core [{}] is already in use {}", this.getClass().getSimpleName(), coreName, getClass());
             return;
         }
 
@@ -184,15 +172,14 @@ public abstract class AbstractTracker implements Tracker
             * The runLock ensures that for each tracker type (metadata, content, commit, cascade) only one tracker will
             * be running at a time.
             */
-
             runLock.acquire();
 
-            if(state==null && Boolean.parseBoolean(System.getProperty("alfresco.test", "false")))
+            if (state==null && Boolean.parseBoolean(System.getProperty("alfresco.test", "false")))
             {
                 assert(assertTrackerStateRemainsNull());
             }
 
-            log.info("... Running " + this.getClass().getSimpleName() + " for core [" + coreName + "].");
+            LOGGER.info("... Running {} for core [{}]", this.getClass().getSimpleName(), coreName);
             
             if(this.state == null)
             {
@@ -200,8 +187,8 @@ public abstract class AbstractTracker implements Tracker
                 * Set the global state for the tracker here.
                 */
                 this.state = getTrackerState();
-                log.debug("##### Setting tracker global state.");
-                log.debug("State set: " + this.state.toString());
+                LOGGER.debug("##### Setting tracker global state.");
+                LOGGER.debug("State set: {}", this.state.toString());
                 this.state.setRunning(true);
             }
             else
@@ -219,38 +206,39 @@ public abstract class AbstractTracker implements Tracker
             catch(IndexTrackingShutdownException t)
             {
                 setRollback(true);
-                log.info("Stopping index tracking for " + getClass().getSimpleName() + " - " + coreName);
+                LOGGER.info("Stopping index tracking for {} - {}", getClass().getSimpleName(), coreName);
             }
             catch(Throwable t)
             {
                 setRollback(true);
                 if (t instanceof SocketTimeoutException || t instanceof ConnectException)
                 {
-                    if (log.isDebugEnabled())
+                    if (LOGGER.isDebugEnabled())
                     {
                         // DEBUG, so give the whole stack trace
-                        log.warn("Tracking communication timed out for " + getClass().getSimpleName() + " - " + coreName, t);
+                        LOGGER.warn("Tracking communication timed out for {} - {}", getClass().getSimpleName(), coreName, t);
                     }
                     else
                     {
                         // We don't need the stack trace.  It timed out.
-                        log.warn("Tracking communication timed out for " + getClass().getSimpleName() + " - " + coreName);
+                        LOGGER.warn("Tracking communication timed out for for {} - {}", getClass().getSimpleName(), coreName);
                     }
                 }
                 else
                 {
-                    log.error("Tracking failed for " + getClass().getSimpleName() + " - " + coreName, t);
+                    LOGGER.error("Tracking failed for for {} - {}", getClass().getSimpleName(), coreName, t);
                 }
             }
         }
         catch (InterruptedException e)
         {
-            log.error("Semaphore interrupted for " + getClass().getSimpleName() + " - " + coreName, e);
+            LOGGER.error("Semaphore interrupted for for {} - {}", getClass().getSimpleName(), coreName, e);
         }
         finally
         {
             infoSrv.unregisterTrackerThread();
-            if(state != null) {
+            if(state != null)
+            {
                 //During a rollback state is set to null.
                 state.setRunning(false);
                 state.setCheck(false);
@@ -259,15 +247,18 @@ public abstract class AbstractTracker implements Tracker
         }
     }
 
-    public boolean getRollback() {
+    public boolean getRollback()
+    {
         return this.rollback;
     }
 
-    public void setRollback(boolean rollback) {
+    public void setRollback(boolean rollback)
+    {
         this.rollback = rollback;
     }
 
-    private void continueState() {
+    private void continueState()
+    {
         infoSrv.continueState(state);
         state.incrementTrackerCycles();
     }
@@ -289,8 +280,6 @@ public abstract class AbstractTracker implements Tracker
             return this.infoSrv.getTrackerInitialState();
         }
     }
-    
-    
 
     /**
      * Allows time for the scheduled asynchronous tasks to complete
@@ -309,6 +298,7 @@ public abstract class AbstractTracker implements Tracker
                 }
                 catch (InterruptedException e)
                 {
+                    // Nothing to be done here
                 }
             }
             currentRunnable = this.threadHandler.peekHeadReindexWorker();
@@ -327,15 +317,22 @@ public abstract class AbstractTracker implements Tracker
             throw new IndexTrackingShutdownException();
         }
     }
-    
+
+    @Override
+    public boolean isAlreadyInShutDownMode()
+    {
+        return shutdown;
+    }
+
+    @Override
     public void setShutdown(boolean shutdown)
     {
         this.shutdown = shutdown;
     }
 
+    @Override
     public void shutdown()
     {
-        log.warn("Core "+ coreName+" shutdown called on tracker. " + getClass().getSimpleName() + " " + hashCode());
         setShutdown(true);
         if(this.threadHandler != null)
         {
@@ -343,14 +340,15 @@ public abstract class AbstractTracker implements Tracker
         }
     }
 
-    public Semaphore getWriteLock() {
+    public Semaphore getWriteLock()
+    {
         return this.writeLock;
     }
 
-    public Semaphore getRunLock() {
+    public Semaphore getRunLock()
+    {
         return this.runLock;
     }
-
 
     /**
      * @return Alfresco version Solr was built for
@@ -370,6 +368,4 @@ public abstract class AbstractTracker implements Tracker
     {
         return type;
     }
-    
-    
 }

@@ -76,18 +76,20 @@ public class SolrTrackerScheduler
     {
         log.error("Failed to schedule " + jobType + " Job.", e);
     }
+
     private String getCron(Properties props, String cronType)
     {
         String cron = props.getProperty(cronType);
-        return cron == null ? props.getProperty("alfresco.cron",DEFAULT_CRON) : cron;
+        return cron == null ? props.getProperty("alfresco.cron", DEFAULT_CRON) : cron;
     }
+
     /**
      * Schedules individual trackers based on the solrcore properties.
      * 
      * @author Michael Suzuki
-     * @param tracker
-     * @param coreName
-     * @param props
+     * @param tracker the tracker to bo scheduled.
+     * @param coreName the owning core name.
+     * @param props the core properties.
      */
     public void schedule(Tracker tracker, String coreName, Properties props)
     {
@@ -98,26 +100,29 @@ public class SolrTrackerScheduler
         Trigger trigger;
         try
         {
-            String cron = null;
+            String cron;
             switch (tracker.getType())
             {
             case ACL:
                 cron = getCron(props,"alfresco.acl.tracker.cron");
                 break;
-            case Model:
+            case MODEL:
                 cron = getCron(props,"alfresco.model.tracker.cron");
                 break;
-            case Content:
+            case CONTENT:
                 cron = getCron(props,"alfresco.content.tracker.cron");
                 break;
-            case MetaData:
+            case METADATA:
                 cron = getCron(props,"alfresco.metadata.tracker.cron");
                 break;
-            case Cascade:
+            case CASCADE:
                 cron = getCron(props,"alfresco.cascade.tracker.cron");
                 break;
-            case Commit:
+            case COMMIT:
                 cron = getCron(props,"alfresco.commit.tracker.cron");
+                break;
+            case NODE_STATE_PUBLISHER:
+                cron = getCron(props,"alfresco.nodestate.tracker.cron");
                 break;
             default: 
                 cron = props.getProperty("alfresco.cron",DEFAULT_CRON);
@@ -161,7 +166,7 @@ public class SolrTrackerScheduler
      * identical to the instance that is passed in.  If they are identical then the job is deleted.
      * Otherwise, another core (of the same name) scheduled this job, so its left alone.
      *
-     * @param coreName
+     * @param coreName the core name.
      * @param tracker Specific instance of a tracker
      */
     public void deleteJobForTrackerInstance(String coreName, Tracker tracker)

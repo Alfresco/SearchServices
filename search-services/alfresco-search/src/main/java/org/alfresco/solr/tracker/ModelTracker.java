@@ -103,10 +103,10 @@ public class ModelTracker extends AbstractTracker implements Tracker
     public ModelTracker(String solrHome, Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
     {
-        super(p, client, coreName, informationServer, Tracker.Type.Model);
+        super(p, client, coreName, informationServer, Tracker.Type.MODEL);
         String normalSolrHome = SolrResourceLoader.normalizeDir(solrHome);
         alfrescoModelDir = new File(ConfigUtil.locateProperty("solr.model.dir", normalSolrHome+"alfrescoModels"));
-        log.info("Alfresco Model dir " + alfrescoModelDir);
+        LOGGER.info("Alfresco Model dir " + alfrescoModelDir);
         if (!alfrescoModelDir.exists())
         {
             alfrescoModelDir.mkdir();
@@ -115,12 +115,16 @@ public class ModelTracker extends AbstractTracker implements Tracker
         loadPersistedModels();
     }
 
-    public boolean hasMaintenance() {
+    @Override
+    public boolean hasMaintenance()
+    {
         return false;
     }
 
-    public void maintenance() {
-
+    @Override
+    public void maintenance()
+    {
+        // Nothing to be done here
     }
 
     /**
@@ -183,7 +187,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
      */
     ModelTracker()
     {
-        super(Tracker.Type.Model);
+        super(Tracker.Type.MODEL);
     }
 
     @Override
@@ -193,7 +197,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
         int registeredSearcherCount = this.infoSrv.getRegisteredSearcherCount();
         if (registeredSearcherCount >= getMaxLiveSearchers())
         {
-            log.info(".... skipping tracking registered searcher count = " + registeredSearcherCount);
+            LOGGER.info(".... skipping tracking registered searcher count = " + registeredSearcherCount);
             return;
         }
 
@@ -203,7 +207,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
 
     public void trackModels(boolean onlyFirstTime) throws AuthenticationException, IOException, JSONException
     {
-        boolean requiresWriteLock = false;
+        boolean requiresWriteLock;
         modelLock.readLock().lock();
         try
         {
@@ -264,17 +268,13 @@ public class ModelTracker extends AbstractTracker implements Tracker
         }
         catch (Throwable t)
         {
-            log.error("Model tracking failed for core: "+ coreName, t);
+            LOGGER.error("Model tracking failed for core: "+ coreName, t);
         }
 
     }
 
     /**
      * Tracks models. Reflects changes and updates on disk copy
-     * 
-     * @throws AuthenticationException
-     * @throws IOException
-     * @throws JSONException
      */
     private void trackModelsImpl() throws AuthenticationException, IOException, JSONException
     {
@@ -480,16 +480,10 @@ public class ModelTracker extends AbstractTracker implements Tracker
         }
 
         return expandedQName;
-
     }
 
-    /**
-     * @param alfrescoModelDir
-     * @param modelName
-     */
     private void removeMatchingModels(File alfrescoModelDir, QName modelName)
     {
-
         final String prefix = modelName.toPrefixString(this.infoSrv.getNamespaceDAO()).replace(":", ".") + ".";
         final String postFix = ".xml";
 
@@ -540,7 +534,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
             {
                 loadedModels.add(modelName);
             }
-            log.info("Loading model " + model.getName());
+            LOGGER.info("Loading model " + model.getName());
         }
     }
 

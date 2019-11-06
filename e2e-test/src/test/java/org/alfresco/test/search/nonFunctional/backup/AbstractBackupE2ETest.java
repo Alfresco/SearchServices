@@ -24,7 +24,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.asserts.SoftAssert;
 
-import com.jayway.restassured.RestAssured;
+import io.restassured.RestAssured;
 
 @Configuration
 @ContextConfiguration("classpath:alfresco-search-e2e-context.xml")
