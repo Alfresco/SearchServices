@@ -242,6 +242,7 @@ public abstract class AbstractAlfrescoSolrIT implements SolrTestFiles, AlfrescoS
 
         LOG.info("##################################### init Alfresco core ##############");
         LOG.info("####initCore");
+        System.setProperty("solr.solr.home", TEST_FILES_LOCATION);
         System.setProperty("solr.directoryFactory","solr.RAMDirectoryFactory");
         System.setProperty("solr.tests.maxBufferedDocs", "1000");
         System.setProperty("solr.tests.maxIndexingThreads", "10");
