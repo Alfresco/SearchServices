@@ -18,8 +18,7 @@
  */
 package org.alfresco.solr.handler;
 
-import java.io.IOException;
-import org.alfresco.solr.AbstractAlfrescoDistributedTest;
+import org.alfresco.solr.AbstractAlfrescoDistributedIT;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.AclChangeSet;
 import org.alfresco.solr.client.AclReaders;
@@ -38,6 +37,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -64,7 +64,8 @@ import static org.carrot2.shaded.guava.common.collect.ImmutableList.of;
  * This test check if the synchronization of contentstore between master and slave is done correctly.
  */
 @SolrTestCaseJ4.SuppressSSL
-public class ContentStoreReplicationIT extends AbstractAlfrescoDistributedTest {
+public class ContentStoreReplicationIT extends AbstractAlfrescoDistributedIT
+{
 
     protected static JettySolrRunner master;
     protected static JettySolrRunner slave;
