@@ -15,7 +15,7 @@
         <httpCaching never304="true" />
     </requestDispatcher>
 
-    <requestHandler name="/replication" class="io.sease.labs.solr.handler.ReplicationHandler">
+    <requestHandler name="/replication" class="solr.ReplicationHandler">
         <lst name="master">
             <str name="replicateAfter">commit</str>
             <str name="confFiles">schema.xml</str>

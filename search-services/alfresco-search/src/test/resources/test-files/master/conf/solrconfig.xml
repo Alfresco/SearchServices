@@ -188,12 +188,10 @@
     <queryResponseWriter name="xml" default="true"
                          class="solr.XMLResponseWriter" />
 
-    <!-- <requestHandler name="/replication" class="solr.ReplicationHandler" startup="lazy" /> -->
     <requestHandler name="/replication" class="org.alfresco.solr.handler.AlfrescoReplicationHandler">
         <lst name="master">
             <str name="replicateAfter">commit</str>
             <str name="confFiles">schema.xml</str>
-            <str name="content.store.root.folder">/Users/agazzarini/workspaces/alfresco/spike-custom-replication-handler/src/test/resources/contentstore</str>
         </lst>
     </requestHandler>
 
