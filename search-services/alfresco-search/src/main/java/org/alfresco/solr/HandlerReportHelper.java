@@ -22,12 +22,10 @@
 package org.alfresco.solr;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.tracker.*;
 import org.alfresco.util.CachingDateFormat;
-import org.apache.commons.codec.EncoderException;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.common.util.SimpleOrderedMap;
 import org.json.JSONException;
@@ -43,7 +41,7 @@ import static java.util.Optional.ofNullable;
 /**
  * Methods taken from AlfrescoCoreAdminHandler that deal with building reports
  */
-class HandlerReportBuilder
+class HandlerReportHelper
 {
     static NamedList<Object> buildAclReport(AclTracker tracker, Long aclid) throws JSONException
     {
@@ -60,8 +58,7 @@ class HandlerReportBuilder
         return nr;
     }
 
-    static NamedList<Object> buildTxReport(TrackerRegistry trackerRegistry, InformationServer srv, String coreName, MetadataTracker tracker, Long txid)
-            throws AuthenticationException, IOException, JSONException, EncoderException
+    static NamedList<Object> buildTxReport(TrackerRegistry trackerRegistry, InformationServer srv, String coreName, MetadataTracker tracker, Long txid) throws JSONException
     {
         NamedList<Object> nr = new SimpleOrderedMap<>();
         nr.add("TXID", txid);
@@ -139,7 +136,8 @@ class HandlerReportBuilder
         }
         else
         {
-            payload.add("WARNING", "This response comes from a slave core. Please consider to ask the same to its corresponding master core, in order to get more information about the requested Node");
+            payload.add("WARNING", "This response comes from a slave core and it contains minimal information about the node. " +
+                    "Please consider to re-submit the same request to the corresponding Master, in order to get more information.");
         }
 
         ofNullable(nodeReport.getIndexedNodeDocCount()).ifPresent(value -> payload.add("Indexed Node Doc Count", value));

@@ -20,15 +20,21 @@ package org.alfresco.solr;
 
 import static java.util.Arrays.asList;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.alfresco.solr.AlfrescoCoreAdminHandler.ALFRESCO_CORE_NAME;
 import static org.alfresco.solr.AlfrescoCoreAdminHandler.ARCHIVE_CORE_NAME;
 import static org.alfresco.solr.AlfrescoCoreAdminHandler.ARG_TXID;
 import static org.alfresco.solr.AlfrescoCoreAdminHandler.STORE_REF_MAP;
 import static org.alfresco.solr.AlfrescoCoreAdminHandler.VERSION_CORE_NAME;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
@@ -49,6 +55,7 @@ import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
+import org.apache.solr.core.SolrCore;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
 import org.junit.Before;
@@ -103,6 +110,81 @@ public class AlfrescoCoreAdminHandlerTest
         alfrescoCoreAdminHandler.getInformationServers().put(CORE_NAME, informationServer);
 
         when(req.getParams()).thenReturn(params);
+    }
+
+    @Test
+    public void extractShardsWithEmptyParameter_shouldReturnAnEmptyList()
+    {
+        assertTrue(alfrescoCoreAdminHandler.extractShards("", Integer.MAX_VALUE).isEmpty());
+    }
+
+    @Test
+    public void extractShardsWithNullParameter_shouldReturnAnEmptyList()
+    {
+        assertTrue(alfrescoCoreAdminHandler.extractShards(null, Integer.MAX_VALUE).isEmpty());
+    }
+
+    @Test
+    public void extractShardsWithOneInvalidShard_shouldReturnAnEmptyList()
+    {
+        assertTrue(alfrescoCoreAdminHandler.extractShards("This is an invalid shard id", Integer.MAX_VALUE).isEmpty());
+    }
+
+    @Test
+    public void extractShardsWithOneShards_shouldReturnSingletonList()
+    {
+        assertEquals(singletonList(1), alfrescoCoreAdminHandler.extractShards("1", Integer.MAX_VALUE));
+    }
+
+    @Test
+    public void extractShardsWithSeveralValidShards_shouldReturnAllOfThemInTheList()
+    {
+        assertEquals(asList(1,5,6,11,23), alfrescoCoreAdminHandler.extractShards("1,5,6,11,23", Integer.MAX_VALUE));
+    }
+
+    @Test
+    public void extractShardsWithSeveralValidShards_shouldReturnOnlyValidIdentifiers()
+    {
+        assertEquals(asList(1,5,6,11,23), alfrescoCoreAdminHandler.extractShards("1,5,A,6,xyz,11,BB,23,o01z", Integer.MAX_VALUE));
+    }
+
+    @Test
+    public void extractShardsWithSeveralValidShardsAndLimit_shouldConsiderOnlyShardsLesserThanLimit()
+    {
+        assertEquals(asList(1,5,6,11,12), alfrescoCoreAdminHandler.extractShards("1,5,6,11,23,25,99,223,12", 23));
+    }
+
+    @Test
+    public void hasAlfrescoCoreWhenInputIsNull_shouldReturnFalse()
+    {
+        assertFalse(alfrescoCoreAdminHandler.hasAlfrescoCore(null));
+    }
+
+    @Test
+    public void hasAlfrescoCoreWhenWeHaveNoCore_shouldReturnFalse()
+    {
+        assertFalse(alfrescoCoreAdminHandler.hasAlfrescoCore(emptyList()));
+    }
+
+    @Test
+    public void hasAlfrescoCoreWhenDoesntHaveAnyTracker_shouldReturnFalse()
+    {
+        when(trackerRegistry.hasTrackersForCore(anyString())).thenReturn(false);
+        assertFalse(alfrescoCoreAdminHandler.hasAlfrescoCore(emptyList()));
+    }
+
+    @Test
+    public void hasAlfrescoCoreWithRegisteredTrackers_shouldReturnTrue()
+    {
+        when(trackerRegistry.hasTrackersForCore("CoreD")).thenReturn(true);
+        assertTrue(alfrescoCoreAdminHandler.hasAlfrescoCore(asList(dummyCore("CoreA"), dummyCore("CoreB"), dummyCore("CoreC"), dummyCore("CoreD"))));
+    }
+
+    private SolrCore dummyCore(String name)
+    {
+        SolrCore core = mock(SolrCore.class);
+        when(core.getName()).thenReturn(name);
+        return core;
     }
 
     /** Check that a transaction report can be generated. */
@@ -212,10 +294,9 @@ public class AlfrescoCoreAdminHandlerTest
     public void coreNamesAreTrimmed_oneCoreNameAtTime() {
         AlfrescoCoreAdminHandler spy = spy(new AlfrescoCoreAdminHandler() {
             @Override
-            protected boolean newCore(String coreName, int numShards, StoreRef storeRef, String templateName, int replicationFactor, int nodeInstance, int numNodes, String shardIds, Properties extraProperties, SolrQueryResponse rsp)
+            protected void newCore(String coreName, int numShards, StoreRef storeRef, String templateName, int replicationFactor, int nodeInstance, int numNodes, String shardIds, Properties extraProperties, SolrQueryResponse rsp)
             {
                 // Do nothing here otherwise we cannot spy it
-                return true;
             }
         });
 
@@ -238,10 +319,9 @@ public class AlfrescoCoreAdminHandlerTest
     public void validAndInvalidCoreNames() {
         AlfrescoCoreAdminHandler spy = spy(new AlfrescoCoreAdminHandler() {
             @Override
-            protected boolean newCore(String coreName, int numShards, StoreRef storeRef, String templateName, int replicationFactor, int nodeInstance, int numNodes, String shardIds, Properties extraProperties, SolrQueryResponse rsp)
+            protected void newCore(String coreName, int numShards, StoreRef storeRef, String templateName, int replicationFactor, int nodeInstance, int numNodes, String shardIds, Properties extraProperties, SolrQueryResponse rsp)
             {
                 // Do nothing here otherwise we cannot spy it
-                return true;
             }
         });
 

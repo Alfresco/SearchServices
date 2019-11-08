@@ -19,60 +19,25 @@
 
 package org.alfresco.solr;
 
-import static java.util.Optional.ofNullable;
-
-import static org.alfresco.solr.HandlerOfResources.extractCustomProperties;
-import static org.alfresco.solr.HandlerOfResources.getSafeBoolean;
-import static org.alfresco.solr.HandlerOfResources.getSafeLong;
-import static org.alfresco.solr.HandlerOfResources.openResource;
-import static org.alfresco.solr.HandlerOfResources.updatePropertiesFile;
-import static org.alfresco.solr.HandlerOfResources.updateSharedProperties;
-import static org.alfresco.solr.HandlerReportBuilder.addMasterOrStandaloneCoreSummary;
-import static org.alfresco.solr.HandlerReportBuilder.addSlaveCoreSummary;
-import static org.alfresco.solr.HandlerReportBuilder.buildAclReport;
-import static org.alfresco.solr.HandlerReportBuilder.buildAclTxReport;
-import static org.alfresco.solr.HandlerReportBuilder.buildNodeReport;
-import static org.alfresco.solr.HandlerReportBuilder.buildTrackerReport;
-import static org.alfresco.solr.HandlerReportBuilder.buildTxReport;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-
 import com.google.common.collect.ImmutableMap;
-
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.adapters.IOpenBitSet;
 import org.alfresco.solr.client.SOLRAPIClientFactory;
 import org.alfresco.solr.config.ConfigUtil;
 import org.alfresco.solr.tracker.AclTracker;
+import org.alfresco.solr.tracker.CoreStatePublisher;
 import org.alfresco.solr.tracker.DBIDRangeRouter;
 import org.alfresco.solr.tracker.DocRouter;
 import org.alfresco.solr.tracker.IndexHealthReport;
 import org.alfresco.solr.tracker.MetadataTracker;
-import org.alfresco.solr.tracker.CoreStatePublisher;
 import org.alfresco.solr.tracker.SlaveCoreStatePublisher;
 import org.alfresco.solr.tracker.SolrTrackerScheduler;
 import org.alfresco.solr.tracker.Tracker;
 import org.alfresco.solr.tracker.TrackerRegistry;
+import org.alfresco.solr.utils.Utils;
+import org.alfresco.util.Pair;
 import org.alfresco.util.shard.ExplicitShardingPolicy;
-import org.apache.commons.codec.EncoderException;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.io.FileUtils;
 import org.apache.solr.common.SolrException;
@@ -89,14 +54,75 @@ import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
+import static java.util.Optional.ofNullable;
+import static org.alfresco.solr.HandlerOfResources.extractCustomProperties;
+import static org.alfresco.solr.HandlerOfResources.getSafeBoolean;
+import static org.alfresco.solr.HandlerOfResources.getSafeLong;
+import static org.alfresco.solr.HandlerOfResources.openResource;
+import static org.alfresco.solr.HandlerOfResources.updatePropertiesFile;
+import static org.alfresco.solr.HandlerOfResources.updateSharedProperties;
+import static org.alfresco.solr.HandlerReportHelper.addMasterOrStandaloneCoreSummary;
+import static org.alfresco.solr.HandlerReportHelper.addSlaveCoreSummary;
+import static org.alfresco.solr.HandlerReportHelper.buildAclReport;
+import static org.alfresco.solr.HandlerReportHelper.buildAclTxReport;
+import static org.alfresco.solr.HandlerReportHelper.buildNodeReport;
+import static org.alfresco.solr.HandlerReportHelper.buildTrackerReport;
+import static org.alfresco.solr.HandlerReportHelper.buildTxReport;
+import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
+
 /**
  * Alfresco Solr administration endpoints provider.
  * A customisation of the existing Solr {@link CoreAdminHandler} which offers additional administration endpoints.
+ *
+ * Since 1.5 the behaviour of these endpoints differs a bit depending on the target core. This because a lot of these
+ * endpoints rely on the information obtained from the trackers, and trackers (see SEARCH-1606) are disabled on slave
+ * cores.
+ *
+ * When a request arrives to this handler, the following are the possible scenarios:
+ *
+ * <ul>
+ *     <li>
+ *         a core is specified in the request: if the target core is a slave then a minimal response or an empty
+ *         response with an informational message is returned. If instead the core is a master (or it is a standalone
+ *         core) the service will return as much information as possible (as it happened before 1.5)
+ *     </li>
+ *     <li>
+ *         a core isn't specified in the request: the request is supposed to target all available cores. However, while
+ *         looping, slave cores are filtered out. In case all cores are slave (i.e. we are running a "pure" slave node)
+ *         the response will be empty, it will include an informational message in order to warn the requestor.
+ *         Sometimes this informative behaviour is not feasible: in those cases an empty response will be returned.
+ *     </li>
+ * </ul>
+ *
+ * @author Andrea Gazzarini
  */
 public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 {
     protected static final Logger LOGGER = LoggerFactory.getLogger(AlfrescoCoreAdminHandler.class);
-    
+
+    private static final String REPORT = "report";
     private static final String ARG_ACLTXID = "acltxid";
     static final String ARG_TXID = "txid";
     private static final String ARG_ACLID = "aclid";
@@ -118,8 +144,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
     private SolrTrackerScheduler scheduler;
     private TrackerRegistry trackerRegistry;
-    private ConcurrentHashMap<String, InformationServer> informationServers = null;
-    
+    private ConcurrentHashMap<String, InformationServer> informationServers;
+
+    private static List<String> CORE_PARAMETER_NAMES = asList(CoreAdminParams.CORE, "coreName", "index");
+
     public AlfrescoCoreAdminHandler()
     {
         super();
@@ -203,34 +231,34 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     /**
      * Shut down services that exist outside of the core.
      */
-    public void shutdown() 
+    @Override
+    public void shutdown()
     {
         super.shutdown();
-        try 
+        try
         {
             LOGGER.info("Shutting down Alfresco core container services");
+
             AlfrescoSolrDataModel.getInstance().close();
             SOLRAPIClientFactory.close();
             MultiThreadedHttpConnectionManager.shutdownAll();
 
-            //Remove any core trackers still hanging around
-            trackerRegistry.getCoreNames().forEach(coreName -> trackerRegistry.removeTrackersForCore(coreName));
-
-            //Remove any information servers
+            coreNames().forEach(trackerRegistry::removeTrackersForCore);
             informationServers.clear();
 
-            //Shutdown the scheduler and model tracker.
             if (!scheduler.isShutdown())
             {
                 scheduler.pauseAll();
+
                 if (trackerRegistry.getModelTracker() != null) trackerRegistry.getModelTracker().shutdown();
+
                 trackerRegistry.setModelTracker(null);
                 scheduler.shutdown();
             }
-        } 
-        catch(Exception e) 
+        }
+        catch(Exception exception)
         {
-            LOGGER.error("Problem shutting down", e);
+            LOGGER.error("Problem shutting down Alfresco core container services", exception);
         }
     }
 
@@ -258,17 +286,18 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     protected void handleCustomAction(SolrQueryRequest req, SolrQueryResponse rsp)
     {
         SolrParams params = req.getParams();
-        String cname = params.get(CoreAdminParams.CORE);
         String action = params.get(CoreAdminParams.ACTION);
-        action = action==null?"":action.toUpperCase();
+        action = Objects.requireNonNullElse(action.toUpperCase(), "");
         try
         {
             switch (action)
             {
                 case "NEWCORE":
+                case "NEWINDEX":
                     newCore(req, rsp);
                     break;
                 case "UPDATECORE":
+                case "UPDATEINDEX":
                     updateCore(req);
                     break;
                 case "UPDATESHARED":
@@ -278,121 +307,55 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     removeCore(req);
                     break;
                 case "NEWDEFAULTINDEX":
+                case "NEWDEFAULTCORE":
                     newDefaultCore(req, rsp);
                     break;
                 case "CHECK":
-                    actionCHECK(cname);
+                    actionCHECK(params);
                     break;
                 case "NODEREPORT":
-                    actionNODEREPORTS(rsp, params, cname);
+                    actionNODEREPORTS(rsp, params);
                     break;
                 case "ACLREPORT":
-                    actionACLREPORT(rsp, params, cname);
+                    actionACLREPORT(rsp, params);
                     break;
                 case "TXREPORT":
-                    actionTXREPORT(rsp, params, cname);
+                    actionTXREPORT(rsp, params);
                     break;
                 case "ACLTXREPORT":
-                    actionACLTXREPORT(rsp, params, cname);
+                    actionACLTXREPORT(rsp, params);
                     break;
                 case "RANGECHECK":
-                    rangeCheck(rsp, cname);
+                    rangeCheck(rsp, params);
                     break;
                 case "EXPAND":
-                    expand(rsp, params, cname);
+                    expand(rsp, params);
                     break;
                 case "REPORT":
-                    actionREPORT(rsp, params, cname);
+                    actionREPORT(rsp, params);
                     break;
                 case "PURGE":
-                    if (cname != null)
-                    {
-                        actionPURGE(params, cname);
-                    }
-                    else
-                    {
-                        for (String coreName : getTrackerRegistry().getCoreNames())
-                        {
-                            actionPURGE(params, coreName);
-                        }
-                    }
+                    actionPURGE(params);
                     break;
                 case "REINDEX":
-                    if (cname != null)
-                    {
-                        actionREINDEX(params, cname);
-                    }
-                    else
-                    {
-                        for (String coreName : getTrackerRegistry().getCoreNames())
-                        {
-                            actionREINDEX(params, coreName);
-                        }
-                    }
+                    actionREINDEX(params);
                     break;
                 case "RETRY":
-                    if (cname != null)
-                    {
-                        actionRETRY(rsp, cname);
-                    }
-                    else
-                    {
-                        for (String coreName : getTrackerRegistry().getCoreNames())
-                        {
-                            actionRETRY(rsp, coreName);
-                        }
-                    }
+                    actionRETRY(rsp, params);
                     break;
                 case "INDEX":
-                    if (cname != null)
-                    {
-                        actionINDEX(params, cname);
-                    }
-                    else
-                    {
-                        for (String coreName : getTrackerRegistry().getCoreNames())
-                        {
-                            actionINDEX(params, coreName);
-                        }
-                    }
+                    actionINDEX(params);
                     break;
                 case "FIX":
-                    if (cname != null)
-                    {
-                        actionFIX(cname);
-                    }
-                    else
-                    {
-                        for (String coreName : getTrackerRegistry().getCoreNames())
-                        {
-                            actionFIX(coreName);
-                        }
-                    }
+                    actionFIX(params);
                     break;
                 case "SUMMARY":
-                    if (cname != null)
-                    {
-                        NamedList<Object> report = new SimpleOrderedMap<>();
-                        actionSUMMARY(params, report, cname);
-                        rsp.add("Summary", report);
-                    }
-                    else
-                    {
-                        NamedList<Object> report = new SimpleOrderedMap<>();
-                        for (String coreName : getTrackerRegistry().getCoreNames())
-                        {
-                            actionSUMMARY(params, report, coreName);
-                        }
-                        rsp.add("Summary", report);
-                    }
+                    actionSUMMARY(rsp, params);
                     break;
                 case "LOG4J":
-                    String resource = "log4j-solr.properties";
-                    if (params.get("resource") != null)
-                    {
-                        resource = params.get("resource");
-                    }
-                    initResourceBasedLogging(resource);
+                    initResourceBasedLogging(
+                            ofNullable(params.get("resource"))
+                                .orElse("log4j-solr.properties"));
                     break;
                 default:
                     super.handleCustomAction(req, rsp);
@@ -406,7 +369,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
-    private boolean newCore(SolrQueryRequest req, SolrQueryResponse rsp)
+    private void newCore(SolrQueryRequest req, SolrQueryResponse rsp)
     {
         SolrParams params = req.getParams();
         req.getContext();
@@ -417,7 +380,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         String store = params.get("storeRef");
         if (store == null || store.trim().length() == 0)
         {
-            return false;
+            return;
         }
 
         StoreRef storeRef = new StoreRef(store);
@@ -428,22 +391,24 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         int nodeInstance =  params.getInt("nodeInstance", -1);
         int numNodes =  params.getInt("numNodes", 1);
 
-        String coreName = params.get("coreName");
+        String coreName = coreName(params);
         String shardIds = params.get("shardIds");
 
-        Properties properties = extractCustomProperties(params);
-        return newCore(coreName, numShards, storeRef, templateName, replicationFactor, nodeInstance, numNodes, shardIds, properties, rsp);
+        newCore(coreName, numShards, storeRef, templateName, replicationFactor, nodeInstance, numNodes, shardIds, extractCustomProperties(params), rsp);
     }
 
-    private boolean newDefaultCore(SolrQueryRequest req, SolrQueryResponse response)
+    private void newDefaultCore(SolrQueryRequest req, SolrQueryResponse response)
     {
         SolrParams params = req.getParams();
-        String coreName = params.get("coreName") != null?params.get("coreName"):"alfresco";
-        String templateName = params.get("template") != null?params.get("template"): DEFAULT_TEMPLATE;
+        String coreName = ofNullable(coreName(params)).orElse(ALFRESCO_CORE_NAME);
+        String templateName =
+                params.get("template") != null
+                        ? params.get("template")
+                        : DEFAULT_TEMPLATE;
 
         Properties extraProperties = extractCustomProperties(params);
 
-        return newDefaultCore(
+        newDefaultCore(
                 coreName,
                 ofNullable(params.get("storeRef"))
                         .map(StoreRef::new)
@@ -453,12 +418,12 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 response);
     }
 
-    private boolean newDefaultCore(String coreName, StoreRef storeRef, String templateName, Properties extraProperties, SolrQueryResponse rsp)
+    private void newDefaultCore(String coreName, StoreRef storeRef, String templateName, Properties extraProperties, SolrQueryResponse rsp)
     {
-        return newCore(coreName, 1, storeRef, templateName, 1, 1, 1, null, extraProperties, rsp);
+        newCore(coreName, 1, storeRef, templateName, 1, 1, 1, null, extraProperties, rsp);
     }
 
-    protected boolean newCore(String coreName, int numShards, StoreRef storeRef, String templateName, int replicationFactor, int nodeInstance, int numNodes, String shardIds, Properties extraProperties, SolrQueryResponse rsp)
+    protected void newCore(String coreName, int numShards, StoreRef storeRef, String templateName, int replicationFactor, int nodeInstance, int numNodes, String shardIds, Properties extraProperties, SolrQueryResponse rsp)
     {
         try
         {
@@ -476,14 +441,14 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     collectionName = templateName + "--" + coreName + "--shards--"+numShards + "-x-"+replicationFactor+"--node--"+nodeInstance+"-of-"+numNodes;
                     coreBase = coreName + "-";
                 }
-              
-                File baseDirectory = new File(solrHome, collectionName);    
-                
+
+                File baseDirectory = new File(solrHome, collectionName);
+
                 if(nodeInstance == -1)
                 {
-                    return false;
+                    return;
                 }
-                
+
                 List<Integer> shards;
                 if(shardIds != null)
                 {
@@ -494,11 +459,11 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     ExplicitShardingPolicy policy = new ExplicitShardingPolicy(numShards, replicationFactor, numNodes);
                     if(!policy.configurationIsValid())
                     {
-                        return false;
+                        return;
                     }
                     shards = policy.getShardIdsForNode(nodeInstance);
                 }
-                
+
                 for(Integer shard : shards)
                 {
                     coreName = coreBase + shard;
@@ -517,8 +482,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     }
                     createAndRegisterNewCore(rsp, extraProperties, storeRef, template, solrCoreName, newCore, numShards, shard, templateName);
                 }
-                       
-                return true;
             }
             else
             {
@@ -528,37 +491,41 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 }
                 File newCore = new File(solrHome, coreName);
                 createAndRegisterNewCore(rsp, extraProperties, storeRef, template, coreName, newCore, 0, 0, templateName);
-
-                return true;
             }
-          
         }
-        catch (IOException e)
+        catch (IOException exception)
         {
-            e.printStackTrace();
-            return false;
+            LOGGER.error("I/O Failure detected while creating the new core " +
+                    "(name={}, numShard={}, storeRef={}, template={}, replication factor={}, node instance={}, num nodes={}, shard ids={})",
+                    coreName,
+                    numShards,
+                    storeRef,
+                    templateName,
+                    replicationFactor,
+                    nodeInstance,
+                    numNodes,
+                    shardIds,
+                    exception);
         }
     }
 
-    private List<Integer> extractShards(String shardIds, int numShards)
+    /**
+     * Extracts the list of shard identifiers from the given input string.
+     * the "excludeFromShardId" parameter is used to filter out those shards whose identifier is equal or greater than
+     * that parameter.
+     *
+     * @param shardIds the shards input string, where shards are separated by comma.
+     * @param excludeFromShardId filter out those shards whose identifier is equal or greater than this value.
+     * @return the list of shard identifiers.
+     */
+    List<Integer> extractShards(String shardIds, int excludeFromShardId)
     {
-        List<Integer> shards = new ArrayList<>();
-        for(String shardId : shardIds.split(","))
-        {
-            try
-            {
-                int shard = Integer.parseInt(shardId);
-                if(shard < numShards)
-                {
-                    shards.add(shard);
-                }
-            }
-            catch(NumberFormatException nfe)
-            {
-                // ignore 
-            }
-        }
-        return shards;
+        return stream(Objects.requireNonNullElse(shardIds, "").split(","))
+                .map(String::trim)
+                .map(Utils::toIntOrNull)
+                .filter(Objects::nonNull)
+                .filter(shard -> shard < excludeFromShardId)
+                .collect(Collectors.toList());
     }
 
     private void createAndRegisterNewCore(SolrQueryResponse rsp, Properties extraProperties, StoreRef storeRef, File template, String coreName, File newCore, int shardCount, int shardInstance, String templateName) throws IOException
@@ -616,15 +583,14 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         rsp.add("core", core.getName());
     }
 
-    private boolean hasAlfrescoCore(Collection<SolrCore> cores)
+    boolean hasAlfrescoCore(Collection<SolrCore> cores)
     {
-        if (cores == null || cores.isEmpty()) return false;
-        for (SolrCore core:cores)
-        {
-            if (trackerRegistry.hasTrackersForCore(core.getName())) return true;
-        }
-        return false;
+        return notNullOrEmpty(cores).stream()
+                .map(SolrCore::getName)
+                .anyMatch(trackerRegistry::hasTrackersForCore);
     }
+
+    // :::::
 
     private void updateShared(SolrQueryRequest req)
     {
@@ -645,33 +611,25 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
     private void updateCore(SolrQueryRequest req)
     {
-            String coreName = null;
-            SolrParams params = req.getParams();
+        ofNullable(coreName(req.getParams()))
+                .map(String::trim)
+                .filter(coreName -> !coreName.isEmpty())
+                .ifPresent(coreName -> {
+                    try (SolrCore core = coreContainer.getCore(coreName))
+                    {
 
-            if (params.get("coreName") != null)
-            {
-                coreName = params.get("coreName");
-            }
-            
-            if ((coreName == null) || (coreName.length() == 0))
-            {
-                return;
-            }
+                        if (core == null)
+                        {
+                            return;
+                        }
 
-        try (SolrCore core = coreContainer.getCore(coreName))
-        {
+                        String configLocaltion = core.getResourceLoader().getConfigDir();
+                        File config = new File(configLocaltion, "solrcore.properties");
+                        updatePropertiesFile(req.getParams(), config, null);
 
-            if (core == null)
-            {
-                return;
-            }
-
-            String configLocaltion = core.getResourceLoader().getConfigDir();
-            File config = new File(configLocaltion, "solrcore.properties");
-            updatePropertiesFile(params, config, null);
-
-            coreContainer.reload(coreName);
-        }
+                        coreContainer.reload(coreName);
+                    }
+                });
     }
 
     private void removeCore(SolrQueryRequest req)
@@ -686,19 +644,423 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         if ((store == null) || (store.length() == 0)) { return; }
 
         StoreRef storeRef = new StoreRef(store);
-        String coreName = storeRef.getProtocol() + "-" + storeRef.getIdentifier();
-        if (params.get("coreName") != null)
-        {
-            coreName = params.get("coreName");
-        }
 
-        // remove core
+        String coreName = ofNullable(coreName(req.getParams())).orElse(storeRef.getProtocol() + "-" + storeRef.getIdentifier());
         coreContainer.unload(coreName, true, true, true);
     }
 
-    private void actionFIX(String coreName) throws AuthenticationException, IOException, JSONException, EncoderException
+    private void actionCHECK(SolrParams params)
     {
+        String cname = params.get(CoreAdminParams.CORE);
+        coreNames().stream()
+                .filter(coreName -> cname == null || coreName.equals(cname))
+                .map(trackerRegistry::getTrackersForCore)
+                .flatMap(Collection::stream)
+                .map(Tracker::getTrackerState)
+                .forEach(state -> state.setCheck(true));
+    }
+
+    private void actionNODEREPORTS(SolrQueryResponse rsp, SolrParams params) throws JSONException
+    {
+        Long dbid =
+                ofNullable(params.get(ARG_NODEID))
+                        .map(Long::valueOf)
+                        .orElseThrow(() -> new AlfrescoRuntimeException("No dbid parameter set."));
+
+        NamedList<Object> report = new SimpleOrderedMap<>();
+        rsp.add(REPORT, report);
+
+        coreNames().stream()
+                .filter(coreName -> params.get(CoreAdminParams.CORE) == null || coreName.equals(params.get(CoreAdminParams.CORE)))
+                .filter(trackerRegistry::hasTrackersForCore)
+                .map(coreName -> new Pair<>(coreName, nodeStatePublisher(coreName)))
+                .filter(coreNameAndPublisher -> coreNameAndPublisher.getSecond() != null)
+                .forEach(coreNameAndPublisher ->
+                        report.add(
+                                coreNameAndPublisher.getFirst(),
+                                buildNodeReport(coreNameAndPublisher.getSecond(), dbid)));
+    }
+
+    private void actionACLREPORT(SolrQueryResponse rsp, SolrParams params) throws JSONException
+    {
+        Long aclid =
+                ofNullable(params.get(ARG_ACLID))
+                        .map(Long::valueOf)
+                        .orElseThrow(() -> new AlfrescoRuntimeException("No " + ARG_ACLID + " parameter set."));
+
+        NamedList<Object> report = new SimpleOrderedMap<>();
+        rsp.add(REPORT, report);
+
+        coreNames().stream()
+                .filter(coreName -> params.get(CoreAdminParams.CORE) == null || coreName.equals(params.get(CoreAdminParams.CORE)))
+                .map(coreName -> new Pair<>(coreName, trackerRegistry.getTrackerForCore(coreName, AclTracker.class)))
+                .filter(coreNameAndAclTracker -> coreNameAndAclTracker.getSecond() != null)
+                .forEach(coreNameAndAclTracker ->
+                        report.add(
+                                coreNameAndAclTracker.getFirst(),
+                                buildAclReport(coreNameAndAclTracker.getSecond(), aclid)));
+
+        if (report.size() == 0)
+        {
+            addAlertMessage(report);
+        }
+    }
+
+    private void actionTXREPORT(SolrQueryResponse rsp, SolrParams params) throws JSONException
+    {
+        String coreName =
+                ofNullable(params.get(CoreAdminParams.CORE))
+                    .orElseThrow(() -> new AlfrescoRuntimeException("No " + params.get(CoreAdminParams.CORE + " parameter set.")));
+
+        NamedList<Object> report = new SimpleOrderedMap<>();
+        rsp.add(REPORT, report);
+
         if (isMasterOrStandalone(coreName))
+        {
+            MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
+            Long txid =
+                    ofNullable(params.get(ARG_TXID))
+                            .map(Long::valueOf)
+                            .orElseThrow(() -> new AlfrescoRuntimeException("No " + ARG_TXID + " parameter set."));
+
+            report.add(coreName, buildTxReport(trackerRegistry, informationServers.get(coreName), coreName, tracker, txid));
+        }
+        else
+        {
+            addAlertMessage(report);
+        }
+    }
+
+    private void actionACLTXREPORT(SolrQueryResponse rsp, SolrParams params) throws JSONException
+    {
+        Long acltxid =
+                ofNullable(params.get(ARG_ACLTXID))
+                        .map(Long::valueOf)
+                        .orElseThrow(() -> new AlfrescoRuntimeException("No " + ARG_ACLTXID + " parameter set."));
+
+        NamedList<Object> report = new SimpleOrderedMap<>();
+        rsp.add(REPORT, report);
+
+        coreNames().stream()
+                .filter(coreName -> params.get(CoreAdminParams.CORE) == null || coreName.equals(params.get(CoreAdminParams.CORE)))
+                .map(coreName -> new Pair<>(coreName, trackerRegistry.getTrackerForCore(coreName, AclTracker.class)))
+                .filter(coreNameAndAclTracker -> coreNameAndAclTracker.getSecond() != null)
+                .forEach(coreNameAndAclTracker ->
+                        report.add(
+                                coreNameAndAclTracker.getFirst(),
+                                buildAclTxReport(
+                                        trackerRegistry,
+                                        informationServers.get(coreNameAndAclTracker.getFirst()),
+                                        coreNameAndAclTracker.getFirst(),
+                                        coreNameAndAclTracker.getSecond(),
+                                        acltxid)));
+
+        if (report.size() == 0)
+        {
+            addAlertMessage(report);
+        }
+    }
+
+    private void rangeCheck(SolrQueryResponse rsp, SolrParams params) throws IOException
+    {
+        String coreName =
+                ofNullable(params.get(CoreAdminParams.CORE))
+                        .orElseThrow(() -> new AlfrescoRuntimeException("No " + params.get(CoreAdminParams.CORE + " parameter set.")));
+
+        if (isMasterOrStandalone(coreName))
+        {
+            InformationServer informationServer = informationServers.get(coreName);
+
+            DocRouter docRouter = getDocRouter(coreName);
+
+            if(docRouter instanceof DBIDRangeRouter)
+            {
+                DBIDRangeRouter dbidRangeRouter = (DBIDRangeRouter) docRouter;
+
+                if(!dbidRangeRouter.getInitialized())
+                {
+                    rsp.add("expand", 0);
+                    rsp.add("exception", "DBIDRangeRouter not initialized yet.");
+                    return;
+                }
+
+                long startRange = dbidRangeRouter.getStartRange();
+                long endRange = dbidRangeRouter.getEndRange();
+
+                long maxNodeId = informationServer.maxNodeId();
+                long minNodeId = informationServer.minNodeId();
+                long nodeCount = informationServer.nodeCount();
+
+                long bestGuess = -1;  // -1 means expansion cannot be done. Either because expansion
+                // has already happened or we're above safe range
+
+                long range = endRange - startRange; // We want this many nodes on the server
+
+                long midpoint = startRange + ((long) (range * .5));
+
+                long safe = startRange + ((long) (range * .75));
+
+                long offset = maxNodeId-startRange;
+
+                double density = 0;
+
+                if(offset > 0)
+                {
+                    density = ((double)nodeCount) / ((double)offset); // This is how dense we are so far.
+                }
+
+                if (!dbidRangeRouter.getExpanded())
+                {
+                    if(maxNodeId <= safe)
+                    {
+                        if (maxNodeId >= midpoint)
+                        {
+                            if(density >= 1 || density == 0)
+                            {
+                                //This is fully dense shard or an empty shard.
+                                // If it does happen, no expand is required.
+                                bestGuess=0;
+                            }
+                            else
+                            {
+                                double multiplier = 1/density;
+                                bestGuess = (long)(range*multiplier)-range; // This is how much to add
+                            }
+                        }
+                        else
+                        {
+                            bestGuess = 0; // We're below the midpoint so it's to early to make a guess.
+                        }
+                    }
+                }
+
+                rsp.add("start", startRange);
+                rsp.add("end", endRange);
+                rsp.add("nodeCount", nodeCount);
+                rsp.add("minDbid", minNodeId);
+                rsp.add("maxDbid", maxNodeId);
+                rsp.add("density", Math.abs(density));
+                rsp.add("expand", bestGuess);
+                rsp.add("expanded", dbidRangeRouter.getExpanded());
+            }
+            else
+            {
+                rsp.add("expand", -1);
+                rsp.add("exception", "ERROR: Wrong document router type:"+docRouter.getClass().getSimpleName());
+            }
+        }
+        else
+        {
+            NamedList<Object> report = new SimpleOrderedMap<>();
+            rsp.add(REPORT, report);
+            addAlertMessage(report);
+        }
+    }
+
+    private synchronized void expand(SolrQueryResponse rsp, SolrParams params) throws IOException
+    {
+        String coreName =
+                ofNullable(params.get(CoreAdminParams.CORE))
+                        .orElseThrow(() -> new AlfrescoRuntimeException("No " + params.get(CoreAdminParams.CORE + " parameter set.")));
+
+        if (isMasterOrStandalone(coreName))
+        {
+            InformationServer informationServer = informationServers.get(coreName);
+            DocRouter docRouter = getDocRouter(coreName);
+
+            if(docRouter instanceof DBIDRangeRouter)
+            {
+                long expansion = Long.parseLong(params.get("add"));
+                DBIDRangeRouter dbidRangeRouter = (DBIDRangeRouter)docRouter;
+
+                if(!dbidRangeRouter.getInitialized())
+                {
+                    rsp.add("expand", -1);
+                    rsp.add("exception", "DBIDRangeRouter not initialized yet.");
+                    return;
+                }
+
+                if(dbidRangeRouter.getExpanded())
+                {
+                    rsp.add("expand", -1);
+                    rsp.add("exception", "dbid range has already been expanded.");
+                    return;
+                }
+
+                long currentEndRange = dbidRangeRouter.getEndRange();
+                long startRange = dbidRangeRouter.getStartRange();
+                long maxNodeId = informationServer.maxNodeId();
+
+                long range = currentEndRange - startRange;
+                long safe = startRange + ((long) (range * .75));
+
+                if(maxNodeId > safe)
+                {
+                    rsp.add("expand", -1);
+                    rsp.add("exception", "Expansion cannot occur if max DBID in the index is more then 75% of range.");
+                    return;
+                }
+
+                long newEndRange = expansion+dbidRangeRouter.getEndRange();
+                try
+                {
+                    informationServer.capIndex(newEndRange);
+                    informationServer.hardCommit();
+                    dbidRangeRouter.setEndRange(newEndRange);
+                    dbidRangeRouter.setExpanded(true);
+                    assert newEndRange == dbidRangeRouter.getEndRange();
+                    rsp.add("expand", dbidRangeRouter.getEndRange());
+                }
+                catch(Throwable t)
+                {
+                    rsp.add("expand", -1);
+                    rsp.add("exception", t.getMessage());
+                    LOGGER.error("exception expanding", t);
+                }
+            }
+            else
+            {
+                rsp.add("expand", -1);
+                rsp.add("exception", "Wrong document router type:" + docRouter.getClass().getSimpleName());
+            }
+        }
+        else
+        {
+            NamedList<Object> report = new SimpleOrderedMap<>();
+            rsp.add(REPORT, report);
+            addAlertMessage(report);
+        }
+    }
+
+    private void actionREPORT(SolrQueryResponse rsp, SolrParams params) throws JSONException
+    {
+        NamedList<Object> report = new SimpleOrderedMap<>();
+        rsp.add(REPORT, report);
+
+        Long fromTime = getSafeLong(params, "fromTime");
+        Long toTime = getSafeLong(params, "toTime");
+        Long fromTx = getSafeLong(params, "fromTx");
+        Long toTx = getSafeLong(params, "toTx");
+        Long fromAclTx = getSafeLong(params, "fromAclTx");
+        Long toAclTx = getSafeLong(params, "toAclTx");
+
+        coreNames().stream()
+                .filter(coreName -> params.get(CoreAdminParams.CORE) == null || coreName.equals(params.get(CoreAdminParams.CORE)))
+                .filter(trackerRegistry::hasTrackersForCore)
+                .filter(this::isMasterOrStandalone)
+                .forEach(coreName ->
+                        report.add(
+                                coreName,
+                                buildTrackerReport(
+                                        trackerRegistry,
+                                        informationServers.get(coreName),
+                                        coreName,
+                                        fromTx,
+                                        toTx,
+                                        fromAclTx,
+                                        toAclTx,
+                                        fromTime,
+                                        toTime)));
+
+        if (report.size() == 0)
+        {
+            addAlertMessage(report);
+        }
+    }
+
+    private void actionPURGE(SolrParams params)
+    {
+        Consumer<String> purgeOnSpecificCore = coreName -> {
+            final MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
+            final AclTracker aclTracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
+
+            apply(params, ARG_TXID, metadataTracker::addTransactionToPurge)
+                    .andThen(apply(params, ARG_ACLTXID, aclTracker::addAclChangeSetToPurge))
+                    .andThen(apply(params, ARG_NODEID, metadataTracker::addNodeToPurge))
+                    .andThen(apply(params, ARG_ACLID, aclTracker::addAclToPurge));
+        };
+
+        coreNames().stream()
+                .filter(coreName -> params.get(CoreAdminParams.CORE) == null || coreName.equals(params.get(CoreAdminParams.CORE)))
+                .filter(this::isMasterOrStandalone)
+                .forEach(purgeOnSpecificCore);
+    }
+
+    private void actionREINDEX(SolrParams params)
+    {
+        Consumer<String> reindexOnSpecificCore = coreName -> {
+            final MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
+            final AclTracker aclTracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
+
+            apply(params, ARG_TXID, metadataTracker::addTransactionToReindex)
+                    .andThen(apply(params, ARG_ACLTXID, aclTracker::addAclChangeSetToReindex))
+                    .andThen(apply(params, ARG_NODEID, metadataTracker::addNodeToReindex))
+                    .andThen(apply(params, ARG_ACLID, aclTracker::addAclToReindex));
+
+            ofNullable(params.get(ARG_QUERY)).ifPresent(metadataTracker::addQueryToReindex);
+        };
+
+        coreNames().stream()
+                .filter(coreName -> params.get(CoreAdminParams.CORE) == null || coreName.equals(params.get(CoreAdminParams.CORE)))
+                .filter(this::isMasterOrStandalone)
+                .forEach(reindexOnSpecificCore);
+    }
+
+    private void actionRETRY(SolrQueryResponse rsp, SolrParams params)
+    {
+        final Consumer<String> retryOnSpecificCore = coreName -> {
+            MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
+            InformationServer srv = informationServers.get(coreName);
+
+            try
+            {
+                for (Long nodeid : srv.getErrorDocIds())
+                {
+                    tracker.addNodeToReindex(nodeid);
+                }
+                rsp.add(coreName, srv.getErrorDocIds());
+            }
+            catch (Exception exception)
+            {
+                LOGGER.error("I/O Exception while adding Node to reindex.", exception);
+            }
+        };
+
+        coreNames().stream()
+                .filter(coreName -> params.get(CoreAdminParams.CORE) == null || coreName.equals(params.get(CoreAdminParams.CORE)))
+                .filter(this::isMasterOrStandalone)
+                .forEach(retryOnSpecificCore);
+    }
+
+    private void actionINDEX(SolrParams params)
+    {
+        Consumer<String> indexOnSpecificCore = coreName -> {
+            final MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
+            final AclTracker aclTracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
+
+            apply(params, ARG_TXID, metadataTracker::addTransactionToIndex)
+                    .andThen(apply(params, ARG_ACLTXID, aclTracker::addAclChangeSetToIndex))
+                    .andThen(apply(params, ARG_NODEID, metadataTracker::addNodeToIndex))
+                    .andThen(apply(params, ARG_ACLID, aclTracker::addAclToIndex));
+        };
+
+        coreNames().stream()
+                .filter(coreName -> params.get(CoreAdminParams.CORE) == null || coreName.equals(params.get(CoreAdminParams.CORE)))
+                .filter(this::isMasterOrStandalone)
+                .forEach(indexOnSpecificCore);
+    }
+
+    private void actionFIX(SolrParams params) throws JSONException
+    {
+        coreNames().stream()
+                .filter(coreName -> params.get(CoreAdminParams.CORE) == null || coreName.equals(params.get(CoreAdminParams.CORE)))
+                .filter(this::isMasterOrStandalone)
+                .forEach(this::fixOnSpecificCore);
+    }
+
+    private void fixOnSpecificCore(String coreName)
+    {
+        try
         {
             // Gets Metadata health and fixes any problems
             MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
@@ -708,8 +1070,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             toReindex.or(indexHealthReport.getMissingTxFromIndex());
             long current = -1;
             // Goes through problems in the index
-            while ((current = toReindex.nextSetBit(current + 1)) != -1)
-            {
+            while ((current = toReindex.nextSetBit(current + 1)) != -1) {
                 metadataTracker.addTransactionToReindex(current);
             }
 
@@ -721,345 +1082,55 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             toReindex.or(indexHealthReport.getMissingAclTxFromIndex());
             current = -1;
             // Goes through the problems in the index
-            while ((current = toReindex.nextSetBit(current + 1)) != -1)
-            {
+            while ((current = toReindex.nextSetBit(current + 1)) != -1) {
                 aclTracker.addAclChangeSetToReindex(current);
             }
         }
+        catch(Exception exception)
+        {
+            throw new AlfrescoRuntimeException("", exception);
+        }
     }
 
-    private void actionCHECK(String cname)
-    {
-        trackerRegistry.getCoreNames()
-                .stream()
-                .filter(coreName -> cname == null || coreName.equals(cname))
-                .map(trackerRegistry::getTrackersForCore)
-                .flatMap(Collection::stream)
-                .map(Tracker::getTrackerState)
-                .forEach(state -> state.setCheck(true));
-    }
-
-    private void actionACLREPORT(SolrQueryResponse rsp, SolrParams params, String cname) throws JSONException
+    private void actionSUMMARY(SolrQueryResponse rsp, SolrParams params)
     {
         NamedList<Object> report = new SimpleOrderedMap<>();
-        rsp.add("report", report);
+        rsp.add("Summary", report);
 
-        Long aclid =
-                ofNullable(params.get(ARG_ACLID))
-                        .map(Long::valueOf)
-                        .orElseThrow(() -> new AlfrescoRuntimeException("No " + ARG_ACLID + " parameter set."));
-
-        if (cname != null)
-        {
-            ofNullable(trackerRegistry.getTrackerForCore(cname, AclTracker.class))
-                    .ifPresent(tracker -> report.add(cname, buildAclReport(tracker, aclid)));
-        }
-        else
-        {
-            trackerRegistry.getCoreNames()
-                    .forEach(coreName ->
-                            ofNullable(trackerRegistry.getTrackerForCore(coreName, AclTracker.class))
-                                .ifPresent(tracker -> report.add(coreName, buildAclReport(tracker, aclid))));
-        }
-
-        if (report.size() == 0)
-        {
-            report.add("WARNING", "This response comes from a slave core. Please consider to ask the same request to its corresponding master core, in order to get more information about the requested Node");
-        }
+        coreNames().stream()
+                .filter(coreName -> params.get(CoreAdminParams.CORE) == null || coreName.equals(params.get(CoreAdminParams.CORE)))
+                .filter(this::isMasterOrStandalone)
+                .forEach(coreName -> coreSummary(params, report, coreName));
     }
 
-    private void actionTXREPORT(SolrQueryResponse rsp, SolrParams params, String cname)
-            throws AuthenticationException, IOException, JSONException, EncoderException
-    {
-        NamedList<Object> report = new SimpleOrderedMap<>();
-        rsp.add("report", report);
-
-        MetadataTracker tracker = trackerRegistry.getTrackerForCore(cname, MetadataTracker.class);
-        if (tracker != null)
-        {
-            Long txid =
-                    ofNullable(params.get(ARG_TXID))
-                            .map(Long::valueOf)
-                            .orElseThrow(() -> new AlfrescoRuntimeException("No " + ARG_TXID + " parameter set."));
-
-            if (cname == null)
-            {
-                throw new AlfrescoRuntimeException("No cname parameter set");
-            }
-
-            report.add(cname, buildTxReport(getTrackerRegistry(), informationServers.get(cname), cname, tracker, txid));
-        }
-        else
-        {
-            report.add("WARNING", "This response comes from a slave core. Please consider to ask the same request to its corresponding master core, in order to get more information about the requested Node");
-        }
-    }
-
-    private void actionACLTXREPORT(SolrQueryResponse rsp, SolrParams params, String cname) throws JSONException
-    {
-        if (params.get(ARG_ACLTXID) == null)
-        {
-            throw new AlfrescoRuntimeException("No acltxid parameter set");
-        }
-
-        NamedList<Object> report = new SimpleOrderedMap<>();
-        rsp.add("report", report);
-
-        Long acltxid =
-                ofNullable(params.get(ARG_ACLTXID))
-                        .map(Long::valueOf)
-                        .orElseThrow(() -> new AlfrescoRuntimeException("No " + ARG_ACLTXID + " parameter set."));
-
-        if (cname != null)
-        {
-            ofNullable(trackerRegistry.getTrackerForCore(cname, AclTracker.class))
-                    .ifPresent(tracker -> report.add(cname, buildAclTxReport(trackerRegistry, informationServers.get(cname), cname, tracker, acltxid)));
-        }
-        else
-        {
-            trackerRegistry.getCoreNames()
-                    .forEach(coreName ->
-                            ofNullable(trackerRegistry.getTrackerForCore(coreName, AclTracker.class))
-                                    .ifPresent(tracker -> report.add(cname, buildAclTxReport(trackerRegistry, informationServers.get(cname), cname, tracker, acltxid))));
-        }
-
-        if (report.size() == 0)
-        {
-            report.add("WARNING", "This response comes from a slave core. Please consider to ask the same request to its corresponding master core, in order to get more information about the requested Node");
-        }
-    }
-
-    private void actionREPORT(SolrQueryResponse rsp, SolrParams params, String cname) throws JSONException
-    {
-        NamedList<Object> report = new SimpleOrderedMap<>();
-        rsp.add("report", report);
-
-        Long fromTime = getSafeLong(params, "fromTime");
-        Long toTime = getSafeLong(params, "toTime");
-        Long fromTx = getSafeLong(params, "fromTx");
-        Long toTx = getSafeLong(params, "toTx");
-        Long fromAclTx = getSafeLong(params, "fromAclTx");
-        Long toAclTx = getSafeLong(params, "toAclTx");
-        
-        if (cname != null)
-        {
-            if (trackerRegistry.hasTrackersForCore(cname) && isMasterOrStandalone(cname))
-            {
-                report.add(cname, buildTrackerReport(trackerRegistry, informationServers.get(cname),cname, fromTx, toTx, fromAclTx, toAclTx, fromTime, toTime));
-            }
-        }
-        else
-        {
-            trackerRegistry.getCoreNames().stream()
-                    .filter(trackerRegistry::hasTrackersForCore)
-                    .filter(this::isMasterOrStandalone)
-                    .forEach(coreName -> report.add(coreName, buildTrackerReport(trackerRegistry, informationServers.get(coreName), coreName, fromTx, toTx, fromAclTx, toAclTx, fromTime, toTime)));
-        }
-    }
-
-    private DocRouter getDocRouter(String cname)
-    {
-        Collection<Tracker> trackers = trackerRegistry.getTrackersForCore(cname);
-        MetadataTracker metadataTracker = null;
-        for(Tracker tracker : trackers)
-        {
-            if(tracker instanceof MetadataTracker)
-            {
-                metadataTracker = (MetadataTracker)tracker;
-            }
-        }
-
-        return metadataTracker.getDocRouter();
-    }
-
-
-    private void rangeCheck(SolrQueryResponse rsp,String cname) throws IOException
-    {
-        InformationServer informationServer = informationServers.get(cname);
-
-        DocRouter docRouter = getDocRouter(cname);
-
-        if(docRouter instanceof DBIDRangeRouter)
-        {
-            DBIDRangeRouter dbidRangeRouter = (DBIDRangeRouter) docRouter;
-
-            if(!dbidRangeRouter.getInitialized())
-            {
-                rsp.add("expand", 0);
-                rsp.add("exception", "DBIDRangeRouter not initialized yet.");
-                return;
-            }
-
-            long startRange = dbidRangeRouter.getStartRange();
-            long endRange = dbidRangeRouter.getEndRange();
-
-            long maxNodeId = informationServer.maxNodeId();
-            long minNodeId = informationServer.minNodeId();
-            long nodeCount = informationServer.nodeCount();
-
-            long bestGuess = -1;  // -1 means expansion cannot be done. Either because expansion
-                                 // has already happened or we're above safe range
-
-            long range = endRange - startRange; // We want this many nodes on the server
-
-            long midpoint = startRange + ((long) (range * .5));
-
-            long safe = startRange + ((long) (range * .75));
-
-            long offset = maxNodeId-startRange;
-
-            double density = 0;
-
-            if(offset > 0)
-            {
-                density = ((double)nodeCount) / ((double)offset); // This is how dense we are so far.
-            }
-
-            if (!dbidRangeRouter.getExpanded())
-            {
-                if(maxNodeId <= safe)
-                {
-                    if (maxNodeId >= midpoint)
-                    {
-                        if(density >= 1 || density == 0)
-                        {
-                            //This is fully dense shard or an empty shard. 
-                            // If it does happen, no expand is required.
-                            bestGuess=0;
-                        }
-                        else
-                        {
-                            double multiplier = 1/density;
-                            bestGuess = (long)(range*multiplier)-range; // This is how much to add
-                        }
-                    }
-                    else
-                    {
-                        bestGuess = 0; // We're below the midpoint so it's to early to make a guess.
-                    }
-                }
-            }
-
-            rsp.add("start", startRange);
-            rsp.add("end", endRange);
-            rsp.add("nodeCount", nodeCount);
-            rsp.add("minDbid", minNodeId);
-            rsp.add("maxDbid", maxNodeId);
-            rsp.add("density", Math.abs(density));
-            rsp.add("expand", bestGuess);
-            rsp.add("expanded", dbidRangeRouter.getExpanded());
-        }
-        else
-        {
-            rsp.add("expand", -1);
-            rsp.add("exception", "ERROR: Wrong document router type:"+docRouter.getClass().getSimpleName());
-        }
-    }
-
-    private synchronized void expand(SolrQueryResponse rsp, SolrParams params, String cname) throws IOException
-    {
-        InformationServer informationServer = informationServers.get(cname);
-        DocRouter docRouter = getDocRouter(cname);
-
-        if(docRouter instanceof DBIDRangeRouter)
-        {
-            long expansion = Long.parseLong(params.get("add"));
-            DBIDRangeRouter dbidRangeRouter = (DBIDRangeRouter)docRouter;
-
-            if(!dbidRangeRouter.getInitialized())
-            {
-                rsp.add("expand", -1);
-                rsp.add("exception", "DBIDRangeRouter not initialized yet.");
-                return;
-            }
-
-            if(dbidRangeRouter.getExpanded())
-            {
-                rsp.add("expand", -1);
-                rsp.add("exception", "dbid range has already been expanded.");
-                return;
-            }
-
-            long currentEndRange = dbidRangeRouter.getEndRange();
-            long startRange = dbidRangeRouter.getStartRange();
-            long maxNodeId = informationServer.maxNodeId();
-
-            long range = currentEndRange - startRange;
-            long safe = startRange + ((long) (range * .75));
-
-            if(maxNodeId > safe)
-            {
-                rsp.add("expand", -1);
-                rsp.add("exception", "Expansion cannot occur if max DBID in the index is more then 75% of range.");
-                return;
-            }
-
-            long newEndRange = expansion+dbidRangeRouter.getEndRange();
-            try
-            {
-                informationServer.capIndex(newEndRange);
-                informationServer.hardCommit();
-                dbidRangeRouter.setEndRange(newEndRange);
-                dbidRangeRouter.setExpanded(true);
-                assert newEndRange == dbidRangeRouter.getEndRange();
-                rsp.add("expand", dbidRangeRouter.getEndRange());
-            }
-            catch(Throwable t)
-            {
-                rsp.add("expand", -1);
-                rsp.add("exception", t.getMessage());
-                LOGGER.error("exception expanding", t);
-            }
-        }
-        else
-        {
-            rsp.add("expand", -1);
-            rsp.add("exception", "Wrong document router type:" + docRouter.getClass().getSimpleName());
-        }
-    }
-
-    private void actionNODEREPORTS(SolrQueryResponse rsp, SolrParams params, String cname) throws JSONException
-    {
-        Long dbid =
-                ofNullable(params.get(ARG_NODEID))
-                    .map(Long::valueOf)
-                    .orElseThrow(() -> new AlfrescoRuntimeException("No dbid parameter set."));
-
-        NamedList<Object> report = new SimpleOrderedMap<>();
-        rsp.add("report", report);
-
-        if (cname != null)
-        {
-            report.add(cname, buildNodeReport(nodeStatePublisher(cname), dbid));
-        }
-        else
-        {
-            trackerRegistry.getCoreNames().forEach(coreName -> report.add(coreName, buildNodeReport(nodeStatePublisher(coreName), dbid)));
-        }
-    }
-
-    private void actionSUMMARY(SolrParams params, NamedList<Object> report, String coreName) throws IOException
+    private void coreSummary(SolrParams params, NamedList<Object> report, String coreName)
     {
         boolean detail = getSafeBoolean(params, "detail");
         boolean hist = getSafeBoolean(params, "hist");
         boolean values = getSafeBoolean(params, "values");
         boolean reset = getSafeBoolean(params, "reset");
-        
+
         InformationServer srv = informationServers.get(coreName);
         if (srv != null)
         {
-            if (isMasterOrStandalone(coreName))
+            try
             {
-                addMasterOrStandaloneCoreSummary(trackerRegistry, coreName, detail, hist, values, srv, report);
-
-                if (reset)
+                if (isMasterOrStandalone(coreName))
                 {
-                    srv.getTrackerStats().reset();
+                    addMasterOrStandaloneCoreSummary(trackerRegistry, coreName, detail, hist, values, srv, report);
+
+                    if (reset)
+                    {
+                        srv.getTrackerStats().reset();
+                    }
+                } else
+                    {
+                    addSlaveCoreSummary(trackerRegistry, coreName, detail, hist, values, srv, report);
                 }
             }
-            else
+            catch(Exception exception)
             {
-                addSlaveCoreSummary(trackerRegistry, coreName, detail, hist, values, srv, report);
+                throw new AlfrescoRuntimeException("", exception);
             }
         }
         else
@@ -1068,129 +1139,15 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
-    private void actionINDEX(SolrParams params, String coreName)
+    private DocRouter getDocRouter(String cname)
     {
-        if (isMasterOrStandalone(coreName))
-        {
-            if (params.get(ARG_TXID) != null)
-            {
-                Long txid = Long.valueOf(params.get(ARG_TXID));
-                MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-                tracker.addTransactionToIndex(txid);
-            }
-
-            if (params.get(ARG_ACLTXID) != null)
-            {
-                Long acltxid = Long.valueOf(params.get(ARG_ACLTXID));
-                AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-                tracker.addAclChangeSetToIndex(acltxid);
-            }
-
-            if (params.get(ARG_NODEID) != null)
-            {
-                Long nodeid = Long.valueOf(params.get(ARG_NODEID));
-                MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-                tracker.addNodeToIndex(nodeid);
-            }
-
-            if (params.get(ARG_ACLID) != null)
-            {
-                Long aclid = Long.valueOf(params.get(ARG_ACLID));
-                AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-                tracker.addAclToIndex(aclid);
-            }
-        }
-    }
-
-    private void actionRETRY(SolrQueryResponse rsp, String coreName) throws IOException
-    {
-        if (isMasterOrStandalone(coreName))
-        {
-            MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-            InformationServer srv = informationServers.get(coreName);
-
-            Set<Long> errorDocIds = srv.getErrorDocIds();
-            for (Long nodeid : errorDocIds)
-            {
-                tracker.addNodeToReindex(nodeid);
-            }
-            rsp.add(coreName, errorDocIds);
-        }
-    }
-
-    private void actionREINDEX(SolrParams params, String coreName)
-    {
-        if (isMasterOrStandalone(coreName))
-        {
-            if (params.get(ARG_TXID) != null)
-            {
-                Long txid = Long.valueOf(params.get(ARG_TXID));
-                MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-                tracker.addTransactionToReindex(txid);
-            }
-
-            if (params.get(ARG_ACLTXID) != null)
-            {
-                Long acltxid = Long.valueOf(params.get(ARG_ACLTXID));
-                AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-                tracker.addAclChangeSetToReindex(acltxid);
-            }
-
-            if (params.get(ARG_NODEID) != null)
-            {
-                Long nodeid = Long.valueOf(params.get(ARG_NODEID));
-                MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-                tracker.addNodeToReindex(nodeid);
-            }
-
-            if (params.get(ARG_ACLID) != null)
-            {
-                Long aclid = Long.valueOf(params.get(ARG_ACLID));
-                AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-                tracker.addAclToReindex(aclid);
-            }
-
-            if (params.get(ARG_QUERY) != null)
-            {
-                String query = params.get(ARG_QUERY);
-                MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-                tracker.addQueryToReindex(query);
-            }
-        }
-    }
-
-    private void actionPURGE(SolrParams params, String coreName)
-    {
-        if (isMasterOrStandalone(coreName))
-        {
-            if (params.get(ARG_TXID) != null)
-            {
-                Long txid = Long.valueOf(params.get(ARG_TXID));
-                MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-                tracker.addTransactionToPurge(txid);
-            }
-
-            if (params.get(ARG_ACLTXID) != null)
-            {
-                Long acltxid = Long.valueOf(params.get(ARG_ACLTXID));
-                AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-                tracker.addAclChangeSetToPurge(acltxid);
-            }
-
-            if (params.get(ARG_NODEID) != null)
-            {
-                Long nodeid = Long.valueOf(params.get(ARG_NODEID));
-                MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-                tracker.addNodeToPurge(nodeid);
-            }
-
-            if (params.get(ARG_ACLID) != null)
-            {
-                Long aclid = Long.valueOf(params.get(ARG_ACLID));
-                AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-                tracker.addAclToPurge(aclid);
-            }
-        }
+        return notNullOrEmpty(trackerRegistry.getTrackersForCore(cname))
+                .stream()
+                .filter(tracker -> tracker instanceof MetadataTracker)
+                .findAny()
+                .map(MetadataTracker.class::cast)
+                .map(MetadataTracker::getDocRouter)
+                .orElse(null);
     }
 
     public ConcurrentHashMap<String, InformationServer> getInformationServers()
@@ -1238,8 +1195,59 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 .orElse(trackerRegistry.getTrackerForCore(coreName, SlaveCoreStatePublisher.class));
     }
 
+    /**
+     * Quickly checks if the given name is associated to a master or standalone core.
+     *
+     * @param coreName the core name.
+     * @return true if the name is associated with a master or standalone mode, false otherwise.
+     */
     private boolean isMasterOrStandalone(String coreName)
     {
         return trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class) != null;
+    }
+
+    /**
+     * Adds to the returned report an information message alerting the receiver that this core is a slave,
+     * and therefore the same request should be re-submited to the corresponding master.
+     *
+     * @param report the response report.
+     */
+    private void addAlertMessage(NamedList<Object> report)
+    {
+        report.add(
+                "WARNING",
+                "The requested endpoint is not available on the slave. " +
+                        "Please re-submit the same request to the corresponding Master");
+    }
+
+    private BiConsumer<String, Consumer<Long>> apply(SolrParams params, String parameterName, Consumer<Long> action)
+    {
+        return (parameter, consumer) ->
+                ofNullable(params.get(parameterName))
+                        .map(Long::valueOf)
+                        .ifPresent(action);
+    }
+
+    private Collection<String> coreNames()
+    {
+        return notNullOrEmpty(trackerRegistry.getCoreNames());
+    }
+
+    /**
+     * Returns the core name indicated in the request parameters.
+     * A first attempt is done in order to check if a standard {@link CoreAdminParams#CORE} parameter is in the request.
+     * If not, the alternative "coreName" parameter name is used.
+     *
+     * @param params the request parameters.
+     * @return the core name specified in the request, null if the parameter is not found.
+     */
+    private String coreName(SolrParams params)
+    {
+        return CORE_PARAMETER_NAMES.stream()
+                .map(params::get)
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .findFirst()
+                .orElse(null);
     }
 }
