@@ -23,7 +23,7 @@
 
     <properties>
         <dependency.alfresco-data-model.version>8.15</dependency.alfresco-data-model.version>
-        <dependency.jackson.version>2.10.0</dependency.jackson.version>
+        <dependency.jackson.version>2.10.1</dependency.jackson.version>
     </properties>
 
     <dependencies>
