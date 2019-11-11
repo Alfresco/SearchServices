@@ -155,44 +155,249 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
         res.assertThat().entriesListIsNotEmpty();
     }
     
-    @Test(groups={TestGroup.ACS_60n}, priority=4)
-    public void testSpellCheckTypeSearchInsteadFor() throws Exception
-    {
-        SearchRequest searchReq = new SearchRequest();
-        RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery("cm:title:uniquee");
-        queryReq.setUserQuery("uniquee");
-        searchReq.setQuery(queryReq);
-        searchReq.setSpellcheck(new RestRequestSpellcheckModel());
-        SearchResponse nodes = query(searchReq);
-        
-        nodes.assertThat().entriesListIsNotEmpty();
-        nodes.getContext().assertThat().field("spellCheck").isNotEmpty();
-        nodes.getContext().getSpellCheck().assertThat().field("suggestions").contains("unique");
-        nodes.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
-    }
-    
-    @Test(groups={TestGroup.ACS_60n}, priority=5)
-    public void testSpellCheckTypeDidYouMean() throws Exception
-    {  
-    	// Create a file with mis-spelt name, expect spellcheck type = didYouMean
-        FileModel file = new FileModel("carz.txt", "carz" + "carz", "carz", FileType.TEXT_PLAIN,
-                "The landrover discovery is not a sports car ");
-        dataContent.usingUser(testUser).usingSite(testSite).createContent(file);
+	/**
+	 * This is a test to check the different spellcheck types searchInsteadFor and
+	 * didYouMean
+	 * 
+	 * @throws Exception
+	 */
+	@Test(groups = { TestGroup.ACS_60n }, priority = 4)
+	public void testSpellCheckType() throws Exception {
+		// Create a file with word in cm:name only
+		FileModel file = new FileModel("learning", "", "", FileType.TEXT_PLAIN, "");
+		dataContent.usingUser(testUser).usingSite(testSite).createContent(file);
 
-        waitForIndexing(file.getName(), true);
-        
-        SearchRequest searchReq = new SearchRequest();
-        RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery("carz");
-        queryReq.setUserQuery("carz");
-        searchReq.setQuery(queryReq);
-        searchReq.setSpellcheck(new RestRequestSpellcheckModel());
-        SearchResponse nodes = query(searchReq);
-        
-        nodes.assertThat().entriesListIsNotEmpty();
-        nodes.getContext().assertThat().field("spellCheck").isNotEmpty();
-        nodes.getContext().getSpellCheck().assertThat().field("suggestions").contains("car");
-        nodes.getContext().getSpellCheck().assertThat().field("type").is("didYouMean");
-    }
+		waitForIndexing(file.getName(), true);
+
+		// Correct spelling with cm:name field
+		SearchResponse response = runSearchSpellcheckQuery("cm:name:learning", "learning");
+
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNull();
+
+		// Correct spelling with no field
+		response = runSearchSpellcheckQuery("learning", "learning");
+
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNull();
+
+		// Correct spelling with a different field. Used cm:content field
+		response = runSearchSpellcheckQuery("cm:content:learning", "learning");
+
+		response.assertThat().entriesListIsEmpty();
+
+		// Incorrect spelling with cm:name field
+		response = runSearchSpellcheckQuery("cm:name:lerning", "lerning");
+
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("learning");
+		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
+
+		// Incorrect spelling with no field
+		response = runSearchSpellcheckQuery("lerning", "lerning");
+
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("learning");
+		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
+
+		// Incorrect spelling with a different field. Used cm:content field
+		response = runSearchSpellcheckQuery("cm:content:lerning", "lerning");
+
+		response.assertThat().entriesListIsEmpty();
+
+		// Create a file with word in cm:name only
+		FileModel file2 = new FileModel("leaning", "", "", FileType.TEXT_PLAIN, "");
+		dataContent.usingUser(testUser).usingSite(testSite).createContent(file2);
+
+		waitForIndexing(file2.getName(), true);
+
+		// Create a file with word in cm:name and cm:content only
+		FileModel file3 = new FileModel("leaning-2", "", "", FileType.TEXT_PLAIN, "leaning-2");
+		dataContent.usingUser(testUser).usingSite(testSite).createContent(file3);
+
+		waitForContentIndexing(file3.getContent(), true);
+
+		// Incorrect spelling with cm:name field
+		response = runSearchSpellcheckQuery("cm:name:lerning", "lerning");
+
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("leaning");
+		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
+
+		// Incorrect spelling with no field
+		response = runSearchSpellcheckQuery("lerning", "lerning");
+
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("leaning");
+		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
+
+		// Incorrect spelling with cm:content field
+		response = runSearchSpellcheckQuery("cm:content:lerning", "lerning");
+
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("leaning");
+		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
+
+		// Correct spelling with cm:name field
+		response = runSearchSpellcheckQuery("cm:name:learning", "learning");
+
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("leaning");
+		response.getContext().getSpellCheck().assertThat().field("type").is("didYouMean");
+
+		// Correct spelling with no field
+		response = runSearchSpellcheckQuery("learning", "learning");
+
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("leaning");
+		response.getContext().getSpellCheck().assertThat().field("type").is("didYouMean");
+
+		// Correct spelling with cm:content field
+		response = runSearchSpellcheckQuery("cm:content:learning", "learning");
+
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("leaning");
+		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
+	}
+
+	/**
+	 * This is a test for the spellcheck parameters minEdit and maxPrefix
+	 * 
+	 * @throws Exception
+	 */
+	@Test(groups = { TestGroup.ACS_60n }, priority = 5)
+	public void testSpellCheckParameters() throws Exception {
+		// Create a file with word in cm:name and cm:content
+		FileModel file = new FileModel("eklipse", "", "", FileType.TEXT_PLAIN, "eklipse");
+		dataContent.usingUser(testUser).usingSite(testSite).createContent(file);
+
+		waitForContentIndexing(file.getContent(), true);
+
+		// Create a file with word in cm:name, cm:title and cm:content
+		FileModel file2 = new FileModel("eklipses", "eklipses", "", FileType.TEXT_PLAIN, "eklipses");
+		dataContent.usingUser(testUser).usingSite(testSite).createContent(file2);
+
+		waitForContentIndexing(file2.getContent(), true);
+
+		// Search with field not filed in either files
+		SearchResponse response = runSearchSpellcheckQuery("cm:description:eclipse", "eclipse");
+
+		response.assertThat().entriesListIsEmpty();
+		response.getContext().assertThat().field("spellCheck").isNull();
+
+		// Incorrect spelling with the field on a file as well
+		response = runSearchSpellcheckQuery("cm:name:eclipse", "eclipse");
+
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("eklipse");
+		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
+
+		// Incorrect spelling with no field for file1
+		response = runSearchSpellcheckQuery("eclipse", "eclipse");
+
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("eklipse");
+		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
+
+		// Incorrect spelling with no field for file2
+		response = runSearchSpellcheckQuery("eclipses", "eclipses");
+
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("eklipses");
+		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
+
+		// Search for the field only filed on file2 and not file1
+		response = runSearchSpellcheckQuery("cm:title:eclipses", "eclipses");
+
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("eklipses");
+		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
+
+		// Query using 3 edits (more than spellcheck works for [maxEdits<=2])
+		response = runSearchSpellcheckQuery("elapssed", "elapssed");
+
+		response.assertThat().entriesListIsEmpty();
+		response.getContext().assertThat().field("spellCheck").isNull();
+
+		// Query with edit on first letter (does not work with spellcheck [minPrefix=1])
+		response = runSearchSpellcheckQuery("iklipse ", "iklipse ");
+
+		response.assertThat().entriesListIsEmpty();
+		response.getContext().assertThat().field("spellCheck").isNull();
+	}
+
+	/**
+	 * This is a test to check the fields defined for spellcheck in
+	 * shared.properties work cm:name, cm:title, cm:description and cm:content are
+	 * defined in shared.properties
+	 * 
+	 * @throws Exception
+	 */
+	@Test(groups = { TestGroup.ACS_60n }, priority = 6)
+	public void testSpellCheckFields() throws Exception {
+		// Create a file with same word in all fields
+		FileModel file = new FileModel("book", "book", "book", FileType.TEXT_PLAIN, "book");
+		dataContent.usingUser(testUser).usingSite(testSite).createContent(file);
+
+		waitForContentIndexing(file.getContent(), true);
+
+		// Incorrect spelling with no field
+		SearchResponse response = runSearchSpellcheckQuery("b00k", "b00k");
+
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("book");
+		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
+
+		// Incorrect spelling with the cm:name field
+		response = runSearchSpellcheckQuery("cm:name:b00k", "b00k");
+
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("book");
+		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
+
+		// Incorrect spelling with the cm:title field
+		response = runSearchSpellcheckQuery("cm:title:b00k", "b00k");
+
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("book");
+		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
+
+		// Incorrect spelling with the cm:description field
+		response = runSearchSpellcheckQuery("cm:description:b00k", "b00k");
+
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("book");
+		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
+
+		// Incorrect spelling with the cm:description field
+		response = runSearchSpellcheckQuery("cm:content:b00k", "b00k");
+
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("book");
+		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
+
+		// Incorrect spelling with the cm:author field (not a field in shared.properties
+		// for spellcheck)
+		response = runSearchSpellcheckQuery("cm:author:b00k", "b00k");
+
+		response.assertThat().entriesListIsEmpty();
+		response.getContext().assertThat().field("spellCheck").isNull();
+	}
 }

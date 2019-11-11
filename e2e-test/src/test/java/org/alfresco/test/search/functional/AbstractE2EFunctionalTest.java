@@ -11,6 +11,7 @@ import org.alfresco.dataprep.ContentService;
 import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.core.RestProperties;
 import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.rest.model.RestRequestSpellcheckModel;
 import org.alfresco.rest.search.RestRequestHighlightModel;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchRequest;
@@ -390,6 +391,24 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     protected DataUser getDataUser()
     {
         return dataUser;
+    }
+    
+    /**
+     * Method to create and run a simple spellcheck query
+     * @param query
+     * @param userQuery
+     * @return
+     */
+    protected SearchResponse runSearchSpellcheckQuery(String query, String userQuery)
+    {
+    	SearchRequest searchReq = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery(query);
+        queryReq.setUserQuery(userQuery);
+        searchReq.setQuery(queryReq);
+        searchReq.setSpellcheck(new RestRequestSpellcheckModel());
+        SearchResponse response = query(searchReq);
+        return response;
     }
 
 }
