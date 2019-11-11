@@ -716,7 +716,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     {
         String coreName =
                 ofNullable(coreName(params))
-                    .orElseThrow(() -> new AlfrescoRuntimeException("No " + params.get(CoreAdminParams.CORE + " parameter set.")));
+                    .orElseThrow(() -> new AlfrescoRuntimeException("No " + CoreAdminParams.CORE + " parameter set."));
 
         NamedList<Object> report = new SimpleOrderedMap<>();
         rsp.add(REPORT, report);
@@ -773,7 +773,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     {
         String coreName =
                 ofNullable(coreName(params))
-                        .orElseThrow(() -> new AlfrescoRuntimeException("No " + params.get(CoreAdminParams.CORE + " parameter set.")));
+                        .orElseThrow(() -> new AlfrescoRuntimeException("No " + CoreAdminParams.CORE + " parameter set."));
 
         if (isMasterOrStandalone(coreName))
         {
@@ -869,7 +869,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     {
         String coreName =
                 ofNullable(coreName(params))
-                        .orElseThrow(() -> new AlfrescoRuntimeException("No " + params.get(CoreAdminParams.CORE + " parameter set.")));
+                        .orElseThrow(() -> new AlfrescoRuntimeException("No " + CoreAdminParams.CORE + " parameter set."));
 
         if (isMasterOrStandalone(coreName))
         {
