@@ -286,8 +286,11 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     protected void handleCustomAction(SolrQueryRequest req, SolrQueryResponse rsp)
     {
         SolrParams params = req.getParams();
-        String action = params.get(CoreAdminParams.ACTION);
-        action = Objects.requireNonNullElse(action.toUpperCase(), "");
+        String action =
+                ofNullable(params.get(CoreAdminParams.ACTION))
+                    .map(String::trim)
+                    .map(String::toUpperCase)
+                    .orElse("");
         try
         {
             switch (action)
@@ -651,7 +654,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
     private void actionCHECK(SolrParams params)
     {
-        String cname = params.get(CoreAdminParams.CORE);
+        String cname = coreName(params);
         coreNames().stream()
                 .filter(coreName -> cname == null || coreName.equals(cname))
                 .map(trackerRegistry::getTrackersForCore)
@@ -670,8 +673,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         NamedList<Object> report = new SimpleOrderedMap<>();
         rsp.add(REPORT, report);
 
+        String requestedCoreName = coreName(params);
+
         coreNames().stream()
-                .filter(coreName -> params.get(CoreAdminParams.CORE) == null || coreName.equals(params.get(CoreAdminParams.CORE)))
+                .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
                 .filter(trackerRegistry::hasTrackersForCore)
                 .map(coreName -> new Pair<>(coreName, nodeStatePublisher(coreName)))
                 .filter(coreNameAndPublisher -> coreNameAndPublisher.getSecond() != null)
@@ -691,8 +696,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         NamedList<Object> report = new SimpleOrderedMap<>();
         rsp.add(REPORT, report);
 
+        String requestedCoreName = coreName(params);
+
         coreNames().stream()
-                .filter(coreName -> params.get(CoreAdminParams.CORE) == null || coreName.equals(params.get(CoreAdminParams.CORE)))
+                .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
                 .map(coreName -> new Pair<>(coreName, trackerRegistry.getTrackerForCore(coreName, AclTracker.class)))
                 .filter(coreNameAndAclTracker -> coreNameAndAclTracker.getSecond() != null)
                 .forEach(coreNameAndAclTracker ->
@@ -709,7 +716,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     private void actionTXREPORT(SolrQueryResponse rsp, SolrParams params) throws JSONException
     {
         String coreName =
-                ofNullable(params.get(CoreAdminParams.CORE))
+                ofNullable(coreName(params))
                     .orElseThrow(() -> new AlfrescoRuntimeException("No " + params.get(CoreAdminParams.CORE + " parameter set.")));
 
         NamedList<Object> report = new SimpleOrderedMap<>();
@@ -741,8 +748,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         NamedList<Object> report = new SimpleOrderedMap<>();
         rsp.add(REPORT, report);
 
+        String requestedCoreName = coreName(params);
+
         coreNames().stream()
-                .filter(coreName -> params.get(CoreAdminParams.CORE) == null || coreName.equals(params.get(CoreAdminParams.CORE)))
+                .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
                 .map(coreName -> new Pair<>(coreName, trackerRegistry.getTrackerForCore(coreName, AclTracker.class)))
                 .filter(coreNameAndAclTracker -> coreNameAndAclTracker.getSecond() != null)
                 .forEach(coreNameAndAclTracker ->
@@ -764,7 +773,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     private void rangeCheck(SolrQueryResponse rsp, SolrParams params) throws IOException
     {
         String coreName =
-                ofNullable(params.get(CoreAdminParams.CORE))
+                ofNullable(coreName(params))
                         .orElseThrow(() -> new AlfrescoRuntimeException("No " + params.get(CoreAdminParams.CORE + " parameter set.")));
 
         if (isMasterOrStandalone(coreName))
@@ -860,7 +869,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     private synchronized void expand(SolrQueryResponse rsp, SolrParams params) throws IOException
     {
         String coreName =
-                ofNullable(params.get(CoreAdminParams.CORE))
+                ofNullable(coreName(params))
                         .orElseThrow(() -> new AlfrescoRuntimeException("No " + params.get(CoreAdminParams.CORE + " parameter set.")));
 
         if (isMasterOrStandalone(coreName))
@@ -944,8 +953,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         Long fromAclTx = getSafeLong(params, "fromAclTx");
         Long toAclTx = getSafeLong(params, "toAclTx");
 
+        String requestedCoreName = coreName(params);
+
         coreNames().stream()
-                .filter(coreName -> params.get(CoreAdminParams.CORE) == null || coreName.equals(params.get(CoreAdminParams.CORE)))
+                .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
                 .filter(trackerRegistry::hasTrackersForCore)
                 .filter(this::isMasterOrStandalone)
                 .forEach(coreName ->
@@ -980,8 +991,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     .andThen(apply(params, ARG_ACLID, aclTracker::addAclToPurge));
         };
 
+        String requestedCoreName = coreName(params);
+
         coreNames().stream()
-                .filter(coreName -> params.get(CoreAdminParams.CORE) == null || coreName.equals(params.get(CoreAdminParams.CORE)))
+                .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
                 .filter(this::isMasterOrStandalone)
                 .forEach(purgeOnSpecificCore);
     }
@@ -1000,8 +1013,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             ofNullable(params.get(ARG_QUERY)).ifPresent(metadataTracker::addQueryToReindex);
         };
 
+        String requestedCoreName = coreName(params);
+
         coreNames().stream()
-                .filter(coreName -> params.get(CoreAdminParams.CORE) == null || coreName.equals(params.get(CoreAdminParams.CORE)))
+                .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
                 .filter(this::isMasterOrStandalone)
                 .forEach(reindexOnSpecificCore);
     }
@@ -1026,8 +1041,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             }
         };
 
+        String requestedCoreName = coreName(params);
+
         coreNames().stream()
-                .filter(coreName -> params.get(CoreAdminParams.CORE) == null || coreName.equals(params.get(CoreAdminParams.CORE)))
+                .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
                 .filter(this::isMasterOrStandalone)
                 .forEach(retryOnSpecificCore);
     }
@@ -1044,16 +1061,20 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     .andThen(apply(params, ARG_ACLID, aclTracker::addAclToIndex));
         };
 
+        String requestedCoreName = coreName(params);
+
         coreNames().stream()
-                .filter(coreName -> params.get(CoreAdminParams.CORE) == null || coreName.equals(params.get(CoreAdminParams.CORE)))
+                .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
                 .filter(this::isMasterOrStandalone)
                 .forEach(indexOnSpecificCore);
     }
 
     private void actionFIX(SolrParams params) throws JSONException
     {
+        String requestedCoreName = coreName(params);
+
         coreNames().stream()
-                .filter(coreName -> params.get(CoreAdminParams.CORE) == null || coreName.equals(params.get(CoreAdminParams.CORE)))
+                .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
                 .filter(this::isMasterOrStandalone)
                 .forEach(this::fixOnSpecificCore);
     }
@@ -1097,8 +1118,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         NamedList<Object> report = new SimpleOrderedMap<>();
         rsp.add("Summary", report);
 
+        String requestedCoreName = coreName(params);
+
         coreNames().stream()
-                .filter(coreName -> params.get(CoreAdminParams.CORE) == null || coreName.equals(params.get(CoreAdminParams.CORE)))
+                .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
                 .filter(this::isMasterOrStandalone)
                 .forEach(coreName -> coreSummary(params, report, coreName));
     }
@@ -1220,12 +1243,12 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                         "Please re-submit the same request to the corresponding Master");
     }
 
-    private BiConsumer<String, Consumer<Long>> apply(SolrParams params, String parameterName, Consumer<Long> action)
+    private BiConsumer<String, Consumer<Long>> apply(SolrParams params, String parameterName, Consumer<Long> executeSideEffectAction)
     {
         return (parameter, consumer) ->
                 ofNullable(params.get(parameterName))
                         .map(Long::valueOf)
-                        .ifPresent(action);
+                        .ifPresent(executeSideEffectAction);
     }
 
     private Collection<String> coreNames()
