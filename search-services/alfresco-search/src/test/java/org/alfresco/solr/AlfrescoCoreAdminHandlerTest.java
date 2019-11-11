@@ -29,6 +29,8 @@ import static org.alfresco.solr.AlfrescoCoreAdminHandler.STORE_REF_MAP;
 import static org.alfresco.solr.AlfrescoCoreAdminHandler.VERSION_CORE_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -48,11 +50,15 @@ import java.util.stream.Collectors;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.adapters.IOpenBitSet;
 import org.alfresco.solr.tracker.AclTracker;
+import org.alfresco.solr.tracker.DocRouter;
 import org.alfresco.solr.tracker.IndexHealthReport;
 import org.alfresco.solr.tracker.MetadataTracker;
+import org.alfresco.solr.tracker.PropertyRouter;
+import org.alfresco.solr.tracker.SlaveCoreStatePublisher;
 import org.alfresco.solr.tracker.TrackerRegistry;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CoreAdminParams;
+import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.SolrCore;
@@ -169,7 +175,6 @@ public class AlfrescoCoreAdminHandlerTest
     @Test
     public void hasAlfrescoCoreWhenDoesntHaveAnyTracker_shouldReturnFalse()
     {
-        when(trackerRegistry.hasTrackersForCore(anyString())).thenReturn(false);
         assertFalse(alfrescoCoreAdminHandler.hasAlfrescoCore(emptyList()));
     }
 
@@ -179,6 +184,95 @@ public class AlfrescoCoreAdminHandlerTest
         when(trackerRegistry.hasTrackersForCore("CoreD")).thenReturn(true);
         assertTrue(alfrescoCoreAdminHandler.hasAlfrescoCore(asList(dummyCore("CoreA"), dummyCore("CoreB"), dummyCore("CoreC"), dummyCore("CoreD"))));
     }
+
+    @Test
+    public void trackerRegistryHasNoCoreNames_itShouldReturnAnEmptyList()
+    {
+        assertTrue(alfrescoCoreAdminHandler.coreNames().isEmpty());
+    }
+
+    @Test
+    public void coreDetectedAsMasterOrStandalone()
+    {
+        MetadataTracker coreStatePublisher = mock(MetadataTracker.class);
+
+        when(trackerRegistry.getTrackerForCore(anyString(), eq(MetadataTracker.class)))
+                .thenReturn(coreStatePublisher);
+
+        assertTrue(alfrescoCoreAdminHandler.isMasterOrStandalone("ThisIsTheCoreName"));
+    }
+
+    @Test
+    public void coreDetectedAsSlave()
+    {
+        when(trackerRegistry.getTrackerForCore(anyString(), eq(MetadataTracker.class))).thenReturn(null);
+        assertFalse(alfrescoCoreAdminHandler.isMasterOrStandalone("ThisIsTheCoreName"));
+    }
+
+    @Test
+    public void coreIsMaster_thenCoreStatePublisherInstanceCorrespondsToMetadataTracker()
+    {
+        MetadataTracker coreStatePublisher = mock(MetadataTracker.class);
+
+        when(trackerRegistry.getTrackerForCore(anyString(), eq(MetadataTracker.class)))
+                .thenReturn(coreStatePublisher);
+
+        assertSame(coreStatePublisher, alfrescoCoreAdminHandler.coreStatePublisher("ThisIsTheCoreName"));
+    }
+
+    @Test
+    public void coreIsSlave_thenCoreStatePublisherInstanceCorrespondsToSlaveCoreStatePublisher()
+    {
+        SlaveCoreStatePublisher coreStatePublisher = mock(SlaveCoreStatePublisher.class);
+
+        when(trackerRegistry.getTrackerForCore(anyString(), eq(MetadataTracker.class))).thenReturn(null);
+        when(trackerRegistry.getTrackerForCore(anyString(), eq(SlaveCoreStatePublisher.class))).thenReturn(coreStatePublisher);
+
+        assertSame(coreStatePublisher, alfrescoCoreAdminHandler.coreStatePublisher("ThisIsTheCoreName"));
+    }
+
+    @Test
+    public void coreIsSlave_thenDocRouterIsNull()
+    {
+        String coreName = "aCore";
+        when(trackerRegistry.getTrackerForCore(eq(coreName), eq(MetadataTracker.class))).thenReturn(null);
+        assertNull(alfrescoCoreAdminHandler.getDocRouter("aCore"));
+    }
+
+    @Test
+    public void coreIsMaster_thenDocRouterIsProperlyReturned()
+    {
+        DocRouter expectedRouter = new PropertyRouter("someProperty_.{1,35}");
+
+        MetadataTracker coreStatePublisher = mock(MetadataTracker.class);
+        when(coreStatePublisher.getDocRouter()).thenReturn(expectedRouter);
+        when(trackerRegistry.getTrackerForCore(anyString(), eq(MetadataTracker.class))).thenReturn(coreStatePublisher);
+
+        assertSame(expectedRouter, alfrescoCoreAdminHandler.getDocRouter("aCore"));
+    }
+
+    @Test
+    public void targetCoreNameCanBeSpecifiedInSeveralWays()
+    {
+        String coreName = "ThisIsTheCoreName";
+
+        ModifiableSolrParams params = new ModifiableSolrParams();
+
+        assertNull(alfrescoCoreAdminHandler.coreName(params));
+
+        params.set(CoreAdminParams.CORE, coreName);
+
+        assertEquals(coreName, alfrescoCoreAdminHandler.coreName(params));
+
+        params.remove(CoreAdminParams.CORE);
+        assertNull(alfrescoCoreAdminHandler.coreName(params));
+
+        params.set("coreName", coreName);
+
+        assertEquals(coreName, alfrescoCoreAdminHandler.coreName(params));
+        assertEquals(coreName, alfrescoCoreAdminHandler.coreName(params));
+    }
+
 
     private SolrCore dummyCore(String name)
     {
@@ -225,8 +319,6 @@ public class AlfrescoCoreAdminHandlerTest
     public void handleCustomActionTXReportMissingTXId()
     {
         when(params.get(CoreAdminParams.ACTION)).thenReturn(TXREPORT);
-        when(params.get(ARG_TXID)).thenReturn(null);
-
         alfrescoCoreAdminHandler.handleCustomAction(req, rsp);
 
         verify(rsp, never()).add(anyString(), any());
@@ -238,11 +330,8 @@ public class AlfrescoCoreAdminHandlerTest
     {
         when(params.get(CoreAdminParams.ACTION)).thenReturn(TXREPORT);
         when(params.get(CoreAdminParams.CORE)).thenReturn(null);
-        when(params.get(ARG_TXID)).thenReturn(TX_ID);
 
         alfrescoCoreAdminHandler.handleCustomAction(req, rsp);
-
-        verify(rsp, never()).add(anyString(), any());
     }
 
     /** Check that when an unknown action is provided we don't generate a report. */

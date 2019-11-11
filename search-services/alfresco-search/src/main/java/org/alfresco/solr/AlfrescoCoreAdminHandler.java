@@ -70,7 +70,6 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -593,8 +592,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 .anyMatch(trackerRegistry::hasTrackersForCore);
     }
 
-    // :::::
-
     private void updateShared(SolrQueryRequest req)
     {
         SolrParams params = req.getParams();
@@ -604,7 +601,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             File config = new File(AlfrescoSolrDataModel.getResourceDirectory(), AlfrescoSolrDataModel.SHARED_PROPERTIES);
             updateSharedProperties(params, config, hasAlfrescoCore(coreContainer.getCores()));
 
-            coreContainer.getCores().forEach(aCore -> coreContainer.reload(aCore.getName()));
+            coreContainer.getCores().stream()
+                    .map(SolrCore::getName)
+                    .forEach(coreContainer::reload);
         }
         catch (IOException e)
         {
@@ -678,7 +677,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         coreNames().stream()
                 .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
                 .filter(trackerRegistry::hasTrackersForCore)
-                .map(coreName -> new Pair<>(coreName, nodeStatePublisher(coreName)))
+                .map(coreName -> new Pair<>(coreName, coreStatePublisher(coreName)))
                 .filter(coreNameAndPublisher -> coreNameAndPublisher.getSecond() != null)
                 .forEach(coreNameAndPublisher ->
                         report.add(
@@ -985,10 +984,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             final MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
             final AclTracker aclTracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
 
-            apply(params, ARG_TXID, metadataTracker::addTransactionToPurge)
-                    .andThen(apply(params, ARG_ACLTXID, aclTracker::addAclChangeSetToPurge))
-                    .andThen(apply(params, ARG_NODEID, metadataTracker::addNodeToPurge))
-                    .andThen(apply(params, ARG_ACLID, aclTracker::addAclToPurge));
+            apply(params, ARG_TXID, metadataTracker::addTransactionToPurge);
+            apply(params, ARG_ACLTXID, aclTracker::addAclChangeSetToPurge);
+            apply(params, ARG_NODEID, metadataTracker::addNodeToPurge);
+            apply(params, ARG_ACLID, aclTracker::addAclToPurge);
         };
 
         String requestedCoreName = coreName(params);
@@ -1005,10 +1004,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             final MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
             final AclTracker aclTracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
 
-            apply(params, ARG_TXID, metadataTracker::addTransactionToReindex)
-                    .andThen(apply(params, ARG_ACLTXID, aclTracker::addAclChangeSetToReindex))
-                    .andThen(apply(params, ARG_NODEID, metadataTracker::addNodeToReindex))
-                    .andThen(apply(params, ARG_ACLID, aclTracker::addAclToReindex));
+            apply(params, ARG_TXID, metadataTracker::addTransactionToReindex);
+            apply(params, ARG_ACLTXID, aclTracker::addAclChangeSetToReindex);
+            apply(params, ARG_NODEID, metadataTracker::addNodeToReindex);
+            apply(params, ARG_ACLID, aclTracker::addAclToReindex);
 
             ofNullable(params.get(ARG_QUERY)).ifPresent(metadataTracker::addQueryToReindex);
         };
@@ -1055,10 +1054,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             final MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
             final AclTracker aclTracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
 
-            apply(params, ARG_TXID, metadataTracker::addTransactionToIndex)
-                    .andThen(apply(params, ARG_ACLTXID, aclTracker::addAclChangeSetToIndex))
-                    .andThen(apply(params, ARG_NODEID, metadataTracker::addNodeToIndex))
-                    .andThen(apply(params, ARG_ACLID, aclTracker::addAclToIndex));
+            apply(params, ARG_TXID, metadataTracker::addTransactionToIndex);
+            apply(params, ARG_ACLTXID, aclTracker::addAclChangeSetToIndex);
+            apply(params, ARG_NODEID, metadataTracker::addNodeToIndex);
+            apply(params, ARG_ACLID, aclTracker::addAclToIndex);
         };
 
         String requestedCoreName = coreName(params);
@@ -1113,7 +1112,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
-    private void actionSUMMARY(SolrQueryResponse rsp, SolrParams params)
+    void actionSUMMARY(SolrQueryResponse rsp, SolrParams params)
     {
         NamedList<Object> report = new SimpleOrderedMap<>();
         rsp.add("Summary", report);
@@ -1122,7 +1121,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
         coreNames().stream()
                 .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
-                .filter(this::isMasterOrStandalone)
                 .forEach(coreName -> coreSummary(params, report, coreName));
     }
 
@@ -1162,13 +1160,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
-    private DocRouter getDocRouter(String cname)
+    DocRouter getDocRouter(String cname)
     {
-        return notNullOrEmpty(trackerRegistry.getTrackersForCore(cname))
-                .stream()
-                .filter(tracker -> tracker instanceof MetadataTracker)
-                .findAny()
-                .map(MetadataTracker.class::cast)
+        return ofNullable(trackerRegistry.getTrackerForCore(cname, MetadataTracker.class))
                 .map(MetadataTracker::getDocRouter)
                 .orElse(null);
     }
@@ -1211,7 +1205,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * @param coreName the owning core name.
      * @return the component which is in charge to publish the core state.
      */
-    private CoreStatePublisher nodeStatePublisher(String coreName)
+    CoreStatePublisher coreStatePublisher(String coreName)
     {
         return ofNullable(trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class))
                 .map(CoreStatePublisher.class::cast)
@@ -1224,7 +1218,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * @param coreName the core name.
      * @return true if the name is associated with a master or standalone mode, false otherwise.
      */
-    private boolean isMasterOrStandalone(String coreName)
+    boolean isMasterOrStandalone(String coreName)
     {
         return trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class) != null;
     }
@@ -1243,17 +1237,16 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                         "Please re-submit the same request to the corresponding Master");
     }
 
-    private BiConsumer<String, Consumer<Long>> apply(SolrParams params, String parameterName, Consumer<Long> executeSideEffectAction)
-    {
-        return (parameter, consumer) ->
-                ofNullable(params.get(parameterName))
-                        .map(Long::valueOf)
-                        .ifPresent(executeSideEffectAction);
-    }
-
-    private Collection<String> coreNames()
+    Collection<String> coreNames()
     {
         return notNullOrEmpty(trackerRegistry.getCoreNames());
+    }
+
+    private void apply(SolrParams params, String parameterName, Consumer<Long> executeSideEffectAction)
+    {
+        ofNullable(params.get(parameterName))
+                .map(Long::valueOf)
+                .ifPresent(executeSideEffectAction);
     }
 
     /**
@@ -1264,7 +1257,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * @param params the request parameters.
      * @return the core name specified in the request, null if the parameter is not found.
      */
-    private String coreName(SolrParams params)
+    String coreName(SolrParams params)
     {
         return CORE_PARAMETER_NAMES.stream()
                 .map(params::get)
