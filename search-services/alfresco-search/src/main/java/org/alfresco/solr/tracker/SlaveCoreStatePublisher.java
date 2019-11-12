@@ -14,8 +14,8 @@ import java.util.Properties;
 
 /**
  * Despite belonging to the Tracker ecosystem, this component is actually a publisher, which periodically informs
- * Alfresco about the state of the hosting slave node.
- * As the name suggests, this worker is scheduled only when the hosting node acts as a slave.
+ * Alfresco about the state of the hosting slave core.
+ * As the name suggests, this worker is scheduled only when the owning core acts as a slave.
  * It allows Solr's master/slave setup to be used with dynamic shard registration.
  *
  * In this scenario the slave is polling a "tracking" Solr node. The tracker below calls
@@ -27,9 +27,9 @@ import java.util.Properties;
  * @author Andrea Gazzarini
  * @since 1.5
  */
-public class SlaveNodeStatePublisher extends NodeStatePublisher
+public class SlaveCoreStatePublisher extends CoreStatePublisher
 {
-    public SlaveNodeStatePublisher(
+    public SlaveCoreStatePublisher(
             boolean isMaster,
             Properties coreProperties,
             SOLRAPIClient repositoryClient,
@@ -59,6 +59,12 @@ public class SlaveNodeStatePublisher extends NodeStatePublisher
     public void maintenance()
     {
         // Do nothing here
+    }
+
+    @Override
+    public boolean isOnMasterOrStandalone()
+    {
+        return false;
     }
 
     @Override
