@@ -263,7 +263,7 @@ public class ChangeSet implements AutoCloseable
 
         if (adds.isEmpty() && deletes.isEmpty())
         {
-            LOGGER.debug("no changes in contentstore to flush");
+            LOGGER.debug("No changes in contentstore to flush");
             return;
         }
 
