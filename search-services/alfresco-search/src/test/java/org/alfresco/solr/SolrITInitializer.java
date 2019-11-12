@@ -4,6 +4,7 @@ import com.carrotsearch.randomizedtesting.annotations.ThreadLeakLingering;
 import org.alfresco.solr.basics.RandomSupplier;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.util.Time;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.embedded.JettyConfig;
@@ -319,8 +320,10 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
     {
         boolean basicAuth = additionalProperties != null ? Boolean.parseBoolean(additionalProperties.getProperty("BasicAuth", "false")) : false;
 
-        JettySolrRunner jsr =  createJetty(jettyKey, basicAuth);
-        jettyContainers.put(jettyKey, jsr);
+        String mainKey = jettyKey + "main_" + Time.now() + "/solrhome";
+
+        JettySolrRunner jsr =  createJetty(mainKey, basicAuth);
+        jettyContainers.put(mainKey, jsr);
 
         Properties properties = new Properties();
 
@@ -331,7 +334,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
 
         for (int i = 0; i < coreNames.length; i++) 
         {
-            addCoreToJetty(jettyKey, coreNames[i], coreNames[i], properties);
+            addCoreToJetty(mainKey, coreNames[i], coreNames[i], properties);
         }
 
         //Now start jetty
@@ -366,7 +369,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
                 props.put("shard.range", ranges[i]);
             }
 
-            String shardKey = jettyKey+"_shard_"+i+"/solrhome";
+            String shardKey = jettyKey+"_shard_" + i + "_" + Time.now() + "/solrhome";
             JettySolrRunner j =  createJetty(shardKey, basicAuth);
             //use the first corename specified as the Share template
             addCoreToJetty(shardKey, coreNames[0], shardname, props);
@@ -384,7 +387,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
 
     protected static void destroyServers() throws Exception
     {
-        List<String> solrHomes = new ArrayList<String>();
+        List<String> solrHomes = new ArrayList<>();
         for (JettySolrRunner jetty : jettyContainers.values())
         {
             solrHomes.add(jetty.getSolrHome());

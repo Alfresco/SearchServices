@@ -24,8 +24,10 @@ import org.alfresco.solr.client.AclChangeSet;
 import org.alfresco.solr.client.AclReaders;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.Transaction;
 import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.util.Time;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
 import org.apache.solr.SolrTestCaseJ4;
@@ -94,8 +96,11 @@ public class ContentStoreReplicationIT extends AbstractAlfrescoDistributedIT
         String coreName = "master";
         boolean basicAuth = Boolean.parseBoolean(properties.getProperty("BasicAuth", "false"));
 
-        String masterKey = "master/solrHome";
-        String slaveKey = "slave/solrHome";
+        String masterDir = "master" + Time.now();
+        String slaveDir = "slave" + Time.now();
+
+        String masterKey = masterDir + "/solrHome";
+        String slaveKey = slaveDir + "/solrHome";
 
         master = createJetty(masterKey, basicAuth);
         addCoreToJetty(masterKey, coreName, coreName, null);
@@ -117,8 +122,8 @@ public class ContentStoreReplicationIT extends AbstractAlfrescoDistributedIT
 
         masterSolrHome = testDir.toPath().resolve(masterKey);
         slaveSolrHome = testDir.toPath().resolve(slaveKey);
-        masterContentStore = testDir.toPath().resolve("master/contentstore");
-        slaveContentStore = testDir.toPath().resolve("slave/contentstore");
+        masterContentStore = testDir.toPath().resolve(masterDir + "/contentstore");
+        slaveContentStore = testDir.toPath().resolve(slaveDir + "/contentstore");
 
         AclChangeSet aclChangeSet = getAclChangeSet(1);
 
@@ -132,16 +137,26 @@ public class ContentStoreReplicationIT extends AbstractAlfrescoDistributedIT
 
 
     @AfterClass
-    public static void cleanupMasterSlave() throws Exception {
+    public static void cleanupMasterSlave() throws Exception
+    {
         master.stop();
         slave.stop();
         FileUtils.forceDelete(new File(masterSolrHome.getParent().toUri()));
         FileUtils.forceDelete(new File(slaveSolrHome.getParent().toUri()));
+
+        SOLRAPIQueueClient.nodeMetaDataMap.clear();
+        SOLRAPIQueueClient.transactionQueue.clear();
+        SOLRAPIQueueClient.aclChangeSetQueue.clear();
+        SOLRAPIQueueClient.aclReadersMap.clear();
+        SOLRAPIQueueClient.aclMap.clear();
+        SOLRAPIQueueClient.nodeMap.clear();
+        SOLRAPIQueueClient.nodeContentMap.clear();
     }
 
 
     @Test
-    public void contentStoreReplicationTest() throws Exception {
+    public void contentStoreReplicationTest() throws Exception
+    {
         // ADD 250 nodes and check they are replicated
         int numNodes = 250;
         Transaction bigTxn = getTransaction(0, numNodes);
@@ -231,7 +246,8 @@ public class ContentStoreReplicationIT extends AbstractAlfrescoDistributedIT
     }
 
 
-    private static boolean waitForContentStoreSync(long waitMillis) throws InterruptedException {
+    private static boolean waitForContentStoreSync(long waitMillis) throws InterruptedException
+    {
 
         long startMillis = System.currentTimeMillis();
         long timeout = startMillis + waitMillis;
@@ -254,7 +270,8 @@ public class ContentStoreReplicationIT extends AbstractAlfrescoDistributedIT
         return false;
     }
 
-    private static void setMasterUrl(String jettyKey, String coreName, String masterUrl) throws IOException {
+    private static void setMasterUrl(String jettyKey, String coreName, String masterUrl) throws IOException
+    {
         Path jettySolrHome = testDir.toPath().resolve(jettyKey);
         Path coreHome = jettySolrHome.resolve(coreName);
         Path confDir = coreHome.resolve("conf");
