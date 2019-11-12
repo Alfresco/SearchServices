@@ -3894,7 +3894,8 @@ public class SolrInformationServer implements InformationServer
     }
 
     @Override
-    public void flushContentStore() throws IOException {
+    public void flushContentStore() throws IOException
+    {
         solrContentStore.flushChangeSet();
     }
 }
