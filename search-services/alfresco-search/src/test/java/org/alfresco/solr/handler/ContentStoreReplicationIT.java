@@ -102,13 +102,13 @@ public class ContentStoreReplicationIT extends AbstractAlfrescoDistributedIT
         String masterKey = masterDir + "/solrHome";
         String slaveKey = slaveDir + "/solrHome";
 
-        master = createJetty(masterKey, basicAuth);
+        master = createJetty("master", masterKey, basicAuth);
         addCoreToJetty(masterKey, coreName, coreName, null);
         startJetty(master);
 
 
         String slaveCoreName = "slave";
-        slave = createJetty(slaveKey, basicAuth);
+        slave = createJetty("slave", slaveKey, basicAuth);
         addCoreToJetty(slaveKey, slaveCoreName, slaveCoreName, null);
         setMasterUrl(slaveKey, slaveCoreName, master.getBaseUrl().toString() + "/master");
 
