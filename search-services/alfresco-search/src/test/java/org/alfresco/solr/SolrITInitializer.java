@@ -233,7 +233,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
      * @return
      * @throws Exception
      */
-    protected static JettySolrRunner createJetty(String jettyKey, String solrhome, boolean basicAuth) throws Exception
+    protected static JettySolrRunner createJetty(String jettyKey, boolean basicAuth) throws Exception
     {
         if (jettyContainers.containsKey(jettyKey))
         {
@@ -241,7 +241,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         }
         else
         {
-            Path jettySolrHome = testDir.toPath().resolve(solrhome);
+            Path jettySolrHome = testDir.toPath().resolve(jettyKey);
             seedSolrHome(jettySolrHome);
             JettySolrRunner jetty = createJetty(jettySolrHome.toFile(), null, null, false, 0, getSchemaFile(), basicAuth);
             return jetty;
@@ -310,9 +310,8 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
     {
         boolean basicAuth = additionalProperties != null ? Boolean.parseBoolean(additionalProperties.getProperty("BasicAuth", "false")) : false;
 
-        String solrHome = jettyKey + "main_" + Time.now() + "/solrhome";
 
-        JettySolrRunner jsr =  createJetty(jettyKey, solrHome, basicAuth);
+        JettySolrRunner jsr =  createJetty(jettyKey, basicAuth);
         jettyContainers.put(jettyKey, jsr);
 
         Properties properties = new Properties();
@@ -324,7 +323,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
 
         for (int i = 0; i < coreNames.length; i++) 
         {
-            addCoreToJetty(solrHome, coreNames[i], coreNames[i], properties);
+            addCoreToJetty(jettyKey, coreNames[i], coreNames[i], properties);
         }
 
         //Now start jetty
@@ -359,8 +358,8 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
                 props.put("shard.range", ranges[i]);
             }
 
-            String shardKey = jettyKey+"_shard_" + i + "_" + Time.now() + "/solrhome";
-            JettySolrRunner j =  createJetty(shardKey, shardKey, basicAuth);
+            String shardKey = jettyKey+"_shard_" + i + "/solrhome";
+            JettySolrRunner j =  createJetty(shardKey, basicAuth);
             //use the first corename specified as the Share template
             addCoreToJetty(shardKey, coreNames[0], shardname, props);
             solrShards.add(j);
