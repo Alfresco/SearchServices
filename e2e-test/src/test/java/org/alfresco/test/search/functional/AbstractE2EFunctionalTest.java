@@ -19,11 +19,14 @@ import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.TasProperties;
 import org.alfresco.utility.Utility;
+import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.network.ServerHealth;
@@ -83,8 +86,8 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     @Getter(value = PROTECTED)
     private ContentService contentService;
 
-    protected UserModel testUser, adminUserModel;
-    protected SiteModel testSite;
+    protected UserModel testUser, adminUserModel, testUser2;
+    protected SiteModel testSite, testSite2;
 
     protected static String unique_searchString;
     
@@ -404,25 +407,6 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     }
     
     /**
-     * Method to create and run a simple spellcheck query
-     * @param query
-     * @param userQuery
-     * @return
-     */
-    protected SearchResponse SearchSpellcheckQuery(UserModel user, String query, String userQuery)
-    {    
-        UserModel searchUser = ofNullable(user).isPresent()? user: testUser;
-        SearchRequest searchReq = new SearchRequest();
-        RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery(query);
-        queryReq.setUserQuery(userQuery);
-        searchReq.setQuery(queryReq);
-        searchReq.setSpellcheck(new org.alfresco.rest.model.RestRequestSpellcheckModel());
-        SearchResponse response = queryAsUser(searchUser, queryReq);
-        return response;
-    }
-
-    /**
      * Helper method to test if the search query works and count matches where provided
      * @param query: AFTS or cmis query string
      * @param expectedCount: Only successful response is checked, when expectedCount is null (can not be exactly specified), 
@@ -449,5 +433,65 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         }
 
         return response;
+    }
+    
+    /**
+     * Method to create and run a simple spellcheck query
+     * @param query
+     * @param userQuery
+     * @return
+     */
+    protected SearchResponse SearchSpellcheckQuery(UserModel user, String query, String userQuery)
+    {    
+        UserModel searchUser = ofNullable(user).isPresent()? user: testUser;
+        SearchRequest searchReq = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery(query);
+        queryReq.setUserQuery(userQuery);
+        searchReq.setQuery(queryReq);
+        searchReq.setSpellcheck(new org.alfresco.rest.model.RestRequestSpellcheckModel());
+        SearchResponse response = queryAsUser(searchUser, queryReq);
+        return response;
+    }
+    
+    /**
+     * Method to test the ACL test for spellcheck 
+     */
+    public void setupACLSpellcheckTest()
+    {
+        serverHealth.assertServerIsOnline();
+        
+        //User 1 is created
+        testUser = dataUser.createRandomTestUser("User1");
+        
+        //User 2 is created
+        testUser2 = dataUser.createRandomTestUser("User2");  
+
+        //Site 1 is set to a private site
+        testSite = new SiteModel(RandomData.getRandomName("Site1"));
+        testSite.setVisibility(Visibility.PRIVATE);
+        
+        testSite = dataSite.usingUser(testUser).createSite(testSite);
+        
+        testSite2 = new SiteModel(RandomData.getRandomName("Site2"));
+        testSite2.setVisibility(Visibility.PRIVATE);
+       
+        testSite2 = dataSite.usingUser(testUser).createSite(testSite2);
+        
+        getDataUser().addUserToSite(testUser2, testSite, UserRole.SiteCollaborator);
+        
+        FileModel file1 = new FileModel("prize", "", "", FileType.TEXT_PLAIN, "prize");
+ 
+        dataContent.usingUser(testUser).usingSite(testSite).createContent(file1);
+        
+        waitForContentIndexing(file1.getContent(), true);
+        
+        FileModel file2 = new FileModel("prime", "", "", FileType.TEXT_PLAIN, "prime");
+        
+        dataContent.usingUser(testUser).usingSite(testSite).createContent(file2);
+        
+        dataContent.usingUser(testUser).usingSite(testSite2).createContent(file2);
+        
+        waitForContentIndexing(file2.getContent(), true);
     }
 }

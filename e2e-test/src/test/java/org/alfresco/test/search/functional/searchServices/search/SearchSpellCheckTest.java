@@ -18,12 +18,15 @@
  */
 package org.alfresco.test.search.functional.searchServices.search;
 
+import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.model.RestRequestSpellcheckModel;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
+import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.model.SiteModel;
 import org.alfresco.search.TestGroup;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -400,4 +403,48 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 		response.assertThat().entriesListIsEmpty();
 		response.getContext().assertThat().field("spellCheck").isNull();
 	}
+	
+	/**
+	 * This is a test to check the ACL tracker works with spellcheck enabled
+	 * 
+	 * @throws Exception
+	 */
+	@Test(groups = { TestGroup.ACS_60n }, priority = 7)
+	public void testSpellCheckACL() throws Exception {
+		
+		setupACLSpellcheckTest();
+		
+		SearchResponse response = SearchSpellcheckQuery(testUser, "prive", "prive");
+        
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("prime");
+		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
+		
+		response = SearchSpellcheckQuery(testUser, "prize", "prize");
+        
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("prime");
+		response.getContext().getSpellCheck().assertThat().field("type").is("didYouMean");
+		
+		response = SearchSpellcheckQuery(testUser, "priez", "priez");
+        
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("prize");
+		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
+		
+		response = SearchSpellcheckQuery(testUser, "prime", "prime");
+
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNull();
+		
+		response = SearchSpellcheckQuery(testUser2, "price", "price");
+        
+		response.assertThat().entriesListIsNotEmpty();
+		response.getContext().assertThat().field("spellCheck").isNotEmpty();
+		response.getContext().getSpellCheck().assertThat().field("suggestions").contains("prime");
+		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
+	}	
 }
