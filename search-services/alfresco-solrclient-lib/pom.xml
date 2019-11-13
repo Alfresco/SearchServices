@@ -22,7 +22,7 @@
     </distributionManagement>
 
     <properties>
-        <dependency.alfresco-data-model.version>8.52</dependency.alfresco-data-model.version>
+        <dependency.alfresco-data-model.version>8.53</dependency.alfresco-data-model.version>
         <dependency.jackson.version>2.10.0</dependency.jackson.version>
     </properties>
 
@@ -73,7 +73,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.28</version>
+            <version>1.7.29</version>
         </dependency>
     </dependencies>
 

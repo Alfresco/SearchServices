@@ -288,11 +288,6 @@ public class AclTracker extends AbstractTracker
     protected void trackRepository() throws IOException, AuthenticationException, JSONException
     {
         checkShutdown();
-        
-        if(!isMaster && isSlave)
-        {
-            return;
-        }
 
         TrackerState state = super.getTrackerState();
 

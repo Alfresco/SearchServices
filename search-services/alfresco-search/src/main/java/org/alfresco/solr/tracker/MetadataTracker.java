@@ -20,27 +20,15 @@ package org.alfresco.solr.tracker;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AuthenticationException;
-import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
-import org.alfresco.repo.dictionary.NamespaceDAO;
-import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.repo.index.shard.ShardState;
-import org.alfresco.repo.index.shard.ShardStateBuilder;
-import org.alfresco.repo.search.impl.QueryParserUtils;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.solr.AlfrescoCoreAdminHandler;
-import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.BoundedDeque;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.NodeReport;
@@ -53,95 +41,41 @@ import org.alfresco.solr.client.SOLRAPIClient;
 import org.alfresco.solr.client.Transaction;
 import org.alfresco.solr.client.Transactions;
 import org.apache.commons.codec.EncoderException;
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static java.util.Optional.of;
-
-import static java.util.Optional.ofNullable;
-import static org.alfresco.solr.tracker.DocRouterFactory.SHARD_KEY_KEY;
 
 /*
  * This tracks two things: transactions and metadata nodes
  * @author Ahmed Owian
  */
-public class MetadataTracker extends AbstractTracker implements Tracker
+public class MetadataTracker extends CoreStatePublisher implements Tracker
 {
-
     protected final static Logger log = LoggerFactory.getLogger(MetadataTracker.class);
     private static final int DEFAULT_TRANSACTION_DOCS_BATCH_SIZE = 100;
     private static final int DEFAULT_NODE_BATCH_SIZE = 10;
     private int transactionDocsBatchSize = DEFAULT_TRANSACTION_DOCS_BATCH_SIZE;
     private int nodeBatchSize = DEFAULT_NODE_BATCH_SIZE;
-    private ConcurrentLinkedQueue<Long> transactionsToReindex = new ConcurrentLinkedQueue<Long>();
-    private ConcurrentLinkedQueue<Long> transactionsToIndex = new ConcurrentLinkedQueue<Long>();
-    private ConcurrentLinkedQueue<Long> transactionsToPurge = new ConcurrentLinkedQueue<Long>();
-    private ConcurrentLinkedQueue<Long> nodesToReindex = new ConcurrentLinkedQueue<Long>();
-    private ConcurrentLinkedQueue<Long> nodesToIndex = new ConcurrentLinkedQueue<Long>();
-    private ConcurrentLinkedQueue<Long> nodesToPurge = new ConcurrentLinkedQueue<Long>();
-    private ConcurrentLinkedQueue<String> queriesToReindex = new ConcurrentLinkedQueue<String>();
-    private DocRouter docRouter;
-    /** The string representation of the shard key. */
-    private Optional<String> shardKey;
-    /** The property to use for determining the shard. */
-    private Optional<QName> shardProperty = Optional.empty();
+    private ConcurrentLinkedQueue<Long> transactionsToReindex = new ConcurrentLinkedQueue<>();
+    private ConcurrentLinkedQueue<Long> transactionsToIndex = new ConcurrentLinkedQueue<>();
+    private ConcurrentLinkedQueue<Long> transactionsToPurge = new ConcurrentLinkedQueue<>();
+    private ConcurrentLinkedQueue<Long> nodesToReindex = new ConcurrentLinkedQueue<>();
+    private ConcurrentLinkedQueue<Long> nodesToIndex = new ConcurrentLinkedQueue<>();
+    private ConcurrentLinkedQueue<Long> nodesToPurge = new ConcurrentLinkedQueue<>();
+    private ConcurrentLinkedQueue<String> queriesToReindex = new ConcurrentLinkedQueue<>();
 
-    public MetadataTracker(Properties p, SOLRAPIClient client, String coreName,
+    public MetadataTracker(final boolean isMaster, Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
     {
-        super(p, client, coreName, informationServer, Tracker.Type.MetaData);
+        super(isMaster, p, client, coreName, informationServer, Tracker.Type.METADATA);
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
-        shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
-        shardKey = ofNullable(p.getProperty(SHARD_KEY_KEY));
-        firstUpdateShardProperty();
-        docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
     }
 
-    /**
-     * Set the shard property using the shard key.
-     */
-    private void updateShardProperty()
-    {
-        shardKey.ifPresent(shardKeyName -> {
-            Optional<QName> updatedShardProperty = getShardProperty(shardKeyName);
-            if (!shardProperty.equals(updatedShardProperty))
-            {
-                if (updatedShardProperty.isEmpty())
-                {
-                    log.warn("The model defining " + shardKeyName + " property has been disabled");
-                }
-                else
-                {
-                    log.info("New " + SHARD_KEY_KEY + " property found for " + shardKeyName);
-                }
-            }
-            shardProperty = updatedShardProperty;
-        });
-    }
-
-    private void firstUpdateShardProperty()
-    {
-        shardKey.ifPresent( shardKeyName -> {
-            updateShardProperty();
-            if (shardProperty.isEmpty())
-            {
-                log.warn("Sharding property " + SHARD_KEY_KEY + " was set to " + shardKeyName + ", but no such property was found.");
-            }
-        });
-    }
-
-
     MetadataTracker()
     {
-        super(Tracker.Type.MetaData);
-    }
-
-    public DocRouter getDocRouter() {
-        return this.docRouter;
+        super(Tracker.Type.METADATA);
     }
 
     @Override
@@ -160,7 +94,8 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         }
     }
 
-    public void maintenance() throws Exception {
+    public void maintenance() throws Exception
+    {
         purgeTransactions();
         purgeNodes();
         reindexTransactions();
@@ -170,7 +105,8 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         indexNodes();
     }
 
-    public boolean hasMaintenance() throws Exception {
+    public boolean hasMaintenance()
+    {
         return  transactionsToReindex.size() > 0 ||
                 transactionsToIndex.size() > 0 ||
                 transactionsToPurge.size() > 0 ||
@@ -180,29 +116,10 @@ public class MetadataTracker extends AbstractTracker implements Tracker
                 queriesToReindex.size() > 0;
     }
 
-
-
     private void trackRepository() throws IOException, AuthenticationException, JSONException, EncoderException
     {
         log.debug("####### MetadataTracker trackRepository Start #######");
         checkShutdown();
-
-        if(!isMaster && isSlave)
-        {
-            // Dynamic registration
-            /*
-            * This section allows Solr's master/slave setup to be used with dynamic shard registration.
-            * In this scenario the slave is polling a "tracking" Solr node. The code below calls
-            * the repo to register the state of the node without pulling any real transactions from the repo.
-            *
-            * This allows the repo to register the replica so that it will be included in queries. But the slave Solr node
-            * will pull its data from a "tracking" Solr node using Solr's master/slave replication, rather then tracking the repository.
-            *
-            */
-            ShardState shardstate = getShardState();
-            client.getTransactions(0L, null, 0L, null, 0, shardstate);
-            return;
-        }
 
         // Check we are tracking the correct repository
         TrackerState state = super.getTrackerState();
@@ -231,67 +148,6 @@ public class MetadataTracker extends AbstractTracker implements Tracker
 
         checkShutdown();
         trackTransactions();
-    }
-
-    /**
-     * The {@link ShardState}, as the name suggests, encapsulates/stores the state of the shard which hosts this
-     * {@link MetadataTracker} instance.
-     *
-     * The {@link ShardState} is primarily used in two places:
-     *
-     * <ul>
-     *     <li>Transaction tracking: (see {@link #trackTransactions()}): for pulling/tracking transactions from Alfresco</li>
-     *     <li>
-     *         DynamicSharding: when the {@link MetadataTracker} is running on a slave instance it doesn't actually act
-     *         as a tracker, it calls Alfresco to register the state of the node (the shard) without pulling any transactions.
-     *         As consequence of that, Alfresco will be aware about the shard which will be included in subsequent queries.
-     *     </li>
-     * </ul>
-     *
-     * @return the {@link ShardState} instance which stores the current state of the hosting shard.
-     */
-    ShardState getShardState()
-    {
-        TrackerState transactionsTrackerState = super.getTrackerState();
-        TrackerState changeSetsTrackerState =
-                of(infoSrv.getAdminHandler())
-                        .map(AlfrescoCoreAdminHandler::getTrackerRegistry)
-                        .map(registry -> registry.getTrackerForCore(coreName, AclTracker.class))
-                        .map(Tracker::getTrackerState)
-                        .orElse(transactionsTrackerState);
-
-        HashMap<String, String> propertyBag = new HashMap<>();
-        propertyBag.put("coreName", coreName);
-        HashMap<String, String> extendedPropertyBag = new HashMap<>(propertyBag);
-        updateShardProperty();
-
-        shardProperty.ifPresent(p -> extendedPropertyBag.putAll(docRouter.getProperties(p)));
-
-        return ShardStateBuilder.shardState()
-                .withMaster(isMaster)
-                .withLastUpdated(System.currentTimeMillis())
-                .withLastIndexedChangeSetCommitTime(changeSetsTrackerState.getLastIndexedChangeSetCommitTime())
-                .withLastIndexedChangeSetId(changeSetsTrackerState.getLastIndexedChangeSetId())
-                .withLastIndexedTxCommitTime(transactionsTrackerState.getLastIndexedTxCommitTime())
-                .withLastIndexedTxId(transactionsTrackerState.getLastIndexedTxId())
-                .withPropertyBag(extendedPropertyBag)
-                .withShardInstance()
-                    .withBaseUrl(infoSrv.getBaseUrl())
-                    .withPort(infoSrv.getPort())
-                    .withHostName(infoSrv.getHostName())
-                    .withShard()
-                        .withInstance(shardInstance)
-                        .withFloc()
-                            .withNumberOfShards(shardCount)
-                            .withAddedStoreRef(storeRef)
-                            .withTemplate(shardTemplate)
-                            .withHasContent(transformContent)
-                            .withShardMethod(ShardMethodEnum.getShardMethod(shardMethod))
-                            .withPropertyBag(propertyBag)
-                            .endFloc()
-                        .endShard()
-                     .endShardInstance()
-                .build();
     }
 
     /**
@@ -1032,24 +888,18 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         }
     }
 
-
-
-    
-    
+    @Override
     public NodeReport checkNode(Long dbid)
     {
-        NodeReport nodeReport = new NodeReport();
-        nodeReport.setDbid(dbid);
+        NodeReport nodeReport = super.checkNode(dbid);
 
         // In DB
-
         GetNodesParameters parameters = new GetNodesParameters();
         parameters.setFromNodeId(dbid);
         parameters.setToNodeId(dbid);
-        List<Node> dbnodes;
         try
         {
-            dbnodes = client.getNodes(parameters, 1);
+            List<Node> dbnodes = client.getNodes(parameters, 1);
             if (dbnodes.size() == 1)
             {
                 Node dbnode = dbnodes.get(0);
@@ -1059,41 +909,31 @@ public class MetadataTracker extends AbstractTracker implements Tracker
             else
             {
                 nodeReport.setDbNodeStatus(SolrApiNodeStatus.UNKNOWN);
-                nodeReport.setDbTx(-1l);
+                nodeReport.setDbTx(-1L);
             }
         }
         catch (IOException e)
         {
             nodeReport.setDbNodeStatus(SolrApiNodeStatus.UNKNOWN);
-            nodeReport.setDbTx(-2l);
+            nodeReport.setDbTx(-2L);
         }
         catch (JSONException e)
         {
             nodeReport.setDbNodeStatus(SolrApiNodeStatus.UNKNOWN);
-            nodeReport.setDbTx(-3l);
+            nodeReport.setDbTx(-3L);
         }
         catch (AuthenticationException e1)
         {
             nodeReport.setDbNodeStatus(SolrApiNodeStatus.UNKNOWN);
-            nodeReport.setDbTx(-4l);
+            nodeReport.setDbTx(-4L);
         }
-        
-        this.infoSrv.addCommonNodeReportInfo(nodeReport);
 
         return nodeReport;
     }
 
     public NodeReport checkNode(Node node)
     {
-        NodeReport nodeReport = new NodeReport();
-        nodeReport.setDbid(node.getId());
-
-        nodeReport.setDbNodeStatus(node.getStatus());
-        nodeReport.setDbTx(node.getTxnId());
-
-        this.infoSrv.addCommonNodeReportInfo(nodeReport);
-        
-        return nodeReport;
+        return checkNode(node.getId());
     }
 
     public List<Node> getFullNodesForDbTransaction(Long txid)
@@ -1229,35 +1069,5 @@ public class MetadataTracker extends AbstractTracker implements Tracker
     public void addQueryToReindex(String query)
     {
         this.queriesToReindex.offer(query);
-    }
-
-
-    /**
-     * Given the field name, returns the name of the property definition.
-     * If the property definition is not found, Empty optional is returned.
-     *
-     * @param field
-     *
-     * @return the name of the associated property definition if present, Optional.Empty() otherwise
-     *
-     */
-    public static Optional<QName> getShardProperty(String field)
-    {
-        if (StringUtils.isBlank(field))
-        {
-            throw new IllegalArgumentException("Sharding property " + SHARD_KEY_KEY + " has not been set.");
-        }
-        AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
-        NamespaceDAO namespaceDAO = dataModel.getNamespaceDAO();
-        DictionaryService dictionaryService = dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT);
-        PropertyDefinition propertyDef = QueryParserUtils.matchPropertyDefinition("http://www.alfresco.org/model/content/1.0",
-                namespaceDAO,
-                dictionaryService,
-                field);
-        if (propertyDef == null)
-        {
-            return Optional.empty();
-        }
-        return of(propertyDef.getName());
     }
 }

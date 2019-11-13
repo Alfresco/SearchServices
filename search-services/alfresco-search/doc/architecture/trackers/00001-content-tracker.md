@@ -150,8 +150,6 @@ The following table illustrates the configuration properties used by the Tracker
 |alfresco.stores|workspace://SpacesStore|The reference to a node store| | |Y|Y| | |
 |batch.count|5000|UpSert batch size (e.g. metadata docs, acls)| | |Y|Y| | |
 |alfresco.maxLiveSearchers|2|Max allowed number of active searchers|Y| |Y|Y| | |
-|enable.slave|false|Indicates if the hosting instance is a slave| | |Y|Y| | |
-|enable.master|true|Indicates if the hosting instance is a master| | |Y|Y| | |
 |shard.count|1|The total number of shards that compose the Solr infrastructure|| |Y|Y| | |
 |shard.instance|0|The unique shard identifier assigned to this instance|| |Y|Y| | |
 |shard.method|"DB_ID"|Data (Documents, ACLs) Routing criteria among shards| | |Y|Y| | |

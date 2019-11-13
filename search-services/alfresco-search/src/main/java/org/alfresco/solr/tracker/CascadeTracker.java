@@ -50,14 +50,14 @@ public class CascadeTracker extends AbstractTracker implements Tracker
     public CascadeTracker(Properties p, SOLRAPIClient client, String coreName,
                            InformationServer informationServer)
     {
-        super(p, client, coreName, informationServer, Tracker.Type.Cascade);
+        super(p, client, coreName, informationServer, Tracker.Type.CASCADE);
 
         threadHandler = new ThreadHandler(p, coreName, "CascadeTracker");
     }
 
     CascadeTracker()
     {
-       super(Tracker.Type.Cascade);
+       super(Tracker.Type.CASCADE);
     }
 
     @Override

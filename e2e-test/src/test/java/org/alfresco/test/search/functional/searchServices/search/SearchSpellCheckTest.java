@@ -170,24 +170,24 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 		waitForIndexing(file.getName(), true);
 
 		// Correct spelling with cm:name field
-		SearchResponse response = runSearchSpellcheckQuery("cm:name:learning", "learning");
+		SearchResponse response = SearchSpellcheckQuery(testUser, "cm:name:learning", "learning");
 
 		response.assertThat().entriesListIsNotEmpty();
 		response.getContext().assertThat().field("spellCheck").isNull();
 
 		// Correct spelling with no field
-		response = runSearchSpellcheckQuery("learning", "learning");
+		response = SearchSpellcheckQuery(testUser, "learning", "learning");
 
 		response.assertThat().entriesListIsNotEmpty();
 		response.getContext().assertThat().field("spellCheck").isNull();
 
 		// Correct spelling with a different field. Used cm:content field
-		response = runSearchSpellcheckQuery("cm:content:learning", "learning");
+		response = SearchSpellcheckQuery(testUser, "cm:content:learning", "learning");
 
 		response.assertThat().entriesListIsEmpty();
 
 		// Incorrect spelling with cm:name field
-		response = runSearchSpellcheckQuery("cm:name:lerning", "lerning");
+		response = SearchSpellcheckQuery(testUser, "cm:name:lerning", "lerning");
 
 		response.assertThat().entriesListIsNotEmpty();
 		response.getContext().assertThat().field("spellCheck").isNotEmpty();
@@ -195,7 +195,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
 
 		// Incorrect spelling with no field
-		response = runSearchSpellcheckQuery("lerning", "lerning");
+		response = SearchSpellcheckQuery(testUser, "lerning", "lerning");
 
 		response.assertThat().entriesListIsNotEmpty();
 		response.getContext().assertThat().field("spellCheck").isNotEmpty();
@@ -203,7 +203,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
 
 		// Incorrect spelling with a different field. Used cm:content field
-		response = runSearchSpellcheckQuery("cm:content:lerning", "lerning");
+		response = SearchSpellcheckQuery(testUser, "cm:content:lerning", "lerning");
 
 		response.assertThat().entriesListIsEmpty();
 
@@ -220,7 +220,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 		waitForContentIndexing(file3.getContent(), true);
 
 		// Incorrect spelling with cm:name field
-		response = runSearchSpellcheckQuery("cm:name:lerning", "lerning");
+		response = SearchSpellcheckQuery(testUser, "cm:name:lerning", "lerning");
 
 		response.assertThat().entriesListIsNotEmpty();
 		response.getContext().assertThat().field("spellCheck").isNotEmpty();
@@ -228,7 +228,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
 
 		// Incorrect spelling with no field
-		response = runSearchSpellcheckQuery("lerning", "lerning");
+		response = SearchSpellcheckQuery(testUser, "lerning", "lerning");
 
 		response.assertThat().entriesListIsNotEmpty();
 		response.getContext().assertThat().field("spellCheck").isNotEmpty();
@@ -236,7 +236,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
 
 		// Incorrect spelling with cm:content field
-		response = runSearchSpellcheckQuery("cm:content:lerning", "lerning");
+		response = SearchSpellcheckQuery(testUser, "cm:content:lerning", "lerning");
 
 		response.assertThat().entriesListIsNotEmpty();
 		response.getContext().assertThat().field("spellCheck").isNotEmpty();
@@ -244,7 +244,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
 
 		// Correct spelling with cm:name field
-		response = runSearchSpellcheckQuery("cm:name:learning", "learning");
+		response = SearchSpellcheckQuery(testUser, "cm:name:learning", "learning");
 
 		response.assertThat().entriesListIsNotEmpty();
 		response.getContext().assertThat().field("spellCheck").isNotEmpty();
@@ -252,7 +252,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 		response.getContext().getSpellCheck().assertThat().field("type").is("didYouMean");
 
 		// Correct spelling with no field
-		response = runSearchSpellcheckQuery("learning", "learning");
+		response = SearchSpellcheckQuery(testUser, "learning", "learning");
 
 		response.assertThat().entriesListIsNotEmpty();
 		response.getContext().assertThat().field("spellCheck").isNotEmpty();
@@ -260,7 +260,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 		response.getContext().getSpellCheck().assertThat().field("type").is("didYouMean");
 
 		// Correct spelling with cm:content field
-		response = runSearchSpellcheckQuery("cm:content:learning", "learning");
+		response = SearchSpellcheckQuery(testUser, "cm:content:learning", "learning");
 
 		response.assertThat().entriesListIsNotEmpty();
 		response.getContext().assertThat().field("spellCheck").isNotEmpty();
@@ -288,13 +288,13 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 		waitForContentIndexing(file2.getContent(), true);
 
 		// Search with field not filed in either files
-		SearchResponse response = runSearchSpellcheckQuery("cm:description:eclipse", "eclipse");
+		SearchResponse response = SearchSpellcheckQuery(testUser, "cm:description:eclipse", "eclipse");
 
 		response.assertThat().entriesListIsEmpty();
 		response.getContext().assertThat().field("spellCheck").isNull();
 
 		// Incorrect spelling with the field on a file as well
-		response = runSearchSpellcheckQuery("cm:name:eclipse", "eclipse");
+		response = SearchSpellcheckQuery(testUser, "cm:name:eclipse", "eclipse");
 
 		response.assertThat().entriesListIsNotEmpty();
 		response.getContext().assertThat().field("spellCheck").isNotEmpty();
@@ -302,7 +302,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
 
 		// Incorrect spelling with no field for file1
-		response = runSearchSpellcheckQuery("eclipse", "eclipse");
+		response = SearchSpellcheckQuery(testUser, "eclipse", "eclipse");
 
 		response.assertThat().entriesListIsNotEmpty();
 		response.getContext().assertThat().field("spellCheck").isNotEmpty();
@@ -310,7 +310,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
 
 		// Incorrect spelling with no field for file2
-		response = runSearchSpellcheckQuery("eclipses", "eclipses");
+		response = SearchSpellcheckQuery(testUser, "eclipses", "eclipses");
 
 		response.assertThat().entriesListIsNotEmpty();
 		response.getContext().assertThat().field("spellCheck").isNotEmpty();
@@ -318,7 +318,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
 
 		// Search for the field only filed on file2 and not file1
-		response = runSearchSpellcheckQuery("cm:title:eclipses", "eclipses");
+		response = SearchSpellcheckQuery(testUser, "cm:title:eclipses", "eclipses");
 
 		response.assertThat().entriesListIsNotEmpty();
 		response.getContext().assertThat().field("spellCheck").isNotEmpty();
@@ -326,13 +326,13 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
 
 		// Query using 3 edits (more than spellcheck works for [maxEdits<=2])
-		response = runSearchSpellcheckQuery("elapssed", "elapssed");
+		response = SearchSpellcheckQuery(testUser, "elapssed", "elapssed");
 
 		response.assertThat().entriesListIsEmpty();
 		response.getContext().assertThat().field("spellCheck").isNull();
 
 		// Query with edit on first letter (does not work with spellcheck [minPrefix=1])
-		response = runSearchSpellcheckQuery("iklipse ", "iklipse ");
+		response = SearchSpellcheckQuery(testUser, "iklipse ", "iklipse ");
 
 		response.assertThat().entriesListIsEmpty();
 		response.getContext().assertThat().field("spellCheck").isNull();
@@ -354,7 +354,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 		waitForContentIndexing(file.getContent(), true);
 
 		// Incorrect spelling with no field
-		SearchResponse response = runSearchSpellcheckQuery("b00k", "b00k");
+		SearchResponse response = SearchSpellcheckQuery(testUser, "b00k", "b00k");
 
 		response.assertThat().entriesListIsNotEmpty();
 		response.getContext().assertThat().field("spellCheck").isNotEmpty();
@@ -362,7 +362,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
 
 		// Incorrect spelling with the cm:name field
-		response = runSearchSpellcheckQuery("cm:name:b00k", "b00k");
+		response = SearchSpellcheckQuery(testUser, "cm:name:b00k", "b00k");
 
 		response.assertThat().entriesListIsNotEmpty();
 		response.getContext().assertThat().field("spellCheck").isNotEmpty();
@@ -370,7 +370,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
 
 		// Incorrect spelling with the cm:title field
-		response = runSearchSpellcheckQuery("cm:title:b00k", "b00k");
+		response = SearchSpellcheckQuery(testUser, "cm:title:b00k", "b00k");
 
 		response.assertThat().entriesListIsNotEmpty();
 		response.getContext().assertThat().field("spellCheck").isNotEmpty();
@@ -378,7 +378,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
 
 		// Incorrect spelling with the cm:description field
-		response = runSearchSpellcheckQuery("cm:description:b00k", "b00k");
+		response = SearchSpellcheckQuery(testUser, "cm:description:b00k", "b00k");
 
 		response.assertThat().entriesListIsNotEmpty();
 		response.getContext().assertThat().field("spellCheck").isNotEmpty();
@@ -386,7 +386,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 		response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
 
 		// Incorrect spelling with the cm:description field
-		response = runSearchSpellcheckQuery("cm:content:b00k", "b00k");
+		response = SearchSpellcheckQuery(testUser, "cm:content:b00k", "b00k");
 
 		response.assertThat().entriesListIsNotEmpty();
 		response.getContext().assertThat().field("spellCheck").isNotEmpty();
@@ -395,7 +395,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 
 		// Incorrect spelling with the cm:author field (not a field in shared.properties
 		// for spellcheck)
-		response = runSearchSpellcheckQuery("cm:author:b00k", "b00k");
+		response = SearchSpellcheckQuery(testUser, "cm:author:b00k", "b00k");
 
 		response.assertThat().entriesListIsEmpty();
 		response.getContext().assertThat().field("spellCheck").isNull();

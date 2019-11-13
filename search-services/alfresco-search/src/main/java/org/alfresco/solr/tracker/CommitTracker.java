@@ -51,7 +51,7 @@ public class CommitTracker extends AbstractTracker
      **/
     CommitTracker()
     {
-        super(Tracker.Type.Commit);
+        super(Tracker.Type.COMMIT);
     }
 
     public CommitTracker(Properties p,
@@ -60,7 +60,7 @@ public class CommitTracker extends AbstractTracker
                          InformationServer informationServer,
                          List<Tracker> trackers)
     {
-        super(p, client, coreName, informationServer, Tracker.Type.Commit);
+        super(p, client, coreName, informationServer, Tracker.Type.COMMIT);
 
         //Set the trackers
         for(Tracker tracker : trackers) {
