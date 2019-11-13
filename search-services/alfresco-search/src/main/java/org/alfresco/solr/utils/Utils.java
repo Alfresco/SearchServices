@@ -18,6 +18,8 @@
  */
 package org.alfresco.solr.utils;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -51,6 +53,18 @@ public abstract class Utils
         catch(NumberFormatException nfe)
         {
             return null;
+        }
+    }
+
+    public static void silentyClose(Closeable resource)
+    {
+        try
+        {
+            resource.close();
+        }
+        catch(IOException ignore)
+        {
+            // Nothing to be done here
         }
     }
 }
