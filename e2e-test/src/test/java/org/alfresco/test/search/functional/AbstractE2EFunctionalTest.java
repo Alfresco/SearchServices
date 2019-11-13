@@ -453,45 +453,4 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         SearchResponse response = queryAsUser(searchUser, queryReq);
         return response;
     }
-    
-    /**
-     * Method to test the ACL test for spellcheck 
-     */
-    public void setupACLSpellcheckTest()
-    {
-        serverHealth.assertServerIsOnline();
-        
-        //User 1 is created
-        testUser = dataUser.createRandomTestUser("User1");
-        
-        //User 2 is created
-        testUser2 = dataUser.createRandomTestUser("User2");  
-
-        //Site 1 is set to a private site
-        testSite = new SiteModel(RandomData.getRandomName("Site1"));
-        testSite.setVisibility(Visibility.PRIVATE);
-        
-        testSite = dataSite.usingUser(testUser).createSite(testSite);
-        
-        testSite2 = new SiteModel(RandomData.getRandomName("Site2"));
-        testSite2.setVisibility(Visibility.PRIVATE);
-       
-        testSite2 = dataSite.usingUser(testUser).createSite(testSite2);
-        
-        getDataUser().addUserToSite(testUser2, testSite, UserRole.SiteCollaborator);
-        
-        FileModel file1 = new FileModel("prize", "", "", FileType.TEXT_PLAIN, "prize");
- 
-        dataContent.usingUser(testUser).usingSite(testSite).createContent(file1);
-        
-        waitForContentIndexing(file1.getContent(), true);
-        
-        FileModel file2 = new FileModel("prime", "", "", FileType.TEXT_PLAIN, "prime");
-        
-        dataContent.usingUser(testUser).usingSite(testSite).createContent(file2);
-        
-        dataContent.usingUser(testUser).usingSite(testSite2).createContent(file2);
-        
-        waitForContentIndexing(file2.getContent(), true);
-    }
 }

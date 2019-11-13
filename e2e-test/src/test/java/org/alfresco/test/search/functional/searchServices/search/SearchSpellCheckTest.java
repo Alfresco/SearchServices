@@ -23,6 +23,7 @@ import org.alfresco.rest.model.RestRequestSpellcheckModel;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
+import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
@@ -412,7 +413,29 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 	@Test(groups = { TestGroup.ACS_60n }, priority = 7)
 	public void testSpellCheckACL() throws Exception {
 		
-		setupACLSpellcheckTest();
+		//User 2 is created
+        testUser2 = dataUser.createRandomTestUser("User2"); 
+        
+        testSite2 = new SiteModel(RandomData.getRandomName("Site2"));
+        testSite2.setVisibility(Visibility.PRIVATE);
+       
+        testSite2 = dataSite.usingUser(testUser).createSite(testSite2);
+        
+        getDataUser().addUserToSite(testUser2, testSite2, UserRole.SiteCollaborator);
+        
+        FileModel file1 = new FileModel("prize", "", "", FileType.TEXT_PLAIN, "prize");
+ 
+        dataContent.usingUser(testUser).usingSite(testSite).createContent(file1);
+        
+        waitForContentIndexing(file1.getContent(), true);
+        
+        FileModel file2 = new FileModel("prime", "", "", FileType.TEXT_PLAIN, "prime");
+        
+        dataContent.usingUser(testUser).usingSite(testSite).createContent(file2);
+        
+        dataContent.usingUser(testUser).usingSite(testSite2).createContent(file2);
+        
+        waitForContentIndexing(file2.getContent(), true);
 		
 		SearchResponse response = SearchSpellcheckQuery(testUser, "prive", "prive");
         
