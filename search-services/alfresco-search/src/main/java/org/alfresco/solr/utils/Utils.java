@@ -18,6 +18,9 @@
  */
 package org.alfresco.solr.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collection;
@@ -25,6 +28,8 @@ import java.util.Collections;
 
 public abstract class Utils
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Utils.class);
+
     /**
      * Returns the same input collection if that is not null, otherwise a new empty collection.
      * Provides a safe way for iterating over a returned collection (which could be null).
@@ -89,7 +94,7 @@ public abstract class Utils
         }
         catch(IOException ignore)
         {
-            // Nothing to be done here
+            LOGGER.warn("Unable to properly close the resource instance {}. See the stacktrace below for further details.", resource, ignore);
         }
     }
 }
