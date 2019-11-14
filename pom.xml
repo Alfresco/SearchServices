@@ -29,7 +29,7 @@
    <properties>
       <java.version>11</java.version>
       <solr.base.version>6.6.5</solr.base.version>
-      <solr.version>${solr.base.version}-patched</solr.version>
+      <solr.version>${solr.base.version}-patched.1</solr.version>
       <!-- The location to download the solr zip file from. -->
       <!-- <solr.zip>https://archive.apache.org/dist/lucene/solr/${solr.version}/solr-${solr.version}.zip</solr.zip> -->
       <!-- Solr startup scripts do not work with any Java version higher than 9 so the scripts have been patched -->
@@ -53,6 +53,19 @@
                <showWarnings>true</showWarnings>
                <showDeprecation>true</showDeprecation>
             </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <version>2.22.2</version>
+            <executions>
+               <execution>
+                  <goals>
+                     <goal>integration-test</goal>
+                     <goal>verify</goal>
+                  </goals>
+               </execution>
+            </executions>
          </plugin>
       </plugins>
    </build>
