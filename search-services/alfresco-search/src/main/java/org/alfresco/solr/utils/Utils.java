@@ -56,11 +56,36 @@ public abstract class Utils
         }
     }
 
+    /**
+     * Silently closes the given {@link Closeable} resource without raising any exception.
+     * This utility method is specifically useful when we have to close a resource in a lamba statement: since the
+     * close() method could throw an {@link IOException} the compiler requires an enclosing try / catch block which
+     * makes the code less readable.
+     *
+     * <br/><br/>
+     * <p>
+     *     <code>
+     *          try { if (resource != null) resource.close } catch (IOException exception) { ... }
+     *      </code>
+     * </p>
+     * <br/>
+     *
+     * In these contexts a call to this method reduces the amount of code needed:
+     *
+     * <br/><br/>
+     * <p>
+     *  <code>
+     *      silentlyClose(resource);
+     *  </code>
+     * </p>
+     *
+     * @param resource the {@link Closeable} resource we want to silently close.
+     */
     public static void silentyClose(Closeable resource)
     {
         try
         {
-            resource.close();
+            if (resource != null) resource.close();
         }
         catch(IOException ignore)
         {
