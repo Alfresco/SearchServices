@@ -25,6 +25,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.adapters.IOpenBitSet;
 import org.alfresco.solr.client.SOLRAPIClientFactory;
 import org.alfresco.solr.config.ConfigUtil;
+import org.alfresco.solr.content.SolrContentStore;
 import org.alfresco.solr.tracker.AclTracker;
 import org.alfresco.solr.tracker.CoreStatePublisher;
 import org.alfresco.solr.tracker.DBIDRangeRouter;
@@ -146,6 +147,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     private ConcurrentHashMap<String, InformationServer> informationServers;
 
     private static List<String> CORE_PARAMETER_NAMES = asList(CoreAdminParams.CORE, "coreName", "index");
+    private SolrContentStore contentStore;
 
     public AlfrescoCoreAdminHandler()
     {
@@ -161,6 +163,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         trackerRegistry = new TrackerRegistry();
         informationServers = new ConcurrentHashMap<>();
         this.scheduler = new SolrTrackerScheduler(this);
+        if (coreContainer != null)
+        {
+            this.contentStore = new SolrContentStore(coreContainer.getSolrHome());
+        }
 
         String createDefaultCores = ConfigUtil.locateProperty(ALFRESCO_DEFAULTS, "");
         int numShards = Integer.parseInt(ConfigUtil.locateProperty(NUM_SHARDS, "1"));
@@ -249,15 +255,28 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             {
                 scheduler.pauseAll();
 
-                if (trackerRegistry.getModelTracker() != null) trackerRegistry.getModelTracker().shutdown();
+                if (trackerRegistry.getModelTracker() != null)
+                    trackerRegistry.getModelTracker().shutdown();
 
                 trackerRegistry.setModelTracker(null);
                 scheduler.shutdown();
             }
         }
-        catch(Exception exception)
+        catch (Exception exception)
         {
-            LOGGER.error("Problem shutting down Alfresco core container services", exception);
+            LOGGER.error(
+                    "Unable to properly shut down Alfresco core container services. See the exception below for further details.",
+                    exception);
+        }
+
+        try
+        {
+            contentStore.close();
+        }
+        catch (Exception exception)
+        {
+            LOGGER.error("Unable to properly shut down the ContentStore. See the exception below for further details.",
+                    exception);
         }
     }
 
@@ -1266,4 +1285,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 .findFirst()
                 .orElse(null);
     }
+
+    public SolrContentStore getSolrContentStore()
+    {
+        return contentStore;
+    }
+
 }
