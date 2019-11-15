@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2016 Alfresco Software Limited.
+ * Copyright (C) 2005-2019 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,14 +16,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.solr;
 /**
- * A trait to mixin the location of the test files used in solr test.
- * @author Michael Suzuki
- *
+ * The package contains all components that manage the Solr ContentStore.
+ * Note that in SearchServices 2.0 the whole package will be deprecated/removed because the content store will be
+ * replaced by the built-in Solr storage capability (i.e. stored fields).
  */
-public interface SolrTestFiles
-{
-    String TEST_FILES_LOCATION = "target/test-classes/test-files";
-    String TEST_EXECUTION_FOLDER = "target/test-execution-folder";
-}
+package org.alfresco.solr.content;

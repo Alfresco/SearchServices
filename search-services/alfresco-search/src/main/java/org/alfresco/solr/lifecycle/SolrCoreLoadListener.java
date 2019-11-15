@@ -113,7 +113,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
                     AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT),
                     AlfrescoSolrDataModel.getInstance().getNamespaceDAO());
 
-        SolrContentStore contentStore = new SolrContentStore(coreContainer.getSolrHome());
+        SolrContentStore contentStore = admin.getSolrContentStore();
         SolrInformationServer informationServer = new SolrInformationServer(admin, core, repositoryClient, contentStore);
         coreProperties.putAll(informationServer.getProps());
         admin.getInformationServers().put(core.getName(), informationServer);
@@ -162,6 +162,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
 
         boolean trackersHaveBeenEnabled = Boolean.parseBoolean(coreProperties.getProperty("enable.alfresco.tracking", "true"));
         boolean owningCoreIsSlave = isSlaveModeEnabledFor(core);
+        contentStore.toggleReadOnlyMode(owningCoreIsSlave);
 
         if (trackerRegistry.hasTrackersForCore(core.getName()))
         {

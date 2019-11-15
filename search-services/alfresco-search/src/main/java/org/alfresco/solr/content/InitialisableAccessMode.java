@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2016 Alfresco Software Limited.
+ * Copyright (C) 2005-2019 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,14 +16,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.solr;
+package org.alfresco.solr.content;
+
 /**
- * A trait to mixin the location of the test files used in solr test.
- * @author Michael Suzuki
+ * {@link AccessMode} specialisation for those modes that need some kind of initialisation.
  *
+ * @author Andrea Gazzarini
+ * @since 1.5
  */
-public interface SolrTestFiles
+public interface InitialisableAccessMode extends AccessMode
 {
-    String TEST_FILES_LOCATION = "target/test-classes/test-files";
-    String TEST_EXECUTION_FOLDER = "target/test-execution-folder";
+    /**
+     * Initialises this access mode instance.
+     */
+    void init();
 }

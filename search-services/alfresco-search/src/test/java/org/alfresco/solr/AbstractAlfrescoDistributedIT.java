@@ -296,6 +296,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
     {
         long begin = System.currentTimeMillis();
         //TODO: Support multiple cores per jetty
+        System.out.println(getStandaloneClients().size());
         SolrClient standaloneClient = getStandaloneClients().get(0); //Get the first one
         waitForDocCountCore(standaloneClient, query, count, waitMillis, begin);
         waitForShardsCount(query, count, waitMillis, begin);
