@@ -19,14 +19,11 @@ import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.TasProperties;
 import org.alfresco.utility.Utility;
-import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FileType;
-import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.network.ServerHealth;
@@ -97,7 +94,6 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         CMIS,
         AFTS
       }
-
 
     @BeforeSuite(alwaysRun = true)
     public void beforeSuite() throws Exception
@@ -263,10 +259,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
 
             if (restClient.getStatusCode().matches(expectedStatusCode))
             {
-                boolean found = response.getEntries().stream()
-                        .map(entry -> entry.getModel().getName())
-                        .filter(name -> name.equalsIgnoreCase(contentName) || contentName.isBlank())
-                        .count() > 0;
+                boolean found = isContentInSearchResponse(response, contentName);
 
                 // Exit loop if result is as expected.
                 if (expectedInResults == found)
@@ -283,6 +276,21 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         }
 
         return false;
+    }
+    
+    /**
+     * Method to check if the contentName is returned in the SearchResponse
+     * @param response
+     * @param contentName
+     * @return
+     */
+    public boolean isContentInSearchResponse(SearchResponse response, String contentName) 
+    {
+        boolean found = response.getEntries().stream()
+                .map(entry -> entry.getModel().getName())
+                .filter(name -> name.equalsIgnoreCase(contentName) || contentName.isBlank()).count() > 0;
+
+        return found;
     }
 
     /**
@@ -366,12 +374,21 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     }
     
     /**
-     * Run a search as given user and return the response
-     * 
-     * @param user: UserModel for the user you wish to run the query as
-     * @param queryModel: The queryModel to search for, containing the query
+     * Run a search with Spellcheck as given user and return the response
+     * @param user UserModel for the user you wish to run the query as
+     * @param queryModel The queryModel to search for, containing the query
+     * @param spellcheckQuery The Spellcheck Model containing the query
      * @return the search response from the API
      */
+    protected SearchResponse queryAsUser(UserModel user, RestRequestQueryModel queryModel, RestRequestSpellcheckModel spellcheckQuery)
+    {
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.setQuery(queryModel);
+        searchRequest.setSpellcheck(spellcheckQuery);
+
+        return restClient.authenticateUser(user).withSearchAPI().search(searchRequest);
+    }
+
     protected SearchResponse queryAsUser(UserModel user, RestRequestQueryModel queryModel)
     {
         SearchRequest searchRequest = new SearchRequest();
@@ -442,15 +459,43 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
      * @return
      */
     protected SearchResponse SearchSpellcheckQuery(UserModel user, String query, String userQuery)
-    {    
+    {
+        RestRequestSpellcheckModel spellCheck = new RestRequestSpellcheckModel();
+        spellCheck.setQuery(userQuery);
+        
         UserModel searchUser = ofNullable(user).isPresent()? user: testUser;
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery(query);
         queryReq.setUserQuery(userQuery);
         searchReq.setQuery(queryReq);
-        searchReq.setSpellcheck(new org.alfresco.rest.model.RestRequestSpellcheckModel());
-        SearchResponse response = queryAsUser(searchUser, queryReq);
+        searchReq.setSpellcheck(spellCheck);
+        SearchResponse response = queryAsUser(searchUser, queryReq, spellCheck);
         return response;
+    }
+
+    /**
+     * Method to check the spellcheck object returned in the Search Response
+     * @param response SearchResponse
+     * @param spellCheckType String Values: searchInsteadFor, didYouMean or null
+     * @param spellCheckSuggestion String Values: suggestion string or null
+     */
+    public void testSearchSpellcheckResponse(SearchResponse response, String spellCheckType, String spellCheckSuggestion)
+    {
+        if (ofNullable(spellCheckType).isPresent())
+        {
+            response.getContext().assertThat().field("spellCheck").isNotEmpty();
+            response.getContext().getSpellCheck().assertThat().field("type").is(spellCheckType);
+        }
+        else
+        {
+            response.getContext().assertThat().field("spellCheck").isNull();
+        }
+
+        if (ofNullable(spellCheckSuggestion).isPresent())
+        {
+            response.getContext().assertThat().field("spellCheck").isNotEmpty();
+            response.getContext().getSpellCheck().assertThat().field("suggestions").contains(spellCheckSuggestion);
+        }        
     }
 }
