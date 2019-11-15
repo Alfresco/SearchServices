@@ -454,6 +454,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     
     /**
      * Method to create and run a simple spellcheck query
+     * When a spellcheck query is run a user, the query inputed and the user query is inputted
      * @param query
      * @param userQuery
      * @return

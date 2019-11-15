@@ -303,32 +303,25 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
         // Incorrect spelling with the field on a file as well
         response = SearchSpellcheckQuery(testUser, "cm:name:'eclipse'", "eclipse");
 
-        response.assertThat().entriesListIsNotEmpty();
-        response.getContext().assertThat().field("spellCheck").isNotEmpty();
-        response.getContext().getSpellCheck().assertThat().field("suggestions").contains("eklipse");
-        response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
-
-        // TODO: Results check
+        // Matching Result, Spellcheck = searchInsteadFor: eklipse
+        Assert.assertTrue(isContentInSearchResponse(response, file.getName()), "Expected file not returned in the search results: " + file.getName());
+        Assert.assertTrue(isContentInSearchResponse(response, file2.getName()), "Expected file not returned in the search results: " + file.getName());
+        testSearchSpellcheckResponse(response, "searchInsteadFor", "eklipse");
 
         // Incorrect spelling with no field for file1
         response = SearchSpellcheckQuery(testUser, "eclipse", "eclipse");
 
-        response.assertThat().entriesListIsNotEmpty();
-        response.getContext().assertThat().field("spellCheck").isNotEmpty();
-        response.getContext().getSpellCheck().assertThat().field("suggestions").contains("eklipse");
-        response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
-
-        // TODO: Results check
+        // Matching Result, Spellcheck = searchInsteadFor: eklipse
+        Assert.assertTrue(isContentInSearchResponse(response, file.getName()), "Expected file not returned in the search results: " + file.getName());
+        Assert.assertTrue(isContentInSearchResponse(response, file2.getName()), "Expected file not returned in the search results: " + file.getName());
+        testSearchSpellcheckResponse(response, "searchInsteadFor", "eklipse");
 
         // Incorrect spelling with no field for file2
         response = SearchSpellcheckQuery(testUser, "eclipses", "eclipses");
 
-        response.assertThat().entriesListIsNotEmpty();
-        response.getContext().assertThat().field("spellCheck").isNotEmpty();
-        response.getContext().getSpellCheck().assertThat().field("suggestions").contains("eklipses");
-        response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
-
-        // TODO: Results check
+        // Matching Result, Spellcheck = searchInsteadFor: eklipses
+        Assert.assertTrue(isContentInSearchResponse(response, file2.getName()), "Expected file not returned in the search results: " + file.getName());
+        testSearchSpellcheckResponse(response, "searchInsteadFor", "eklipses");
 
         // Search for the field only filed on file2 and not file1
         response = SearchSpellcheckQuery(testUser, "cm:title:'eclipses'", "eclipses");
@@ -338,16 +331,20 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
         response.getContext().getSpellCheck().assertThat().field("suggestions").contains("eklipses");
         response.getContext().getSpellCheck().assertThat().field("type").is("searchInsteadFor");
 
-        // TODO: Results check
+        // Matching Result, Spellcheck = searchInsteadFor: eklipses
+        Assert.assertTrue(isContentInSearchResponse(response, file2.getName()), "Expected file not returned in the search results: " + file.getName());
+        testSearchSpellcheckResponse(response, "searchInsteadFor", "eklipses");
 
         // Query using 3 edits (more than spellcheck works for [maxEdits<=2])
         response = SearchSpellcheckQuery(testUser, "elapssed", "elapssed");
 
+        // 0 Results, No Spellcheck object returned 
         testSearchSpellcheckResponse(response, null, null);
 
         // Query with edit on first letter (does not work with spellcheck [minPrefix=1])
         response = SearchSpellcheckQuery(testUser, "iklipse ", "iklipse ");
 
+        // 0 Results, No Spellcheck object returned
         testSearchSpellcheckResponse(response, null, null);
     }
 
@@ -416,56 +413,85 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
     @Test(groups = { TestGroup.ACS_60n }, priority = 7)
     public void testSpellCheckACL() throws Exception
     {
-
         // User 2 is created
         testUser2 = dataUser.createRandomTestUser("User2");
 
+        // Site 2 is created as a private site by the default user (testUser)
         testSite2 = new SiteModel(RandomData.getRandomName("Site2"));
         testSite2.setVisibility(Visibility.PRIVATE);
 
         testSite2 = dataSite.usingUser(testUser).createSite(testSite2);
 
+        // Add's user 2 as a member of site 2 as a collaborator
         getDataUser().addUserToSite(testUser2, testSite2, UserRole.SiteCollaborator);
 
-        FileModel file1 = new FileModel("prize", "", "", FileType.TEXT_PLAIN, "prize");
+        // Add's a file to the default site (testSite)
+        FileModel file1 = new FileModel("spacebar", "", "", FileType.TEXT_PLAIN, "spacebar");
 
         dataContent.usingUser(testUser).usingSite(testSite).createContent(file1);
 
-        FileModel file2 = new FileModel("prime", "", "", FileType.TEXT_PLAIN, "prime");
+        // Add's a file to the default site and site 2 created
+        FileModel file2 = new FileModel("spacecar", "", "", FileType.TEXT_PLAIN, "spacecar");
 
         dataContent.usingUser(testUser).usingSite(testSite).createContent(file2);
         dataContent.usingUser(testUser).usingSite(testSite2).createContent(file2);
 
         Assert.assertTrue(waitForContentIndexing(file2.getContent(), true));
 
-        SearchResponse response = SearchSpellcheckQuery(testUser, "prive", "prive");
+        // Incorrect spelling with no field
+        SearchResponse response = SearchSpellcheckQuery(testUser, "spaceber", "spacber");
 
-        // Matching Result, Spellcheck = searchInsteadFor: prime: alphabetical
-        Assert.assertTrue(isContentInSearchResponse(response, file2.getName()), "Expected file not returned in the search results: " + file2.getName());
-        testSearchSpellcheckResponse(response, "searchInsteadFor", "prime");
+        // Matching Result, Spellcheck = searchInsteadFor: spacebar: alphabetical
+        Assert.assertTrue(isContentInSearchResponse(response, file1.getName()), "Expected file not returned in the search results: " + file2.getName());
+        testSearchSpellcheckResponse(response, "searchInsteadFor", "spacebar");
 
-        response = SearchSpellcheckQuery(testUser, "prize", "prize");
+        // Correct spelling with no field
+        response = SearchSpellcheckQuery(testUser, "spacecar", "spacecar");
+
+        // Matching Result, Spellcheck = searchInsteadFor: spacebar
+        Assert.assertTrue(isContentInSearchResponse(response, file1.getName()), "Expected file not returned in the search results: " + file1.getName());
+        testSearchSpellcheckResponse(response, "didYouMean", "spacebar");
+
+        // Incorrect spelling with no field
+        response = SearchSpellcheckQuery(testUser, "spaceabr", "spacabra");
 
         // Matching Result, Spellcheck = searchInsteadFor: prime
         Assert.assertTrue(isContentInSearchResponse(response, file1.getName()), "Expected file not returned in the search results: " + file1.getName());
-        testSearchSpellcheckResponse(response, "didYouMean", "prime");
-
-        response = SearchSpellcheckQuery(testUser, "priez", "priez");
-
-        // Matching Result, Spellcheck = searchInsteadFor: prime
-        Assert.assertTrue(isContentInSearchResponse(response, file1.getName()), "Expected file not returned in the search results: " + file1.getName());
-        testSearchSpellcheckResponse(response, "searchInsteadFor", "prize");
+        testSearchSpellcheckResponse(response, "searchInsteadFor", "spacebar");
  
-        response = SearchSpellcheckQuery(testUser, "prime", "prime");
+        // Correct spelling with no field
+        response = SearchSpellcheckQuery(testUser, "spacecar", "spacecar");
 
-        // Matching Result, Spellcheck Not returned
+        // Matching Result, Spellcheck Not returnedspacebar
         Assert.assertTrue(isContentInSearchResponse(response, file2.getName()), "Expected file not returned in the search results: " + file2.getName());
         testSearchSpellcheckResponse(response, null, null);
 
-        response = SearchSpellcheckQuery(testUser2, "price", "price");
+        // Incorrect spelling for files created no field
+        response = SearchSpellcheckQuery(testUser2, "spaceber", "spaceber");
 
         // Matching Result, Spellcheck = searchInsteadFor: prime
         Assert.assertTrue(isContentInSearchResponse(response, file2.getName()), "Expected file not returned in the search results: " + file2.getName());
-        testSearchSpellcheckResponse(response, "searchInsteadFor", "prime");
+        testSearchSpellcheckResponse(response, "searchInsteadFor", "spacecar");
+          
+        //correct spelling no field
+        response = SearchSpellcheckQuery(testUser2, "spacebar", "spacebar");
+
+        // Matching Result, Spellcheck = searchInsteadFor: prime
+        Assert.assertTrue(isContentInSearchResponse(response, file2.getName()), "Expected file not returned in the search results: " + file2.getName());
+        testSearchSpellcheckResponse(response, "searchInsteadFor", "spacecar");
+    
+        // Incorrect spelling no field
+        response = SearchSpellcheckQuery(testUser2, "spacecra", "spacecra");
+
+        // Matching Result, Spellcheck = searchInsteadFor: prime
+        Assert.assertTrue(isContentInSearchResponse(response, file2.getName()), "Expected file not returned in the search results: " + file2.getName());
+        testSearchSpellcheckResponse(response, "searchInsteadFor", "spacebar");
+   
+        // Correct spelling no field
+        response = SearchSpellcheckQuery(testUser2, "spacebar", "spacebar");
+
+        // Matching Result, Spellcheck not returned
+        Assert.assertTrue(isContentInSearchResponse(response, file2.getName()), "Expected file not returned in the search results: " + file2.getName());
+        testSearchSpellcheckResponse(response, null, null);
     }
 }
