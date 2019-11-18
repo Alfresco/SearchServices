@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2019 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,7 +18,7 @@
  */
 package org.alfresco.solr.content;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.zip.CRC32;
@@ -43,20 +43,13 @@ import org.slf4j.LoggerFactory;
  */
 public class SolrContentUrlBuilder
 {
-    /**
-     * <b>solr</b> is the prefix for SOLR content URLs
-     * @see #isContentUrlSupported(String)
-     */
-    public static final String SOLR_PROTOCOL = "solr";
-    public static final String SOLR_PROTOCOL_PREFIX = SOLR_PROTOCOL + ContentStore.PROTOCOL_DELIMITER;
-    public static final String FILE_EXTENSION = ".gz";
+    private static final String SOLR_PROTOCOL = "solr";
+    static final String SOLR_PROTOCOL_PREFIX = SOLR_PROTOCOL + ContentStore.PROTOCOL_DELIMITER;
+    static final String FILE_EXTENSION = ".gz";
 
-    /** The key for the tenant name */
-    public static final String KEY_TENANT = "tenant";
-    /** The key for the DB ID */
-    public static final String KEY_DB_ID = "dbId";
-    /** The key for the ACL ID */
-    public static final String KEY_ACL_ID = "aclId";
+    static final String KEY_TENANT = "tenant";
+    static final String KEY_DB_ID = "dbId";
+    static final String KEY_ACL_ID = "aclId";
     
     protected final static Logger logger = LoggerFactory.getLogger(SolrContentUrlBuilder.class);
     
@@ -66,9 +59,9 @@ public class SolrContentUrlBuilder
     /**
      * Protected constructor used by {@link SolrContentUrlBuilder#start()}
      */
-    protected SolrContentUrlBuilder()
+    private SolrContentUrlBuilder()
     {
-        this.metadata = new TreeMap<String, String>();
+        this.metadata = new TreeMap<>();
     }
     
     /**
@@ -83,32 +76,34 @@ public class SolrContentUrlBuilder
     
     /**
      * Add some metadata to the URL generator.  The order in which metadata is added is irrelevant.
-     * <p/>
      * Note that there are specific keys that are commonly used and, if provided, may not be null or empty.
+     *
      * <ul>
      *   <li><b>{@link #KEY_TENANT}:</b>    The name of the tenant or 'default' if missing.</li>
      *   <li><b>{@link #KEY_DB_ID}:</b>     The database ID.</li>
      *   <li><b>{@link #KEY_ACL_ID}:</b>    The ACL ID.</li>
      * </ul>
      * 
-     * @param key           an arbitrary metadata key (never <tt>null</tt>>
-     * @param value         some metadata value (<tt>null</tt> is supported)
-     * @return              this builder for more building
+     * @param key an arbitrary metadata key (never <tt>null</tt>>
+     * @param value some metadata value (<tt>null</tt> is supported)
+     * @return this builder for more building
      * 
-     * @throws              IllegalArgumentException if the key is null
-     * @throws              IllegalStateException if the key has been used already
+     * @throws IllegalArgumentException if the key is null
+     * @throws IllegalStateException if the key has been used already
      */
-    public synchronized SolrContentUrlBuilder add(String key, String value)
+    public SolrContentUrlBuilder add(String key, String value)
     {
         if (key == null)
         {
             throw new IllegalArgumentException("The metadata 'key' may not be null.");
         }
+
         String previous = metadata.put(key, value);
         if (previous != null)
         {
             throw new IllegalStateException("The metadata key, '" + key + "', has already been used.");
         }
+
         // Check well-known keys
         if (key.equals(KEY_TENANT) || key.equals(KEY_DB_ID) || key.equals(KEY_ACL_ID))
         {
@@ -131,8 +126,8 @@ public class SolrContentUrlBuilder
     /**
      * Get the final content URL using the {@link #add(String, String) supplied metadata}.
      * 
-     * @return              the SOLR content URL
-     * @throws              IllegalStateException if no metadata has been added
+     * @return the SOLR content URL
+     * @throws IllegalStateException if no metadata has been added
      */
     public synchronized String get()
     {
@@ -169,21 +164,13 @@ public class SolrContentUrlBuilder
             sb.append("misc/");
             // Calculate the CRC
             CRC32 crc = new CRC32();
-            try
+            for (Map.Entry<String, String> entry : metadata.entrySet())
             {
-                for (Map.Entry<String, String> entry : metadata.entrySet())
-                {
-                    // This is ordered, so just add each entry as "key = value".
-                    // DO NOT USE entry.toString() because the format is not a contract
-                    // and we have to have the same string for the same metadata
-                    String entryStr = entry.getKey() + "=" + entry.getValue() + "; ";
-                    crc.update(entryStr.getBytes("UTF-8"));
-                }
-            }
-            catch (UnsupportedEncodingException e)
-            {
-                // Yeah, right.
-                throw new RuntimeException("UTF-8 is not supported.", e);
+                // This is ordered, so just add each entry as "key = value".
+                // DO NOT USE entry.toString() because the format is not a contract
+                // and we have to have the same string for the same metadata
+                String entryStr = entry.getKey() + "=" + entry.getValue() + "; ";
+                crc.update(entryStr.getBytes(StandardCharsets.UTF_8));
             }
             numSb.append(crc.getValue());
         }
@@ -218,7 +205,7 @@ public class SolrContentUrlBuilder
     /**
      * Helper method to retrieve a {@link ContentContext} constructed using the final {@link #get()} url.
      */
-    public ContentContext getContentContext()
+    ContentContext getContentContext()
     {
         String url = get();
         return new ContentContext(null, url);

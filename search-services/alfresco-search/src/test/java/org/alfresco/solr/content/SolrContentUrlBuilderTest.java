@@ -21,7 +21,7 @@ package org.alfresco.solr.content;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * Tests {@link SolrContentUrlBuilder}
@@ -85,12 +85,12 @@ public class SolrContentUrlBuilderTest
                 .add(SolrContentUrlBuilder.KEY_DB_ID, "12345")
                 .get();
         Assert.assertEquals(url1, url1Check);
+
         String url2 = SolrContentUrlBuilder
                 .start()
                 .add(SolrContentUrlBuilder.KEY_DB_ID, "123456")
                 .get();
         Assert.assertNotEquals(url1, url2);
-        
         Assert.assertEquals("Incorrect URL: " + url1, "solr://default/db/1234/5.gz", url1);
     }
 
@@ -108,7 +108,6 @@ public class SolrContentUrlBuilderTest
                 .add(SolrContentUrlBuilder.KEY_TENANT, "bob")
                 .get();
         Assert.assertEquals(url1, url1Check);
-        
         Assert.assertEquals("Incorrect URL: " + url1, "solr://bob/db/1234/56.gz", url1);
     }
 
@@ -126,7 +125,6 @@ public class SolrContentUrlBuilderTest
                 .add(SolrContentUrlBuilder.KEY_TENANT, "bob")
                 .get();
         Assert.assertEquals(url1, url1Check);
-        
         Assert.assertEquals("Incorrect URL: " + url1, "solr://bob/acl/1234/56.gz", url1);
     }
 
@@ -146,7 +144,6 @@ public class SolrContentUrlBuilderTest
                 .add(SolrContentUrlBuilder.KEY_TENANT, "bob")
                 .get();
         Assert.assertEquals(url1, url1Check);
-        
         Assert.assertEquals("Incorrect URL: " + url1, "solr://bob/db/5432/1.gz", url1);
     }
 
@@ -164,6 +161,7 @@ public class SolrContentUrlBuilderTest
         {
             // Expected
         }
+
         try
         {
             SolrContentUrlBuilder
@@ -176,6 +174,7 @@ public class SolrContentUrlBuilderTest
         {
             // Expected
         }
+
         try
         {
             SolrContentUrlBuilder
@@ -188,6 +187,7 @@ public class SolrContentUrlBuilderTest
         {
             // Expected
         }
+
         try
         {
             SolrContentUrlBuilder
@@ -200,6 +200,7 @@ public class SolrContentUrlBuilderTest
         {
             // Expected
         }
+
         try
         {
             SolrContentUrlBuilder

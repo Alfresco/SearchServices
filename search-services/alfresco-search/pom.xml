@@ -179,6 +179,45 @@
                                     <directory>src/main/resources/solr/instance/templates/rerank/conf</directory>
                                     <excludes>
                                         <exclude>solrconfig.xml</exclude>
+                                        <exclude>solrcore.properties</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-production-solr-configuration-for-master</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.testOutputDirectory}/test-files/master/conf</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources/solr/instance/templates/rerank/conf</directory>
+                                    <excludes>
+                                        <exclude>solrconfig.xml</exclude>
+                                        <exclude>solrcore.properties</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-production-solr-configuration-for-slave</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.testOutputDirectory}/test-files/slave/conf</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources/solr/instance/templates/rerank/conf</directory>
+                                    <excludes>
+                                        <exclude>solrconfig.xml</exclude>
+                                        <exclude>solrcore.properties</exclude>
                                     </excludes>
                                 </resource>
                             </resources>
