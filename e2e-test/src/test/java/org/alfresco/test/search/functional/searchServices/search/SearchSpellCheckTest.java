@@ -361,42 +361,42 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
         Assert.assertTrue(waitForContentIndexing(file.getContent(), true));
 
         // Incorrect spelling with no field
-        SearchResponse response = SearchSpellcheckQuery(testUser, "b00k", "b00k");
+        SearchResponse response = SearchSpellcheckQuery(testUser, "bo0k", "bo0k");
 
         // Matching Result, Spellcheck = searchInsteadFor: book
         Assert.assertTrue(isContentInSearchResponse(response, file.getName()), "Expected file not returned in the search results: " + file.getName());
         testSearchSpellcheckResponse(response, "searchInsteadFor", "book");
 
         // Incorrect spelling with the cm:name field
-        response = SearchSpellcheckQuery(testUser, "cm:name:'b00k'", "b00k");
+        response = SearchSpellcheckQuery(testUser, "cm:name:'bo0k'", "bo0k");
 
         // Matching Result, Spellcheck = searchInsteadFor: book
         Assert.assertTrue(isContentInSearchResponse(response, file.getName()), "Expected file not returned in the search results: " + file.getName());
         testSearchSpellcheckResponse(response, "searchInsteadFor", "book");
 
         // Incorrect spelling with the cm:title field
-        response = SearchSpellcheckQuery(testUser, "cm:title:'b00k'", "b00k");
+        response = SearchSpellcheckQuery(testUser, "cm:title:'bo0k'", "bo0k");
 
         // Matching Result, Spellcheck = searchInsteadFor: book
         Assert.assertTrue(isContentInSearchResponse(response, file.getName()), "Expected file not returned in the search results: " + file.getName());
         testSearchSpellcheckResponse(response, "searchInsteadFor", "book");
 
         // Incorrect spelling with the cm:description field
-        response = SearchSpellcheckQuery(testUser, "cm:description:'b00k'", "b00k");
+        response = SearchSpellcheckQuery(testUser, "cm:description:'bo0k'", "bo0k");
 
         // Matching Result, Spellcheck = searchInsteadFor: book
         Assert.assertTrue(isContentInSearchResponse(response, file.getName()), "Expected file not returned in the search results: " + file.getName());
         testSearchSpellcheckResponse(response, "searchInsteadFor", "book");
 
         // Incorrect spelling with the cm:description field
-        response = SearchSpellcheckQuery(testUser, "cm:content:'b00k'", "b00k");
+        response = SearchSpellcheckQuery(testUser, "cm:content:'bo0k'", "bo0k");
 
         // Matching Result, Spellcheck = searchInsteadFor: book
         Assert.assertTrue(isContentInSearchResponse(response, file.getName()), "Expected file not returned in the search results: " + file.getName());
         testSearchSpellcheckResponse(response, "searchInsteadFor", "book");
 
         // Incorrect spelling with the cm:author field (not suggestable field for Spellcheck
-        response = SearchSpellcheckQuery(testUser, "cm:author:'b00k'", "b00k");
+        response = SearchSpellcheckQuery(testUser, "cm:author:'bo0k'", "bo0k");
 
         testSearchSpellcheckResponse(response, null, null);
     }
