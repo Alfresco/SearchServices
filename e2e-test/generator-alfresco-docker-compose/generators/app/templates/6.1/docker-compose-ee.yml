@@ -114,8 +114,8 @@ services:
             ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
             TRUSTSTORE_TYPE: JCEKS
             KEYSTORE_TYPE: JCEKS <% } %> <% if (replication == 'true') { %>
-            ENABLE_MASTER: "true"
-            ENABLE_SLAVE: "false"
+            ENABLE_MASTER: "false"
+            ENABLE_SLAVE: "true"
             MASTER_HOST: solr6 <% } %> <% if (sharding == 'true') { %>
             ENABLE_SHARDING: "true"
             NUM_SHARDS: "2"
