@@ -60,10 +60,14 @@ module.exports = class extends Generator {
       },
       {
         whenFunction: response => response.httpMode == 'http',
-        type: 'confirm',
+        type: 'list',
         name: 'replication',
-        message: 'Would you like to use SOLR Replication (2 nodes in master-slave)?',
-        default: false
+        message: 'Would you like to use SOLR Replication?',
+        choices: [
+          { name: "No", value: "" },
+          { name: "Yes - two nodes in a master-slave configuration", value: "master-slave" },
+          { name: "Yes - two nodes in a master-master configuration", value: "master-master" }
+        ]
       },
       // Enterprise only options
       {
@@ -199,7 +203,7 @@ module.exports = class extends Generator {
         port: (this.props.httpWebMode == 'http' ? '8080' : '443'),
         secureComms: (this.props.httpMode == 'http' ? 'none' : 'https'),
         alfrescoPort: (this.props.httpMode == 'http' ? '8080' : '8443'),
-        replication: (this.props.replication ? "true" : "false"),
+        replication: this.props.replication,
         searchSolrHost: (this.props.replication ? "solr6secondary" : "solr6"),
         searchPath: searchBasePath,
         zeppelin: (this.props.zeppelin ? "true" : "false"),
