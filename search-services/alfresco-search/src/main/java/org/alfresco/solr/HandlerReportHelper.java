@@ -145,9 +145,6 @@ class HandlerReportHelper
         return payload;
     }
 
-    /**
-     * Builds Tracker report
-     */
     static NamedList<Object> buildTrackerReport(TrackerRegistry trackerRegistry, InformationServer srv, String coreName, Long fromTx, Long toTx, Long fromAclTx, Long toAclTx,
                                                 Long fromTime, Long toTime) throws JSONException
     {
@@ -157,7 +154,6 @@ class HandlerReportHelper
             AclTracker aclTracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
             IndexHealthReport aclReport = aclTracker.checkIndex(toTx, toAclTx, fromTime, toTime);
             NamedList<Object> ihr = new SimpleOrderedMap<>();
-            ihr.add("Alfresco version", aclTracker.getAlfrescoVersion());
             ihr.add("DB acl transaction count", aclReport.getDbAclTransactionCount());
             ihr.add("Count of duplicated acl transactions in the index", aclReport.getDuplicatedAclTxInIndex()
                     .cardinality());
@@ -276,12 +272,6 @@ class HandlerReportHelper
         Date now = new Date();
         Date end = new Date(now.getTime() + remainingTxTimeMillis);
         Duration remainingTx = new Duration(now, end);
-
-        long remainingChangeSetTimeMillis = 0;
-
-        now = new Date();
-        end = new Date(now.getTime() + remainingChangeSetTimeMillis);
-        Duration remainingChangeSet = new Duration(now, end);
 
         NamedList<Object> ftsSummary = new SimpleOrderedMap<>();
         long remainingContentTimeMillis = 0;
