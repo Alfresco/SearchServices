@@ -32,8 +32,6 @@ public interface Tracker
     boolean hasMaintenance() throws Exception;
 
     Semaphore getWriteLock();
-
-    String getAlfrescoVersion();
     
     void setShutdown(boolean shutdown);
 
