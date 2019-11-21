@@ -15,7 +15,7 @@ import org.testng.annotations.Test;
  * 
  * @author Meenal Bhave
  */
-public class SearchSecondaryAssociationTests extends AbstractE2EFunctionalTest
+public class SearchSecondaryAssociationTest extends AbstractE2EFunctionalTest
 {
     private FolderModel testFolder1, testFolder2;
     private FileModel file1;
