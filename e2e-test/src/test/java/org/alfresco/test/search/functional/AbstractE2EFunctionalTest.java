@@ -279,18 +279,17 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     }
     
     /**
-     * Method to check if the contentName is returned in the SearchResponse
-     * @param response
-     * @param contentName
-     * @return
+     * Method to check if the contentName is returned in the SearchResponse.
+     *
+     * @param response the search response
+     * @param contentName the text we are using as matching/verifying criteria.
+     * @return true if if the item with the contentName text is returned in the SearchResponse.
      */
     public boolean isContentInSearchResponse(SearchResponse response, String contentName) 
     {
-        boolean found = response.getEntries().stream()
+        return response.getEntries().stream()
                 .map(entry -> entry.getModel().getName())
-                .filter(name -> name.equalsIgnoreCase(contentName) || contentName.isBlank()).count() > 0;
-
-        return found;
+                .anyMatch(name -> name.equalsIgnoreCase(contentName) || contentName.isBlank());
     }
 
     /**
@@ -426,8 +425,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     /**
      * Helper method to test if the search query works and count matches where provided
      * @param query: AFTS or cmis query string
-     * @param expectedCount: Only successful response is checked, when expectedCount is null (can not be exactly specified), 
-     * @param setCmis: Query language is set to cmis when setCmis is true, AFTS when false
+     * @param expectedCount: Only successful response is checked, when expectedCount is null (can not be exactly specified),
      * @return SearchResponse
      */
     protected SearchResponse testSearchQuery(String query, Integer expectedCount, SearchLanguage queryLanguage)
