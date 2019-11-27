@@ -32,24 +32,24 @@ json-20160212.jar       http://code.google.com/p/json-simple/
 
 === Apache 2.0 ===
 xml-resolver-1.2.jar    https://github.com/FasterXML/jackson
-neethi-3.0.3.jar        http://ws.apache.org/commons/neethi/
+neethi-3.1.1.jar http://ws.apache.org/commons/neethi/
 commons-logging-1.2.jar http://jakarta.apache.org/commons/
 commons-lang3-3.9.jar http://jakarta.apache.org/commons/
 mybatis-3.3.0.jar       http://www.mybatis.org/
 chemistry-opencmis-commons-impl-1.1.0.jar      http://chemistry.apache.org/
 chemistry-opencmis-commons-api-1.1.0.jar       http://chemistry.apache.org/
-xmlschema-core-2.2.1.jar        http://ws.apache.org/commons/XmlSchema/
+xmlschema-core-2.2.3.jar http://ws.apache.org/commons/XmlSchema/
 HikariCP-java7-2.4.13.jar https://github.com/brettwooldridge/HikariCP
-cxf-core-3.0.12.jar https://cxf.apache.org/
-cxf-rt-bindings-soap-3.0.12.jar https://cxf.apache.org/
-cxf-rt-bindings-xml-3.0.12.jar https://cxf.apache.org/
-cxf-rt-databinding-jaxb-3.0.12.jar https://cxf.apache.org/
-cxf-rt-frontend-jaxws-3.0.12.jar https://cxf.apache.org/
-cxf-rt-frontend-simple-3.0.12.jar https://cxf.apache.org/
-cxf-rt-transports-http-3.0.12.jar https://cxf.apache.org/
-cxf-rt-ws-addr-3.0.12.jar https://cxf.apache.org/
-cxf-rt-ws-policy-3.0.12.jar https://cxf.apache.org/
-cxf-rt-wsdl-3.0.12.jar https://cxf.apache.org/
+cxf-core-3.2.5.jar https://cxf.apache.org/
+cxf-rt-bindings-soap-3.2.5.jar https://cxf.apache.org/
+cxf-rt-bindings-xml-3.2.5.jar https://cxf.apache.org/
+cxf-rt-databinding-jaxb-3.2.5.jar https://cxf.apache.org/
+cxf-rt-frontend-jaxws-3.2.5.jar https://cxf.apache.org/
+cxf-rt-frontend-simple-3.2.5.jar https://cxf.apache.org/
+cxf-rt-transports-http-3.2.5.jar https://cxf.apache.org/
+cxf-rt-ws-addr-3.2.5.jar https://cxf.apache.org/
+cxf-rt-ws-policy-3.2.5.jar https://cxf.apache.org/
+cxf-rt-wsdl-3.2.5.jar https://cxf.apache.org/
 mybatis-spring-1.2.5.jar        http://www.mybatis.org/
 chemistry-opencmis-server-support-1.0.0.jar     http://chemistry.apache.org/
 chemistry-opencmis-server-bindings-1.0.0.jar    http://chemistry.apache.org/
@@ -87,6 +87,7 @@ jetty-servlets-9.3.27.v20190418.jar https://www.eclipse.org/jetty/licenses.html
 jetty-util-9.3.27.v20190418.jar https://www.eclipse.org/jetty/licenses.html
 jetty-webapp-9.3.27.v20190418.jar https://www.eclipse.org/jetty/licenses.html
 jetty-xml-9.3.27.v20190418.jar https://www.eclipse.org/jetty/licenses.html
+woodstox-core-5.0.3.jar https://github.com/FasterXML/woodstox
 
 
 === CDDL 1.0 ===
@@ -229,7 +230,6 @@ tika-parsers-1.16.jar
 tika-xmp-1.16.jar
 vorbis-java-core-0.8.jar
 vorbis-java-tika-0.8.jar
-woodstox-core-asl-4.4.1.jar
 xmlbeans-2.6.0.jar
 xmpcore-5.1.2.jar
 xz-1.6.jar
