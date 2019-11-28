@@ -52,7 +52,6 @@ import static org.alfresco.solr.AlfrescoSolrUtils.list;
  * @author Elia Porciani
  */
 @SolrTestCaseJ4.SuppressSSL
-@SolrTestCaseJ4.SuppressObjectReleaseTracker (bugUrl = "RAMDirectory")
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class ContentPropertyValueTrackerIT extends AbstractAlfrescoDistributedIT
 {
@@ -62,7 +61,7 @@ public class ContentPropertyValueTrackerIT extends AbstractAlfrescoDistributedIT
     @BeforeClass
     private static void initData() throws Throwable
     {
-        initSolrServers(1, "ContentPropertyValueIndexIT", null);
+        initSolrServers(1, "ContentPropertyValueTrackerIT", null);
     }
 
     @AfterClass
@@ -75,10 +74,10 @@ public class ContentPropertyValueTrackerIT extends AbstractAlfrescoDistributedIT
      *
      * MNT-21076 (SEARCH-1906)
      *
-     * This test aims to test if a document with more than one ContentPropertyValue,
-     * is removed from the index after any update.
+     * This test aims to test that a document with more than one ContentPropertyValue
+     * is not removed from the index after any update.
      *
-     * The ContentPropertyValue must not be indexed.
+     * The second ContentPropertyValue must not be indexed.
      * @throws Exception
      */
     @Test
