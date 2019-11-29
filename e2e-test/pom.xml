@@ -11,9 +11,9 @@
    <name>Search Analytics E2E Tests</name>
    <description>Test Project to test Search Service and Analytics Features on a complete setup of Alfresco, Share</description>
    <properties>
-      <tas.rest.api.version>6.0.1.2</tas.rest.api.version>
-      <tas.cmis.api.version>6.0.0.4</tas.cmis.api.version>
-      <tas.utility.version>3.0.11</tas.utility.version>
+      <tas.rest.api.version>1.15</tas.rest.api.version>
+      <tas.cmis.api.version>1.9</tas.cmis.api.version>
+      <tas.utility.version>3.0.14</tas.utility.version>
       <rm.version>3.2.0</rm.version>
       <suiteXmlFile>src/test/resources/SearchSuite.xml</suiteXmlFile>
       <test.exclude></test.exclude>
