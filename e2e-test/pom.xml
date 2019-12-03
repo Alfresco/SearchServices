@@ -44,7 +44,7 @@
       </dependency>
       <dependency>
          <groupId>org.alfresco.tas</groupId>
-         <artifactId>restapi-test</artifactId>
+         <artifactId>restapi</artifactId>
          <version>${tas.rest.api.version}</version>
          <scope>test</scope>
          <exclusions>
@@ -56,7 +56,7 @@
       </dependency>
       <dependency>
          <groupId>org.alfresco.tas</groupId>
-         <artifactId>cmis-test</artifactId>
+         <artifactId>cmis</artifactId>
          <version>${tas.cmis.api.version}</version>
          <scope>test</scope>
          <exclusions>
