@@ -71,7 +71,7 @@ public class DistributedExplicitShardRoutingTrackerIT extends AbstractAlfrescoDi
     }
 
     @AfterClass
-    private static void destroyData() throws Throwable
+    private static void destroyData()
     {
         dismissSolrServers();
     }

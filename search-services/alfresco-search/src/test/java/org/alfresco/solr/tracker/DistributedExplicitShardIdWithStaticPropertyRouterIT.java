@@ -66,7 +66,7 @@ public class DistributedExplicitShardIdWithStaticPropertyRouterIT extends Abstra
     }
 
     @AfterClass
-    private static void destroyData() throws Throwable
+    private static void destroyData()
     {
         dismissSolrServers();
     }
