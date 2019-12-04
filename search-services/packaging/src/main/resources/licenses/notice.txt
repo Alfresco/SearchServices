@@ -64,7 +64,6 @@ spring-context-5.1.8.RELEASE.jar http://projects.spring.io/spring-framework/
 spring-context-support-5.1.8.RELEASE.jar http://projects.spring.io/spring-framework/
 spring-core-5.1.8.RELEASE.jar http://projects.spring.io/spring-framework/
 spring-expression-5.1.8.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-jcl-5.1.8.RELEASE.jar http://projects.spring.io/spring-framework/
 spring-jdbc-5.1.8.RELEASE.jar http://projects.spring.io/spring-framework/
 spring-orm-5.1.8.RELEASE.jar http://projects.spring.io/spring-framework/
 spring-tx-5.1.8.RELEASE.jar http://projects.spring.io/spring-framework/
