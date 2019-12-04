@@ -48,7 +48,7 @@ import static org.hamcrest.core.Is.is;
     }
 
     @AfterClass
-    private static void destroyData() throws Throwable
+    private static void destroyData()
     {
         dismissSolrServers();
     }
