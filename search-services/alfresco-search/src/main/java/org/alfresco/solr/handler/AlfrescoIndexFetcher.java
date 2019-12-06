@@ -36,7 +36,6 @@ package org.alfresco.solr.handler;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import jdk.internal.jline.internal.Log;
 import org.alfresco.solr.content.SolrContentStore;
 import org.apache.http.client.HttpClient;
 import org.apache.lucene.codecs.CodecUtil;
