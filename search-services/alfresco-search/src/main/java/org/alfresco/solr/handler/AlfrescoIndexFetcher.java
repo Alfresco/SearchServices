@@ -34,39 +34,9 @@
  */
 package org.alfresco.solr.handler;
 
-import static java.util.List.of;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.ALIAS;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CHECKSUM;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CMD_CONTENT_STORE_FILES;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CMD_DETAILS;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CMD_GET_FILE;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CMD_GET_FILE_LIST;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CMD_INDEX_VERSION;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.COMMAND;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.COMPRESSION;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CONF_FILES;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CONF_FILE_SHORT;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CONTENT_STORE_FILES;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CONTENT_STORE_FILE_LIST;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CONTENT_STORE_VERSION;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.EXTERNAL;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.FILE;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.FILE_STREAM;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.FileInfo;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.GENERATION;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.INTERNAL;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.MASTER_URL;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.NO_INDEX_REPLICATION_REQUIRED;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.OFFSET;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.SIZE;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.TLOG_FILE;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.TLOG_FILES;
-import static org.alfresco.solr.handler.AlfrescoReplicationHandler.getCheckSum;
-import static org.apache.solr.common.params.CommonParams.JAVABIN;
-import static org.apache.solr.common.params.CommonParams.NAME;
-
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import jdk.internal.jline.internal.Log;
 import org.alfresco.solr.content.SolrContentStore;
 import org.apache.http.client.HttpClient;
 import org.apache.lucene.codecs.CodecUtil;
@@ -151,6 +121,37 @@ import java.util.stream.Collectors;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 import java.util.zip.InflaterInputStream;
+
+import static java.util.List.of;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.ALIAS;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CHECKSUM;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CMD_CONTENT_STORE_FILES;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CMD_DETAILS;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CMD_GET_FILE;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CMD_GET_FILE_LIST;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CMD_INDEX_VERSION;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.COMMAND;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.COMPRESSION;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CONF_FILES;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CONF_FILE_SHORT;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CONTENT_STORE_FILES;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CONTENT_STORE_FILE_LIST;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.CONTENT_STORE_VERSION;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.EXTERNAL;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.FILE;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.FILE_STREAM;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.FileInfo;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.GENERATION;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.INTERNAL;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.MASTER_URL;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.NO_INDEX_REPLICATION_REQUIRED;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.OFFSET;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.SIZE;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.TLOG_FILE;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.TLOG_FILES;
+import static org.alfresco.solr.handler.AlfrescoReplicationHandler.getCheckSum;
+import static org.apache.solr.common.params.CommonParams.JAVABIN;
+import static org.apache.solr.common.params.CommonParams.NAME;
 
 /**
  * <p> Provides functionality of downloading changed index files as well as config files and a timer for scheduling fetches from the
@@ -776,30 +777,37 @@ class AlfrescoIndexFetcher
                         }
                     }
 
-                    if (contentStoreReplicationNeeded)
-                    {
+                    try {
 
-                        if (contentStoreFilesToDownload != null)
+                        if (contentStoreReplicationNeeded)
                         {
-                            bytesDownloaded += downloadContentStoreFiles(contentStore.getRootLocation());
+
+                            if (contentStoreFilesToDownload != null)
+                            {
+                                bytesDownloaded += downloadContentStoreFiles(contentStore.getRootLocation());
+                            }
+
+                            if (contentStoreFilesToDelete != null)
+                            {
+                                deleteContentStoreFiles(contentStore.getRootLocation(), contentStoreFilesToDelete);
+                            }
+
+                            if (fullContentStoreReplication)
+                            {
+                                cleanUpContentStore(contentStore.getRootLocation());
+                            }
+
+                            contentStore.setLastCommittedVersion(masterContentStoreVersion);
+                            LOG.info("content store has been updated to version: {}", masterContentStoreVersion);
                         }
 
-                        if (contentStoreFilesToDelete != null)
-                        {
-                            deleteContentStoreFiles(contentStore.getRootLocation(), contentStoreFilesToDelete);
-                        }
-
-                        if (fullContentStoreReplication)
-                        {
-                            cleanUpContentStore(contentStore.getRootLocation());
-                        }
-
-                        contentStore.setLastCommittedVersion(masterContentStoreVersion);
+                    } catch (Exception e) {
+                        LOG.error("impossible to complete content store replication {}", e);
                     }
 
                     final long timeTakenSeconds = getReplicationTimeElapsed();
                     final Long bytesDownloadedPerSecond = (timeTakenSeconds != 0 ? bytesDownloaded / timeTakenSeconds :
-                            null);
+                                null);
                     LOG.info("Total time taken for download (fullCopy={},bytesDownloaded={}) : {} secs ({} bytes/sec)",
                             isFullCopyNeeded, bytesDownloaded, timeTakenSeconds, bytesDownloadedPerSecond);
 
@@ -1683,36 +1691,31 @@ class AlfrescoIndexFetcher
      * @param contentStorePath
      * @throws IOException
      */
-    private void copyTmpContentStoreToContentStore(File tmpContentStoreDir, String contentStorePath) throws IOException
+    private void copyTmpContentStoreToContentStore(File tmpContentStoreDir, String contentStorePath) throws Exception
     {
 
         String tmpContentStorePath = tmpContentStoreDir.getPath();
 
-        try
-        {
-            Files.walk(tmpContentStoreDir.toPath()).forEach(p -> {
-                File tmpFile = new File(p.toUri());
-                if (!tmpFile.isDirectory())
+        Files.walk(tmpContentStoreDir.toPath()).forEach(p -> {
+            File tmpFile = new File(p.toUri());
+            if (!tmpFile.isDirectory())
+            {
+                File csFile = new File(p.toString().replace(tmpContentStorePath, contentStorePath));
+                try
                 {
-                    File csFile = new File(p.toString().replaceFirst(tmpContentStorePath, contentStorePath));
-                    try
-                    {
-                        Files.createDirectories(Paths.get(csFile.getParent()));
-                        tmpFile.renameTo(csFile);
-                    }
-                    catch (IOException e)
-                    {
-                        LOG.error("impossible to copy {}", csFile.toString());
+                    Files.createDirectories(Paths.get(csFile.getParent()));
+                    if (!tmpFile.renameTo(csFile)){
+                        throw new RuntimeException("Failed while moving content store file to " + csFile.getAbsolutePath());
                     }
                 }
-            });
-        }
-        catch (IOException e)
-        {
-            LOG.error("impossible tmp content store");
-            throw e;
-        }
+                catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
+
 
     /**
      * Deletes the files in filesToDelete list from contentStore
