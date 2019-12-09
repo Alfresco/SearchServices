@@ -150,14 +150,11 @@ The following table illustrates the configuration properties used by the Tracker
 |alfresco.stores|workspace://SpacesStore|The reference to a node store| | |Y|Y| | |
 |batch.count|5000|UpSert batch size (e.g. metadata docs, acls)| | |Y|Y| | |
 |alfresco.maxLiveSearchers|2|Max allowed number of active searchers|Y| |Y|Y| | |
-|enable.slave|false|Indicates if the hosting instance is a slave| | |Y|Y| | |
-|enable.master|true|Indicates if the hosting instance is a master| | |Y|Y| | |
 |shard.count|1|The total number of shards that compose the Solr infrastructure|| |Y|Y| | |
 |shard.instance|0|The unique shard identifier assigned to this instance|| |Y|Y| | |
 |shard.method|"DB_ID"|Data (Documents, ACLs) Routing criteria among shards| | |Y|Y| | |
 |alfresco.fingerprint|true|true if we want to compute the content Fingerprint| | |Y|| | |
 |alfresco.index.transformContent|true| | | |Y|| | |
-|alfresco.version|5.0.0|The target Alfresco version| | | | | | |
 |alfresco.corePoolSize|4|The number of threads to keep in the pool, even if they are idle|Y|Y|Y|Y|Y|Y|
 |alfresco.maximumPoolSize|-1|The maximum number of threads allowed in the pool|Y|Y|Y|Y|Y|Y|
 |alfresco.keepAliveTime|120|When the number of threads is greater than the core pool size, this is the maximum time that excess idle threads will wait for new tasks before terminating|Y|Y|Y|Y|Y|Y|

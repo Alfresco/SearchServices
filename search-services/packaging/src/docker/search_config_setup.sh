@@ -32,4 +32,8 @@ if [[ "none" == "$ALFRESCO_SECURE_COMMS" ]]; then
    fi
 fi
 
+if [[ true == "$ENABLE_SPELLCHECK" ]]; then
+   sed -i 's/#alfresco.suggestable.property/alfresco.suggestable.property/' ${PWD}/solrhome/conf/shared.properties
+fi
+
 bash -c "$@"

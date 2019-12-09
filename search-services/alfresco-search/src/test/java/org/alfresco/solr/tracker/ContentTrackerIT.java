@@ -137,7 +137,7 @@ public class ContentTrackerIT
     @Test
     public void typeCheck()
     {
-        Assert.assertTrue(contentTracker.getType().equals(Tracker.Type.Content));
+        Assert.assertTrue(contentTracker.getType().equals(Tracker.Type.CONTENT));
     }
     
 }

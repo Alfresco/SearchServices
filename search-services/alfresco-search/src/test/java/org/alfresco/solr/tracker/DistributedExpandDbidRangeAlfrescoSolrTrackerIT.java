@@ -65,7 +65,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerIT extends AbstractAlf
     }
 
     @AfterClass
-    private static void destroyData() throws Throwable
+    private static void destroyData()
     {
         dismissSolrServers();
     }

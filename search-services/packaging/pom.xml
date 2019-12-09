@@ -111,7 +111,7 @@
                                     <version>${project.version}</version>
                                     <classifier>libs</classifier>
                                     <outputDirectory>${project.build.directory}/solr-libs</outputDirectory>
-                                    <excludes>**/jackson-dataformat-smile-*.jar,**/asm-3.3.1.jar,**/jackson-core-asl-*.jar,**/jackson-mapper-asl-*.jar,**/dom4j-1.6.1.jar</excludes>
+                                    <excludes>**/jackson-dataformat-smile-*.jar,**/asm-3.3.1.jar,**/jackson-core-asl-*.jar,**/jackson-mapper-asl-*.jar,**/dom4j-1.6.1.jar,**/annotations-1.0.0.jar,**/woodstox-core-asl-4.4.1.jar</excludes>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
@@ -157,7 +157,9 @@
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/jackson-core-asl-1.9.13.jar" />
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/jackson-mapper-asl-1.9.13.jar" />
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/dom4j-1.6.1.jar" />
+                                <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/woodstox-core-asl-4.4.1.jar" />
                             </target>
+
                         </configuration>
                     </execution>
                     <!-- Set the default solr home directory to solrhome -->

@@ -57,7 +57,7 @@ services:
             ALFRESCO_HOSTNAME: alfresco
             ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
             TRUSTSTORE_TYPE: JCEKS
-            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication == 'true') { %>
+            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication) { %>
             ENABLE_MASTER: "true"
             ENABLE_SLAVE: "false" <% } %> <% if (sharding == 'true') { %>
             ENABLE_SHARDING: "true"
@@ -103,7 +103,7 @@ services:
         volumes:
             - ./keystores/solr:/opt/<%=searchPath%>/keystore <% } %>
 
-    <% if (sharding == 'true' || replication == 'true') { %>
+    <% if (sharding == 'true' || replication) { %>
     solr6secondary:
         build:
           context: ./search
@@ -113,9 +113,9 @@ services:
             ALFRESCO_HOSTNAME: alfresco
             ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
             TRUSTSTORE_TYPE: JCEKS
-            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication == 'true') { %>
-            ENABLE_MASTER: "true"
-            ENABLE_SLAVE: "false"
+            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication) { %>
+            ENABLE_MASTER: <% if (replication == 'master-master') { %>"true"<% } else { %>"false"<% } %>
+            ENABLE_SLAVE: <% if (replication == 'master-master') { %>"false"<% } else { %>"true"<% } %>
             MASTER_HOST: solr6 <% } %> <% if (sharding == 'true') { %>
             ENABLE_SHARDING: "true"
             NUM_SHARDS: "2"
@@ -301,24 +301,31 @@ services:
             - 61616:61616 # OpenWire
             - 61613:61613 # STOMP
 
-    digital-workspace:
+    content-app:
         image: quay.io/alfresco/alfresco-digital-workspace:${DIGITAL_WORKSPACE_TAG}
         mem_limit: 128m
         environment:
             BASEPATH: ./
 
+    # HTTP proxy to provide HTTP Default port access to services
+    # SOLR API and SOLR Web Console are protected to avoid unauthenticated access
     proxy:
-        image: alfresco/alfresco-acs-nginx:${ACS_NGINX_TAG}
+        image: nginx:stable-alpine
         mem_limit: 128m
         depends_on:
             - alfresco
-            - digital-workspace
+        volumes:
+            - ./config/nginx.conf:/etc/nginx/nginx.conf
+            - ./config/nginx.htpasswd:/etc/nginx/conf.d/nginx.htpasswd <% if (httpWebMode == 'https') { %>
+            - ./config/cert/localhost.cer:/etc/nginx/localhost.cer
+            - ./config/cert/localhost.key:/etc/nginx/localhost.key <% } %>
         ports:
-            - 8080:8080
+            - <%=port%>:<%=port%>  
         links:
-            - digital-workspace
             - alfresco
             - share
+            - solr6
+            - content-app
 
 volumes:
     shared-file-store-volume:

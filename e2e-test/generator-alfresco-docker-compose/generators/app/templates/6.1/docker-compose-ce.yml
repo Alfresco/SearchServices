@@ -26,16 +26,14 @@ services:
                 -Dsolr.base.url=/solr
                 -Dindex.subsystem.name=solr6
                 -Dshare.host=localhost
-                -Dalfresco.port=8082
-                -Daos.baseUrlOverwrite=http://localhost:8082/alfresco/aos
+                -Dalfresco.port=8080
+                -Daos.baseUrlOverwrite=http://localhost:8080/alfresco/aos
                 -Dmessaging.broker.url=\"failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true\"
                 -Ddeployment.method=DOCKER_COMPOSE
                 -Dcsrf.filter.enabled=false
                 -Dalfresco.restApi.basicAuthScheme=true
-                -Xms1500m -Xmx1500m
-                "
+                " <% if (httpMode == 'https') { %>
         ports:
-            - 8082:8080 <% if (httpMode == 'https') { %>
             - 8443:8443
         volumes:
             - ./keystores/alfresco:/usr/local/tomcat/alf_data/keystore <% } %>
@@ -49,7 +47,7 @@ services:
             ALFRESCO_HOSTNAME: alfresco
             ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
             TRUSTSTORE_TYPE: JCEKS
-            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication == 'true') { %>
+            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication) { %>
             ENABLE_MASTER: "true"
             ENABLE_SLAVE: "false" <% } %>
         mem_limit: 1200m
@@ -80,7 +78,7 @@ services:
         volumes:
             - ./keystores/solr:/opt/<%=searchPath%>/keystore <% } %>
 
-    <% if (replication == 'true') { %>
+    <% if (replication) { %>
     solr6secondary:
         build:
           context: ./search
@@ -90,9 +88,9 @@ services:
             ALFRESCO_HOSTNAME: alfresco
             ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
             TRUSTSTORE_TYPE: JCEKS
-            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication == 'true') { %>
-            ENABLE_MASTER: "true"
-            ENABLE_SLAVE: "false"
+            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication) { %>
+            ENABLE_MASTER: <% if (replication == 'master-master') { %>"true"<% } else { %>"false"<% } %>
+            ENABLE_SLAVE: <% if (replication == 'master-master') { %>"false"<% } else { %>"true"<% } %>
             MASTER_HOST: solr6 <% } %>
         mem_limit: 1200m
         environment:
@@ -140,8 +138,6 @@ services:
                 -Dalfresco.context=alfresco
                 -Dalfresco.protocol=http
                 "
-        ports:
-            - 8080:8080
 
     postgres:
         image: postgres:${POSTGRES_TAG}
@@ -162,3 +158,29 @@ services:
             - 5672:5672 # AMQP
             - 61616:61616 # OpenWire
             - 61613:61613 # STOMP
+
+    content-app:
+        image: alfresco/alfresco-content-app:${ACA_TAG}
+        mem_limit: 256m
+        depends_on:
+            - alfresco
+
+    # HTTP proxy to provide HTTP Default port access to services
+    # SOLR API and SOLR Web Console are protected to avoid unauthenticated access
+    proxy:
+        image: nginx:stable-alpine
+        mem_limit: 128m
+        depends_on:
+            - alfresco
+        volumes:
+            - ./config/nginx.conf:/etc/nginx/nginx.conf
+            - ./config/nginx.htpasswd:/etc/nginx/conf.d/nginx.htpasswd <% if (httpWebMode == 'https') { %>
+            - ./config/cert/localhost.cer:/etc/nginx/localhost.cer
+            - ./config/cert/localhost.key:/etc/nginx/localhost.key <% } %>
+        ports:
+            - <%=port%>:<%=port%>  
+        links:
+            - alfresco
+            - share
+            - solr6
+            - content-app
