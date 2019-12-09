@@ -1,6 +1,6 @@
 # Alfresco Search Services ${project.version} Docker Image
 
-FROM alfresco/alfresco-base-java:11.0.1-openjdk-centos-7-6784d76a7b81
+FROM alfresco/alfresco-base-java:11.0.1-openjdk-centos-7-7a6031154417
 LABEL creator="Gethin James" maintainer="Alfresco Search Services Team"
 
 ENV DIST_DIR /opt/alfresco-search-services
