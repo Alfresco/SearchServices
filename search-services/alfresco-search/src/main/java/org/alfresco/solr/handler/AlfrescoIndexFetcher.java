@@ -1703,7 +1703,7 @@ class AlfrescoIndexFetcher
                 try
                 {
                     Files.createDirectories(Paths.get(csFile.getParent()));
-                    Files.copy(tmpFile.toPath(), csFile.toPath());
+                    Files.copy(tmpFile.toPath(), csFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 }
                 catch (IOException e)
                 {
