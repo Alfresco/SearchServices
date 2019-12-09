@@ -4,12 +4,8 @@ var banner = require('./banner')
 
 /**
  * This module buids a Docker Compose template to test
- * Repository and Search Services/Insight Engine in
- * different configurations:
- * - Plain HTTP communications
- * - TLS/SSL Mutual Authentication communications
- * - Sharding (dynamic)
- * - Replication (master-slave)
+ * Repository and Search Services/Insight Engine with
+ * different configurations.
 */
 module.exports = class extends Generator {
 
@@ -45,16 +41,33 @@ module.exports = class extends Generator {
       {
         type: 'list',
         name: 'httpMode',
-        message: 'Would you like to use http or https?',
+        message: 'Would you like to use HTTP or mTLS for Alfresco-SOLR communication?',
         choices: [ "http", "https" ],
         default: 'http'
       },
       {
-        whenFunction: response => response.httpMode == 'http',
+        type: 'list',
+        name: 'httpWebMode',
+        message: 'Would you like to use HTTP or HTTPs for Web Proxy?',
+        choices: [ "http", "https" ],
+        default: 'http'
+      },
+      {
         type: 'confirm',
+        name: 'protectSolr',
+        message: 'Would you like to protect the access to SOLR REST API?',
+        default: 'true'
+      },
+      {
+        whenFunction: response => response.httpMode == 'http',
+        type: 'list',
         name: 'replication',
-        message: 'Would you like to use SOLR Replication (2 nodes in master-slave)?',
-        default: false
+        message: 'Would you like to use SOLR Replication?',
+        choices: [
+          { name: "No", value: "" },
+          { name: "Yes - two nodes in a master-slave configuration", value: "master-slave" },
+          { name: "Yes - two nodes in a master-master configuration", value: "master-master" }
+        ]
       },
       // Enterprise only options
       {
@@ -186,9 +199,11 @@ module.exports = class extends Generator {
       this.destinationPath('docker-compose.yml'),
       {
         httpMode: this.props.httpMode,
+        httpWebMode: this.props.httpWebMode,
+        port: (this.props.httpWebMode == 'http' ? '8080' : '443'),
         secureComms: (this.props.httpMode == 'http' ? 'none' : 'https'),
         alfrescoPort: (this.props.httpMode == 'http' ? '8080' : '8443'),
-        replication: (this.props.replication ? "true" : "false"),
+        replication: this.props.replication,
         searchSolrHost: (this.props.replication ? "solr6secondary" : "solr6"),
         searchPath: searchBasePath,
         zeppelin: (this.props.zeppelin ? "true" : "false"),
@@ -226,7 +241,9 @@ module.exports = class extends Generator {
       this.templatePath(imagesDirectory + '/share/Dockerfile'),
       this.destinationPath('share/Dockerfile'),
       {
-        shareImage: shareImageName
+        shareImage: shareImageName,
+        httpWebMode: this.props.httpWebMode,
+        port: (this.props.httpWebMode == 'http' ? '8080' : '443'),
       }
     );
     // Copy Sharding Content Forms or an empty file to allow forms deployments
@@ -280,6 +297,24 @@ module.exports = class extends Generator {
           this.destinationPath('keystores/zeppelin')
         )
       }
+    }
+
+    // Copy NGINX Configuration
+    this.fs.copyTpl(
+      this.templatePath(imagesDirectory + '/config/nginx'),
+      this.destinationPath('config'),
+      {
+        port: (this.props.httpWebMode == 'http' ? '8080' : '443'),
+        httpMode: this.props.httpMode,
+        httpWebMode: this.props.httpWebMode,
+        protectSolr: (this.props.protectSolr ? 'true' : 'false')
+      }
+    );
+    if (this.props.httpWebMode == 'https') {
+      this.fs.copy(
+        this.templatePath(imagesDirectory + '/config/cert'),
+        this.destinationPath('config/cert')
+      );
     }
 
   }

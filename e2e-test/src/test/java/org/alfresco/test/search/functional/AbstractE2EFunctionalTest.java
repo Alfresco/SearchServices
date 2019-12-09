@@ -11,6 +11,7 @@ import org.alfresco.dataprep.ContentService;
 import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.core.RestProperties;
 import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.rest.model.RestRequestSpellcheckModel;
 import org.alfresco.rest.search.RestRequestHighlightModel;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchRequest;
@@ -75,15 +76,15 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     protected CmisWrapper cmisApi;
 
     @Autowired
-    @Getter(value = PROTECTED)
+  //  @Getter(value = PROTECTED)
     protected DataUser dataUser;
 
     @Autowired
     @Getter(value = PROTECTED)
     private ContentService contentService;
 
-    protected UserModel testUser, adminUserModel;
-    protected SiteModel testSite;
+    protected UserModel testUser, adminUserModel, testUser2;
+    protected SiteModel testSite, testSite2;
 
     protected static String unique_searchString;
     
@@ -93,7 +94,6 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         CMIS,
         AFTS
       }
-
 
     @BeforeSuite(alwaysRun = true)
     public void beforeSuite() throws Exception
@@ -259,10 +259,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
 
             if (restClient.getStatusCode().matches(expectedStatusCode))
             {
-                boolean found = response.getEntries().stream()
-                        .map(entry -> entry.getModel().getName())
-                        .filter(name -> name.equalsIgnoreCase(contentName) || contentName.isBlank())
-                        .count() > 0;
+                boolean found = isContentInSearchResponse(response, contentName);
 
                 // Exit loop if result is as expected.
                 if (expectedInResults == found)
@@ -279,6 +276,20 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         }
 
         return false;
+    }
+    
+    /**
+     * Method to check if the contentName is returned in the SearchResponse.
+     *
+     * @param response the search response
+     * @param contentName the text we are using as matching/verifying criteria.
+     * @return true if if the item with the contentName text is returned in the SearchResponse.
+     */
+    public boolean isContentInSearchResponse(SearchResponse response, String contentName) 
+    {
+        return response.getEntries().stream()
+                .map(entry -> entry.getModel().getName())
+                .anyMatch(name -> name.equalsIgnoreCase(contentName) || contentName.isBlank());
     }
 
     /**
@@ -362,12 +373,21 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     }
     
     /**
-     * Run a search as given user and return the response
-     * 
-     * @param user: UserModel for the user you wish to run the query as
-     * @param queryModel: The queryModel to search for, containing the query
+     * Run a search with Spellcheck as given user and return the response
+     * @param user UserModel for the user you wish to run the query as
+     * @param queryModel The queryModel to search for, containing the query
+     * @param spellcheckQuery The Spellcheck Model containing the query
      * @return the search response from the API
      */
+    protected SearchResponse queryAsUser(UserModel user, RestRequestQueryModel queryModel, RestRequestSpellcheckModel spellcheckQuery)
+    {
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.setQuery(queryModel);
+        searchRequest.setSpellcheck(spellcheckQuery);
+
+        return restClient.authenticateUser(user).withSearchAPI().search(searchRequest);
+    }
+
     protected SearchResponse queryAsUser(UserModel user, RestRequestQueryModel queryModel)
     {
         SearchRequest searchRequest = new SearchRequest();
@@ -397,11 +417,15 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         return query;
     }
     
+    protected DataUser getDataUser()
+    {
+        return dataUser;
+    }
+    
     /**
      * Helper method to test if the search query works and count matches where provided
      * @param query: AFTS or cmis query string
-     * @param expectedCount: Only successful response is checked, when expectedCount is null (can not be exactly specified), 
-     * @param setCmis: Query language is set to cmis when setCmis is true, AFTS when false
+     * @param expectedCount: Only successful response is checked, when expectedCount is null (can not be exactly specified),
      * @return SearchResponse
      */
     protected SearchResponse testSearchQuery(String query, Integer expectedCount, SearchLanguage queryLanguage)
@@ -424,5 +448,53 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         }
 
         return response;
+    }
+    
+    /**
+     * Method to create and run a simple spellcheck query
+     * When a spellcheck query is run a user, the query inputed and the user query is inputted
+     * @param query
+     * @param userQuery
+     * @return
+     */
+    protected SearchResponse SearchSpellcheckQuery(UserModel user, String query, String userQuery)
+    {
+        RestRequestSpellcheckModel spellCheck = new RestRequestSpellcheckModel();
+        spellCheck.setQuery(userQuery);
+        
+        UserModel searchUser = ofNullable(user).isPresent()? user: testUser;
+        SearchRequest searchReq = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery(query);
+        queryReq.setUserQuery(userQuery);
+        searchReq.setQuery(queryReq);
+        searchReq.setSpellcheck(spellCheck);
+        SearchResponse response = queryAsUser(searchUser, queryReq, spellCheck);
+        return response;
+    }
+
+    /**
+     * Method to check the spellcheck object returned in the Search Response
+     * @param response SearchResponse
+     * @param spellCheckType String Values: searchInsteadFor, didYouMean or null
+     * @param spellCheckSuggestion String Values: suggestion string or null
+     */
+    public void testSearchSpellcheckResponse(SearchResponse response, String spellCheckType, String spellCheckSuggestion)
+    {
+        if (ofNullable(spellCheckType).isPresent())
+        {
+            response.getContext().assertThat().field("spellCheck").isNotEmpty();
+            response.getContext().getSpellCheck().assertThat().field("type").is(spellCheckType);
+        }
+        else
+        {
+            response.getContext().assertThat().field("spellCheck").isNull();
+        }
+
+        if (ofNullable(spellCheckSuggestion).isPresent())
+        {
+            response.getContext().assertThat().field("spellCheck").isNotEmpty();
+            response.getContext().getSpellCheck().assertThat().field("suggestions").contains(spellCheckSuggestion);
+        }        
     }
 }

@@ -52,6 +52,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
 import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
 import static org.alfresco.solr.AlfrescoSolrUtils.list;
+import static org.alfresco.solr.tracker.DocRouterFactory.SHARD_KEY_KEY;
 
 /**
  * Test Routes based on an explicit shard
@@ -70,7 +71,7 @@ public class DistributedExplicitShardRoutingTrackerIT extends AbstractAlfrescoDi
     }
 
     @AfterClass
-    private static void destroyData() throws Throwable
+    private static void destroyData()
     {
         dismissSolrServers();
     }
@@ -179,7 +180,7 @@ public class DistributedExplicitShardRoutingTrackerIT extends AbstractAlfrescoDi
         prop.put("shard.method", ShardMethodEnum.EXPLICIT_ID.toString());
         //Normally this would be used by the Solr client which will automatically add the property to the node.shardPropertyValue
         //For testing this doesn't work like that so I setShardPropertyValue explicitly above.
-        prop.put("shard.key", ContentModel.PROP_SKYPE.toString());
+        prop.put(SHARD_KEY_KEY, ContentModel.PROP_SKYPE.toString());
         return prop;
     }
 }

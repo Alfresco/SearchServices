@@ -47,6 +47,8 @@ services:
       - SOLR_CREATE_ALFRESCO_DEFAULTS=alfresco,archive
       #HTTP by default
       - ALFRESCO_SECURE_COMMS=none
+      #Enable Spellcheck by setting to true
+      - ENABLE_SPELLCHECK=${SEARCH_ENABLE_SPELLCHECK}
     ports:
       - 8083:8983 #Browser port
   activemq:

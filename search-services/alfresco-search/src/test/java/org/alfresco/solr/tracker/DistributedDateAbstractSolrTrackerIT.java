@@ -20,6 +20,7 @@ package org.alfresco.solr.tracker;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AbstractAlfrescoDistributedIT;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.client.Acl;
@@ -43,6 +44,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Collections.singletonList;
 import static java.util.stream.IntStream.range;
@@ -120,8 +122,11 @@ public abstract class DistributedDateAbstractSolrTrackerIT extends AbstractAlfre
         indexTransaction(bigTxn, nodes, nodeMetaDatas);
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes, 100000);
 
+        Optional<QName> shardProperty = MetadataTracker.getShardProperty("created");
+        assertTrue("'created' field is expected to be found in data model", shardProperty.isPresent());
+
         List<AlfrescoSolrDataModel.FieldInstance> fieldInstanceList =
-                AlfrescoSolrDataModel.getInstance().getIndexedFieldNamesForProperty(MetadataTracker.getShardProperty("created")).getFields();
+                AlfrescoSolrDataModel.getInstance().getIndexedFieldNamesForProperty(shardProperty.get()).getFields();
 
         AlfrescoSolrDataModel.FieldInstance fieldInstance = fieldInstanceList.get(0);
         String fieldName = fieldInstance.getField();

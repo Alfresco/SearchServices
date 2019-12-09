@@ -1,0 +1,91 @@
+/*
+ * Copyright 2019 Alfresco Software, Ltd. All rights reserved.
+ * License rights for this program may be obtained from Alfresco Software, Ltd.
+ * pursuant to a written agreement and any use of this program without such an
+ * agreement is prohibited.
+ */
+
+package org.alfresco.test.search.functional.searchServices.search;
+
+import org.alfresco.rest.model.RestNodeAssociationModelCollection;
+import org.alfresco.rest.model.RestNodeChildAssociationModel;
+import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
+import org.alfresco.utility.data.CustomObjectTypeProperties;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FolderModel;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+/**
+ * Test class tests content in the secondary parent is found too
+ * Created for Search-1313
+ * 
+ * @author Meenal Bhave
+ */
+public class SearchSecondaryAssociationTest extends AbstractE2EFunctionalTest
+{
+    private FolderModel testFolder1, testFolder2;
+    private FileModel file1;
+    
+    @BeforeClass(alwaysRun = true)
+    public void dataPreparation()
+    {        
+        // Folders
+        testFolder1 = new FolderModel("folder1");        
+        testFolder2 = new FolderModel("folder2");
+
+        // File(s)
+        file1 = new FileModel("file1.txt");
+        file1.setContent("content file 1");      
+
+        // Create folder1
+        dataContent.usingUser(testUser).usingSite(testSite).createCustomContent(testFolder1, "cmis:folder", new CustomObjectTypeProperties());
+
+        // Create file1
+        dataContent.usingUser(testUser).usingResource(testFolder1).createCustomContent(file1, "cmis:document", new CustomObjectTypeProperties());
+
+        // Create folder2
+        dataContent.usingUser(testUser).usingSite(testSite).createCustomContent(testFolder2, "cmis:folder", new CustomObjectTypeProperties());
+
+        // wait for solr index
+        waitForMetadataIndexing(file1.getName(), true);
+    }
+    
+    @Test(priority = 1)
+    public void testSearchPathForSecondaryAssociation() throws Exception
+    {
+        String queryPathFolder1 = "PATH:\"/app:company_home/st:sites/cm:" + testSite.getTitle() +
+                "/cm:documentLibrary/cm:" + testFolder1.getName() + "/cm:" + file1.getName() + "\"";
+
+        // Test if file can be found in folder1: Primary Parent
+        boolean found = isContentInSearchResults(queryPathFolder1, file1.getName(), true);
+        Assert.assertTrue(found, "File Not found using Primary Parent Path");
+
+        String queryPathFolder2 = "PATH:\"/app:company_home/st:sites/cm:" + testSite.getTitle() +
+                "/cm:documentLibrary/cm:" + testFolder2.getName() + "/cm:" + file1.getName() + "\"";
+
+        // Test if file can not be found in folder2
+        found = isContentInSearchResults(queryPathFolder2, file1.getName(), false);
+        Assert.assertTrue(found, "File found using Secondary Parent Path");
+ 
+        // Create Secondary association in folder2
+        RestNodeChildAssociationModel childAssoc1 = new RestNodeChildAssociationModel(file1.getNodeRefWithoutVersion(), "cm:contains");
+        String secondaryChildrenBody = "[" + childAssoc1.toJson() + "]";
+
+        restClient.authenticateUser(testUser).withCoreAPI().usingResource(testFolder2).createSecondaryChildren(secondaryChildrenBody);
+        RestNodeAssociationModelCollection secondaryChildren = restClient.authenticateUser(testUser).withCoreAPI().usingResource(testFolder2).getSecondaryChildren();
+        secondaryChildren.getEntryByIndex(0).assertThat().field("id").is(file1.getNodeRefWithoutVersion());
+        
+        // Test if file can be found in folder2: Secondary Parent
+        found = isContentInSearchResults(queryPathFolder2, file1.getName(), true);
+        Assert.assertTrue(found, "File Not found using Secondary Parent Path");
+
+        // Remove Secondary association
+        restClient.authenticateUser(testUser).withCoreAPI().usingResource(testFolder2).deleteSecondaryChild(secondaryChildren.getEntryByIndex(0));
+
+        // Test if file can not be found in folder2
+        found = isContentInSearchResults(queryPathFolder2, file1.getName(), false);
+        Assert.assertTrue(found, "File found using Secondary Parent Path");        
+    }
+}

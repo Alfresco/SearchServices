@@ -32,11 +32,11 @@ public interface Tracker
     boolean hasMaintenance() throws Exception;
 
     Semaphore getWriteLock();
-
-    String getAlfrescoVersion();
     
     void setShutdown(boolean shutdown);
-    
+
+    boolean isAlreadyInShutDownMode();
+
     void shutdown();
 
     boolean getRollback();
@@ -51,12 +51,14 @@ public interface Tracker
     
     Type getType();
     
-    enum Type{
-        Model,
-        Content,
+    enum Type
+    {
+        MODEL,
+        CONTENT,
         ACL,
-        Cascade,
-        Commit,
-        MetaData
+        CASCADE,
+        COMMIT,
+        METADATA,
+        NODE_STATE_PUBLISHER
     }
 }

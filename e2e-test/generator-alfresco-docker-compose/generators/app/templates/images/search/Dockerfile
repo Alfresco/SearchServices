@@ -54,7 +54,6 @@ ENV MASTER_HOST $MASTER_HOST
 
 # Set Master / Slave configuration for this Node
 RUN if [ "$ENABLE_MASTER" == "true" ] ; then \
-        sed -i '/^bash.*/i echo "\nenable.master=${ENABLE_MASTER}\nenable.slave=${ENABLE_SLAVE}" >> ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
         ${DIST_DIR}/solr/bin/search_config_setup.sh; \
         sed -i "/^bash.*/i sed -i '/^\\\\\s*<requestHandler name=\"\\\\/replication\".*/a \
             <lst name=\"master\">\
@@ -64,7 +63,6 @@ RUN if [ "$ENABLE_MASTER" == "true" ] ; then \
             </lst>' ${DIST_DIR}/solrhome/templates/rerank/conf/solrconfig.xml\n" ${DIST_DIR}/solr/bin/search_config_setup.sh; \
     fi
 RUN if [ "$ENABLE_SLAVE" == "true" ] ; then \
-        sed -i '/^bash.*/i echo "\nenable.master=${ENABLE_MASTER}\nenable.slave=${ENABLE_SLAVE}" >> ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
         ${DIST_DIR}/solr/bin/search_config_setup.sh; \
         sed -i "/^bash.*/i sed -i '/^\\\\\s*<requestHandler name=\"\\\\/replication\".*/a \
             <lst name=\"slave\">\

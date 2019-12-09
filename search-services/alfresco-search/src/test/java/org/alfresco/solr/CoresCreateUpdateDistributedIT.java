@@ -63,7 +63,7 @@ public class CoresCreateUpdateDistributedIT extends AbstractAlfrescoDistributedI
     }
 
     @After
-    private void destroyData() throws Throwable
+    private void destroyData()
     {
         dismissSolrServers();
     }

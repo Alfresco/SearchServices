@@ -73,14 +73,11 @@ public class SolrTrackerSchedulerTest
         props.put("alfresco.stores", "workspace://SpacesStore");
         props.put("alfresco.batch.count", "5000");
         props.put("alfresco.maxLiveSearchers", "2");
-        props.put("enable.slave", "false");
-        props.put("enable.master", "true");
         props.put("shard.count", "1");
         props.put("shard.instance", "0");
         props.put("shard.method", "SHARD_METHOD_DBID");
         props.put("alfresco.template", "");
         props.put("alfresco.index.transformContent", "true");
-        props.put("alfresco.version", "5.0.0");
     }
 
     @After
@@ -128,7 +125,7 @@ public class SolrTrackerSchedulerTest
     {
         String exp = "0/4 * * * * ? *";
         props.put("alfresco.metadata.tracker.cron", exp);
-        MetadataTracker metadataTracker = new MetadataTracker(props, client, exp, informationServer);
+        MetadataTracker metadataTracker = new MetadataTracker(true, props, client, exp, informationServer);
         this.trackerScheduler.schedule(metadataTracker, CORE_NAME, props);
         verify(spiedQuartzScheduler).scheduleJob(any(JobDetail.class), any(Trigger.class));
         checkCronExpression(exp);

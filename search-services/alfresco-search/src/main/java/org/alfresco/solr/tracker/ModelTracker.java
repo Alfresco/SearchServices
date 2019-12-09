@@ -83,18 +83,18 @@ import org.json.JSONException;
 public class ModelTracker extends AbstractTracker implements Tracker
 {
 
-    private Set<StoreRef> indexedStores = new HashSet<StoreRef>();
-    private Set<StoreRef> ignoredStores = new HashSet<StoreRef>();
-    private Set<String> indexedTenants = new HashSet<String>();
-    private Set<String> ignoredTenants = new HashSet<String>();
-    private Set<QName> indexedDataTypes = new HashSet<QName>();
-    private Set<QName> ignoredDataTypes = new HashSet<QName>();
-    private Set<QName> indexedTypes = new HashSet<QName>();
-    private Set<QName> ignoredTypes = new HashSet<QName>();
-    private Set<QName> indexedAspects = new HashSet<QName>();
-    private Set<QName> ignoredAspects = new HashSet<QName>();
-    private Set<String> indexedFields = new HashSet<String>();
-    private Set<String> ignoredFields = new HashSet<String>();
+    private final Set<StoreRef> indexedStores = new HashSet<>();
+    private final Set<StoreRef> ignoredStores = new HashSet<>();
+    private final Set<String> indexedTenants = new HashSet<>();
+    private final Set<String> ignoredTenants = new HashSet<>();
+    private final Set<QName> indexedDataTypes = new HashSet<>();
+    private final Set<QName> ignoredDataTypes = new HashSet<>();
+    private final Set<QName> indexedTypes = new HashSet<>();
+    private final Set<QName> ignoredTypes = new HashSet<>();
+    private final Set<QName> indexedAspects = new HashSet<>();
+    private final Set<QName> ignoredAspects = new HashSet<>();
+    private final Set<String> indexedFields = new HashSet<>();
+    private final Set<String> ignoredFields = new HashSet<>();
 
     private ReentrantReadWriteLock modelLock = new ReentrantReadWriteLock();
     private volatile boolean hasModels = false;
@@ -103,44 +103,40 @@ public class ModelTracker extends AbstractTracker implements Tracker
     public ModelTracker(String solrHome, Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
     {
-        super(p, client, coreName, informationServer, Tracker.Type.Model);
+        super(p, client, coreName, informationServer, Tracker.Type.MODEL);
         String normalSolrHome = SolrResourceLoader.normalizeDir(solrHome);
         alfrescoModelDir = new File(ConfigUtil.locateProperty("solr.model.dir", normalSolrHome+"alfrescoModels"));
-        log.info("Alfresco Model dir " + alfrescoModelDir);
+        LOGGER.info("Alfresco Model dir " + alfrescoModelDir);
         if (!alfrescoModelDir.exists())
         {
             alfrescoModelDir.mkdir();
         }
-        
+
         loadPersistedModels();
     }
 
-    public boolean hasMaintenance() {
+    @Override
+    public boolean hasMaintenance()
+    {
         return false;
     }
 
-    public void maintenance() {
-
+    @Override
+    public void maintenance()
+    {
+        // Nothing to be done here
     }
 
     /**
-     * 
+     *
      */
     private void loadPersistedModels()
     {
-        HashMap<String, M2Model> modelMap = new HashMap<String, M2Model>();
+        HashMap<String, M2Model> modelMap = new HashMap<>();
         if (alfrescoModelDir.exists() && alfrescoModelDir.isDirectory())
         {
             // A filter for XML files
-            FileFilter filter = new FileFilter()
-            {
-                @Override
-                public boolean accept(File pathname)
-                {
-                    return pathname.isFile() && pathname.getName().endsWith(".xml");
-                }
-
-            };
+            FileFilter filter = pathname -> pathname.isFile() && pathname.getName().endsWith(".xml");
             // List XML files
             File[] files = alfrescoModelDir.listFiles(filter);
             if (files != null)
@@ -191,7 +187,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
      */
     ModelTracker()
     {
-        super(Tracker.Type.Model);
+        super(Tracker.Type.MODEL);
     }
 
     @Override
@@ -201,7 +197,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
         int registeredSearcherCount = this.infoSrv.getRegisteredSearcherCount();
         if (registeredSearcherCount >= getMaxLiveSearchers())
         {
-            log.info(".... skipping tracking registered searcher count = " + registeredSearcherCount);
+            LOGGER.info(".... skipping tracking registered searcher count = " + registeredSearcherCount);
             return;
         }
 
@@ -211,7 +207,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
 
     public void trackModels(boolean onlyFirstTime) throws AuthenticationException, IOException, JSONException
     {
-        boolean requiresWriteLock = false;
+        boolean requiresWriteLock;
         modelLock.readLock().lock();
         try
         {
@@ -272,41 +268,31 @@ public class ModelTracker extends AbstractTracker implements Tracker
         }
         catch (Throwable t)
         {
-            log.error("Model tracking failed for core: "+ coreName, t);
+            LOGGER.error("Model tracking failed for core: "+ coreName, t);
         }
 
     }
 
     /**
      * Tracks models. Reflects changes and updates on disk copy
-     * 
-     * @throws AuthenticationException
-     * @throws IOException
-     * @throws JSONException
      */
     private void trackModelsImpl() throws AuthenticationException, IOException, JSONException
     {
         long start = System.nanoTime();
 
         List<AlfrescoModelDiff> modelDiffs = client.getModelsDiff(coreName, this.infoSrv.getAlfrescoModels());
-        HashMap<String, M2Model> modelMap = new HashMap<String, M2Model>();
+        Map<String, M2Model> modelMap = new HashMap<>();
 
         for (AlfrescoModelDiff modelDiff : modelDiffs)
         {
             switch (modelDiff.getType())
             {
                 case CHANGED:
-                    AlfrescoModel changedModel = client.getModel(coreName, modelDiff.getModelName());
-                    for (M2Namespace namespace : changedModel.getModel().getNamespaces())
-                    {
-                        modelMap.put(namespace.getUri(), changedModel.getModel());
-                    }
-                    break;
                 case NEW:
-                    AlfrescoModel newModel = client.getModel(coreName, modelDiff.getModelName());
-                    for (M2Namespace namespace : newModel.getModel().getNamespaces())
+                    AlfrescoModel model = client.getModel(coreName, modelDiff.getModelName());
+                    for (M2Namespace namespace : model.getModel().getNamespaces())
                     {
-                        modelMap.put(namespace.getUri(), newModel.getModel());
+                        modelMap.put(namespace.getUri(), model.getModel());
                     }
                     break;
                 case REMOVED:
@@ -317,7 +303,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
             }
         }
 
-        HashSet<String> loadedModels = new HashSet<String>();
+        HashSet<String> loadedModels = new HashSet<>();
         for (M2Model model : modelMap.values())
         {
             loadModel(modelMap, loadedModels, model);
@@ -367,7 +353,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
 
         trackerStats.addModelTime(end - start);
 
-        if (true == runPostModelLoadInit)
+        if (runPostModelLoadInit)
         {
             for (Object key : props.keySet())
             {
@@ -450,10 +436,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
         {
             expandedQName = expandQNameImpl(qName);
         }
-        // else if (AlfrescoSolrDataModel.nonDictionaryFields.get(qName) == null)
-        // {
-        // expandedQName = expandQNameImpl(qName);
-        // }
+
         return QName.createQName(expandedQName);
 
     }
@@ -495,44 +478,30 @@ public class ModelTracker extends AbstractTracker implements Tracker
         {
             expandedQName = expandQNameImpl(qName);
         }
-        // else if (AlfrescoSolrDataModel.nonDictionaryFields.get(qName) == null)
-        // {
-        // expandedQName = expandQNameImpl(qName);
-        // }
-        return expandedQName;
 
+        return expandedQName;
     }
 
-    /**
-     * @param alfrescoModelDir
-     * @param modelName
-     */
     private void removeMatchingModels(File alfrescoModelDir, QName modelName)
     {
-
         final String prefix = modelName.toPrefixString(this.infoSrv.getNamespaceDAO()).replace(":", ".") + ".";
         final String postFix = ".xml";
 
-        File[] toDelete = alfrescoModelDir.listFiles(new FileFilter()
-        {
-            @Override
-            public boolean accept(File pathname)
+        File[] toDelete = alfrescoModelDir.listFiles(pathname -> {
+            if (pathname.isDirectory()) { return false; }
+            String name = pathname.getName();
+            if (!name.endsWith(postFix)) { return false; }
+            if (!name.startsWith(prefix)) { return false; }
+            // check is number between
+            String checksum = name.substring(prefix.length(), name.length() - postFix.length());
+            try
             {
-                if (pathname.isDirectory()) { return false; }
-                String name = pathname.getName();
-                if (false == name.endsWith(postFix)) { return false; }
-                if (false == name.startsWith(prefix)) { return false; }
-                // check is number between
-                String checksum = name.substring(prefix.length(), name.length() - postFix.length());
-                try
-                {
-                    Long.parseLong(checksum);
-                    return true;
-                }
-                catch (NumberFormatException nfe)
-                {
-                    return false;
-                }
+                Long.parseLong(checksum);
+                return true;
+            }
+            catch (NumberFormatException nfe)
+            {
+                return false;
             }
         });
 
@@ -548,7 +517,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
     private void loadModel(Map<String, M2Model> modelMap, HashSet<String> loadedModels, M2Model model)
     {
         String modelName = model.getName();
-        if (loadedModels.contains(modelName) == false)
+        if (!loadedModels.contains(modelName))
         {
             for (M2Namespace importNamespace : model.getImports())
             {
@@ -565,7 +534,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
             {
                 loadedModels.add(modelName);
             }
-            log.info("Loading model " + model.getName());
+            LOGGER.info("Loading model " + model.getName());
         }
     }
 

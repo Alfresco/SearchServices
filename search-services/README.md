@@ -211,6 +211,63 @@ $ docker build -t searchservices:develop .
 
 *Search Services* Docker image is configured with with **Mutual Authentication TLS (SSL)** by default.
 
+
+**Building Docker Image from Windows**
+
+When building Search Services or Insight Engine Docker Images from **Windows**, some steps need to be added to default building process.
+
+*Clone the repository preserving Linux line endings*
+
+```
+$ git clone git@git.alfresco.com:search_discovery/insightengine.git --config core.autocrlf=input
+```
+
+Alternatively you can use global settings before cloning the repository
+
+```
+$ git config --global core.autocrlf input
+
+$ git config --list
+core.autocrlf=input
+
+$ git clone https://git.alfresco.com/search_discovery/insightengine.git
+```
+
+*Build the Maven project*
+
+```
+$ mvn clean package -DskipTests
+```
+
+*Modify default Dockerfile*
+
+```
+$ cd insight-engine/packaging/target/docker-resources/
+```
+
+Replace the last lines (from `EXPOSE` to `CMD`) of `Dockerfile` file in this folder with the following ones:
+
+```
+EXPOSE 8983
+
+RUN chown -R solr:solr $DIST_DIR
+RUN chmod +x $DIST_DIR/solr/bin/*
+RUN set -x \
+   && yum install -y dos2unix \
+   && yum clean all
+RUN dos2unix $DIST_DIR/solr.in.sh
+
+USER ${USERNAME}
+CMD $DIST_DIR/solr/bin/search_config_setup.sh "$DIST_DIR/solr/bin/solr start -f"
+```
+
+And build the Docker Image.
+
+```
+$ docker build -t insightengine:develop .
+```
+
+
 **Configuration**
 
 To pass an environment variable, it can be used the "-e" argument:
