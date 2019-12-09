@@ -1703,9 +1703,7 @@ class AlfrescoIndexFetcher
                 try
                 {
                     Files.createDirectories(Paths.get(csFile.getParent()));
-                    if (!tmpFile.renameTo(csFile)){
-                        throw new RuntimeException("Failed while moving content store file to " + csFile.getAbsolutePath());
-                    }
+                    Files.copy(tmpFile.toPath(), csFile.toPath());
                 }
                 catch (IOException e)
                 {
@@ -1735,7 +1733,7 @@ class AlfrescoIndexFetcher
      * Deletes from contentstore all the files that has not been updated.
      * @param contentStorePath
      */
-    private void cleanUpContentStore(String contentStorePath)
+    private void cleanUpContentStore(String contentStorePath) throws Exception
     {
         AtomicInteger fileDeleted = new AtomicInteger();
         Set<String> fileNames = contentStoreFilesToDownload.stream().map(e -> (String) e.get(NAME))
@@ -1744,7 +1742,7 @@ class AlfrescoIndexFetcher
         {
             Files.walk(Paths.get(contentStorePath)).forEach(p -> {
                 File f = new File(p.toUri());
-                if (!f.isDirectory() && !fileNames.contains(p.toString().replaceFirst(contentStorePath, "")))
+                if (!f.isDirectory() && !fileNames.contains(p.toString().replace(contentStorePath, "")))
                 {
                     try
                     {
@@ -1758,9 +1756,10 @@ class AlfrescoIndexFetcher
                 }
             });
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             LOG.error("Impossible to delete unnecessary files. Content store may contains unused contents");
+            throw(e);
         }
 
         LOG.info("deleted {} unnecessary files from content store", fileDeleted);
