@@ -71,6 +71,12 @@
          <artifactId>alfresco-governance-services-automation-enterprise-rest-api</artifactId>
          <version>${rm.version}</version>
          <scope>test</scope>
+         <exclusions>
+            <exclusion>
+               <groupId>org.alfresco.tas</groupId>
+               <artifactId>restapi-test</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>com.fasterxml.jackson.core</groupId>
@@ -87,6 +93,10 @@
             <exclusion>
                <groupId>com.fasterxml.jackson.core</groupId>
                <artifactId>jackson-databind</artifactId>
+            </exclusion>
+            <exclusion>
+               <groupId>org.alfresco.tas</groupId>
+               <artifactId>restapi-test</artifactId>
             </exclusion>
          </exclusions>
       </dependency>
