@@ -4,7 +4,7 @@ set -e
 SOLR_CONFIG_FILE=$PWD/solrhome/templates/rerank/conf/solrconfig.xml
 if [[ $REPLICATION_TYPE == "master" ]]; then
 
-   findStringMaster='<requestHandler name="\/replication" class="solr\.ReplicationHandler" >'
+   findStringMaster='<requestHandler name="\/replication" class="org\.alfresco\.solr\.handler\.AlfrescoReplicationHandler">/<requestHandler name="\/replication" class="org\.alfresco\.solr\.handler\.AlfrescoReplicationHandler">'
    replaceStringMaster="\n\t<lst name=\"master\"> \n"
    if [[ $REPLICATION_AFTER == "" ]]; then
       REPLICATION_AFTER=commit
