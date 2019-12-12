@@ -1736,7 +1736,10 @@ class AlfrescoIndexFetcher
     private void cleanUpContentStore(String contentStorePath) throws Exception
     {
         AtomicInteger fileDeleted = new AtomicInteger();
-        Set<String> fileNames = contentStoreFilesToDownload.stream().map(e -> (String) e.get(NAME))
+        Set<String> fileNames = contentStoreFilesToDownload.stream()
+                .map(e -> (String) e.get(NAME))
+                .map(Paths::get)
+                .map(p -> p.toString())
                 .collect(Collectors.toSet());
         try
         {

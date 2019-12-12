@@ -43,6 +43,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -257,7 +258,8 @@ public final class SolrContentStore implements Closeable, AccessMode
                 wr.write(Long.toString(version));
                 wr.close();
 
-                tmpFile.renameTo(new File(root, ".version"));
+                Files.move(tmpFile.toPath(), new File(root, ".version").toPath(), StandardCopyOption.REPLACE_EXISTING);
+
             }
             catch (IOException exception)
             {
