@@ -1,5 +1,7 @@
 #!/bin/bash
 set -e
+# By default its going to deploy "Master" setup configuration with "REPLICATION_TYPE=master".
+# Slave replica service can be enabled using "REPLICATION_TYPE=slave" environment value.
 
 SOLR_CONFIG_FILE=$PWD/solrhome/templates/rerank/conf/solrconfig.xml
 if [[ $REPLICATION_TYPE == "master" ]]; then
@@ -17,7 +19,7 @@ if [[ $REPLICATION_TYPE == "master" ]]; then
       replaceStringMaster+="\t\t<str name=\"confFiles\">$REPLICATION_CONFIG_FILES<\/str> \n"
    fi
    replaceStringMaster+="\t<\/lst>"
-   sed -i -e "s/$findStringMaster/$findStringMaster$replaceStringMaster/g" $SOLR_CONFIG_FILE
+   sed -i "s/$findStringMaster/$findStringMaster$replaceStringMaster/g" $SOLR_CONFIG_FILE
 fi
 if [[ $REPLICATION_TYPE == "slave" ]]; then
    if [[ $REPLICATION_MASTER_PROTOCOL == "" ]]; then
