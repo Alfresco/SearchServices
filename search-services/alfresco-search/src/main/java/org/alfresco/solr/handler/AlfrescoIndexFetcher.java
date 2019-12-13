@@ -1742,7 +1742,7 @@ class AlfrescoIndexFetcher
         Set<String> contentStoreFiles = contentStoreFilesToDownload.stream()
                 .map(e -> (String) e.get(NAME))
                 .map(Paths::get)
-                .map(p -> p.toString())
+                .map(Path::toString)
                 .collect(Collectors.toSet());
         try
         {
