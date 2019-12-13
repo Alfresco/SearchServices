@@ -1736,7 +1736,10 @@ class AlfrescoIndexFetcher
     private void cleanUpContentStore(String contentStorePath) throws Exception
     {
         AtomicInteger fileDeleted = new AtomicInteger();
-        Set<String> fileNames = contentStoreFilesToDownload.stream()
+
+        // This is the set of the ONLY files that should be in contentStore.
+        // This set is computed from the information got from master and translated into the current OS path syntax.
+        Set<String> contentStoreFiles = contentStoreFilesToDownload.stream()
                 .map(e -> (String) e.get(NAME))
                 .map(Paths::get)
                 .map(p -> p.toString())
@@ -1745,7 +1748,7 @@ class AlfrescoIndexFetcher
         {
             Files.walk(Paths.get(contentStorePath)).forEach(p -> {
                 File f = new File(p.toUri());
-                if (!f.isDirectory() && !fileNames.contains(p.toString().replace(contentStorePath, "")))
+                if (!f.isDirectory() && !contentStoreFiles.contains(p.toString().replace(contentStorePath, "")))
                 {
                     try
                     {

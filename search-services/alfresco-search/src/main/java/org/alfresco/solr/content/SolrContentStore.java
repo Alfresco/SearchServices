@@ -258,6 +258,7 @@ public final class SolrContentStore implements Closeable, AccessMode
                 wr.write(Long.toString(version));
                 wr.close();
 
+                // file.renameTo(..) does not work on windows. Use Files.move instead.
                 Files.move(tmpFile.toPath(), new File(root, ".version").toPath(), StandardCopyOption.REPLACE_EXISTING);
 
             }
