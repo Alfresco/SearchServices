@@ -91,8 +91,8 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
     //Standalone Tests
     protected static SolrCore defaultCore;
  
-    protected static final int clientConnectionTimeout = DEFAULT_CONNECTION_TIMEOUT;;
-    protected static final int clientSoTimeout = 90000;;
+    protected static final int clientConnectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
+    protected static final int clientSoTimeout = 90000;
 
     protected static final String id = "id";
 
@@ -129,21 +129,22 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         jettyContainers = new HashMap<>();
         
         nodeCnt = new AtomicInteger(0);
-        String serverName = testClassName;
-        currentTestName = serverName;
+        currentTestName = testClassName;
         String[] coreNames = new String[]{DEFAULT_TEST_CORENAME};
         
-        distribSetUp(serverName);
-        RandomSupplier.RandVal.uniqueValues = new HashSet(); // reset random values
-        createServers(serverName, coreNames, numShards,solrcoreProperties);
-        System.setProperty("solr.solr.home", testDir.toPath().resolve(serverName).toString());
+        distribSetUp(testClassName);
+        RandomSupplier.RandVal.uniqueValues = new HashSet<>(); // reset random values
+        createServers(testClassName, coreNames, numShards,solrcoreProperties);
+        System.setProperty("solr.solr.home", testDir.toPath().resolve(testClassName).toString());
     }
 
     private static Properties addExplicitShardingProperty(Properties solrcoreProperties)
     {
-        if(solrcoreProperties == null){
+        if(solrcoreProperties == null)
+        {
             solrcoreProperties = new Properties();
         }
+
         if(solrcoreProperties.getProperty("shard.method")==null)
         {
             solrcoreProperties.put("shard.method", "EXPLICIT_ID");
@@ -151,7 +152,8 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         return solrcoreProperties;
     }
 
-    public static void initSingleSolrServer(String testClassName, Properties solrcoreProperties) throws Throwable {
+    public static void initSingleSolrServer(String testClassName, Properties solrcoreProperties) throws Throwable
+    {
         initSolrServers(0,testClassName,solrcoreProperties);
         
         JettySolrRunner jsr = jettyContainers.get(testClassName);
@@ -163,7 +165,8 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         {
             int i = 0;
             extras = new String[solrcoreProperties.size()*2];
-            for (Map.Entry<Object, Object> prop:solrcoreProperties.entrySet()) {
+            for (Map.Entry<Object, Object> prop:solrcoreProperties.entrySet())
+            {
                 extras[i++] = "property."+prop.getKey();
                 extras[i++] = (String) prop.getValue();
             }
@@ -185,7 +188,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
             destroyServers();
             distribTearDown();
 
-            boolean keepTests = Boolean.valueOf(System.getProperty("keep.tests"));
+            boolean keepTests = Boolean.parseBoolean(System.getProperty("keep.tests"));
             if (!keepTests) FileUtils.deleteDirectory(testDir);
         }
         catch (Exception e)
@@ -203,7 +206,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         return System.getProperty("user.dir") + "/target/test-classes/test-files";
     }
     
-    public static void distribSetUp(String serverName) throws Exception
+    public static void distribSetUp(String serverName)
     {
         SolrTestCaseJ4.resetExceptionIgnores(); // ignore anything with
                                                 // ignore_exception in it
@@ -213,7 +216,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         System.setProperty("solr.log.dir", testDir.toPath().resolve(serverName).toString());
     }
 
-    public static void distribTearDown() throws Exception
+    public static void distribTearDown()
     {
         System.clearProperty("solr.directoryFactory");
         System.clearProperty("solr.log.dir");
@@ -230,8 +233,6 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
     
     /**
      * Creates a JettySolrRunner (if one didn't exist already). DOES NOT START IT.
-     * @return
-     * @throws Exception
      */
     protected static JettySolrRunner createJetty(String jettyKey, boolean basicAuth) throws Exception
     {
@@ -243,19 +244,13 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         {
             Path jettySolrHome = testDir.toPath().resolve(jettyKey);
             seedSolrHome(jettySolrHome);
-            JettySolrRunner jetty = createJetty(jettySolrHome.toFile(), null, null, false, 0, getSchemaFile(), basicAuth);
-            return jetty;
+            return createJetty(jettySolrHome.toFile(), null, null, false, 0, getSchemaFile(), basicAuth);
         }
     }
 
     /**
      * Adds the core config information to the jetty file system.
      * Its best to call this before calling start() on Jetty
-     * @param jettyKey
-     * @param sourceConfigName
-     * @param coreName
-     * @param additionalProperties
-     * @throws Exception
      */
     protected static void addCoreToJetty(String jettyKey, String sourceConfigName, String coreName, Properties additionalProperties) throws Exception
     {
@@ -289,17 +284,14 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
                 out.close();
                 in.close();
             }
-            
         }
-        
     }
 
     /**
      * Starts jetty if its not already running
-     * @param jsr
-     * @throws Exception
      */
-    protected static void startJetty(JettySolrRunner jsr) throws Exception {
+    protected static void startJetty(JettySolrRunner jsr) throws Exception
+    {
         if (!jsr.isRunning())
         {
             jsr.start();
@@ -310,37 +302,40 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
     {
         boolean basicAuth = additionalProperties != null ? Boolean.parseBoolean(additionalProperties.getProperty("BasicAuth", "false")) : false;
 
-
         JettySolrRunner jsr =  createJetty(jettyKey, basicAuth);
         jettyContainers.put(jettyKey, jsr);
 
         Properties properties = new Properties();
 
-        if(additionalProperties != null && additionalProperties.size() > 0) {
+        if(additionalProperties != null && additionalProperties.size() > 0)
+        {
             properties.putAll(additionalProperties);
             properties.remove("shard.method");
         }
 
-        for (int i = 0; i < coreNames.length; i++) 
+        for (String coreName : coreNames)
         {
-            addCoreToJetty(jettyKey, coreNames[i], coreNames[i], properties);
+            addCoreToJetty(jettyKey, coreName, coreName, properties);
         }
 
         //Now start jetty
         startJetty(jsr);
 
         int jettyPort = jsr.getLocalPort();
-        for (int i = 0; i < coreNames.length; i++)
+        for (String coreName : coreNames)
         {
-            String url = buildUrl(jettyPort) + "/" + coreNames[i];
+            String url = buildUrl(jettyPort) + "/" + coreName;
+
             log.info(url);
-            solrCollectionNameToStandaloneClient.put(coreNames[i], createNewSolrClient(url));
+
+            solrCollectionNameToStandaloneClient.put(coreName, createNewSolrClient(url));
         }
 
         shardsArr = new String[numShards];
         StringBuilder sb = new StringBuilder();
 
-        if (additionalProperties == null) {
+        if (additionalProperties == null)
+        {
             additionalProperties = new Properties();
         }
         String[] ranges = {"0-100", "100-200", "200-300", "300-400"};
@@ -382,6 +377,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
             solrHomes.add(jetty.getSolrHome());
             jetty.stop();
         }
+
         for (SolrClient jClients : solrCollectionNameToStandaloneClient.values())
         {
             jClients.close();
@@ -409,25 +405,16 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         solrCollectionNameToStandaloneClient.clear();
     }
 
-    public static JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled, int port, String schemaOverride, boolean basicAuth) throws Exception
+    public static JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled, int port, String schemaOverride, boolean basicAuth)
     {
         return createJetty(solrHome, dataDir, shardList, sslEnabled, port, schemaOverride, useExplicitNodeNames, basicAuth);
     }
 
     /**
      * Create a solr jetty server.
-     * 
-     * @param solrHome
-     * @param dataDir
-     * @param shardList
-     * @param port
-     * @param schemaOverride
-     * @param explicitCoreNodeName
-     * @return
-     * @throws Exception
      */
     public static JettySolrRunner createJetty(File solrHome, String dataDir, String shardList, boolean sslEnabled, int port,
-            String schemaOverride, boolean explicitCoreNodeName, boolean basicAuth) throws Exception
+            String schemaOverride, boolean explicitCoreNodeName, boolean basicAuth)
     {
         Properties props = new Properties();
         if (schemaOverride != null)
@@ -443,20 +430,21 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         {
             props.setProperty("coreNodeName", Integer.toString(nodeCnt.incrementAndGet()));
         }
+
         SSLConfig sslConfig = new SSLConfig(sslEnabled, false, null, null, null, null);
 
-        JettyConfig config = null;
+        JettyConfig config;
 
-        if(basicAuth) {
-            System.out.println("###### adding basic auth ######");
+        if(basicAuth)
+        {
+            log.info("###### adding basic auth ######");
             config = JettyConfig.builder().setContext("/solr").setPort(port).withFilter(BasicAuthFilter.class, "/sql/*").stopAtShutdown(true).withSSLConfig(sslConfig).build();
         } else {
-            System.out.println("###### no basic auth ######");
+            log.info("###### no basic auth ######");
             config = JettyConfig.builder().setContext("/solr").setPort(port).stopAtShutdown(true).withSSLConfig(sslConfig).build();
         }
 
-        JettySolrRunner jetty = new JettySolrRunner(solrHome.getAbsolutePath(), props, config);
-        return jetty;
+        return new JettySolrRunner(solrHome.getAbsolutePath(), props, config);
     }
 
     /**
@@ -510,11 +498,8 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
      */
     protected static void seedSolrHome(Path jettyHome) throws IOException
     {
-        String solrxml = getSolrXml();
-        if (solrxml != null)
-        {
-            FileUtils.copyFile(new File(getTestFilesHome(), solrxml), jettyHome.resolve(getSolrXml()).toFile());
-        }
+        FileUtils.copyFile(new File(getTestFilesHome(), getSolrXml()), jettyHome.resolve(getSolrXml()).toFile());
+
         //Add solr home conf folder with alfresco based configuration.
         FileUtils.copyDirectory(new File(getTestFilesHome() + "/conf"), jettyHome.resolve("conf").toFile());
         // Add alfresco data model def
@@ -547,36 +532,26 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         FileUtils.copyDirectory(coreSourceConfig.resolve("conf").toFile(), confDir.toFile());
     }
 
-    protected void setupJettySolrHome(String coreName, Path jettyHome) throws IOException
+    public static class BasicAuthFilter implements Filter
     {
-        seedSolrHome(jettyHome);
 
-        Properties coreProperties = new Properties();
-        coreProperties.setProperty("name", coreName);
-        coreProperties.setProperty("shard", "${shard:}");
-        coreProperties.setProperty("collection", "${collection:" + coreName + "}");
-        coreProperties.setProperty("config", "${solrconfig:solrconfig.xml}");
-        coreProperties.setProperty("schema", "${schema:schema.xml}");
-        coreProperties.setProperty("coreNodeName", "${coreNodeName:}");
-
-        writeCoreProperties(jettyHome.resolve("cores").resolve(coreName), coreProperties, coreName);
-    }
-
-    public static class BasicAuthFilter implements Filter {
-
-        public BasicAuthFilter() {
+        public BasicAuthFilter()
+        {
 
         }
 
-        public void init(FilterConfig config) {
+        public void init(FilterConfig config)
+        {
 
         }
 
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
-            throws IOException, ServletException  {
+            throws IOException, ServletException
+        {
             //Parse the basic auth filter
             String auth = ((HttpServletRequest)request).getHeader("Authorization");
-            if(auth != null) {
+            if(auth != null)
+            {
                 auth = auth.replace("Basic ", "");
                 byte[] bytes = Base64.getDecoder().decode(auth);
                 String decodedBytes = new String(bytes);
@@ -584,17 +559,23 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
                 String user = pair[0];
                 String password = pair[1];
                 //Just look for the hard coded user and password.
-                if (user.equals("test") && password.equals("pass")) {
+                if (user.equals("test") && password.equals("pass"))
+                {
                     filterChain.doFilter(request, response);
-                } else {
+                }
+                else
+                {
                     ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
                 }
-            } else {
+            }
+            else
+            {
                 ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
             }
         }
 
-        public void destroy() {
+        public void destroy()
+        {
 
         }
     }
