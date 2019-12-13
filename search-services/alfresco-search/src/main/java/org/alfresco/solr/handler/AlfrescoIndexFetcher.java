@@ -189,6 +189,13 @@ class AlfrescoIndexFetcher
     private final Map<String, FileInfo> confFileInfoCache = new HashMap<>();
     private volatile Date replicationStartTimeStamp;
     private RTimer replicationTimer;
+
+    /**
+     * The map<String, object> contains the following fields:
+     *      NAME : String -> file name(with path for contentstore files)
+     *      SIZE : long -> file size
+     *      CHECKSUM : long -> checksum
+     */
     private volatile List<Map<String, Object>> filesToDownload;
     private volatile List<Map<String, Object>> confFilesToDownload;
     private volatile List<Map<String, Object>> tlogFilesToDownload;
@@ -198,6 +205,7 @@ class AlfrescoIndexFetcher
     private volatile List<Map<String, Object>> confFilesDownloaded;
     private volatile List<Map<String, Object>> tlogFilesDownloaded;
     private volatile List<Map<String, Object>> contentStoreFilesDownloaded;
+
     private volatile Map<String, Object> currentFile;
     private volatile DirectoryFileFetcher dirFileFetcher;
     private volatile LocalFsFileFetcher localFileFetcher;
