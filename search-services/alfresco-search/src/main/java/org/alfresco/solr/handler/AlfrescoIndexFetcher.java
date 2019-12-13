@@ -1738,7 +1738,9 @@ class AlfrescoIndexFetcher
         AtomicInteger fileDeleted = new AtomicInteger();
 
         // This is the set of the ONLY files that should be in contentStore.
-        // This set is computed from the information got from master and translated into the current OS path syntax.
+        // This set is computed from the information got from master. After a full replication, only the files
+        // that have been downloaded from master (contentStoreFilesToDownload) should be in contentStore.
+        // The file paths are translated in the current OS path notation.
         Set<String> contentStoreFiles = contentStoreFilesToDownload.stream()
                 .map(e -> (String) e.get(NAME))
                 .map(Paths::get)
