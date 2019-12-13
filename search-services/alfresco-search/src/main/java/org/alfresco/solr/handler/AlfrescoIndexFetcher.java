@@ -37,6 +37,7 @@ package org.alfresco.solr.handler;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import org.alfresco.solr.content.SolrContentStore;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.http.client.HttpClient;
 import org.apache.lucene.codecs.CodecUtil;
 import org.apache.lucene.index.IndexCommit;
@@ -188,6 +189,13 @@ class AlfrescoIndexFetcher
     private final Map<String, FileInfo> confFileInfoCache = new HashMap<>();
     private volatile Date replicationStartTimeStamp;
     private RTimer replicationTimer;
+
+    /**
+     * The map<String, object> contains the following fields:
+     *      NAME : String -> file name(with path for contentstore files)
+     *      SIZE : long -> file size
+     *      CHECKSUM : long -> checksum
+     */
     private volatile List<Map<String, Object>> filesToDownload;
     private volatile List<Map<String, Object>> confFilesToDownload;
     private volatile List<Map<String, Object>> tlogFilesToDownload;
@@ -197,6 +205,7 @@ class AlfrescoIndexFetcher
     private volatile List<Map<String, Object>> confFilesDownloaded;
     private volatile List<Map<String, Object>> tlogFilesDownloaded;
     private volatile List<Map<String, Object>> contentStoreFilesDownloaded;
+
     private volatile Map<String, Object> currentFile;
     private volatile DirectoryFileFetcher dirFileFetcher;
     private volatile LocalFsFileFetcher localFileFetcher;
@@ -1743,8 +1752,7 @@ class AlfrescoIndexFetcher
         // The file paths are translated in the current OS path notation.
         Set<String> contentStoreFiles = contentStoreFilesToDownload.stream()
                 .map(e -> (String) e.get(NAME))
-                .map(Paths::get)
-                .map(Path::toString)
+                .map(FilenameUtils::separatorsToSystem)
                 .collect(Collectors.toSet());
         try
         {
