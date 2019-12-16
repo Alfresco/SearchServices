@@ -41,9 +41,3 @@ More details are available at [search-services](/search-services) folder.
 **Following resources will not be available for Community users**
 
 More details are available at [insight-engine](/insight-engine) folder.
-
-### Enable Search Slave Replica config
-
-To enable slave node specify environment value `REPLICATION_TYPE=slave`, by default Master config is enabled and slave is disabled. 
-
-During deployment time whenever Search Services or Insight Engine image starts, it will execute the script [search_config_setup.sh](/insight-engine/packaging/src/docker) which will configure the slave config setup based on the value specified in the script.
