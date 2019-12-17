@@ -22,8 +22,8 @@ antlr-3.5.2.jar http://www.antlr.org/
 jaxen-1.2.0.jar http://www.cafeconleche.org/jaxen/
 
 
-=== Apache variant License ===
-xpp3-1.1.3_8.jar        http://www.extreme.indiana.edu/xgws/xsoap/xpp/
+=== BSD variant License ===
+xpp3-1.1.4c.jar http://www.extreme.indiana.edu/dist/java-repository/xpp3/licenses/LICENSE.txt
 
 
 === JSON ===
