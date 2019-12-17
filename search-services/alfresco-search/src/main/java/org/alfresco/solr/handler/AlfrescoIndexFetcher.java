@@ -467,6 +467,8 @@ class AlfrescoIndexFetcher
             Map<String, List<Map<String, Object>>> contentStoreMap = (Map<String, List<Map<String, Object>>>) response
                     .get(CONTENT_STORE_FILES);
 
+            fullContentStoreReplication = false;
+
             if (contentStoreMap != null)
             {
                 contentStoreFilesToDownload = Collections.synchronizedList(contentStoreMap.get(SolrContentStore.ADDS));
