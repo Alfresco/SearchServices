@@ -53,7 +53,7 @@ cxf-rt-wsdl-3.2.5.jar https://cxf.apache.org/
 mybatis-spring-1.2.5.jar        http://www.mybatis.org/
 chemistry-opencmis-server-support-1.0.0.jar     http://chemistry.apache.org/
 chemistry-opencmis-server-bindings-1.0.0.jar    http://chemistry.apache.org/
-quartz-2.3.1.jar http://quartz-scheduler.org/
+quartz-2.3.2.jar http://quartz-scheduler.org/
 jackson-core-2.10.1.jar https://github.com/FasterXML/jackson
 jackson-annotations-2.10.1.jar https://github.com/FasterXML/jackson
 jackson-databind-2.10.1.jar https://github.com/FasterXML/jackson
