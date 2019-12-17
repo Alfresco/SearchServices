@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -235,10 +236,9 @@ public final class SolrContentStore implements Closeable, AccessMode
         @Override
         public long getLastCommittedVersion()
         {
-            try
+            try(Stream<String> fileStream = Files.lines(Paths.get(root, ".version")) )
             {
-                return Files.lines(Paths.get(root, ".version"))
-                        .map(Long::parseLong)
+                return fileStream.map(Long::parseLong)
                         .findFirst()
                         .orElse(NO_VERSION_AVAILABLE);
             }
