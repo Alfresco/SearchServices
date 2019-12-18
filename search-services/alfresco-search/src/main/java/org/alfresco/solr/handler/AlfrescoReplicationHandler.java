@@ -2122,6 +2122,7 @@ public class AlfrescoReplicationHandler extends RequestHandlerBase implements So
                             e.printStackTrace();
                         }
                     }
+
                 }
             }
             catch (Exception e)
@@ -2169,6 +2170,7 @@ public class AlfrescoReplicationHandler extends RequestHandlerBase implements So
                         if (bytesRead <= 0)
                         {
                             writeNothingAndFlush();
+                            inputStream.close();
                             break;
                         }
 
@@ -2185,6 +2187,7 @@ public class AlfrescoReplicationHandler extends RequestHandlerBase implements So
                         fos.flush();
                     }
                 }
+
             }
         }
     }
