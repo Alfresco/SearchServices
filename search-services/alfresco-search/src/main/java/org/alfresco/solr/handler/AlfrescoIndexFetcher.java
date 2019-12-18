@@ -476,6 +476,8 @@ class AlfrescoIndexFetcher
             Map<String, List<Map<String, Object>>> contentStoreMap = (Map<String, List<Map<String, Object>>>) response
                     .get(CONTENT_STORE_FILES);
 
+            fullContentStoreReplication = false;
+
             if (contentStoreMap != null)
             {
                 contentStoreFilesToDownload = Collections.synchronizedList(contentStoreMap.get(SolrContentStore.ADDS));
@@ -1712,7 +1714,7 @@ class AlfrescoIndexFetcher
                 try
                 {
                     Files.createDirectories(Paths.get(csFile.getParent()));
-                    Files.copy(tmpFile.toPath(), csFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    Files.move(tmpFile.toPath(), csFile.toPath(), StandardCopyOption.ATOMIC_MOVE);
                 }
                 catch (IOException e)
                 {
