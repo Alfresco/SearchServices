@@ -42,34 +42,34 @@ import org.testng.annotations.Test;
 /**
  * Faceted Range Search Query for numeric range
  * {
- * "query": {
- * "query": "name:A*"
- * },
- * "range": {
- * "field": "content.size",
- * "start": "0",
- * "end": "400",
- * "gap": "100"
- * }
+ *   "query": {
+ *       "query": "name:A*"
+ *   },
+ *   "range": {
+ *       "field": "content.size",
+ *        "start": "0",
+ *        "end": "400",
+ *        "gap": "100"
+ *   }
  * }
  * Date range query:
  * {
- * "query": {
- * "query": "name:A*"
- * },
- * "range": {
- * "field": "created",
- * "start": "2015-09-29T10:45:15.729Z",
- * "end": "2016-09-29T10:45:15.729Z",
- * "gap": "+100DAY"
- * }
+ *  "query": {
+ *      "query": "name:A*"
+ *  },
+ *  "range": {
+ *      "field": "created",
+ *       "start": "2015-09-29T10:45:15.729Z",
+ *       "end": "2016-09-29T10:45:15.729Z",
+ *       "gap": "+100DAY"
+ *  }
  * }
  *
  * @author Michael Suzuki
  */
 public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
 {
-    @BeforeClass (alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         searchServicesDataPreparation();
@@ -78,7 +78,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
 
     /** Check the error messages mention the mandatory fields when they are omitted. */
     @Test
-    @TestRail (section = { TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
             description = "Check facet intervals mandatory fields")
     public void checkingFacetsMandatoryErrorMessages()
     {
@@ -110,9 +110,9 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    @TestRail (section = { TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
             description = "Check basic facet range search api")
-    @SuppressWarnings ("unchecked")
+    @SuppressWarnings("unchecked")
     public void searchWithRange()
     {
         SearchRequest query = createQuery("* AND SITE:'" + testSite.getId() + "'");
@@ -160,9 +160,9 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    @TestRail (section = { TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
             description = "Check date facet intervals search api")
-    @SuppressWarnings ("unchecked")
+    @SuppressWarnings("unchecked")
     public void searchWithRangeHardend()
     {
         SearchRequest query = createQuery("* AND SITE:'" + testSite.getId() + "'");
@@ -215,9 +215,9 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
 
     /** This test relies on a document created in 2015 existing, probably part of the sample site. */
     @Test
-    @TestRail (section = { TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
             description = "Check date facet intervals search api")
-    @SuppressWarnings ("unchecked")
+    @SuppressWarnings("unchecked")
     public void searchDateRange()
     {
         SearchRequest query = createQuery("name:A*");
@@ -246,7 +246,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    @TestRail (section = { TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
             description = "Check date facet intervals search api")
     public void searchDateAndSizeRanges()
     {
@@ -258,9 +258,9 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    @TestRail (section = { TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
             description = "Check basic facet range search api")
-    @SuppressWarnings ("unchecked")
+    @SuppressWarnings("unchecked")
     public void searchWithRangeAndIncludeUpperBound()
     {
         SearchRequest query = createQuery("* AND SITE:'" + testSite.getId() + "'");
