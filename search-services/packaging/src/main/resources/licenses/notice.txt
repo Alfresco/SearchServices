@@ -22,8 +22,8 @@ antlr-3.5.2.jar http://www.antlr.org/
 jaxen-1.2.0.jar http://www.cafeconleche.org/jaxen/
 
 
-=== Apache variant License ===
-xpp3-1.1.3_8.jar        http://www.extreme.indiana.edu/xgws/xsoap/xpp/
+=== BSD variant License ===
+xpp3-1.1.4c.jar http://www.extreme.indiana.edu/dist/java-repository/xpp3/licenses/LICENSE.txt
 
 
 === JSON ===
@@ -53,7 +53,7 @@ cxf-rt-wsdl-3.2.5.jar https://cxf.apache.org/
 mybatis-spring-1.2.5.jar        http://www.mybatis.org/
 chemistry-opencmis-server-support-1.0.0.jar     http://chemistry.apache.org/
 chemistry-opencmis-server-bindings-1.0.0.jar    http://chemistry.apache.org/
-quartz-2.3.1.jar http://quartz-scheduler.org/
+quartz-2.3.2.jar http://quartz-scheduler.org/
 jackson-core-2.10.1.jar https://github.com/FasterXML/jackson
 jackson-annotations-2.10.1.jar https://github.com/FasterXML/jackson
 jackson-databind-2.10.1.jar https://github.com/FasterXML/jackson

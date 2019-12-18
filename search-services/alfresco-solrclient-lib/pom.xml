@@ -22,7 +22,7 @@
     </distributionManagement>
 
     <properties>
-        <dependency.alfresco-data-model.version>8.60</dependency.alfresco-data-model.version>
+        <dependency.alfresco-data-model.version>8.68</dependency.alfresco-data-model.version>
         <dependency.jackson.version>2.10.1</dependency.jackson.version>
     </properties>
 
@@ -67,13 +67,13 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.2.0</version>
+            <version>3.2.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.29</version>
+            <version>1.7.30</version>
         </dependency>
     </dependencies>
 
