@@ -12,7 +12,7 @@
    <description>Test Project to test Search Service and Analytics Features on a complete setup of Alfresco, Share</description>
    <properties>
       <tas.rest.api.version>1.25</tas.rest.api.version>
-      <tas.cmis.api.version>1.11</tas.cmis.api.version>
+      <tas.cmis.api.version>1.12</tas.cmis.api.version>
       <tas.utility.version>3.0.17</tas.utility.version>
       <rm.version>3.2.0</rm.version>
       <suiteXmlFile>src/test/resources/SearchSuite.xml</suiteXmlFile>
