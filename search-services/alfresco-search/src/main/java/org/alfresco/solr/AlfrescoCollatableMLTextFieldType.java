@@ -39,12 +39,9 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * @author Andy
- *
  */
 public class AlfrescoCollatableMLTextFieldType extends StrField
 {
-    
-
     /* (non-Javadoc)
      * @see org.apache.solr.schema.StrField#getSortField(org.apache.solr.schema.SchemaField, boolean)
      */
@@ -75,7 +72,6 @@ public class AlfrescoCollatableMLTextFieldType extends StrField
     }
 
 
-    
     public static class MLTextSortFieldComparatorSource extends FieldComparatorSource
     {
 
@@ -101,16 +97,20 @@ public class AlfrescoCollatableMLTextFieldType extends StrField
         private final String[] values;
 
         private BinaryDocValues docTerms;
-        
-        private Bits docsWithField;
+
+        /**
+         * An array of flags - one for each document in the segment. Each bit is set to true if the document has the
+         * field or false otherwise. If this is set to null then all docs in the segment have the field.
+         */
+        Bits docsWithField;
 
         private final String field;
 
-        final Collator collator;
+        Collator collator;
 
-        private String bottom;
-        
-        private String top;
+        String bottom;
+
+        String top;
 
         Locale collatorLocale;
 
@@ -138,7 +138,7 @@ public class AlfrescoCollatableMLTextFieldType extends StrField
         {
             final String comparableString = findBestValue(doc, docTerms.get(doc));
             return compareValues(bottom, comparableString);
-           
+
         }
 
         public void copy(int slot, int doc)
@@ -153,13 +153,14 @@ public class AlfrescoCollatableMLTextFieldType extends StrField
 
         private String findBestValue(int doc, BytesRef term)
         {
-            if (term.length == 0 && docsWithField.get(doc) == false) {
+            if (term.length == 0 && docsWithField != null && docsWithField.get(doc) == false)
+            {
                 return null;
             }
-            
+
             String withLocale = term.utf8ToString();
-            
-            // split strin into MLText object
+
+            // split string into MLText object
             if (withLocale == null)
             {
                 return withLocale;
@@ -231,14 +232,15 @@ public class AlfrescoCollatableMLTextFieldType extends StrField
         {
             docTerms = DocValues.getBinary(context.reader(), field);
             docsWithField = DocValues.getDocsWithField(context.reader(), field);
-            if (docsWithField instanceof Bits.MatchAllBits) {
-              docsWithField = null;
+            if (docsWithField instanceof Bits.MatchAllBits)
+            {
+                docsWithField = null;
             }
             return this;
         }
-        
+
         @Override
-        public int compareValues(String val1, String val2) 
+        public int compareValues(String val1, String val2)
         {
             if (val1 == null)
             {
@@ -254,9 +256,10 @@ public class AlfrescoCollatableMLTextFieldType extends StrField
             }
             return collator.compare(val1, val2);
         }
-        
-        @Override
-        public void setScorer(Scorer scorer) {}
-    }
 
+        @Override
+        public void setScorer(Scorer scorer)
+        {
+        }
+    }
 }
