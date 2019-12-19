@@ -24,6 +24,9 @@ import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.util.NamedList;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -36,8 +39,23 @@ import static org.hamcrest.core.Is.is;
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class AlfrescoSolrSortIT extends AbstractAlfrescoDistributedIT
 {
-    @Rule
-    public JettyServerRule jetty = new JettyServerRule(1, this);
+    @BeforeClass
+    private static void initData() throws Throwable
+    {
+        initSolrServers(1, getClassName(), null);
+    }
+
+    @AfterClass
+    private static void destroyData()
+    {
+        dismissSolrServers();
+    }
+
+    @After
+    public void clearData() throws Exception
+    {
+        deleteByQueryAllClients("*:*");
+    }
 
     @Test
     public void AlfrescoCollatableFieldType_emptyValuesSortingAsc__shouldBeRankedFirst() throws Exception {
