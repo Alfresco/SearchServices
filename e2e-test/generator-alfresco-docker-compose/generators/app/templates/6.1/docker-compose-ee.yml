@@ -57,7 +57,7 @@ services:
             ALFRESCO_HOSTNAME: alfresco
             ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
             TRUSTSTORE_TYPE: JCEKS
-            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication == 'true') { %>
+            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication) { %>
             ENABLE_MASTER: "true"
             ENABLE_SLAVE: "false" <% } %> <% if (sharding == 'true') { %>
             ENABLE_SHARDING: "true"
@@ -103,7 +103,7 @@ services:
         volumes:
             - ./keystores/solr:/opt/<%=searchPath%>/keystore <% } %>
 
-    <% if (sharding == 'true' || replication == 'true') { %>
+    <% if (sharding == 'true' || replication) { %>
     solr6secondary:
         build:
           context: ./search
@@ -113,9 +113,9 @@ services:
             ALFRESCO_HOSTNAME: alfresco
             ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
             TRUSTSTORE_TYPE: JCEKS
-            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication == 'true') { %>
-            ENABLE_MASTER: "true"
-            ENABLE_SLAVE: "false"
+            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication) { %>
+            ENABLE_MASTER: <% if (replication == 'master-master') { %>"true"<% } else { %>"false"<% } %>
+            ENABLE_SLAVE: <% if (replication == 'master-master') { %>"false"<% } else { %>"true"<% } %>
             MASTER_HOST: solr6 <% } %> <% if (sharding == 'true') { %>
             ENABLE_SHARDING: "true"
             NUM_SHARDS: "2"

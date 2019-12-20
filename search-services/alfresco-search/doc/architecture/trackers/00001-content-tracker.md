@@ -155,7 +155,6 @@ The following table illustrates the configuration properties used by the Tracker
 |shard.method|"DB_ID"|Data (Documents, ACLs) Routing criteria among shards| | |Y|Y| | |
 |alfresco.fingerprint|true|true if we want to compute the content Fingerprint| | |Y|| | |
 |alfresco.index.transformContent|true| | | |Y|| | |
-|alfresco.version|5.0.0|The target Alfresco version| | | | | | |
 |alfresco.corePoolSize|4|The number of threads to keep in the pool, even if they are idle|Y|Y|Y|Y|Y|Y|
 |alfresco.maximumPoolSize|-1|The maximum number of threads allowed in the pool|Y|Y|Y|Y|Y|Y|
 |alfresco.keepAliveTime|120|When the number of threads is greater than the core pool size, this is the maximum time that excess idle threads will wait for new tasks before terminating|Y|Y|Y|Y|Y|Y|

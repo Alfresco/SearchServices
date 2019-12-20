@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Alfresco Software Limited.
+ * Copyright (C) 2019 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -178,14 +178,14 @@ import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.util.FileCopyUtils;
 
 /**
- * This is the Solr4 implementation of the information server (index).
+ * This is the Apache Solr implementation of the information server (index).
+ *
  * @author Ahmed Owian
  * @since 5.0
  */
 public class SolrInformationServer implements InformationServer
 {
     private final static Log LOGGER = new Log(SolrInformationServer.class);
-    private final static long TWO_MINUTES = 120000;
 
     private static final String NO_SITE = "_REPOSITORY_";
     private static final String SHARED_FILES = "_SHARED_FILES_";
@@ -200,23 +200,23 @@ public class SolrInformationServer implements InformationServer
 
     public static final String AND = " AND ";
     public static final String OR = " OR ";
-    public static final String REQUEST_HANDLER_ALFRESCO_FULL_TEXT_SEARCH = "/afts";
-    public static final String REQUEST_HANDLER_NATIVE = "/native";
-    public static final String REQUEST_HANDLER_ALFRESCO = "/alfresco";
-    public static final String REQUEST_HANDLER_SELECT = "/select";
-    public static final String REQUEST_HANDLER_GET = "/get";
-    public static final String RESPONSE_DEFAULT_IDS = "response";
-    public static final String RESPONSE_DEFAULT_ID = "doc";
+    //public static final String REQUEST_HANDLER_ALFRESCO_FULL_TEXT_SEARCH = "/afts";
+    private static final String REQUEST_HANDLER_NATIVE = "/native";
+    //public static final String REQUEST_HANDLER_ALFRESCO = "/alfresco";
+    //public static final String REQUEST_HANDLER_SELECT = "/select";
+    static final String REQUEST_HANDLER_GET = "/get";
+    private static final String RESPONSE_DEFAULT_IDS = "response";
+    static final String RESPONSE_DEFAULT_ID = "doc";
 
-    public static final String PREFIX_ERROR = "ERROR-";
+    static final String PREFIX_ERROR = "ERROR-";
 
     public static final String DOC_TYPE_NODE = "Node";
-    public static final String DOC_TYPE_UNINDEXED_NODE = "UnindexedNode";
-    public static final String DOC_TYPE_ERROR_NODE = "ErrorNode";
+    private static final String DOC_TYPE_UNINDEXED_NODE = "UnindexedNode";
+    private static final String DOC_TYPE_ERROR_NODE = "ErrorNode";
     public static final String DOC_TYPE_ACL = "Acl";
     public static final String DOC_TYPE_TX = "Tx";
     public static final String DOC_TYPE_ACL_TX = "AclTx";
-    public static final String DOC_TYPE_STATE = "State";
+    private static final String DOC_TYPE_STATE = "State";
 
     public static final String SOLR_HOST = "solr.host";
     public static final String SOLR_PORT = "solr.port";
@@ -235,7 +235,6 @@ public class SolrInformationServer implements InformationServer
     private final TrackerStats trackerStats = new TrackerStats(this);
     private final AlfrescoSolrDataModel dataModel;
     private final SolrContentStore solrContentStore;
-    private final String alfrescoVersion;
     private final boolean transformContent;
     private final boolean recordUnindexedNodes;
     private final long lag;
@@ -271,7 +270,7 @@ public class SolrInformationServer implements InformationServer
 
     protected enum FTSStatus {New, Dirty, Clean}
 
-    class DocListCollector implements Collector, LeafCollector
+    static class DocListCollector implements Collector, LeafCollector
     {
         private IntArrayList docs = new IntArrayList();
         private int docBase;
@@ -303,7 +302,7 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    class TxnCacheFilter extends DelegatingCollector
+    static class TxnCacheFilter extends DelegatingCollector
     {
         private NumericDocValues currentLongs;
         private Map txnLRU;
@@ -330,7 +329,7 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    class TxnCollector extends DelegatingCollector
+    static class TxnCollector extends DelegatingCollector
     {
         private NumericDocValues currentLongs;
         private long txnFloor;
@@ -372,7 +371,7 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    class LRU extends LinkedHashMap<Long,Long>
+    static class LRU extends LinkedHashMap<Long,Long>
     {
         private int maxSize;
 
@@ -395,7 +394,7 @@ public class SolrInformationServer implements InformationServer
         boolean isDefinitionExists(QName qName);
     }
 
-    abstract class TransactionInfoReporter
+    static abstract class TransactionInfoReporter
     {
         protected final IndexHealthReport report;
 
@@ -428,7 +427,6 @@ public class SolrInformationServer implements InformationServer
         this.solrContentStore = solrContentStore;
 
         Properties p = core.getResourceLoader().getCoreProperties();
-        alfrescoVersion = p.getProperty("alfresco.version", "Unknown");
         transformContent = Boolean.parseBoolean(p.getProperty("alfresco.index.transformContent", "true"));
         recordUnindexedNodes = Boolean.parseBoolean(p.getProperty("alfresco.recordUnindexedNodes", "true"));
         lag = Integer.parseInt(p.getProperty("alfresco.lag", "1000"));
@@ -503,11 +501,6 @@ public class SolrInformationServer implements InformationServer
             long newCount = this.getSafeCount(ftsStatusCounts, FTSStatus.New.toString());
             report.add("Node count with FTSStatus New", newCount);
         }
-    }
-    
-    public String getAlfrescoVersion()
-    {
-        return this.alfrescoVersion;
     }
     
     @Override
@@ -1547,7 +1540,7 @@ public class SolrInformationServer implements InformationServer
             				StringPropertyValue pValue = (StringPropertyValue) properties.get(ContentModel.PROP_IS_INDEXED);
             				if (pValue != null)
             				{
-            					boolean isIndexed = Boolean.valueOf(pValue.getValue());
+            					boolean isIndexed = Boolean.parseBoolean(pValue.getValue());
             					if (!isIndexed)
             					{
                                     LOGGER.debug("Clearing unindexed");
@@ -1902,7 +1895,7 @@ public class SolrInformationServer implements InformationServer
                         StringPropertyValue pValue = (StringPropertyValue) properties.get(ContentModel.PROP_IS_INDEXED);
                         if (pValue != null)
                         {
-                            boolean isIndexed = Boolean.valueOf(pValue.getValue());
+                            boolean isIndexed = Boolean.parseBoolean(pValue.getValue());
                             if (!isIndexed)
                             {
                                 LOGGER.debug("Clearing unindexed");
@@ -1958,7 +1951,7 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    private void addToNewDocAndCache(NodeMetaData nodeMetaData, SolrInputDocument newDoc) throws IOException
+    private void addToNewDocAndCache(NodeMetaData nodeMetaData, SolrInputDocument newDoc)
     {
         addFieldsToDoc(nodeMetaData, newDoc);
         SolrInputDocument cachedDoc = null;
@@ -2232,7 +2225,7 @@ public class SolrInformationServer implements InformationServer
                         .get(ContentModel.PROP_IS_CONTENT_INDEXED);
             if (pValue != null)
             {
-                boolean isIndexed = Boolean.valueOf(pValue.getValue());
+                boolean isIndexed = Boolean.parseBoolean(pValue.getValue());
                 if (!isIndexed)
                 {
                     isContentIndexed = false;
@@ -2374,13 +2367,19 @@ public class SolrInformationServer implements InformationServer
 
             String transformationStatusFieldName = getSolrFieldNameForContentPropertyMetadata(propertyQName, 
                         AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_STATUS);
-            newDoc.addField(transformationStatusFieldName, cachedDoc.getFieldValue(transformationStatusFieldName));
+            if (transformationStatusFieldName != null){
+                newDoc.addField(transformationStatusFieldName, cachedDoc.getFieldValue(transformationStatusFieldName));
+            }
             String transformationExceptionFieldName = getSolrFieldNameForContentPropertyMetadata(propertyQName,
                     AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_EXCEPTION);
-            newDoc.addField(transformationExceptionFieldName, cachedDoc.getFieldValue(transformationExceptionFieldName));
-            String transformationTimeFieldName = getSolrFieldNameForContentPropertyMetadata(propertyQName, 
+            if (transformationExceptionFieldName != null){
+                newDoc.addField(transformationExceptionFieldName, cachedDoc.getFieldValue(transformationExceptionFieldName));
+            }
+            String transformationTimeFieldName = getSolrFieldNameForContentPropertyMetadata(propertyQName,
                         AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_TIME);
-            newDoc.addField(transformationTimeFieldName, cachedDoc.getFieldValue(transformationTimeFieldName));
+            if (transformationTimeFieldName != null){
+                newDoc.addField(transformationTimeFieldName, cachedDoc.getFieldValue(transformationTimeFieldName));
+            }
 
             // Gets the new content docid and compares to that of the cachedDoc to mark the content as clean/dirty
             String fldName = getSolrFieldNameForContentPropertyMetadata(propertyQName,
@@ -2393,7 +2392,7 @@ public class SolrInformationServer implements InformationServer
             
             if(cachedDoc.getFieldValue(fldName) != null)
             {
-                long cachedDocContentDocid = Long.valueOf(String.valueOf(cachedDoc.getFieldValue(fldName)));
+                long cachedDocContentDocid = Long.parseLong(String.valueOf(cachedDoc.getFieldValue(fldName)));
                 long currentContentDocid = contentPropertyValue.getId();
                 // If we have used out of date content we mark it as dirty
                 // Otherwise we leave it alone - it could already be marked as dirty/New and require an update
@@ -3584,7 +3583,7 @@ public class SolrInformationServer implements InformationServer
                         field, 1); // Min count of 1 ensures that the id returned is in the index
                 for (Map.Entry<String, Integer> idCount : idCounts)
                 {
-                    long idInIndex = Long.valueOf(idCount.getKey());
+                    long idInIndex = Long.parseLong(idCount.getKey());
 
                     // Only looks at facet values that fit the query
                     if (batchStartId <= idInIndex && idInIndex <= batchEndId)
@@ -3891,5 +3890,11 @@ public class SolrInformationServer implements InformationServer
             }
         }
         return searchers;
+    }
+
+    @Override
+    public void flushContentStore() throws IOException
+    {
+        solrContentStore.flushChangeSet();
     }
 }

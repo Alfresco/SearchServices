@@ -33,7 +33,6 @@ import org.apache.solr.core.SolrCore;
 import org.apache.solr.request.LocalSolrQueryRequest;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,8 +82,9 @@ import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_VERSI
  * class hierarchy. Ideally this function should be retired in favour of better
  * annotations..
  *
- * @since solr 1.5
- * @author Michael Suzuki 
+ * @since solr 1.4.1
+ * @author Michael Suzuki
+ * @author Andrea Gazzarini
  */
 @ThreadLeakLingering(linger = 5000)
 public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
@@ -92,8 +92,8 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
     protected static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     
     protected String[] deadServers;
-    protected static SolrResponsesComparator solrComparator = new SolrResponsesComparator();
-    protected static RandomSupplier solrRandomSupplier;
+    protected static SolrResponsesComparator SOLR_RESPONSE_COMPARATOR = new SolrResponsesComparator();
+    protected static RandomSupplier SOLR_RANDOM_SUPPLIER;
 
     // to stress with higher thread counts and requests, make sure the junit
     // xml formatter is not being used (all output will be buffered before
@@ -112,34 +112,26 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
      * Test configs may use the <code>${hostContext}</code> variable to access
      * this system property.
      * </p>
-     *
      */
     @BeforeClass
     public static void setUpSolrTestProperties()
     {
+        SOLR_RANDOM_SUPPLIER = new RandomSupplier();
         System.setProperty("alfresco.test", "true");
         System.setProperty("solr.tests.maxIndexingThreads", "10");
         System.setProperty("solr.tests.ramBufferSizeMB", "1024");
     }
 
-    @Before
-    public void setupPerTest()
-    {
-        this.solrRandomSupplier = new RandomSupplier();
-    }
-    
-
-    public static String[] fieldNames = new String[]
-    { "n_ti1", "n_f1", "n_tf1", "n_d1", "n_td1", "n_l1", "n_tl1", "n_dt1", "n_tdt1" };
-    
+    public static final String[] FIELD_NAMES = new String[] { "n_ti1", "n_f1", "n_tf1", "n_d1", "n_td1", "n_l1", "n_tl1", "n_dt1", "n_tdt1" };
 
     protected static String[] getFieldNames()
     {
-        return fieldNames;
+        return FIELD_NAMES;
     }
 
-    protected void putHandleDefaults() {
-        solrComparator.putHandleDefaults();
+    protected static void putHandleDefaults()
+    {
+        SOLR_RESPONSE_COMPARATOR.putHandleDefaults();
     }
 
     /**
@@ -147,8 +139,6 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
      * @param query - query to execute
      * @param count - min number of results each shard must satisfy
      * @param waitMillis - total ms to wait
-     * @return
-     * @throws Exception
      */
     public static boolean checkMinCountPerShard(Query query, int count, long waitMillis) throws SolrServerException,IOException
     {
@@ -160,7 +150,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
         for (SolrClient singleShard : shardedClients)
         {
             allShardCompliant = false;
-            int totalHits = 0;
+            int totalHits;
             int cycles = 1;
             while ((new Date()).getTime() < timeout && (!allShardCompliant))
             {
@@ -172,11 +162,11 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
                 }
                 try
                 {
-                    Thread.sleep((long) (500 * cycles++));
+                    Thread.sleep(500 * cycles++);
                 }
                 catch (InterruptedException e)
                 {
-                    continue;
+                    // Ignore
                 }
             }
         }
@@ -205,11 +195,6 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
     
     /**
      * Waits until all cores (including shards) reach a count.
-     *
-     * @param query
-     * @param count
-     * @param waitMillis
-     * @throws Exception
      */
     public static void waitForDocCountAllCores(Query query, int count, long waitMillis) throws Exception
     {
@@ -230,12 +215,9 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
     
     /**
      * Delele by query on all Clients
-     *
-     * @param q
-     * @throws Exception
      */
-    public static void deleteByQueryAllClients(String q) throws Exception {
-
+    public static void deleteByQueryAllClients(String q) throws Exception
+    {
         List<SolrClient> clients = getStandaloneAndShardedClients();
 
         for (SolrClient client : clients) {
@@ -245,14 +227,11 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
 
     /**
      * Gets the Default test client.
-     *
-     * @return
      */
     protected static SolrClient getDefaultTestClient()
     {
         return solrCollectionNameToStandaloneClient.get(DEFAULT_TEST_CORENAME);
     }
-    
 
     protected static List<SolrClient> getShardedClients()
     {
@@ -266,7 +245,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
      */
     public static List<SolrClient> getStandaloneAndShardedClients()
     {
-        List<SolrClient> clients = new ArrayList();
+        List<SolrClient> clients = new ArrayList<>();
         clients.addAll(solrCollectionNameToStandaloneClient.values());
         clients.addAll(clientShards);
         return clients;
@@ -275,17 +254,11 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
 
     public static List<SolrClient> getStandaloneClients()
     {
-        List<SolrClient> clients = new ArrayList();
-        clients.addAll(solrCollectionNameToStandaloneClient.values());
-        return clients;
+        return new ArrayList<>(solrCollectionNameToStandaloneClient.values());
     }
 
     /**
      * Waits for the doc count on the first core available, then checks all the Shards match.
-     * @param query
-     * @param count
-     * @param waitMillis
-     * @throws Exception
      */
     public static void waitForDocCount(Query query, int count, long waitMillis) throws Exception
     {
@@ -296,6 +269,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
     {
         long begin = System.currentTimeMillis();
         //TODO: Support multiple cores per jetty
+        System.out.println(getStandaloneClients().size());
         SolrClient standaloneClient = getStandaloneClients().get(0); //Get the first one
         waitForDocCountCore(standaloneClient, query, count, waitMillis, begin);
         waitForShardsCount(query, count, waitMillis, begin);
@@ -331,7 +305,8 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
         return escapedField + ":" + value + " ";
     }
 
-    protected static String escapeQueryChars(String query) {
+    protected static String escapeQueryChars(String query)
+    {
         return query.replaceAll("\\:", "\\\\:")
             .replaceAll("\\{", "\\\\{")
             .replaceAll("\\}", "\\\\}");
@@ -340,7 +315,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
     public static SolrQuery luceneToSolrQuery(Query query)
     {
         String[] terms = query.toString().split(" ");
-        String escapedQuery = new String();
+        String escapedQuery = "";
         for (String t : terms)
         {
             escapedQuery += escapeQueryClause(t);
@@ -365,8 +340,10 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
         waitForShardsCount(solrQuery, count, waitMillis, start);
     }
 
-    protected static void injectDocToShards(long txnId, long aclId, long dbId, String owner) throws Exception {
-        for(SolrClient clientShard : clientShards) {
+    protected static void injectDocToShards(long txnId, long aclId, long dbId, String owner) throws Exception
+    {
+        for(SolrClient clientShard : clientShards)
+        {
             SolrInputDocument doc = new SolrInputDocument();
             String id = AlfrescoSolrDataModel.getNodeDocumentId(AlfrescoSolrDataModel.DEFAULT_TENANT, aclId, dbId);
             doc.addField(FIELD_SOLR4_ID, id);
@@ -382,21 +359,20 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
 
     /**
      * Gets the cores for the jetty instances
-     * @return
      */
     protected static List<SolrCore> getJettyCores(Collection<JettySolrRunner> runners)
     {
-        List<SolrCore> cores = new ArrayList();
+        List<SolrCore> cores = new ArrayList<>();
         for (JettySolrRunner jettySolrRunner : runners)
         {
-            jettySolrRunner.getCoreContainer().getCores().forEach(aCore -> cores.add(aCore));
+            cores.addAll(jettySolrRunner.getCoreContainer().getCores());
         }
         return cores;
     }
 
     protected static List<AlfrescoCoreAdminHandler> getAdminHandlers(Collection<JettySolrRunner> runners)
     {
-        List<AlfrescoCoreAdminHandler> coreAdminHandlers = new ArrayList();
+        List<AlfrescoCoreAdminHandler> coreAdminHandlers = new ArrayList<>();
         for (JettySolrRunner jettySolrRunner : runners)
         {
             CoreContainer coreContainer = jettySolrRunner.getCoreContainer();
@@ -417,32 +393,27 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
         List<SolrClient> clients = getShardedClients();
         SolrQuery query = luceneToSolrQuery(new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_NODE)));
         StringBuilder error = new StringBuilder();
-        for (int i = 0; i < clients.size(); ++i)
+        for (SolrClient client : clients)
         {
-            SolrClient client = clients.get(i);
-
-
             QueryResponse response = client.query(query);
             int totalHits = (int) response.getResults().getNumFound();
 
 
-            if(totalHits > 0)
+            if (totalHits > 0)
             {
                 shardHit++;
             }
-            if(totalHits < count)
+
+            if (totalHits < count)
             {
-                if (ignoreZero && totalHits == 0)
-                {
-                    log.info(client+": have zero hits ");
-                }
-                else
-                {
-                    error.append(" "+client+": ");
-                    error.append("Expected nodes per shard greater than "+count+" found "+totalHits+" : "+query.toString());
+                if (ignoreZero && totalHits == 0) {
+                    log.info(client + ": have zero hits ");
+                } else {
+                    error.append(" " + client + ": ");
+                    error.append("Expected nodes per shard greater than " + count + " found " + totalHits + " : " + query.toString());
                 }
             }
-            log.info(client+": Hits "+totalHits);
+            log.info(client + ": Hits " + totalHits);
 
         }
 
@@ -559,7 +530,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
 
     protected String getShardsString()
     {
-        Random r = solrRandomSupplier.getRandomGenerator();
+        Random r = SOLR_RANDOM_SUPPLIER.getRandomGenerator();
         if (deadServers == null)
             return shards;
 
@@ -609,7 +580,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
 
     protected static SolrInputDocument addRandFields(SolrInputDocument sdoc)
     {
-        addFields(sdoc, solrRandomSupplier.getRandFields(getFieldNames(), solrRandomSupplier.getRandValues()));
+        addFields(sdoc, SOLR_RANDOM_SUPPLIER.getRandFields(getFieldNames(), SOLR_RANDOM_SUPPLIER.getRandValues()));
         return sdoc;
     }
 
@@ -661,7 +632,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
     {
         UpdateResponse controlRsp = add(client1, params, sdocs);
         UpdateResponse specificRsp = add(client2, params, sdocs);
-        solrComparator.compareSolrResponses(specificRsp, controlRsp);
+        SOLR_RESPONSE_COMPARATOR.compareSolrResponses(specificRsp, controlRsp);
         return specificRsp;
     }
 
@@ -723,9 +694,6 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
 
     /**
      * * Commits to the specified client, and optionally all shards
-     * @param client
-     * @param andShards
-     * @throws Exception
      */
     protected static void commit(SolrClient client, boolean andShards) throws Exception
     {
@@ -742,7 +710,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
 
     protected static QueryResponse queryRandomShard(ModifiableSolrParams params) throws SolrServerException, IOException
     {
-        Random r = solrRandomSupplier.getRandomGenerator();
+        Random r = SOLR_RANDOM_SUPPLIER.getRandomGenerator();
         int which = r.nextInt(clientShards.size());
         SolrClient client = clientShards.get(which);
         QueryResponse rsp = client.query(params);
@@ -754,13 +722,13 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
         params.set("distrib", "false");
         QueryRequest request = getAlfrescoRequest(json, params);
         QueryResponse controlRsp = request.process(solrClient);
-        solrComparator.validateResponse(controlRsp);
+        SOLR_RESPONSE_COMPARATOR.validateResponse(controlRsp);
         if (andShards)
         {
             params.remove("distrib");
             setDistributedParams(params);
             QueryResponse rsp = queryRandomShard(json, params);
-            solrComparator.compareResponses(rsp, controlRsp);
+            SOLR_RESPONSE_COMPARATOR.compareResponses(rsp, controlRsp);
             return rsp;
         }
         else
@@ -771,7 +739,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
 
     protected static QueryResponse queryRandomShard(String json, SolrParams params) throws SolrServerException, IOException
     {
-        Random r = solrRandomSupplier.getRandomGenerator();
+        Random r = SOLR_RANDOM_SUPPLIER.getRandomGenerator();
         int which = r.nextInt(clientShards.size());
         SolrClient client = clientShards.get(which);
         QueryRequest request = getAlfrescoRequest(json, params);
@@ -790,13 +758,13 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
      */
     protected QueryResponse query(SolrClient solrClient, boolean setDistribParams, SolrParams p) throws Exception
     {
-        Random r = solrRandomSupplier.getRandomGenerator();
+        Random r = SOLR_RANDOM_SUPPLIER.getRandomGenerator();
         final ModifiableSolrParams params = new ModifiableSolrParams(p);
 
         // TODO: look into why passing true causes fails
         params.set("distrib", "false");
         final QueryResponse controlRsp = solrClient.query(params);
-        solrComparator.validateResponse(controlRsp);
+        SOLR_RESPONSE_COMPARATOR.validateResponse(controlRsp);
 
         params.remove("distrib");
         if (setDistribParams)
@@ -804,7 +772,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
 
         QueryResponse rsp = queryRandomShard(params);
 
-        solrComparator.compareResponses(rsp, controlRsp);
+        SOLR_RESPONSE_COMPARATOR.compareResponses(rsp, controlRsp);
 
         if (stress > 0)
         {
@@ -826,7 +794,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
                                 QueryResponse rsp = client.query(new ModifiableSolrParams(params));
                                 if (verifyStress)
                                 {
-                                    solrComparator.compareResponses(rsp, controlRsp);
+                                    SOLR_RESPONSE_COMPARATOR.compareResponses(rsp, controlRsp);
                                 }
                             } catch (SolrServerException | IOException e)
                             {
@@ -864,7 +832,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
                 first = rsp;
             } else
             {
-                solrComparator.compareResponses(first, rsp);
+                SOLR_RESPONSE_COMPARATOR.compareResponses(first, rsp);
             }
         }
 

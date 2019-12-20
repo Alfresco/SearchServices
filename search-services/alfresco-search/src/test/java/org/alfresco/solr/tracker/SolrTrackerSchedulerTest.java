@@ -78,7 +78,6 @@ public class SolrTrackerSchedulerTest
         props.put("shard.method", "SHARD_METHOD_DBID");
         props.put("alfresco.template", "");
         props.put("alfresco.index.transformContent", "true");
-        props.put("alfresco.version", "5.0.0");
     }
 
     @After

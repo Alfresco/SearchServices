@@ -53,7 +53,7 @@ public class CoresCreateViaPropertyIT extends AbstractAlfrescoDistributedIT
     }
 
     @AfterClass
-    private static void destroyData() throws Throwable
+    private static void destroyData()
     {
         dismissSolrServers();
         System.clearProperty(AlfrescoCoreAdminHandler.ALFRESCO_DEFAULTS);

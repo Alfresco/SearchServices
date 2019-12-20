@@ -63,7 +63,7 @@ services:
             ALFRESCO_HOSTNAME: alfresco
             ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
             TRUSTSTORE_TYPE: JCEKS
-            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication == 'true') { %>
+            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication) { %>
             ENABLE_MASTER: "true"
             ENABLE_SLAVE: "false" <% } %>
         mem_limit: 1200m
@@ -94,7 +94,7 @@ services:
         volumes:
             - ./keystores/solr:/opt/<%=searchPath%>/keystore <% } %>
 
-    <% if (replication == 'true') { %>
+    <% if (replication) { %>
     solr6secondary:
         build:
           context: ./search
@@ -104,9 +104,9 @@ services:
             ALFRESCO_HOSTNAME: alfresco
             ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
             TRUSTSTORE_TYPE: JCEKS
-            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication == 'true') { %>
-            ENABLE_MASTER: "true"
-            ENABLE_SLAVE: "false"
+            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication) { %>
+            ENABLE_MASTER: <% if (replication == 'master-master') { %>"true"<% } else { %>"false"<% } %>
+            ENABLE_SLAVE: <% if (replication == 'master-master') { %>"false"<% } else { %>"true"<% } %>
             MASTER_HOST: solr6 <% } %>
         mem_limit: 1200m
         environment:
