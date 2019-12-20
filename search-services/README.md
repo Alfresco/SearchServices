@@ -338,22 +338,6 @@ This Docker Image is available at Alfresco Docker Hub:
 To use the public image instead of the local one (`searchservices:develop`) just use `alfresco/alfresco-search-services:1.3.x.x` labels.
 
 
-## Docker Master-Slave setup
-### Enable Search Slave Replica config
-
-To enable slave node specify environment value `REPLICATION_TYPE=slave`, by default Master config is enabled and slave is disabled. 
-
-During deployment time whenever Search Services or Insight Engine image starts, it will execute the script [search_config_setup.sh](/packaging/src/docker) which will configure the slave config setup based on the value specified in the script.
-
-To run the docker image:
-
-```bash
-$ docker run -p 8984:8983 -e REPLICATION_TYPE=slave -e ALFRESCO_SECURE_COMMS=none -e SOLR_CREATE_ALFRESCO_DEFAULTS=alfresco,archive searchservices:develop
-```
-Solr-slave End point: [http://localhost:8984/solr](http://localhost:8984/solr)
-
-To generate your own Docker-compose file please follow [generator-alfresco-docker-compose](../e2e-test/generator-alfresco-docker-compose/README.md)
-
 ### Use Alfresco Search Services Docker Image with Docker Compose
 
 Sample configuration in a Docker Compose file using **Plain HTTP** protocol to communicate with Alfresco Repository.
