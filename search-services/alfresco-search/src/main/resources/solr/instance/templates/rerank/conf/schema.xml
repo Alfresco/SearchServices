@@ -26,7 +26,7 @@
           - retrievable(stored or docValues)
           - not multiValued
        -->
-      <fieldType name="version" class="solr.TrieLongField" precisionStep="0" positionIncrementGap="0" indexed="false" stored="false" docValues="true" required="true" />
+      <fieldType name="version" class="solr.TrieLongField" precisionStep="0" positionIncrementGap="0" indexed="false" stored="false" docValues="true" required="true" useDocValuesAsStored="true"/>
 
       <!-- Ignored fields -->
       <fieldType name="ignored" class="solr.StrField" indexed="false" stored="false"/>
@@ -76,7 +76,7 @@
       <fieldType name="alfrescoCollatableMLTextFieldType" class="org.alfresco.solr.AlfrescoCollatableMLTextFieldType" omitNorms="true" sortMissingLast="true" indexed="true" stored="true"/>
       <fieldType name="alfrescoCollatableTextFieldType" class="org.alfresco.solr.AlfrescoCollatableTextFieldType" omitNorms="true" sortMissingLast="true" indexed="true" stored="true"/>
 
-      <fieldType name="path" class="solr.TextField" positionIncrementGap="100" indexed="true" stored="true" omitNorms="true">
+      <fieldType name="path" class="solr.TextField" indexed="true" stored="true" omitNorms="true">
          <analyzer class="org.alfresco.repo.search.impl.lucene.analysis.PathAnalyzer" />
       </fieldType>
 
@@ -1027,7 +1027,7 @@
       <dynamicField name="mltext@m__sort@*"        type="alfrescoCollatableMLTextFieldType" />
 
       <dynamicField name="content@s__size@*"        type="long" stored="false" docValues="true" />
-      <dynamicField name="content@s__locale@*"           type="identifier" stored="false" docValues="true" />
+      <dynamicField name="content@s__locale@*"           type="identifier" stored="true" docValues="true" useDocValuesAsStored="true"/>
       <dynamicField name="content@s__mimetype@*"         type="identifier" stored="false" docValues="true" />
       <dynamicField name="content@s__encoding@*"         type="identifier" stored="false" docValues="true" />
       <dynamicField name="content@s__docid@*"            type="long"        stored="false" docValues="true" />
@@ -1056,7 +1056,7 @@
 
       <!-- Suggestion -->
       <field name="suggest" type="text_shingle" indexed="true" omitNorms="true" omitPositions="true" stored="false" multiValued="true" />
-      <dynamicField name="suggest_*" type="ignored" />
+      <dynamicField name="suggest_*" type="ignored" multiValued="true"/>
 
       <copyField source="suggest_*" dest="suggest" />
     </fields>

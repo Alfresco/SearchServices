@@ -1526,12 +1526,15 @@ public class AlfrescoReplicationHandler extends RequestHandlerBase implements So
     @Override
     public void inform(SolrCore core)
     {
+
         this.core = core;
 
         CoreContainer coreContainer = core.getCoreContainer();
         AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
 
-        contentStore = coreAdminHandler.getSolrContentStore();
+        // FIXME: Remove this class once SEARCH-1687 will be completed
+        // contentStore = coreAdminHandler.getSolrContentStore();
+
         registerCloseHook();
         Object nbtk = initArgs.get(NUMBER_BACKUPS_TO_KEEP_INIT_PARAM);
         if (nbtk != null)
