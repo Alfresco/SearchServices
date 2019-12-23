@@ -4,6 +4,7 @@ set -e
 # Slave replica service can be enabled using "REPLICATION_TYPE=slave" environment value.
 
 SOLR_CONFIG_FILE=$PWD/solrhome/templates/rerank/conf/solrconfig.xml
+SOLR_CORE_FILE=$PWD/solrhome/templates/rerank/conf/solrcore.properties
 
 if [[ $REPLICATION_TYPE == "master" ]]; then
 
@@ -12,7 +13,11 @@ if [[ $REPLICATION_TYPE == "master" ]]; then
    replaceStringMaster="\n\t<lst name=\"master\"> \n"
 
    if [[ $REPLICATION_AFTER == "" ]]; then
-      REPLICATION_AFTER=commit
+      REPLICATION_AFTER=commit,startup
+   fi
+
+   if [[ $REPLICATION_CONFIG_FILES == "" ]]; then
+      REPLICATION_CONFIG_FILES=schema.xml,stopwords.txt
    fi
 
    for i in $(echo $REPLICATION_AFTER | sed "s/,/ /g")
@@ -27,6 +32,7 @@ if [[ $REPLICATION_TYPE == "master" ]]; then
    replaceStringMaster+="\t<\/lst>"
 
    sed -i "s/$findStringMaster/$findStringMaster$replaceStringMaster/g" $SOLR_CONFIG_FILE
+   sed -i "s/enable.alfresco.tracking=true/enable.alfresco.tracking=true\nenable.master=true\nenable.slave=false/g" $SOLR_CORE_FILE
 fi
 
 if [[ $REPLICATION_TYPE == "slave" ]]; then
@@ -56,6 +62,7 @@ if [[ $REPLICATION_TYPE == "slave" ]]; then
          <str name="masterUrl">'$REPLICATION_MASTER_PROTOCOL':\/\/'$REPLICATION_MASTER_HOST':'$REPLICATION_MASTER_PORT'\/solr\/'$REPLICATION_CORE_NAME'<\/str>\
          <str name="pollInterval">'$REPLICATION_POLL_INTERVAL'<\/str>\
       <\/lst>/g' $SOLR_CONFIG_FILE
+   sed -i "s/enable.alfresco.tracking=true/enable.alfresco.tracking=false\nenable.master=false\nenable.slave=true/g" $SOLR_CORE_FILE
 fi
 
 SOLR_IN_FILE=$PWD/solr.in.sh
