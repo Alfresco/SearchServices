@@ -26,7 +26,7 @@
           - retrievable(stored or docValues)
           - not multiValued
        -->
-      <fieldType name="version" class="solr.TrieLongField" precisionStep="0" positionIncrementGap="0" indexed="false" stored="false" docValues="true" required="true" useDocValuesAsStored="true"/>
+      <fieldType name="version" class="solr.TrieLongField" precisionStep="0" positionIncrementGap="0" indexed="false" stored="false" docValues="true" required="true"/>
 
       <!-- Ignored fields -->
       <fieldType name="ignored" class="solr.StrField" indexed="false" stored="false"/>
