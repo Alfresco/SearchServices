@@ -41,3 +41,7 @@ More details are available at [search-services](/search-services) folder.
 **Following resources will not be available for Community users**
 
 More details are available at [insight-engine](/insight-engine) folder.
+
+## Contributing guide
+
+Please use [this guide](CONTRIBUTING.md) to make a contribution to the project.
