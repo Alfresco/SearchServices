@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -120,7 +119,7 @@ import static org.alfresco.solr.content.SolrContentUrlBuilder.logger;
  * @see org.alfresco.solr.lifecycle.SolrCoreLoadListener
  * @see <a href="https://it.wikipedia.org/wiki/State_pattern">State Pattern</a>
  */
-public final class SolrContentStore implements Closeable, AccessMode
+public class SolrContentStore implements Closeable, AccessMode
 {
     private final static Logger LOGGER = LoggerFactory.getLogger(SolrContentStore.class);
 
@@ -517,7 +516,7 @@ public final class SolrContentStore implements Closeable, AccessMode
             LOGGER.error(solrHomeFile.getAbsolutePath() + " does not exist.");
         }
 
-        String path = solrHomeFile.getParent() + "/" + CONTENT_STORE;
+        String path = solrHomeFile.getAbsolutePath() + "/" + CONTENT_STORE;
         LOGGER.warn(path + " will be used as a default path if " + SOLR_CONTENT_DIR + " property is not defined");
         File rootFile = new File(ConfigUtil.locateProperty(SOLR_CONTENT_DIR, path));
 

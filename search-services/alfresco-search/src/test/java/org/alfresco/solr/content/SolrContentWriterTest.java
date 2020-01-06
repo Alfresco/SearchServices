@@ -12,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 
+// FIXME: Remove once SEARCH-1687 will be completed
 public class SolrContentWriterTest
 {
     private String solrHome = new File("./target/contentwriter/").getAbsolutePath();

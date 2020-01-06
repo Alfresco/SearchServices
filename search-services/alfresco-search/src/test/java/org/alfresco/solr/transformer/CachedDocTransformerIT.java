@@ -34,7 +34,6 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
@@ -47,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static java.util.Collections.singletonList;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
@@ -54,23 +54,22 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
 import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
 import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
-import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 @SolrTestCaseJ4.SuppressSSL
 public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
 {
     public static final String ALFRESCO_JSON = "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}";
-    
+
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
-        initSolrServers(1, "CachedDocTransformerIT", null);
+        // FIXME: 1 shard??
+        initSolrServers(1, CachedDocTransformerIT.getSimpleClassName(), null);
         populateAlfrescoData();
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }
@@ -85,13 +84,13 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
         SolrDocumentList results = resp.getResults();
         assertEquals("Expecting 5 rows",5, results.size());
         SolrDocument doc = results.get(0);
-        assertTrue(doc.size() == 3);
+        assertEquals(3, doc.size());
         assertNotNull(doc);
         String id = (String) doc.get("id");
         assertNotNull(id);
-        long version = (long) doc.get("_version_");
+        Long version = (Long) doc.get("_version_");
         assertNotNull(version);
-        long dbid = (long) doc.get("DBID");
+        Long dbid = (Long) doc.get("DBID");
         assertNotNull(dbid);
         //Not expected to see below as part of the solr response.
         String title = (String) doc.get("cm:title");
@@ -110,15 +109,15 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
         SolrDocument docWithAllFields = resp.getResults().get(0);
         assertTrue(docWithAllFields.size() > 3);
 
-        Integer version2 = (Integer) docWithAllFields.get("_version_");
+        Long version2 = (Long) docWithAllFields.get("_version_");
         assertNotNull(version2);
-        String owner = ((ArrayList) docWithAllFields.get("OWNER")).toString();
+        String owner = docWithAllFields.get("OWNER").toString();
         assertNotNull(owner);
         assertEquals("[mike]", owner);
-        String title = ((ArrayList) docWithAllFields.get("cm:title")).toString();
+        String title = docWithAllFields.get("cm:title").toString();
         assertEquals("[title1]", title);
         assertNotNull(title);
-        long dbid2 = (long) docWithAllFields.get("DBID");
+        Long dbid2 = (Long) docWithAllFields.get("DBID");
         assertNotNull(dbid2);
     }
 
@@ -132,7 +131,7 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
 
         assertNotNull(resp);
         SolrDocument docWithRequestedFields = resp.getResults().get(0);
-        assertTrue(docWithRequestedFields.size() == 2);
+        assertEquals(2, docWithRequestedFields.size());
         assertNotNull(docWithRequestedFields.get("id"));
         assertNotNull(docWithRequestedFields.get("DBID"));
     }
@@ -147,7 +146,7 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
 
         assertNotNull(resp);
         SolrDocument docWithRequestedFields3 = resp.getResults().get(0);
-        assertTrue(docWithRequestedFields3.size() == 2);
+        assertEquals(2, docWithRequestedFields3.size());
         assertNotNull(docWithRequestedFields3.get("id"));
         String title = (String) docWithRequestedFields3.getFieldValue("cm_title");
         assertEquals("title1", title);
@@ -162,7 +161,7 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
         assertNotNull(resp);
         SolrDocumentList results = resp.getResults();
         SolrDocument docWithAllFields = results.get(0);
-        assertTrue(docWithAllFields.size() == 2);
+        assertEquals(2, docWithAllFields.size());
         assertNotNull(docWithAllFields.get("cm_name"));
         Float score = (Float) docWithAllFields.get("score");
         assertNotNull(score);
@@ -177,7 +176,7 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
         assertNotNull(resp);
         SolrDocumentList results = resp.getResults();
         SolrDocument docWithAllFields = results.get(0);
-        assertTrue(docWithAllFields.size() == 4);
+        assertEquals(4, docWithAllFields.size());
         assertNotNull(docWithAllFields.get("cm_title"));
         assertNotNull(docWithAllFields.get("cm_created"));
         assertNotNull(docWithAllFields.get("score"));
@@ -190,11 +189,11 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
 
         Acl acl = getAcl(aclChangeSet);
 
-        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, list("joel"), list("phil"), null);
+        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, singletonList("joel"), singletonList("phil"), null);
 
         indexAclChangeSet(aclChangeSet,
-                list(acl),
-                list(aclReaders));
+                singletonList(acl),
+                singletonList(aclReaders));
 
         //Check for the ACL state stamp.
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
@@ -204,19 +203,15 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
         BooleanQuery waitForQuery = builder.build();
         waitForDocCountAllCores(waitForQuery, 1, 80000);
 
-        /*
-        * Create and index transactions
-        */
-
-        //First create a transaction.
         int numNodes = 5;
-        List<Node> nodes = new ArrayList();
-        List<NodeMetaData> nodeMetaDatas = new ArrayList();
+        List<Node> nodes = new ArrayList<>();
+        List<NodeMetaData> nodeMetaDatas = new ArrayList<>();
 
         Transaction bigTxn = getTransaction(0, numNodes);
         Date now = new Date();
 
-        for (int i = 0; i < numNodes; i++) {
+        for (int i = 0; i < numNodes; i++)
+        {
             Node node = getNode(bigTxn, acl, Node.SolrApiNodeStatus.UPDATED);
             nodes.add(node);
             NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, acl, "mike", null, false);

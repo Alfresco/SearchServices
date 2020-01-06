@@ -179,6 +179,4 @@ public interface InformationServer extends InformationServerCollectionProvider
     String getHostName();
     
     String getBaseUrl();
-
-    void flushContentStore() throws IOException;
 }

@@ -53,7 +53,8 @@ import static org.mockito.Mockito.mock;
  * @author Andrea Gazzarini
  * @since 1.5
  */
-@RunWith(MockitoJUnitRunner.class) 
+@RunWith(MockitoJUnitRunner.class)
+// FIXME: Remove once SEARCH-1687 will be completed
 public class SolrContentStoreTest
 {
     private static final String DEFAULT_TENANT = "_DEFAULT_";

@@ -30,6 +30,7 @@ import org.mockito.junit.MockitoJUnitRunner;
  * @since 5.0
  */
 @RunWith(MockitoJUnitRunner.class)
+// FIXME: Remove once SEARCH-1687 will be completed
 public class SolrContentUrlBuilderTest
 {
     @Test
