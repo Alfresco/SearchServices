@@ -10,6 +10,21 @@ Alfresco has an [active forum](http://community.alfresco.com/community/ecm) to s
 community users of our products. If you have any questions then this is the fastest method
 of getting an answer.
 
+## Raising issues
+
+If you want to raise an issue then please use the [issue tracker on GitHub](https://github.com/Alfresco/SearchServices/issues).
+We may convert these to Jira tickets before working on them, as this is the system we use
+internally for tracking development.  The Jira project for this codebase is [SEARCH](https://issues.alfresco.com/jira/projects/SEARCH/issues)
+and you may want to look here first to see if your issue has previously been encountered.[^jiraaccess] 
+There are some guidelines for raising a good issue [here](https://hub.alfresco.com/t5/alfresco-content-services-hub/reporting-an-issue/ba-p/289727).
+
+[^jiraaccess]: Note that while we try to keep our Jira issues visible to everyone, some
+are restricted as they relate to specific customers or security issues. Some older issues
+are also restricted simply because we have not been through to check if they contain
+sensitive information or not.
+
+## Submitting changes
+
 We have a [coding standards guidelines page](https://hub.alfresco.com/t5/alfresco-content-services-hub/coding-standards-for-alfresco-content-services/ba-p/290457)
 although you will find numerous examples where we have not adhered to them.  Please try to
 maintain consistency with the guidelines for new code, but avoid reformatting large
@@ -42,12 +57,8 @@ rather than merged.
 
 ## Builds
 
-Our builds are currently in our internal Bamboo instance.  We have an [internal dashboard](http://pson01.alfresco.com:8081/SAI-FeatureBranches)
-displaying the status of all branches, and also an [internal compatibility dashboard](http://pson01.alfresco.com:8081/SAI-Compatibility)
-displaying results of integration testing with different versions of ACS.
-
-Our build process uses the scripts in the [build scripts](https://git.alfresco.com/search_discovery/BuildScripts)
-project.
+Our builds are currently in our internal Bamboo instance.  If you have access to the
+internal code then you can find some more links in the [insight engine module](insight-engine/CONTRIBUTING.md).
 
 Although the build results are not visible externally, it should be possible to run most of
 the tests locally.  We have divided our tests into unit tests, integration tests and
