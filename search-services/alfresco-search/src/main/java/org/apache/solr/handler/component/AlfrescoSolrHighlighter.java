@@ -52,7 +52,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.StreamSupport;
 
-import static java.util.Arrays.spliterator;
+import static java.lang.String.join;
 import static java.util.Arrays.stream;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
@@ -107,11 +107,12 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 		}
 	}
 
-	public AlfrescoSolrHighlighter(SolrCore solrCore)
+	public AlfrescoSolrHighlighter(SolrCore core)
 	{
-		super(solrCore);
+		super(core);
 	}
 
+	// TODO: E' possibile fare a meno di questo?
 	@Override
 	protected Highlighter getHighlighter(Query query, String requestFieldname, SolrQueryRequest request)
 	{
@@ -119,82 +120,74 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 				AlfrescoSolrDataModel.getInstance()
 					.mapProperty(requestFieldname, FieldUse.HIGHLIGHT, request);
 
-		SolrParams params = request.getParams();
 		Highlighter highlighter =
-				new Highlighter(getFormatter(
-					requestFieldname, params),
-					getEncoder(requestFieldname, params),
-					getQueryScorer(query,schemaFieldName, request));
+				new Highlighter(
+						getFormatter(requestFieldname, request.getParams()),
+						getEncoder(requestFieldname, request.getParams()),
+						getQueryScorer(query,schemaFieldName, request));
 
-		highlighter.setTextFragmenter(getFragmenter(requestFieldname, params));
+		highlighter.setTextFragmenter(getFragmenter(requestFieldname, request.getParams()));
 		return highlighter;
 	}
 
 	@Override
-	protected QueryScorer getSpanQueryScorer(Query query,
-			String requestFieldname,
-			TokenStream tokenStream, SolrQueryRequest request) {
-		String schemaFieldName = AlfrescoSolrDataModel.getInstance()
-				.mapProperty(requestFieldname, FieldUse.HIGHLIGHT, request); 
-		QueryScorer scorer = new QueryScorer(query,
-				request.getParams().getFieldBool(requestFieldname,
-						HighlightParams.FIELD_MATCH, false) ? schemaFieldName : null);
-		scorer.setExpandMultiTermQuery(request.getParams().getBool(
-				HighlightParams.HIGHLIGHT_MULTI_TERM, true));
+	protected QueryScorer getSpanQueryScorer(Query query, String requestFieldname, TokenStream tokenStream, SolrQueryRequest request)
+	{
+		String schemaFieldName = AlfrescoSolrDataModel.getInstance().mapProperty(requestFieldname, FieldUse.HIGHLIGHT, request);
+		QueryScorer scorer = new QueryScorer(query,request.getParams().getFieldBool(requestFieldname, HighlightParams.FIELD_MATCH, false) ? schemaFieldName : null);
+		scorer.setExpandMultiTermQuery(request.getParams().getBool(HighlightParams.HIGHLIGHT_MULTI_TERM, true));
 
 		boolean defaultPayloads = true;// overwritten below
-		try {
+		try
+		{
 			// It'd be nice to know if payloads are on the tokenStream but the
 			// presence of the attribute isn't a good
 			// indicator.
-			final Terms terms = request.getSearcher().getSlowAtomicReader().fields()
-					.terms(schemaFieldName);
-			if (terms != null) {
+			final Terms terms = request.getSearcher().getSlowAtomicReader().fields().terms(schemaFieldName);
+			if (terms != null)
+			{
 				defaultPayloads = terms.hasPayloads();
 			}
-		} catch (IOException e) {
+		}
+		catch (IOException e)
+		{
 			LOGGER.error("Couldn't check for existence of payloads", e);
 		}
-		scorer.setUsePayloads(request.getParams().getFieldBool(requestFieldname,
-				HighlightParams.PAYLOADS, defaultPayloads));
+		scorer.setUsePayloads(request.getParams().getFieldBool(requestFieldname, HighlightParams.PAYLOADS, defaultPayloads));
 		return scorer;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public NamedList<Object> doHighlighting(DocList docs, Query query, SolrQueryRequest request, String[] defaultFields) throws IOException {
+	public NamedList<Object> doHighlighting(DocList docs, Query query, SolrQueryRequest request, String[] defaultFields) throws IOException
+	{
 		final String idFieldName = request.getSchema().getUniqueKeyField().getName();
 		final Set<String> idFields = Set.of(idFieldName, "DBID");
 		final SolrParams originalRequestParameters = request.getParams();
 
-		// fields in the hl.fl parameter e.g. (content, name, title)
+		// raw fields in the hl.fl parameter (e.g. hl.fl=content, name, title)
 		List<String> highlightFields = stream(super.getHighlightFields(query, request, defaultFields)).collect(toList());
 
 		/*
-			The Alfresco Data Model is queried in order to retrieve the top-level choice mapping for the fields
-			collected above.
-			Top-level choice because for each simple field name (e.g. content) the Alfresco Data Model could provide more
-			than one mapping. At this time, we choose the first.
+			The Alfresco Data Model is queried in order to retrieve the top-level choice mapping for the fields collected above.
+			Top-level choice because for each incoming field name (e.g. content) the Alfresco Data Model could provide more
+			than one alternative. The first one which is tried is the cross language field.
 
 			e.g.
 		 	{
 		 		name 	=>	text@s___t@{http://www.alfresco.org/model/content/1.0}name,
 		 		title	=>	mltext@m___t@{http://www.alfresco.org/model/content/1.0}title,
-		 		content	=	content@s___t@{http://www.alfresco.org/model/content/1.0}content
+		 		content	=>	content@s___t@{http://www.alfresco.org/model/content/1.0}content
 		 	}
+
+		 	Since at the end we need to restore (in the response) the original request(ed) fields names (e.g. content, name) used by requestor
+		 	we collect a map which associates each schema field (e.g. text@s___t@{http://www.alfresco.org/model/content/1.0}name)
+		 	with the corresponding request(ed) field (e.g. name).
 		*/
-		Map<String, String> mappings =
-				highlightFields.stream()
-					.map(requestFieldName ->
-							new AbstractMap.SimpleEntry<>(
-									AlfrescoSolrDataModel.getInstance().mapProperty(requestFieldName, FieldUse.HIGHLIGHT, request),
-									requestFieldName))
-					.collect(toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue, (prev, next) -> next, HashMap::new));
+		Map<String, String> mappings = withDebug(createInitialFieldMappings(request, highlightFields));
 
-		debugMappings(mappings);
-
-		// The identifiers map collects three documents identifiers per document (Lucene docid, Solr "id" and "DBID" fields).
-		// The keys of the map are Solr "id", the values a simple value object encapsulating all those three identifiers (for a specific document).
+		// The identifiers map collects three documents identifiers for each document (Lucene docid, Solr "id" and "DBID").
+		// Keys of the identifiers map are Solr "id", while values are simple value objects encapsulating all those three identifiers (for a specific document).
 		Iterable<Integer> iterable = docs::iterator;
 		Map<String, IdTriple> identifiers =
 				StreamSupport.stream(iterable.spliterator(), false)
@@ -202,25 +195,28 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 					.filter(Objects::nonNull)
 					.collect(toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
 
-		// First round: call the Solr highlighting procedure
-		request.setParams(rewrite(originalRequestParameters, mappings, String.join(",", mappings.keySet())));
+		// First round: call the Solr highlighting procedure using the current fields mappings.
+		request.setParams(rewrite(originalRequestParameters, mappings, join(",", mappings.keySet())));
 		NamedList<Object> highlightingResponse = super.doHighlighting(docs, query, request, defaultFields);
 
-		// Remember, in the first try we used the top-level mapping choice coming from Alfresco Data Model.
+		// Remember, in the first try we used the cross-language field coming from Alfresco Data Model.
 		// Since it is possible that the stored content is not on that field (e.g. it could be on the localised version)
 		// the highlight response for that document/field will be empty.
-		// For that reason, and for those documents / fields we will repeat the highlight call using the second choice (the
-		// localised version of the field).
+		// For that reason, and for those documents/fields we will repeat the highlight call using the second choice
+		// (i.e. the localised version of the field).
 
-		// Key = 2nd round fields (in the first try we didn't have any highlighting for those fields)
+		// Key = 2nd round fields got from Alfresco Data Model (i.e. localised fields)
 		// Value = list of identifiers of documents that didn't provide the highlighting info in the first round (for the key field)
 		Map<String, List<IdTriple>> missingHighlightedDocumentsByFields = new HashMap<>();
+
+		// Additional mappings coming from this 2nd round
 		Map<String, String> additionalMappings = new HashMap<>();
 
 		identifiers.keySet()
 				.forEach(id -> {
 					final NamedList<Object> docHighlighting = (NamedList<Object>) highlightingResponse.get(id);
 					mappings.entrySet().stream()
+						// we want to process only those entries that didn't produce any result in the first round.
 						.filter(fieldEntry -> docHighlighting.indexOf(fieldEntry.getKey(), 0) == -1)
 						.map(fieldEntry -> {
 							String solrFieldName = AlfrescoSolrDataModel.getInstance().mapProperty(fieldEntry.getValue(), FieldUse.HIGHLIGHT, request, 1);
@@ -231,7 +227,7 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 						.forEach(docList -> docList.add(identifiers.get(id)));});
 
 		mappings.putAll(additionalMappings);
-		debugMappings(mappings);
+		withDebug(mappings);
 
 		// We are going to re-call the highlight for those documents/fields which didnt' produce any result in the
 		// previous step. In order to do that we need
@@ -241,7 +237,9 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 				missingHighlightedDocumentsByFields.entrySet().stream()
 					.map(entry -> {
 						int [] docids = entry.getValue().stream().mapToInt(IdTriple::docid).toArray();
-						return new AbstractMap.SimpleEntry<>(entry.getKey(), new DocSlice(0, docids.length, docids, null, docids.length, 1));})
+						return new AbstractMap.SimpleEntry<>(
+								entry.getKey(),
+								new DocSlice(0, docids.length, docids, null, docids.length, 1));})
 					.collect(toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
 
 		// For each field and corresponding document list, a new highlight request is executed
@@ -252,39 +250,35 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 						DocList doclist = entry.getValue();
 						try
 						{
-//							ModifiableSolrParams params =
-//									new ModifiableSolrParams(request.getParams())
-//											.set(HighlightParams.FIELDS, fieldName);
-//							rewriteLocalFieldParameters(params, originalRequestParameters, mappings.get(fieldName), fieldName);
-//							request.setParams(params);
 							request.setParams(rewrite(originalRequestParameters, additionalMappings, fieldName));
 							return super.doHighlighting(doclist, query, request, defaultFields);
 						}
 						catch (Exception exception)
 						{
-							// This is a child request so in that case we log the error but we still return something to
+							// This is a "2nd round" request so in that case we log the error but we still return something to
 							// the requestor (i.e. the result of the first highlight call)
-							LOGGER.error("Error during the execution of a child highlighting request. See the stacktrace below for further details.", exception);
+							LOGGER.error("Error during the execution of a \"2nd round\" highlighting request. " +
+									"See the stacktrace below for further details.", exception);
 							return null;
 						}})
+					.filter(Objects::nonNull)
 					.collect(toList());
 
-		// We need to combine (actually reduce) the highlight response coming from the first try, with each
+		// Combine (actually reduce) the highlight response coming from the first try, with each
 		// partial highlight response coming from subsequent calls
 		NamedList<Object> responseBeforeRenaming = partialHighlightingResponses.stream()
 			.reduce(highlightingResponse, (accumulator, partial) -> {
-				partial.iterator().forEachRemaining(entry -> {
+				partial.forEach(entry -> {
 					String id = entry.getKey();
-					NamedList<Object> specificFieldsHighlighting = (NamedList<Object>) entry.getValue();
-					NamedList<Object> preExistingDocHighlight = (NamedList<Object>) accumulator.get(id);
-					// this document were never collected
-					if (preExistingDocHighlight == null)
+					NamedList<Object> specificFieldHighlighting = (NamedList<Object>) entry.getValue();
+					NamedList<Object> preExistingDocHighlighting = (NamedList<Object>) accumulator.get(id);
+					if (preExistingDocHighlighting == null) // this document were never collected
 					{
 						accumulator.add(id, entry.getValue());
 					}
 					else
 					{
-						preExistingDocHighlight.addAll(specificFieldsHighlighting);
+						preExistingDocHighlighting.addAll(specificFieldHighlighting);
 					}
 				});
 				return accumulator;
@@ -295,8 +289,7 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 		// so we need to replace them with fields actually requested
 		// In addition, beside the snippets we want to have the document DBID as well.
 		NamedList<Object> response = new SimpleOrderedMap<>();
-		responseBeforeRenaming.iterator()
-				.forEachRemaining( entry -> {
+		responseBeforeRenaming.forEach( entry -> {
 					String id = entry.getKey();
 					NamedList<Object> documentHighlighting = (NamedList<Object>) entry.getValue();
 					NamedList<Object> renamedDocumentHighlighting = new SimpleOrderedMap<>();
@@ -406,11 +399,46 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 		return rewrittenParams;
 	}
 
-	private void debugMappings(Map<String, String> mappings)
+	/**
+	 * Debugs the content of the given mappings.
+	 *
+	 * @param mappings the fields mapping.
+	 * @return the same input mappings instance.
+	 */
+	private Map<String, String> withDebug(Map<String, String> mappings)
 	{
 		if (LOGGER.isDebugEnabled())
 		{
 			mappings.forEach( (solrField, requestField) -> LOGGER.debug("Request field {} has been mapped to {}", requestField, solrField));
 		}
+		return mappings;
+	}
+
+	/**
+	 * Starting from the input requested highlight fields (i.e. fields listed in {@link HighlightParams#FIELDS} parameter)
+	 * we create a map which associates each member with the corresponding field in the Solr schema.
+	 * For example:
+	 *
+	 * <pre>
+	 * 	name 	=>	text@s___t@{http://www.alfresco.org/model/content/1.0}name,
+	 * 	title	=>	mltext@m___t@{http://www.alfresco.org/model/content/1.0}title,
+	 * 	content	=>	content@s___t@{http://www.alfresco.org/model/content/1.0}content
+	 * </pre>
+	 *
+	 * IMPORTANT: although returned as {@link Map} interface, the returned data structure IS MUTABLE. This is needed
+	 * because during the highlighting workflow we need to change its content by adding fields.
+	 *
+	 * @param request the current incoming client request.
+	 * @param requestedHighlightFields a list of raw fields listed in {@link HighlightParams#FIELDS} parameter
+	 * @return a map associating request(ed) fields with the corresponding schema fields.
+	 */
+	private Map<String, String> createInitialFieldMappings(SolrQueryRequest request, List<String> requestedHighlightFields)
+	{
+		return requestedHighlightFields.stream()
+				.map(requestFieldName ->
+						new AbstractMap.SimpleEntry<>(
+								AlfrescoSolrDataModel.getInstance().mapProperty(requestFieldName, FieldUse.HIGHLIGHT, request),
+								requestFieldName))
+				.collect(toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue, (prev, next) -> next, HashMap::new));
 	}
 }
