@@ -28,8 +28,10 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.query.AbstractQParser;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.ExitableDirectoryReader;
@@ -58,6 +60,7 @@ import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.DocIterator;
 import org.apache.solr.search.DocList;
 import org.apache.solr.search.SolrQueryTimeoutImpl;
+import org.apache.solr.search.SolrReturnFields;
 import org.apache.solr.search.facet.FacetModule;
 import org.apache.solr.util.RTimerTree;
 import org.apache.solr.util.SolrPluginUtils;
@@ -287,10 +290,58 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 		return shardHandler;
 	}
 
+	private void transformFieldList(SolrQueryRequest req)
+	{
+
+		StringBuilder flBuilder = new StringBuilder();
+		SolrReturnFields solrReturnFields = new SolrReturnFields(req);
+
+		boolean cacheTransformer = req.getParams().get("fl").contains("[cached]");
+
+		if (cacheTransformer){
+			flBuilder.append("[cached] ");
+		}
+
+		if (solrReturnFields.wantsAllFields()){
+			if (!cacheTransformer){
+				flBuilder.append("DBID");
+			} else {
+				flBuilder.append("*");
+			}
+		} else {
+			if (solrReturnFields.hasPatternMatching()){
+				flBuilder.append("*");
+			} else {
+				solrReturnFields.getLuceneFieldNames().forEach(field -> {
+
+
+					String schemaFieldName = AlfrescoSolrDataModel.getInstance()
+						.mapProperty(field, AlfrescoSolrDataModel.FieldUse.FTS, req);
+
+					if (schemaFieldName != null){
+						String trasformedSchemaField = schemaFieldName.chars()
+							.mapToObj(c -> (char) c)
+							.map(c -> Character.isJavaIdentifierPart(c)? c : '?')
+							.map(Object::toString)
+							.collect(Collectors.joining());
+
+						flBuilder.append(trasformedSchemaField);
+					}
+				});
+			}
+		}
+
+		ModifiableSolrParams params = new ModifiableSolrParams(req.getParams());
+		params.set("fl", flBuilder.toString());
+		req.setParams(params);
+	}
+
 	@Override
 	public void handleRequestBody(SolrQueryRequest req, SolrQueryResponse rsp)
 			throws Exception {
 		readJsonIntoContent(req);
+
+//		transformFieldList(req);
 
 		List<SearchComponent> components = getComponents();
 		ResponseBuilder rb = new ResponseBuilder(req, rsp, components);
