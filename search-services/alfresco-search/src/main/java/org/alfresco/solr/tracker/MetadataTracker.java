@@ -546,6 +546,17 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         {
             transactions = client.getTransactions(startTime, null, startTime + actualTimeStep, null, maxResults, shardstate);
             startTime += actualTimeStep;
+            
+            // If no transactions are found, advance the time window to the next available transaction commit time
+            if (transactions.getTransactions().size() == 0)
+            {
+                Long nextTxCommitTime = client.getNextTxCommitTime(coreName, startTime);
+                if (nextTxCommitTime != -1)
+                {
+                    log.info("Advancing transactions from startTime = " + startTime + " to " + nextTxCommitTime);
+                    transactions = client.getTransactions(nextTxCommitTime, null, nextTxCommitTime + actualTimeStep, null, maxResults, shardstate);
+                }
+            }
 
         } while (((transactions.getTransactions().size() == 0) && (startTime < endTime))
                     || ((transactions.getTransactions().size() > 0) && alreadyFoundTransactions(txnsFound, transactions)));
