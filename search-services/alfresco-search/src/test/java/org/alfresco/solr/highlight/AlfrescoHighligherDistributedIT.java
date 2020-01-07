@@ -18,52 +18,74 @@
  */
 package org.alfresco.solr.highlight;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.alfresco.solr.AlfrescoSolrUtils.ancestors;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
+import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.solr.AbstractAlfrescoDistributedIT;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.util.LuceneTestCase;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.AclChangeSet;
+import org.alfresco.solr.client.AclReaders;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.StringPropertyValue;
+import org.alfresco.solr.client.Transaction;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.TermQuery;
 import org.apache.solr.SolrTestCaseJ4;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.params.HighlightParams;
 import org.apache.solr.handler.component.AlfrescoSolrHighlighter;
 import org.apache.solr.handler.component.HighlightComponent;
 import org.apache.solr.highlight.SolrHighlighter;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-/**
- * Tests Alfresco-specific logic.
- */
+import java.util.List;
+
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class AlfrescoHighligherDistributedIT extends AbstractAlfrescoDistributedIT
 {
-    private static Log logger = LogFactory.getLog(AlfrescoHighligherDistributedIT.class);
-    
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
-        initSingleSolrServer("AlfrescoHighligherDistributedTest", DEFAULT_CORE_PROPS);
+        initSolrServers(2, "DistributedAlfrescoSolrFacetingIT", DEFAULT_CORE_PROPS);
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }
-    
-    @Test
-    public void testHighlight() throws Exception {
 
-        logger.info("######### Starting highlighter test ###########");
+    public void makeSureHighlightingIsProperlyConfigured()
+    {
         SolrHighlighter highlighter = HighlightComponent.getHighlighter(defaultCore);
-        assertTrue("wrong highlighter: " + highlighter.getClass(), highlighter instanceof AlfrescoSolrHighlighter);
-/**
+        assertTrue(
+                "Wrong highlighter: " + highlighter.getClass(),
+                highlighter instanceof AlfrescoSolrHighlighter);
+    }
+
+    @Test
+    public void testHighlight() throws Exception
+    {
         AclChangeSet aclChangeSet = getAclChangeSet(1);
         Acl acl = getAcl(aclChangeSet);
 
-        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, list("mike"), list("mike"), null);
+        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, singletonList("mike"), singletonList("mike"), null);
 
-        indexAclChangeSet(aclChangeSet, list(acl), list(aclReaders));
+        indexAclChangeSet(aclChangeSet, singletonList(acl), singletonList(aclReaders));
 
         //First create a transaction.
         Transaction foldertxn = getTransaction(0, 1);
@@ -85,27 +107,26 @@ public class AlfrescoHighligherDistributedIT extends AbstractAlfrescoDistributed
         fileMetaData2.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("some name"));
         fileMetaData2.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title2"));
 
-        String LONG_TEXT = "this is some long text.  It has the word long in many places.  In fact, it has long on some different fragments.  " +
+        String LONG_TEXT = "this is some long text.  " +
+                "It has the word long in many places.  " +
+                "In fact, it has long on some different fragments.  " +
                 "Let us see what happens to long in this case.";
 
-        List<String> content = Arrays.asList(LONG_TEXT, LONG_TEXT);
+        List<String> content = asList(LONG_TEXT, LONG_TEXT);
 
-        //Index the transaction, nodes, and nodeMetaDatas.
-        indexTransaction(foldertxn, list(folderNode), list(folderMetaData));
+        indexTransaction(foldertxn, singletonList(folderNode), singletonList(folderMetaData));
         indexTransaction(txn,
-                list(fileNode, fileNode2),
-                list(fileMetaData, fileMetaData2),
+                asList(fileNode, fileNode2),
+                asList(fileMetaData, fileMetaData2),
                 content);
-        logger.info("######### Waiting for Doc Count ###########");
+
         waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_OWNER, "mike")), 3, 80000);
-        waitForDocCount(new TermQuery(new Term(ContentModel.PROP_TITLE.toString(), "title1")), 1, 500);
-        waitForDocCount(new TermQuery(new Term(ContentModel.PROP_DESCRIPTION.toString(), "mydesc")), 1, 500);
 
         //name, title, description, content
         //up to 3 matches in the content  (needs to be big enough)
-        QueryResponse response = query(jetty.getDefaultClient(), false,
+        QueryResponse response = query(getDefaultTestClient(), true,
                 "{\"locales\":[\"en\"], \"authorities\": [\"mike\"], \"tenants\": [ \"\" ]}",
-                params( "q", ContentModel.PROP_NAME.toString()+":some very long name",
+                params( "q", "name:some very long name",
                         "qt", "/afts", "start", "0", "rows", "5",
                         HighlightParams.HIGHLIGHT, "true",
                         HighlightParams.FIELDS, "",
@@ -113,8 +134,5 @@ public class AlfrescoHighligherDistributedIT extends AbstractAlfrescoDistributed
                         HighlightParams.FRAGSIZE, String.valueOf(40)));
 
         assertTrue(response.getResults().getNumFound() > 0);
-
- **/
     }
-
 }

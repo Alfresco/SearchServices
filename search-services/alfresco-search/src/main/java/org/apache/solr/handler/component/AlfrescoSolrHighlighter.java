@@ -90,8 +90,7 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 		@Override
 		public boolean equals(Object obj)
 		{
-			return obj instanceof IdTriple
-					&& ((IdTriple)obj).solrId.equals(solrId);
+			return obj instanceof IdTriple && ((IdTriple)obj).solrId.equals(solrId);
 		}
 
 		@Override
@@ -103,7 +102,7 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 		@Override
 		public String toString()
 		{
-			return "IdTriple {" + "docid=" + docid + ", solrId='" + solrId + '\'' + ", dbdid='" + dbid + '\'' + '}';
+			return "IdTriple {" + "DocId=" + docid + ", SolrId='" + solrId + '\'' + ", DBID='" + dbid + '\'' + '}';
 		}
 	}
 
@@ -191,7 +190,7 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 		Iterable<Integer> iterable = docs::iterator;
 		Map<String, IdTriple> identifiers =
 				StreamSupport.stream(iterable.spliterator(), false)
-					.map(docid -> identifiersEntry(request.getSearcher(), docid, idFields, idFieldName, "DBID"))
+					.map(docid -> identifiersEntry(request.getSearcher(), docid, idFields, idFieldName))
 					.filter(Objects::nonNull)
 					.collect(toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
 
@@ -266,7 +265,7 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 
 		// Combine (actually reduce) the highlight response coming from the first try, with each
 		// partial highlight response coming from subsequent calls
-		NamedList<Object> responseBeforeRenaming = partialHighlightingResponses.stream()
+		NamedList<Object> responseBeforeRenamingFields = partialHighlightingResponses.stream()
 			.reduce(highlightingResponse, (accumulator, partial) -> {
 				partial.forEach(entry -> {
 					String id = entry.getKey();
@@ -289,11 +288,13 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 		// so we need to replace them with fields actually requested
 		// In addition, beside the snippets we want to have the document DBID as well.
 		NamedList<Object> response = new SimpleOrderedMap<>();
-		responseBeforeRenaming.forEach( entry -> {
+		responseBeforeRenamingFields.forEach( entry -> {
 					String id = entry.getKey();
 					NamedList<Object> documentHighlighting = (NamedList<Object>) entry.getValue();
 					NamedList<Object> renamedDocumentHighlighting = new SimpleOrderedMap<>();
-					ofNullable(identifiers.get(id)).map(IdTriple::dbid).ifPresent(dbid -> renamedDocumentHighlighting.add("DBID", dbid));
+					ofNullable(identifiers.get(id))
+                            .map(IdTriple::dbid)
+                            .ifPresent(dbid -> renamedDocumentHighlighting.add("DBID", dbid));
 
 					documentHighlighting.forEach(fieldEntry -> {
 						String solrFieldName = fieldEntry.getKey();
@@ -317,13 +318,13 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 			.collect(toList());
 	}
 
-	private AbstractMap.SimpleEntry<String, IdTriple> identifiersEntry(SolrIndexSearcher searcher, int docid, Set<String> idFields, String idFieldName, String dbIdFieldName)
+	private AbstractMap.SimpleEntry<String, IdTriple> identifiersEntry(SolrIndexSearcher searcher, int docid, Set<String> idFields, String idFieldName)
 	{
 		try
 		{
 			Document doc = searcher.doc(docid, idFields);
 			String solrId = doc.get(idFieldName);
-			return new AbstractMap.SimpleEntry<>(solrId, new IdTriple(docid, solrId, doc.get(dbIdFieldName)));
+			return new AbstractMap.SimpleEntry<>(solrId, new IdTriple(docid, solrId, doc.get("DBID")));
 		}
 		catch (Exception exception)
 		{
