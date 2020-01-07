@@ -1374,8 +1374,7 @@
        http://wiki.apache.org/solr/ClusteringComponent
        http://carrot2.github.io/solr-integration-strategies/
     -->
-  <searchComponent name="clustering"
-                   class="org.apache.solr.handler.component.AlfrescoSolrClusteringComponent" >
+  <searchComponent name="clustering" class="solr.clustering.ClusteringComponent" >
     <lst name="engine">
       <str name="name">lingo</str>
 
