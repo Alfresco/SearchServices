@@ -3,10 +3,12 @@ set -e
 # By default its going to deploy "Master" setup configuration with "REPLICATION_TYPE=master".
 # Slave replica service can be enabled using "REPLICATION_TYPE=slave" environment value.
 
-SOLR_RERANK_CONFIG_FILE=$PWD/solrhome/templates/rerank/conf/solrconfig.xml
-SOLR_NORERANK_CONFIG_FILE=$PWD/solrhome/templates/noRerank/conf/solrconfig.xml
-SOLR_RERANK_CORE_FILE=$PWD/solrhome/templates/rerank/conf/solrcore.properties
-SOLR_NORERANK_CORE_FILE=$PWD/solrhome/templates/noRerank/conf/solrcore.properties
+RERANK_TEMPLATE_PATH=$PWD/solrhome/templates/rerank/conf
+NORERANK_TEMPLATE_PATH=$PWD/solrhome/templates/noRerank/conf
+SOLR_RERANK_CONFIG_FILE=$RERANK_TEMPLATE_PATH/solrconfig.xml
+SOLR_NORERANK_CONFIG_FILE=$NORERANK_TEMPLATE_PATH/solrconfig.xml
+SOLR_RERANK_CORE_FILE=$RERANK_TEMPLATE_PATH/solrcore.properties
+SOLR_NORERANK_CORE_FILE=$NORERANK_TEMPLATE_PATH/solrcore.properties
 
 if [[ $REPLICATION_TYPE == "master" ]]; then
 
