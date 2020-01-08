@@ -67,9 +67,6 @@ public class FakeReadOnlySolrContentStore extends SolrContentStore
                             .getFields()
                             .entrySet()
                             .stream()
-                            .filter(entry -> {
-                                SchemaField field = entry.getValue();
-                                return  field.useDocValuesAsStored();})
                             .map(Map.Entry::getKey)
                             .collect(Collectors.toSet());
 
