@@ -294,23 +294,30 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 	{
 
 		StringBuilder flBuilder = new StringBuilder();
-		SolrReturnFields solrReturnFields = new SolrReturnFields(req);
+		StringBuilder switchFlBuilder = new StringBuilder();
 
-		boolean cacheTransformer = req.getParams().get("fl").contains("[cached]");
+		SolrReturnFields solrReturnFields = new SolrReturnFields(req);
+		String oldFieldList = req.getParams().get("fl");
+
+		boolean cacheTransformer = oldFieldList != null && oldFieldList.contains("[cached]");
 
 		if (cacheTransformer){
 			flBuilder.append("[cached] ");
+			switchFlBuilder.append("[cached] ");
 		}
 
 		if (solrReturnFields.wantsAllFields()){
 			if (!cacheTransformer){
-				flBuilder.append("DBID");
+				flBuilder.append("id, DBID, _version_");
+				switchFlBuilder.append("id, DBID, _version_");
 			} else {
 				flBuilder.append("*");
+				switchFlBuilder.append("*");
 			}
 		} else {
 			if (solrReturnFields.hasPatternMatching()){
 				flBuilder.append("*");
+				switchFlBuilder.append("*");
 			} else {
 				solrReturnFields.getLuceneFieldNames().forEach(field -> {
 
@@ -325,7 +332,8 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 							.map(Object::toString)
 							.collect(Collectors.joining());
 
-						flBuilder.append(trasformedSchemaField);
+						flBuilder.append( trasformedSchemaField + ", ");
+						flBuilder.append( field + ", ");
 					}
 				});
 			}
@@ -333,6 +341,7 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 
 		ModifiableSolrParams params = new ModifiableSolrParams(req.getParams());
 		params.set("fl", flBuilder.toString());
+		params.set("switchFl", switchFlBuilder.toString());
 		req.setParams(params);
 	}
 
@@ -341,7 +350,7 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 			throws Exception {
 		readJsonIntoContent(req);
 
-//		transformFieldList(req);
+		transformFieldList(req);
 
 		List<SearchComponent> components = getComponents();
 		ResponseBuilder rb = new ResponseBuilder(req, rsp, components);

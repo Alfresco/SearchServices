@@ -32,10 +32,13 @@ import org.alfresco.solr.content.SolrContentStore;
 import org.apache.lucene.index.IndexableField;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.core.CoreContainer;
+import org.apache.solr.response.DocsStreamer;
 import org.apache.solr.response.ResultContext;
 import org.apache.solr.response.transform.DocTransformer;
 import org.apache.solr.schema.SchemaField;
+import org.codehaus.janino.Mod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,103 +73,86 @@ public class CachedDocTransformer extends DocTransformer
     @Override
     public void transform(SolrDocument doc, int docid, float score) throws IOException
     {
-        SolrInputDocument cachedDoc = null;
-        try
+        Collection<String> fieldNames = new ArrayList<>(doc.getFieldNames());
+        for (String fieldName : fieldNames)
         {
-            String id = getFieldValueString(doc, FIELD_SOLR4_ID);
-            TenantAclIdDbId tenantAndDbId = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
-            CoreContainer coreContainer = context.getSearcher().getCore().getCoreContainer();
-            AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
-            SolrInformationServer srv = (SolrInformationServer) coreAdminHandler.getInformationServers().get(context.getSearcher().getCore().getName());
-            SolrContentStore solrContentStore = srv.getSolrContentStore();
-            cachedDoc = solrContentStore.retrieveDocFromSolrContentStore(tenantAndDbId.tenant, tenantAndDbId.dbId);
-        }
-        catch(StringIndexOutOfBoundsException e)
-        {
-            // ignore invalid forms ....
-        }
-        
-        if(cachedDoc != null)
-        {
-            Collection<String> fieldNames = cachedDoc.getFieldNames();
-            for (String fieldName : fieldNames)
-            {
-               SchemaField schemaField = context.getSearcher().getSchema().getFieldOrNull(fieldName);
-               if(schemaField != null)
+           SchemaField schemaField = context.getSearcher().getSchema().getFieldOrNull(fieldName);
+           if(schemaField != null)
+           {
+
+               boolean isTrasformedFieldName = isTrasformedField(fieldName);
+               if(schemaField.multiValued())
                {
+                   Collection<Object> values = doc.getFieldValues(fieldName);
                    doc.removeFields(fieldName);
-                   if(schemaField.multiValued())
+
+                   if (!isTrasformedFieldName)
                    {
-                       int index = fieldName.lastIndexOf("@{");
-                       if(index == -1)
-                       { 
-                           doc.addField(fieldName, cachedDoc.getFieldValues(fieldName));
-                       }
-                       else
-                       {
-                           String alfrescoFieldName = AlfrescoSolrDataModel.getInstance().getAlfrescoPropertyFromSchemaField(fieldName);
-                           Collection<Object> values = cachedDoc.getFieldValues(fieldName);
-
-                           //Guard against null pointer in case data model field name does not match up with cachedDoc field name.
-                           if(values != null) {
-                               ArrayList<Object> newValues = new ArrayList<Object>(values.size());
-                               for (Object value : values) {
-                                   if (value instanceof String) {
-                                       String stringValue = (String) value;
-                                       int start = stringValue.lastIndexOf('\u0000');
-                                       if (start == -1) {
-                                           newValues.add(stringValue);
-                                       } else {
-                                           newValues.add(stringValue.substring(start + 1));
-                                       }
-                                   } else {
-                                       newValues.add(value);
-                                   }
-
-                               }
-                               doc.removeFields(alfrescoFieldName);
-                               doc.addField(alfrescoFieldName, newValues);
-                           }
-                       }
+                       doc.addField(fieldName, values);
                    }
                    else
                    {
-                       int index = fieldName.lastIndexOf("@{");
-                       if(index == -1)
-                       { 
-                            doc.addField(fieldName, cachedDoc.getFieldValue(fieldName));
-                       }
-                       else
-                       {
-                           String alfrescoFieldName = AlfrescoSolrDataModel.getInstance().getAlfrescoPropertyFromSchemaField(fieldName);
-                           alfrescoFieldName = alfrescoFieldName.contains(":") ? alfrescoFieldName.replace(":", "_") : alfrescoFieldName;
-                           Object value = cachedDoc.getFieldValue(fieldName);
-                           if(value instanceof String)
-                           {
-                               String stringValue = (String) value;
-                               int start = stringValue.lastIndexOf('\u0000');
-                               if(start == -1)
-                               {
-                                   doc.removeFields(alfrescoFieldName);
-                                   doc.addField(alfrescoFieldName, stringValue);
-                               }
-                               else
-                               {
-                                   doc.removeFields(alfrescoFieldName);
-                                   doc.addField(alfrescoFieldName, stringValue.substring(start+1));
-                               }
+                       String alfrescoFieldName = AlfrescoSolrDataModel.getInstance().getAlfrescoPropertyFromSchemaField(fieldName);
+
+                       //Guard against null pointer in case data model field name does not match up with cachedDoc field name.
+                       if(values != null) {
+                           ArrayList<Object> newValues = new ArrayList<>(values.size());
+                           for (Object value : values) {
+                               newValues.add(getFieldValue(value));
                            }
-                           else
-                           {
-                               doc.removeFields(alfrescoFieldName); 
-                               doc.addField(alfrescoFieldName, value);
-                           }
+                           doc.removeFields(alfrescoFieldName);
+                           doc.addField(alfrescoFieldName, newValues);
                        }
                    }
                }
-            }
-        }
+               else
+               {
+                   Object value = DocsStreamer.getValue(schemaField, (IndexableField) doc.getFieldValue(fieldName));
+                   doc.removeFields(fieldName);
 
+                   if (!isTrasformedFieldName)
+                   {
+                       doc.removeFields(fieldName);
+                       doc.addField(fieldName, value);
+                   }
+                   else
+                   {
+                       String alfrescoFieldName = AlfrescoSolrDataModel.getInstance().getAlfrescoPropertyFromSchemaField(fieldName);
+                       alfrescoFieldName = transformToUnderscoreNotation(alfrescoFieldName);
+                       doc.removeFields(alfrescoFieldName);
+                       doc.addField(alfrescoFieldName, getFieldValue(value));
+                   }
+               }
+           }
+        }
+    }
+
+    private String transformToUnderscoreNotation(String value)
+    {
+        return value.contains(":") ? value.replace(":", "_") : value;
+    }
+
+    private boolean isTrasformedField(String fieldName)
+    {
+        int index = fieldName.lastIndexOf("@{");
+        return index != -1;
+    }
+
+    private String removeLocale(String value)
+    {
+        int start = value.lastIndexOf('\u0000');
+        if(start == -1){
+            return value;
+        } else {
+            return value.substring(start + 1);
+        }
+    }
+
+    private Object getFieldValue(Object value){
+        if (value instanceof String)
+            return removeLocale((String) value );
+        else
+            return value;
     }
 
     
