@@ -129,6 +129,8 @@ import java.util.List;
  * <pre>
  *  java.lang.ClassCastException: class java.lang.String cannot be cast to class java.util.List
  * </pre>
+ *
+ * @see <a href="https://issues.alfresco.com/jira/browse/SEARCH-2033">SEARCH-2033</a>
  */
 @Ignore
 @SolrTestCaseJ4.SuppressSSL

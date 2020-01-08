@@ -152,6 +152,29 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
     }
 
     @Test
+    public void emptyHighlightingResponseTest()
+    {
+        SolrServletRequest req = areq(params("q", "*", "qt", "/afts", "start", "0", "rows", "5",
+                HighlightParams.HIGHLIGHT, "true",
+                HighlightParams.Q, "xyz",
+                HighlightParams.FIELDS, "content,name,title",
+                HighlightParams.SNIPPETS, "4",
+                HighlightParams.FRAGSIZE, "40"),
+                "{" +
+                        "\"locales\":[\"en\"], " +
+                        "\"tenants\": [ \"\" ]" +
+                        "}");
+
+        assertQ(req,
+                "*[count(//lst[@name='highlighting']/lst)=4]",
+                "*[count(//lst[@name='highlighting']/lst[1]/*)=0]",
+                "*[count(//lst[@name='highlighting']/lst[2]/*)=0]",
+                "*[count(//lst[@name='highlighting']/lst[3]/*)=0]",
+                "*[count(//lst[@name='highlighting']/lst[4]/*)=0]");
+    }
+
+
+    @Test
     public void highlightingSnippetsFragSizeTest()
     {
         SolrServletRequest req = areq(params("q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
@@ -285,7 +308,6 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
                 "*[count(//lst[@name='highlighting']/lst)=2]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='title'])=1]",
                 "//lst[@name='highlighting']/lst[1]/arr[@name='title']/str[.='title1 is very {long}']");
-        //add name
 
         req = areq(params("q", "name:long OR title:long", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
@@ -301,9 +323,6 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='title'])=1]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=0]",
                 "//lst[@name='highlighting']/lst[1]/arr[@name='title']/str[.='title1 is very {long}']");
-
-
-        logger.info("######### MultiTerm ###########");
     }
 
     @Test
@@ -346,8 +365,7 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
         assertQ(req,
                 "*[count(//lst[@name='highlighting']/lst)=1]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=1]",
-                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='Mixed{Cabbage}String and plurals and discussion']"
-        );
+                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='Mixed{Cabbage}String and plurals and discussion']");
     }
 
     @Test
@@ -367,8 +385,7 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
         assertQ(req,
                 "*[count(//lst[@name='highlighting']/lst)=1]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=1]",
-                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='MixedCabbageString and {plurals} and discussion']"
-        );
+                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='MixedCabbageString and {plurals} and discussion']");
     }
 
     @Test
@@ -388,8 +405,7 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
         assertQ(req,
                 "*[count(//lst[@name='highlighting']/lst)=1]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=1]",
-                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='MixedCabbageString and plurals and {discussion}']"
-        );
+                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='MixedCabbageString and plurals and {discussion}']");
     }
 
     @Test
@@ -406,8 +422,7 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
         assertQ(req,
                 "*[count(//lst[@name='highlighting']/lst)=1]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='title'])=1]",
-                "//lst[@name='highlighting']/lst[1]/arr[@name='title']/str[.='title1 {is} very {long}']"
-        );
+                "//lst[@name='highlighting']/lst[1]/arr[@name='title']/str[.='title1 {is} very {long}']");
     }
 
 
@@ -425,7 +440,6 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
         assertQ(req,
                 "*[count(//lst[@name='highlighting']/lst)=1]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=1]",
-                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='some {very} long {name}']"
-        );
+                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='some {very} long {name}']");
     }
 }

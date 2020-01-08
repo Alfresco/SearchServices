@@ -18,6 +18,14 @@
  */
 package org.apache.solr.handler.component;
 
+import static java.lang.String.join;
+import static java.util.Arrays.stream;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static org.alfresco.solr.utils.Utils.isNullOrEmpty;
+import static org.alfresco.solr.utils.Utils.startsWithLanguageMarker;
+
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.AlfrescoSolrDataModel.FieldUse;
 import org.apache.lucene.analysis.TokenStream;
@@ -50,16 +58,45 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.StreamSupport;
 
-import static java.lang.String.join;
-import static java.util.Arrays.stream;
-import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-import static org.alfresco.solr.utils.Utils.isNullOrEmpty;
-import static org.alfresco.solr.utils.Utils.startsWithLanguageMarker;
-
+/**
+ * The Alfresco customisation of the original (or somewhere called default) Solr highlighter.
+ * In this latest revision, the core Highlighting logic has been delegated to the Solr highlighter.
+ * The main difference introduced in this customisation is related with the fields mappings (i.e. mappings between
+ * the Alfresco and Solr fields names).
+ *
+ * The purpose of the delegation to the built-in Solr logic is to allow (later) an easier refactoring/removal.
+ * Specifically, when the mapping logic will be extracted in an external (calling) layer this component will be removed
+ * in favour of the built-in Solr (Default) Highlighter.
+ *
+ * The {@link #doHighlighting(DocList, Query, SolrQueryRequest, String[])} core method, which has been overriden,
+ * provides the required mapping between the requested highlighting fields in the hl.fl parameters (which follow the
+ * Alfresco semantic) and the Solr fields we have in the schema.
+ *
+ * At the end of the highlighting process the same mappings are used for doing the reverse process (replace the Solr
+ * fields with the original requested fields).
+ *
+ * Additionally, since the Solr ID has no meaning outside Solr, the Highlighter adds the DBID to each highlighting
+ * snippets:
+ *
+ * <pre>
+ *  &lt;lst name="_DEFAULT_!8000016f66a1a298!8000016f66a1a29e">
+ *      &lt;str name="DBID">1577974866590&lt;/str>
+ *      &lt;arr name="name">
+ *          &lt;str>some very &lt;em&gt;long&lt;/em&gt; name&lt;/str>
+ *      &lt;/arr>
+ *      &lt;arr name="title">
+ *          &lt;str>This the &lt;em&gt;long&lt;/em&gt; french version of of the&lt;/str>
+ *          &lt;str>This the &lt;em&gt;long&lt;/em&gt; english version of the&lt;/str>
+ *      &lt;/arr>
+ *  &lt;/lst>
+ * </pre>
+ *
+ * @see <a href="https://issues.alfresco.com/jira/browse/SEARCH-2033">SEARCH-2033</a>
+ */
 public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements PluginInfoInitialized
 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AlfrescoSolrHighlighter.class);
@@ -98,12 +135,6 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 		{
 			return Objects.hash(solrId);
 		}
-
-		@Override
-		public String toString()
-		{
-			return "IdTriple {" + "DocId=" + docid + ", SolrId='" + solrId + '\'' + ", DBID='" + dbid + '\'' + '}';
-		}
 	}
 
 	public AlfrescoSolrHighlighter(SolrCore core)
@@ -111,7 +142,6 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 		super(core);
 	}
 
-	// TODO: E' possibile fare a meno di questo?
 	@Override
 	protected Highlighter getHighlighter(Query query, String requestFieldname, SolrQueryRequest request)
 	{
@@ -216,7 +246,7 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 					final NamedList<Object> docHighlighting = (NamedList<Object>) highlightingResponse.get(id);
 					mappings.entrySet().stream()
 						// we want to process only those entries that didn't produce any result in the first round.
-						.filter(fieldEntry -> docHighlighting.indexOf(fieldEntry.getKey(), 0) == -1)
+						.filter(fieldEntry -> docHighlighting == null || docHighlighting.indexOf(fieldEntry.getKey(), 0) == -1)
 						.map(fieldEntry -> {
 							String solrFieldName = AlfrescoSolrDataModel.getInstance().mapProperty(fieldEntry.getValue(), FieldUse.HIGHLIGHT, request, 1);
 							additionalMappings.put(solrFieldName, fieldEntry.getValue());
@@ -232,7 +262,7 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 		// previous step. In order to do that we need
 		// - a (Solr) field name: the second-level choice coming from Alfresco Data Model
 		// - an artificial DocList which is subset of the input DocList
-		Map<String, DocList> parametersForSubsequentHighlightRequest =
+		Map<String, DocList> parametersForSubsequentHighlightRequests =
 				missingHighlightedDocumentsByFields.entrySet().stream()
 					.map(entry -> {
 						int [] docids = entry.getValue().stream().mapToInt(IdTriple::docid).toArray();
@@ -243,7 +273,7 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 
 		// For each field and corresponding document list, a new highlight request is executed
 		List<NamedList<Object>> partialHighlightingResponses =
-				parametersForSubsequentHighlightRequest.entrySet().stream()
+				parametersForSubsequentHighlightRequests.entrySet().stream()
 					.map(entry -> {
 						String fieldName = entry.getKey();
 						DocList doclist = entry.getValue();
@@ -255,23 +285,26 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 						catch (Exception exception)
 						{
 							// This is a "2nd round" request so in that case we log the error but we still return something to
-							// the requestor (i.e. the result of the first highlight call)
+							// the requester (i.e. the result of the first highlight call)
 							LOGGER.error("Error during the execution of a \"2nd round\" highlighting request. " +
 									"See the stacktrace below for further details.", exception);
 							return null;
 						}})
 					.filter(Objects::nonNull)
+					.map(removeEmptySections)
+					.filter(notNullAndNotEmpty)
 					.collect(toList());
 
 		// Combine (actually reduce) the highlight response coming from the first try, with each
 		// partial highlight response coming from subsequent calls
 		NamedList<Object> responseBeforeRenamingFields = partialHighlightingResponses.stream()
+			.filter(notNullAndNotEmpty)
 			.reduce(highlightingResponse, (accumulator, partial) -> {
 				partial.forEach(entry -> {
 					String id = entry.getKey();
 					NamedList<Object> specificFieldHighlighting = (NamedList<Object>) entry.getValue();
 					NamedList<Object> preExistingDocHighlighting = (NamedList<Object>) accumulator.get(id);
-					if (preExistingDocHighlighting == null) // this document were never collected
+					if (preExistingDocHighlighting == null) // this document was never collected
 					{
 						accumulator.add(id, entry.getValue());
 					}
@@ -292,9 +325,12 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 					String id = entry.getKey();
 					NamedList<Object> documentHighlighting = (NamedList<Object>) entry.getValue();
 					NamedList<Object> renamedDocumentHighlighting = new SimpleOrderedMap<>();
-					ofNullable(identifiers.get(id))
-                            .map(IdTriple::dbid)
-                            .ifPresent(dbid -> renamedDocumentHighlighting.add("DBID", dbid));
+					if (notNullAndNotEmpty.test(documentHighlighting))
+					{
+						ofNullable(identifiers.get(id))
+								.map(IdTriple::dbid)
+								.ifPresent(dbid -> renamedDocumentHighlighting.add("DBID", dbid));
+					}
 
 					documentHighlighting.forEach(fieldEntry -> {
 						String solrFieldName = fieldEntry.getKey();
@@ -312,9 +348,10 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 	 * Alfresco Highlighter overrides this method in order to (eventually) remove the language markers from the text.
 	 */
 	@Override
-	protected List<String> getFieldValues(Document doc, String fieldName, int maxValues, int maxCharsToAnalyze, SolrQueryRequest req) {
+	protected List<String> getFieldValues(Document doc, String fieldName, int maxValues, int maxCharsToAnalyze, SolrQueryRequest req)
+	{
 		return super.getFieldValues(doc, fieldName, maxValues, maxCharsToAnalyze, req).stream()
-			.map(this::withoutLanguageMarkers)
+			.map(removeLanguageMarkers)
 			.collect(toList());
 	}
 
@@ -369,30 +406,6 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 		}
 	}
 
-	private String withoutLanguageMarkers(String text)
-	{
-		if (isNullOrEmpty(text)) return text;
-		if (startsWithLanguageMarker(text))
-		{
-			int index = text.indexOf('\u0000', 1);
-			if (index == -1)
-			{
-				return text;
-			} else
-			{
-				if (index + 1 < text.length())
-				{
-					return text.substring(index + 1);
-				}
-				else
-				{
-					return text;
-				}
-			}
-		}
-		return text;
-	}
-
 	private SolrParams rewrite(SolrParams params, Map<String, String> mappings, String fields)
 	{
 		ModifiableSolrParams rewrittenParams = new ModifiableSolrParams(params).set(HighlightParams.FIELDS, fields);
@@ -442,4 +455,50 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 								requestFieldName))
 				.collect(toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue, (prev, next) -> next, HashMap::new));
 	}
+
+	/**
+	 * Cleans up the input named list by removing the empty sections.
+	 * This is needed for avoiding unnecessary reduce operations when merging subsequent highlight responses.
+	 */
+	private Function<NamedList<Object>, NamedList<Object>> removeEmptySections = response ->
+	{
+		NamedList<Object> clean = new SimpleOrderedMap<>();
+		StreamSupport.stream(response.spliterator(), false)
+				.filter(entry -> entry.getValue() instanceof NamedList && ((NamedList<?>)entry.getValue()).size() > 0)
+				.reduce(clean, (accumulator, entry) -> {
+					accumulator.add(entry.getKey(), entry.getValue());
+					return accumulator;
+				}, (nl1, nl2) -> {
+					nl1.addAll(nl2);
+					return nl1;
+				});
+		return clean;
+	};
+
+	private Predicate<NamedList<Object>> notNullAndNotEmpty = response -> response != null && response.size() > 0;
+
+	private Function<String,String> removeLanguageMarkers = text ->
+	{
+		if (isNullOrEmpty(text)) return text;
+		if (startsWithLanguageMarker(text))
+		{
+			int index = text.indexOf('\u0000', 1);
+			if (index == -1)
+			{
+				return text;
+			}
+			else
+			{
+				if (index + 1 < text.length())
+				{
+					return text.substring(index + 1);
+				}
+				else
+				{
+					return text;
+				}
+			}
+		}
+		return text;
+	};
 }
