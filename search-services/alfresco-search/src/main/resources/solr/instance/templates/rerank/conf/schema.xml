@@ -26,7 +26,7 @@
           - retrievable(stored or docValues)
           - not multiValued
        -->
-      <fieldType name="version" class="solr.TrieLongField" precisionStep="0" positionIncrementGap="0" indexed="false" stored="false" docValues="true" required="true"/>
+      <fieldType name="version" class="solr.TrieLongField" precisionStep="0" positionIncrementGap="0" indexed="false" stored="true" required="true"/>
 
       <!-- Ignored fields -->
       <fieldType name="ignored" class="solr.StrField" indexed="false" stored="false"/>
@@ -581,7 +581,7 @@
       <field name="_version_" type="version"/>
 
       <!-- For block join - currently not used -->
-      <field name="_root_" type="identifier" stored="false"/>
+      <field name="_root_" type="identifier" stored="true"/>
 
       <!-- Unique identifier - based on DBID -->
       <field name="id" type="identifier" required="true" docValues="true"/>
@@ -699,7 +699,7 @@
         Example:
         TYPE = {http://www.alfresco.org/model/content/1.0}content
       -->
-      <field name="TYPE" type="identifier" stored="false" docValues="true" />
+      <field name="TYPE" type="identifier" stored="true" docValues="true" />
 
       <!--
         Untokenised list of aspects associated with this document.
@@ -718,7 +718,7 @@
                   {http://www.alfresco.org/model/system/1.0}localized,
                   {http://www.alfresco.org/model/content/1.0}author]
       -->
-      <field name="ASPECT" type="identifiers" stored="false" docValues="true" />
+      <field name="ASPECT" type="identifiers" stored="true" docValues="true" />
 
       <!--
         Untokenised list of properties associated with this node.
@@ -740,7 +740,7 @@
                       {http://www.alfresco.org/model/content/1.0}likesRatingSchemeCount, likesRatingSchemeCount,
                       {http://www.alfresco.org/model/content/1.0}author, author]
       -->
-      <field name="PROPERTIES" type="identifiers" stored="false" docValues="true" />
+      <field name="PROPERTIES" type="identifiers" stored="true" docValues="true" />
 
       <!--
         Untokenised list of qname properties that can be null.
@@ -749,7 +749,7 @@
 
         NULLPROPERTIES = {http://www.alfresco.org/model/content/1.0}versionType
       -->
-      <field name="NULLPROPERTIES" type="identifiers" stored="false" docValues="true" />
+      <field name="NULLPROPERTIES" type="identifiers" stored="true" docValues="true" />
 
       <!--
         Untokenised list of "Solr" fields associated with this (Solr) Document.
@@ -770,7 +770,7 @@
                   text@s__lt@{http://www.alfresco.org/model/content/1.0}author,
                   content@s__lt@{http://www.alfresco.org/model/content/1.0}content]
       -->
-      <field name="FIELDS" type="identifiers" stored="false" docValues="true" />
+      <field name="FIELDS" type="identifiers" stored="true" docValues="true" />
 
       <!--
         A flag indicating whetever the node needs to have the text content added/updated.
@@ -814,16 +814,16 @@
       <!--
         Only when DOC_TYPE = Acl. It consists of the untokenised list of readers (users with R permissions) and denied users
       -->
-      <field name="READER" type="identifiers" stored="false" docValues="true" />
-      <field name="DENIED" type="identifiers" stored="false" docValues="true" />
+      <field name="READER" type="identifiers" stored="true" docValues="true" />
+      <field name="DENIED" type="identifiers" stored="true" docValues="true" />
 
       <!--
         Untokenised list of node owners.
       -->
-      <field name="OWNER" type="identifiers" stored="false" docValues="true" />
+      <field name="OWNER" type="identifiers" stored="true" docValues="true" />
 
       <!-- Tenant code -->
-      <field name="TENANT" type="identifier" stored="false" docValues="true" />
+      <field name="TENANT" type="identifier" stored="true" docValues="true" />
 
       <!--
         SOLR Document Type. Can be one of the following:
@@ -846,7 +846,7 @@
         At time of writing, the associated analyzer is used for computing the value of the other MINHASH field
         https://issues.alfresco.com/jira/browse/SEARCH-1694?focusedCommentId=712072&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-712072
       -->
-      <field name="min_hash" type="text_min_hash" indexed="true" omitNorms="true" omitPositions="true" stored="false" multiValued="true" />
+      <field name="min_hash" type="text_min_hash" indexed="true" omitNorms="true" omitPositions="true" stored="true" multiValued="true" />
 
       <!--
         FIXME?? Solr documentation says fields with beginning and trailing _ are reserved names
@@ -857,12 +857,12 @@
       <!-- example pluggable field -->
 
       <!-- Alfresco Site -->
-      <field name="SITE" type="identifiers" stored="false" docValues="true" />
+      <field name="SITE" type="identifiers" stored="true" docValues="true" />
 
       <!--
         Tags associated with the node/document.
       -->
-      <field name="TAG" type="identifiers" stored="false" docValues="true" />
+      <field name="TAG" type="identifiers" stored="true" docValues="true" />
 
       <!--
         Untokenised ordered list of incremental paths starting from the root to this node (included).
@@ -878,7 +878,7 @@
                  6/Company Home/Sites/swsdp/documentLibrary/Agency Files/Contracts/Project Contract.pdf,
                  F/Company Home/Sites/swsdp/documentLibrary/Agency Files/Contracts/Project Contract.pdf]
       -->
-      <field name="NPATH"  type="identifiers" stored="false" docValues="true" />
+      <field name="NPATH"  type="identifiers" stored="true" docValues="true" />
 
       <!--
         Same meaning of the previous field (NPATH) with one difference: each member is represented using the noderef instead of the label.
@@ -893,7 +893,7 @@
                  6/5fef4b5d-4527-40e5-94fa-1878ef7a54eb/7ba4e607-7e88-4e3c-ad4d-41be0aced282/2fd9767a-e8ad-4703-9b54-3c2a31eb9dfc/b4cff62a-664d-4d45-9302-98723eac1319/8f2105b4-daaf-4874-9e8a-2152569d109b/8bb36efb-c26d-4d2b-9199-ab6922f53c28/e0856836-ed5e-4eee-b8e5-bd7e8fb9384c,
                  F/5fef4b5d-4527-40e5-94fa-1878ef7a54eb/7ba4e607-7e88-4e3c-ad4d-41be0aced282/2fd9767a-e8ad-4703-9b54-3c2a31eb9dfc/b4cff62a-664d-4d45-9302-98723eac1319/8f2105b4-daaf-4874-9e8a-2152569d109b/8bb36efb-c26d-4d2b-9199-ab6922f53c28/e0856836-ed5e-4eee-b8e5-bd7e8fb9384c]
       -->
-      <field name="APATH" type="identifiers" stored="false" docValues="true" />
+      <field name="APATH" type="identifiers" stored="true" docValues="true" />
 
       <!--
         Untokenised *reverted* ordered list of incremental paths to this node (excluded).
@@ -909,7 +909,7 @@
                  5/Company Home/Sites/swsdp/documentLibrary/Agency Files/Contracts,
                  F/Company Home/Sites/swsdp/documentLibrary/Agency Files/Contracts]
       -->
-      <field name="PNAME" type="identifiers" stored="false" docValues="true" />
+      <field name="PNAME" type="identifiers" stored="true" docValues="true" />
 
       <!--
         Same meaning of the previous field (PNAME) with one difference: each member is represented using the noderef instead of the label.
@@ -924,7 +924,7 @@
                  6/5fef4b5d-4527-40e5-94fa-1878ef7a54eb/7ba4e607-7e88-4e3c-ad4d-41be0aced282/2fd9767a-e8ad-4703-9b54-3c2a31eb9dfc/b4cff62a-664d-4d45-9302-98723eac1319/8f2105b4-daaf-4874-9e8a-2152569d109b/8bb36efb-c26d-4d2b-9199-ab6922f53c28/e0856836-ed5e-4eee-b8e5-bd7e8fb9384c,
                  F/5fef4b5d-4527-40e5-94fa-1878ef7a54eb/7ba4e607-7e88-4e3c-ad4d-41be0aced282/2fd9767a-e8ad-4703-9b54-3c2a31eb9dfc/b4cff62a-664d-4d45-9302-98723eac1319/8f2105b4-daaf-4874-9e8a-2152569d109b/8bb36efb-c26d-4d2b-9199-ab6922f53c28/e0856836-ed5e-4eee-b8e5-bd7e8fb9384c]
       -->
-      <field name="ANAME" type="identifiers" stored="false" docValues="true" />
+      <field name="ANAME" type="identifiers" stored="true" docValues="true" />
 
       <!--
         [fixed part]@(s|m)(_|d)_(_|l)(_\t)  @[dynamic part]
@@ -965,15 +965,15 @@
       <dynamicField name="period@s_@*"        type="oldStandardAnalysis" sortMissingLast="true" />
 
       <!-- Single + doc values value wildcard matches -->
-      <dynamicField name="int@sd@*"           type="int" stored="false" docValues="true" />
-      <dynamicField name="long@sd@*"          type="long" stored="false" docValues="true" />
-      <dynamicField name="float@sd@*"         type="float" stored="false" docValues="true" />
-      <dynamicField name="double@sd@*"        type="double" stored="false" docValues="true" />
-      <dynamicField name="date@sd@*"          type="date" stored="false" docValues="true" />
-      <dynamicField name="datetime@sd@*"      type="date" stored="false" docValues="true" />
-      <dynamicField name="boolean@sd@*"       type="identifier" stored="false" docValues="true" />
-      <dynamicField name="category@sd@*"      type="identifier" stored="false" docValues="true" />
-      <dynamicField name="noderef@sd@*"       type="identifier" stored="false" docValues="true" />
+      <dynamicField name="int@sd@*"           type="int" stored="true" docValues="true" />
+      <dynamicField name="long@sd@*"          type="long" stored="true" docValues="true" />
+      <dynamicField name="float@sd@*"         type="float" stored="true" docValues="true" />
+      <dynamicField name="double@sd@*"        type="double" stored="true" docValues="true" />
+      <dynamicField name="date@sd@*"          type="date" stored="true" docValues="true" />
+      <dynamicField name="datetime@sd@*"      type="date" stored="true" docValues="true" />
+      <dynamicField name="boolean@sd@*"       type="identifier" stored="true" docValues="true" />
+      <dynamicField name="category@sd@*"      type="identifier" stored="true" docValues="true" />
+      <dynamicField name="noderef@sd@*"       type="identifier" stored="true" docValues="true" />
 
       <!-- Multi - value indexed  -->
       <dynamicField name="any@m_@*"           type="oldStandardAnalysis" multiValued="true" />
@@ -995,15 +995,15 @@
       <dynamicField name="period@m_@*"        type="oldStandardAnalysis" multiValued="true" />
 
       <!-- Multi + doc values value wildcard matches -->
-      <dynamicField name="int@md@*"           type="ints" stored="false" docValues="true" />
-      <dynamicField name="long@md@*"          type="longs" stored="false" docValues="true" />
-      <dynamicField name="float@md@*"         type="floats" stored="false" docValues="true" />
-      <dynamicField name="double@md@*"        type="doubles" stored="false" docValues="true" />
-      <dynamicField name="date@md@*"          type="dates" stored="false" docValues="true" />
-      <dynamicField name="datetime@md@*"      type="dates" stored="false" docValues="true" />
-      <dynamicField name="boolean@md@*"       type="identifiers" stored="false" docValues="true" sortMissingLast="true"/>
-      <dynamicField name="category@md@*"      type="identifiers" stored="false" docValues="true" sortMissingLast="true"/>
-      <dynamicField name="noderef@md@*"       type="identifiers" stored="false" docValues="true" sortMissingLast="true"/>
+      <dynamicField name="int@md@*"           type="ints" stored="true" docValues="true" />
+      <dynamicField name="long@md@*"          type="longs" stored="true" docValues="true" />
+      <dynamicField name="float@md@*"         type="floats" stored="true" docValues="true" />
+      <dynamicField name="double@md@*"        type="doubles" stored="true" docValues="true" />
+      <dynamicField name="date@md@*"          type="dates" stored="true" docValues="true" />
+      <dynamicField name="datetime@md@*"      type="dates" stored="true" docValues="true" />
+      <dynamicField name="boolean@md@*"       type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
+      <dynamicField name="category@md@*"      type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
+      <dynamicField name="noderef@md@*"       type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
 
       <dynamicField name="text@s____@*"          type="identifier" />
       <dynamicField name="text@s__l_@*"          type="alfrescoFieldType" omitNorms="true" />
@@ -1011,14 +1011,14 @@
       <dynamicField name="text@s___t@*"          type="text___" />
       <dynamicField name="text@s__sort@*"        type="alfrescoCollatableTextFieldType" />
 
-      <dynamicField name="text@sd___@*" type="identifier" stored="false" docValues="true" />
+      <dynamicField name="text@sd___@*" type="identifier" stored="true" docValues="true" />
 
       <dynamicField name="text@m____@*"          type="identifiers" />
       <dynamicField name="text@m__l_@*"          type="alfrescoFieldType" omitNorms="true" multiValued="true" />
       <dynamicField name="text@m__lt@*"          type="alfrescoFieldType" omitNorms="true" multiValued="true" />
       <dynamicField name="text@m___t@*"          type="text___" multiValued="true" />
 
-      <dynamicField name="text@md___@*" type="identifiers" stored="false" docValues="true" />
+      <dynamicField name="text@md___@*" type="identifiers" stored="true" docValues="true" />
 
       <dynamicField name="mltext@m____@*" type="identifiers" />
       <dynamicField name="mltext@m__l_@*"          type="alfrescoFieldType" omitNorms="true" multiValued="true" />
@@ -1026,11 +1026,11 @@
       <dynamicField name="mltext@m___t@*"          type="text___" multiValued="true" />
       <dynamicField name="mltext@m__sort@*"        type="alfrescoCollatableMLTextFieldType" />
 
-      <dynamicField name="content@s__size@*"        type="long" stored="false" docValues="true" />
+      <dynamicField name="content@s__size@*"        type="long" stored="true" docValues="true" />
       <dynamicField name="content@s__locale@*"           type="identifier" stored="true" docValues="true" useDocValuesAsStored="true"/>
-      <dynamicField name="content@s__mimetype@*"         type="identifier" stored="false" docValues="true" />
-      <dynamicField name="content@s__encoding@*"         type="identifier" stored="false" docValues="true" />
-      <dynamicField name="content@s__docid@*"            type="long"        stored="false" docValues="true" />
+      <dynamicField name="content@s__mimetype@*"         type="identifier" stored="true" docValues="true" />
+      <dynamicField name="content@s__encoding@*"         type="identifier" stored="true" docValues="true" />
+      <dynamicField name="content@s__docid@*"            type="long"        stored="true" docValues="true" />
       <dynamicField name="content@s__tr_ex@*"            type="identifier" />
       <dynamicField name="content@s__tr_time@*"          type="long" />
       <dynamicField name="content@s__tr_status@*"        type="lowercase_id" />
@@ -1040,11 +1040,11 @@
       <dynamicField name="content@s__lt@*"          type="alfrescoFieldType" omitNorms="false" />
       <dynamicField name="content@s___t@*"          type="text___" />
 
-      <dynamicField name="content@m__size@*"             type="longs" stored="false" docValues="true" />
-      <dynamicField name="content@m__locale@*"           type="identifiers" stored="false" docValues="true" />
-      <dynamicField name="content@m__mimetype@*"         type="identifiers" stored="false" docValues="true" />
-      <dynamicField name="content@m__encoding@*"         type="identifiers" stored="false" docValues="true" />
-      <dynamicField name="content@m__docid@*"            type="longs" stored="false" docValues="true" />
+      <dynamicField name="content@m__size@*"             type="longs" stored="true" docValues="true" />
+      <dynamicField name="content@m__locale@*"           type="identifiers" stored="true" docValues="true" />
+      <dynamicField name="content@m__mimetype@*"         type="identifiers" stored="true" docValues="true" />
+      <dynamicField name="content@m__encoding@*"         type="identifiers" stored="true" docValues="true" />
+      <dynamicField name="content@m__docid@*"            type="longs" stored="true" docValues="true" />
       <dynamicField name="content@m__tr_ex@*"            type="text___" multiValued="true" />
       <dynamicField name="content@m__tr_time@*"          type="longs" />
       <dynamicField name="content@m__tr_status@*"        type="lowercase_id" multiValued="true" />
@@ -1055,7 +1055,7 @@
       <dynamicField name="content@m___t@*"          type="text___" multiValued="true" />
 
       <!-- Suggestion -->
-      <field name="suggest" type="text_shingle" indexed="true" omitNorms="true" omitPositions="true" stored="false" multiValued="true" />
+      <field name="suggest" type="text_shingle" indexed="true" omitNorms="true" omitPositions="true" stored="true" multiValued="true" />
       <dynamicField name="suggest_*" type="ignored" multiValued="true"/>
 
       <copyField source="suggest_*" dest="suggest" />
