@@ -63,6 +63,16 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     private ConcurrentLinkedQueue<Long> nodesToIndex = new ConcurrentLinkedQueue<>();
     private ConcurrentLinkedQueue<Long> nodesToPurge = new ConcurrentLinkedQueue<>();
     private ConcurrentLinkedQueue<String> queriesToReindex = new ConcurrentLinkedQueue<>();
+    
+    /**
+     * Check if nextTxCommitTimeService is available in the repository.
+     * This service is used to find the next available transaction commit time from a given time,
+     * so periods of time where no document updating is happening can be skipped while getting 
+     * pending transactions list.
+     * 
+     * {@link org.alfresco.solr.client.SOLRAPIClient#GET_NEXT_TX_COMMIT_TIME}
+     */
+    private boolean nextTxCommitTimeServiceAvailable = false;
 
     public MetadataTracker(final boolean isMaster, Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
@@ -71,6 +81,16 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
+        
+        try
+        {
+            client.getNextTxCommitTime(coreName, 0l);
+            nextTxCommitTimeServiceAvailable = true;
+        }
+        catch (Exception e)
+        {
+            log.warn("nextTxCommitTimeService is not available. Upgrade your ACS Repository version in order to use this feature", e);
+        }
     }
 
     MetadataTracker()
@@ -548,12 +568,12 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
             startTime += actualTimeStep;
             
             // If no transactions are found, advance the time window to the next available transaction commit time
-            if (transactions.getTransactions().size() == 0)
+            if (nextTxCommitTimeServiceAvailable && transactions.getTransactions().size() == 0)
             {
                 Long nextTxCommitTime = client.getNextTxCommitTime(coreName, startTime);
                 if (nextTxCommitTime != -1)
                 {
-                    log.info("Advancing transactions from startTime = " + startTime + " to " + nextTxCommitTime);
+                    log.info("Advancing transactions from {} to {}", startTime, nextTxCommitTime);
                     transactions = client.getTransactions(nextTxCommitTime, null, nextTxCommitTime + actualTimeStep, null, maxResults, shardstate);
                 }
             }

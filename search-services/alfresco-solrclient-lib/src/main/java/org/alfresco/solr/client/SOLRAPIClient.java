@@ -1239,7 +1239,6 @@ public class SOLRAPIClient
      * @return Time of the next transaction
      * @throws IOException 
      * @throws AuthenticationException 
-     * @throws Exception
      */
     public Long getNextTxCommitTime(String coreName, Long fromCommitTime) throws AuthenticationException, IOException
     {
