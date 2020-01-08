@@ -26,6 +26,13 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 
+import static java.util.Optional.ofNullable;
+
+/**
+ * SearchServices Booch utilities.
+ *
+ * @author Andrea Gazzarini
+ */
 public abstract class Utils
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(Utils.class);
@@ -96,5 +103,33 @@ public abstract class Utils
         {
             LOGGER.warn("Unable to properly close the resource instance {}. See the stacktrace below for further details.", resource, ignore);
         }
+    }
+
+    /**
+     * Returns true if the input string is null or is empty.
+     * Note whitespaces are not considered, so if a string contains only whitespaces, it is considered empty.
+     *
+     * @param value the input string.
+     * @return true if the input string is null or is empty.
+     */
+    public static boolean isNullOrEmpty(String value)
+    {
+        return ofNullable(value)
+                .map(String::trim)
+                .map(String::isEmpty)
+                .orElse(true);
+    }
+
+    /**
+     * Returns true if the first character of the input string is the locale marker character.
+     *
+     * @param value the input string.
+     * @return true true if the first character of the input string is the locale marker character.
+     */
+    public static boolean startsWithLanguageMarker(String value)
+    {
+        return ofNullable(value)
+                    .map(v -> v.charAt(0) == '\u0000')
+                    .orElse(false);
     }
 }
