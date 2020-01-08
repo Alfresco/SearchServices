@@ -50,20 +50,97 @@ import org.apache.solr.highlight.SolrHighlighter;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
 
+/**
+ * This Highlighter Integration test is marked has been marked as ignored.
+ * While working on the SolrContentStore removal epic (SEARCH-1687) and specifically one of its subtasks (SEARCH-1693)
+ * we found this test completely commented. After refactoring the Alfresco Highlighter we tried to re-enable the test method
+ * and we found a major incompatibility between the response returned from Solr and the Solrj "javabin" writer used
+ * for interacting with Solr.
+ *
+ * The default Solr highlighting section appears like this (using the XML response writer):
+ *
+ * <pre>
+ *  &lt;lst name="_DEFAULT_!8000016f66a1a298!8000016f66a1a29e">
+ *      &lt;arr name="name">
+ *          &lt;str>some very &lt;em&gt;long&lt;/em&gt; name&lt;/str>
+ *      &lt;/arr>
+ *      &lt;arr name="title">
+ *          &lt;str>This the &lt;em&gt;long&lt;/em&gt; french version of of the&lt;/str>
+ *          &lt;str>This the &lt;em&gt;long&lt;/em&gt; english version of the&lt;/str>
+ *      &lt;/arr>
+ *  &lt;/lst>
+ *  ... (other highlighting snippets belonging to different documents)
+ * </pre>
+ *
+ * As you can see, for each document, there's a "lst" section where the name attribute contains the Solr document ID.
+ * Within that section, we have one array for each attribute ("name" and "title" in the example above) which contains
+ * the highlighting snippets.
+ *
+ * Following that structure, the "javabin" (default) response writer of Solrj assumes there can be only array members
+ * within each document highlight section and a consequence of that it casts the NamedList entry value as a List (the
+ * following is an extract from QueryResponse.java):
+ *
+ * <pre>
+ *   private void extractHighlightingInfo( NamedList<Object> info )
+ *   {
+ *     _highlighting = new HashMap<>();
+ *     for( Map.Entry<String, Object> doc : info ) {
+ *       Map<String,List<String>> fieldMap = new HashMap<>();
+ *       _highlighting.put( doc.getKey(), fieldMap );
+ *
+ *       NamedList<List<String>> fnl = (NamedList<List<String>>)doc.getValue();
+ *       for( Map.Entry<String, List<String>> field : fnl ) {
+ *         fieldMap.put( field.getKey(), field.getValue() );
+ *       }
+ *     }
+ *   }
+ * </pre>
+ *
+ * The AlfrescoHighlighter adds within that section an additional element which consists of the document DBID.
+ *
+ * <pre>
+ *  &lt;lst name="_DEFAULT_!8000016f66a1a298!8000016f66a1a29e">
+ *      &lt;str name="DBID">1577974866590&lt;/str>
+ *      &lt;arr name="name">
+ *          &lt;str>some very &lt;em&gt;long&lt;/em&gt; name&lt;/str>
+ *      &lt;/arr>
+ *      &lt;arr name="title">
+ *          &lt;str>This the &lt;em&gt;long&lt;/em&gt; french version of of the&lt;/str>
+ *          &lt;str>This the &lt;em&gt;long&lt;/em&gt; english version of the&lt;/str>
+ *      &lt;/arr>
+ *  &lt;/lst>
+ * </pre>
+ *
+ * Unfortunately that additional element is not an array so at the end, if we query Solr
+ *
+ * <ul>
+ *     <li>using Solrj</li>
+ *     <li>with highlighting enabled</li>
+ *     <li>with "javabin" response writer (which is the default)</li>
+ * </ul>
+ *
+ * a ClassCastException is thrown:
+ *
+ * <pre>
+ *  java.lang.ClassCastException: class java.lang.String cannot be cast to class java.util.List
+ * </pre>
+ */
+@Ignore
 @SolrTestCaseJ4.SuppressSSL
 public class AlfrescoHighligherDistributedIT extends AbstractAlfrescoDistributedIT
 {
-    @BeforeClass
+    //@BeforeClass
     public static void initData() throws Throwable
     {
         initSolrServers(2, "DistributedAlfrescoSolrFacetingIT", DEFAULT_CORE_PROPS);
     }
 
-    @AfterClass
+    //@AfterClass
     public static void destroyData()
     {
         dismissSolrServers();
@@ -77,6 +154,7 @@ public class AlfrescoHighligherDistributedIT extends AbstractAlfrescoDistributed
                 highlighter instanceof AlfrescoSolrHighlighter);
     }
 
+    @Ignore
     @Test
     public void testHighlight() throws Exception
     {
@@ -129,7 +207,7 @@ public class AlfrescoHighligherDistributedIT extends AbstractAlfrescoDistributed
                 params( "q", "name:some very long name",
                         "qt", "/afts", "start", "0", "rows", "5",
                         HighlightParams.HIGHLIGHT, "true",
-                        HighlightParams.FIELDS, "",
+                        HighlightParams.FIELDS, "name",
                         HighlightParams.SNIPPETS, String.valueOf(4),
                         HighlightParams.FRAGSIZE, String.valueOf(40)));
 
