@@ -1239,8 +1239,9 @@ public class SOLRAPIClient
      * @return Time of the next transaction
      * @throws IOException 
      * @throws AuthenticationException 
+     * @throws NoSuchMethodException 
      */
-    public Long getNextTxCommitTime(String coreName, Long fromCommitTime) throws AuthenticationException, IOException
+    public Long getNextTxCommitTime(String coreName, Long fromCommitTime) throws AuthenticationException, IOException, NoSuchMethodException
     {
         StringBuilder url = new StringBuilder(GET_NEXT_TX_COMMIT_TIME);
         url.append("?").append("fromCommitTime").append("=").append(fromCommitTime);
@@ -1252,7 +1253,7 @@ public class SOLRAPIClient
             response = repositoryHttpClient.sendRequest(get);
             if (response.getStatus() != HttpStatus.SC_OK)
             {
-                throw new AlfrescoRuntimeException(coreName + " - GetNextTxCommitTime return status is "
+                throw new NoSuchMethodException(coreName + " - GetNextTxCommitTime return status is "
                         + response.getStatus() + " when invoking " + url);
             }
 

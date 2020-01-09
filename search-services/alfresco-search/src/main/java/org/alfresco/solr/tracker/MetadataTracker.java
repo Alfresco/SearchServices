@@ -87,9 +87,13 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
             client.getNextTxCommitTime(coreName, 0l);
             nextTxCommitTimeServiceAvailable = true;
         }
+        catch (NoSuchMethodException e)
+        {
+            log.warn("nextTxCommitTimeService is not available. Upgrade your ACS Repository version in order to use this feature: {} ", e.getMessage());
+        }
         catch (Exception e)
         {
-            log.warn("nextTxCommitTimeService is not available. Upgrade your ACS Repository version in order to use this feature", e);
+            log.error("Checking nextTxCommitTimeService failed.", e);
         }
     }
 
@@ -538,7 +542,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     }
 
     protected Transactions getSomeTransactions(BoundedDeque<Transaction> txnsFound, Long fromCommitTime, long timeStep,
-                int maxResults, long endTime) throws AuthenticationException, IOException, JSONException, EncoderException
+                int maxResults, long endTime) throws AuthenticationException, IOException, JSONException, EncoderException, NoSuchMethodException
     {
 
         long actualTimeStep = timeStep;
@@ -995,7 +999,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     }
 
     public IndexHealthReport checkIndex(Long toTx, Long toAclTx, Long fromTime, Long toTime)
-                throws IOException, AuthenticationException, JSONException, EncoderException
+                throws IOException, AuthenticationException, JSONException, EncoderException, NoSuchMethodException
     {
         // DB TX Count
         long firstTransactionCommitTime = 0;
