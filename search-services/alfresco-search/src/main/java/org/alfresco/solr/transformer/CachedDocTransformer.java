@@ -38,6 +38,7 @@ import org.apache.solr.response.DocsStreamer;
 import org.apache.solr.response.ResultContext;
 import org.apache.solr.response.transform.DocTransformer;
 import org.apache.solr.schema.SchemaField;
+import org.apache.solr.search.SolrReturnFields;
 import org.codehaus.janino.Mod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +52,7 @@ public class CachedDocTransformer extends DocTransformer
     protected final static Logger log = LoggerFactory.getLogger(CachedDocTransformer.class);
 
     private ResultContext context;
+    private SolrReturnFields solrReturnFields;
     
     /* (non-Javadoc)
      * @see org.apache.solr.response.transform.DocTransformer#getName()
@@ -74,57 +76,72 @@ public class CachedDocTransformer extends DocTransformer
     public void transform(SolrDocument doc, int docid, float score) throws IOException
     {
         Collection<String> fieldNames = new ArrayList<>(doc.getFieldNames());
+        solrReturnFields = new SolrReturnFields(context.getRequest().getParams().get("originalFl"), context.getRequest());
         for (String fieldName : fieldNames)
         {
            SchemaField schemaField = context.getSearcher().getSchema().getFieldOrNull(fieldName);
+
            if(schemaField != null)
            {
-
                boolean isTrasformedFieldName = isTrasformedField(fieldName);
-               if(schemaField.multiValued())
+               String alfrescoFieldName = AlfrescoSolrDataModel.getInstance().getAlfrescoPropertyFromSchemaField(fieldName);
+               if (isRequestedField(alfrescoFieldName))
                {
-                   Collection<Object> values = doc.getFieldValues(fieldName);
-                   doc.removeFields(fieldName);
-
-                   if (!isTrasformedFieldName)
+                   if(schemaField.multiValued())
                    {
-                       doc.addField(fieldName, values);
+                       Collection<Object> values = doc.getFieldValues(fieldName);
+                       doc.removeFields(fieldName);
+
+                       if (!isTrasformedFieldName)
+                       {
+                           doc.addField(fieldName, values);
+                       }
+                       else
+                       {
+                           //Guard against null pointer in case data model field name does not match up with cachedDoc field name.
+                           if(values != null) {
+                               ArrayList<Object> newValues = new ArrayList<>(values.size());
+                               for (Object value : values) {
+                                   newValues.add(getFieldValue(value));
+                               }
+                               doc.removeFields(alfrescoFieldName);
+                               doc.addField(alfrescoFieldName, newValues);
+                           }
+                       }
                    }
                    else
                    {
-                       String alfrescoFieldName = AlfrescoSolrDataModel.getInstance().getAlfrescoPropertyFromSchemaField(fieldName);
+                       Object value = DocsStreamer.getValue(schemaField, (IndexableField) doc.getFieldValue(fieldName));
+                       doc.removeFields(fieldName);
 
-                       //Guard against null pointer in case data model field name does not match up with cachedDoc field name.
-                       if(values != null) {
-                           ArrayList<Object> newValues = new ArrayList<>(values.size());
-                           for (Object value : values) {
-                               newValues.add(getFieldValue(value));
-                           }
+                       if (!isTrasformedFieldName)
+                       {
+                           doc.removeFields(fieldName);
+                           doc.addField(fieldName, value);
+                       }
+                       else
+                       {
+                           alfrescoFieldName = transformToUnderscoreNotation(alfrescoFieldName);
                            doc.removeFields(alfrescoFieldName);
-                           doc.addField(alfrescoFieldName, newValues);
+                           doc.addField(alfrescoFieldName, getFieldValue(value));
                        }
                    }
                }
                else
                {
-                   Object value = DocsStreamer.getValue(schemaField, (IndexableField) doc.getFieldValue(fieldName));
-                   doc.removeFields(fieldName);
-
-                   if (!isTrasformedFieldName)
+                   if (!fieldName.equals("id"))
                    {
-                       doc.removeFields(fieldName);
-                       doc.addField(fieldName, value);
-                   }
-                   else
-                   {
-                       String alfrescoFieldName = AlfrescoSolrDataModel.getInstance().getAlfrescoPropertyFromSchemaField(fieldName);
-                       alfrescoFieldName = transformToUnderscoreNotation(alfrescoFieldName);
-                       doc.removeFields(alfrescoFieldName);
-                       doc.addField(alfrescoFieldName, getFieldValue(value));
+                       doc.remove(fieldName);
+                       doc.remove(alfrescoFieldName);
                    }
                }
            }
         }
+    }
+
+    private boolean isRequestedField(String fieldName)
+    {
+        return solrReturnFields.wantsField(fieldName.replace(":", "_"));
     }
 
     private String transformToUnderscoreNotation(String value)

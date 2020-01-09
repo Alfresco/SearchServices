@@ -18,6 +18,10 @@
  */
 package org.apache.solr.handler.component;
 
+import static org.alfresco.solr.AlfrescoSolrDataModel.FieldUse.FACET;
+import static org.alfresco.solr.AlfrescoSolrDataModel.FieldUse.FTS;
+import static org.alfresco.solr.AlfrescoSolrDataModel.FieldUse.ID;
+import static org.alfresco.solr.AlfrescoSolrDataModel.FieldUse.SORT;
 import static org.apache.solr.common.params.CommonParams.PATH;
 
 import java.io.BufferedReader;
@@ -29,10 +33,12 @@ import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.query.AbstractQParser;
+import org.apache.cxf.transport.http.auth.HttpAuthHeader;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.ExitableDirectoryReader;
 import org.apache.lucene.index.IndexableField;
@@ -293,55 +299,69 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 	private void transformFieldList(SolrQueryRequest req)
 	{
 
-		StringBuilder flBuilder = new StringBuilder();
-		StringBuilder switchFlBuilder = new StringBuilder();
+		Set<String> fieldListSet = new HashSet<>();
 
+		Set<String> allowedNonCachedFields = Set.of("id","DBID", "_version_", "score");
 		SolrReturnFields solrReturnFields = new SolrReturnFields(req);
-		String oldFieldList = req.getParams().get("fl");
+		String originalFieldList = req.getParams().get("fl");
 
-		boolean cacheTransformer = oldFieldList != null && oldFieldList.contains("[cached]");
+		boolean cacheTransformer = originalFieldList != null && originalFieldList.contains("[cached]");
 
-		if (cacheTransformer){
-			flBuilder.append("[cached] ");
-			switchFlBuilder.append("[cached] ");
+		if (cacheTransformer)
+		{
+			fieldListSet.add("[cached]");
 		}
 
-		if (solrReturnFields.wantsAllFields()){
-			if (!cacheTransformer){
-				flBuilder.append("id, DBID, _version_");
-				switchFlBuilder.append("id, DBID, _version_");
-			} else {
-				flBuilder.append("*");
-				switchFlBuilder.append("*");
+		if (solrReturnFields.wantsAllFields())
+		{
+			if (!cacheTransformer)
+			{
+				fieldListSet.addAll(Set.of("id","DBID", "_version_"));
 			}
-		} else {
-			if (solrReturnFields.hasPatternMatching()){
-				flBuilder.append("*");
-				switchFlBuilder.append("*");
-			} else {
-				solrReturnFields.getLuceneFieldNames().forEach(field -> {
+			else
+			{
+				fieldListSet.add("*");
+			}
+		}
+		else
+		{
+			if (solrReturnFields.hasPatternMatching())
+			{
+				fieldListSet.add("*");
+			}
+			else
+			{
 
+				if (!cacheTransformer)
+				{
+					fieldListSet.addAll(solrReturnFields.getLuceneFieldNames()
+							.stream()
+							.filter(field -> allowedNonCachedFields.contains(field))
+							.collect(Collectors.toSet()));
+				}
+				else
+				{
 
-					String schemaFieldName = AlfrescoSolrDataModel.getInstance()
-						.mapProperty(field, AlfrescoSolrDataModel.FieldUse.FTS, req);
-
-					if (schemaFieldName != null){
-						String trasformedSchemaField = schemaFieldName.chars()
-							.mapToObj(c -> (char) c)
-							.map(c -> Character.isJavaIdentifierPart(c)? c : '?')
-							.map(Object::toString)
-							.collect(Collectors.joining());
-
-						flBuilder.append( trasformedSchemaField + ", ");
-						flBuilder.append( field + ", ");
-					}
-				});
+					List<AlfrescoSolrDataModel.FieldUse> fieldUsed = List.of(FTS, FACET, ID, SORT);
+					fieldListSet.addAll(solrReturnFields.getLuceneFieldNames().stream()
+							.flatMap(field ->
+									Stream.concat(Stream.of(field), fieldUsed.stream()
+											.map( fieldUse ->  AlfrescoSolrDataModel.getInstance()
+													.mapProperty(field, fieldUse, req))))
+							.filter(schemaFieldName -> schemaFieldName != null)
+							.map(schemaFieldName -> schemaFieldName.chars()
+									.mapToObj(c -> (char) c)
+									.map(c -> Character.isJavaIdentifierPart(c)? c : '?')
+									.map(Object::toString)
+									.collect(Collectors.joining()))
+							.collect(Collectors.toSet()));
+				}
 			}
 		}
 
 		ModifiableSolrParams params = new ModifiableSolrParams(req.getParams());
-		params.set("fl", flBuilder.toString());
-		params.set("switchFl", switchFlBuilder.toString());
+		params.set("fl", fieldListSet.stream().collect(Collectors.joining(",")));
+		params.set("originalFl", originalFieldList);
 		req.setParams(params);
 	}
 
