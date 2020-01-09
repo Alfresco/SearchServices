@@ -2201,7 +2201,7 @@ public class SolrInformationServer implements InformationServer
         String errorDocId = PREFIX_ERROR + node.getId();
         
         // Try finding the node before performing removal operation
-        DocSet docSet = core.getSearcher().get().getDocSet(new TermQuery(new Term("id", errorDocId)));
+        DocSet docSet = request.getSearcher().getDocSet(new TermQuery(new Term(FIELD_SOLR4_ID, errorDocId)));
         
         if (docSet.size() > 0)
         {
@@ -2220,12 +2220,12 @@ public class SolrInformationServer implements InformationServer
         // MNT-13767 fix, remove by node DBID.
         deleteNode(processor, request, node.getId());
     }
-
+    
     private void deleteNode(UpdateRequestProcessor processor, SolrQueryRequest request, long dbid) throws IOException
     {
         
         // Try finding the node before performing removal operation
-        DocSet docSet = core.getSearcher().get().getDocSet(LongPoint.newExactQuery(FIELD_DBID, dbid));
+        DocSet docSet = request.getSearcher().getDocSet(LongPoint.newExactQuery(FIELD_DBID, dbid));
         
         if (docSet.size() > 0)
         {
@@ -2233,7 +2233,7 @@ public class SolrInformationServer implements InformationServer
             delDocCmd.setQuery(FIELD_DBID + ":" + dbid);
             processor.processDelete(delDocCmd);
         }
-
+        
     }
 
     private boolean isContentIndexedForNode(Map<QName, PropertyValue> properties)
