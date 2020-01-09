@@ -41,7 +41,7 @@ fi
 
 if [[ $REPLICATION_TYPE == "slave" ]]; then
 
-   if [[ $REPLICATION_MASTER_PROTOCOL == "" ]]; then
+   if [[ $REPLICATION_MASTER_PROTOCOL != https ]]; then
       REPLICATION_MASTER_PROTOCOL=http
    fi
 
