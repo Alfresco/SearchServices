@@ -134,6 +134,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.LeafReaderContext;
@@ -164,6 +165,9 @@ import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.DelegatingCollector;
 import org.apache.solr.search.DocIterator;
 import org.apache.solr.search.DocList;
+import org.apache.solr.search.DocSet;
+import org.apache.solr.search.QueryCommand;
+import org.apache.solr.search.QueryResult;
 import org.apache.solr.search.QueryWrapperFilter;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.update.AddUpdateCommand;
@@ -2190,15 +2194,23 @@ public class SolrInformationServer implements InformationServer
             }
         }
     }
-
+    
     private void deleteErrorNode(UpdateRequestProcessor processor, SolrQueryRequest request, Node node) throws IOException
     {
+        
         String errorDocId = PREFIX_ERROR + node.getId();
-        DeleteUpdateCommand delErrorDocCmd = new DeleteUpdateCommand(request);
-        delErrorDocCmd.setId(errorDocId);
-        processor.processDelete(delErrorDocCmd);
+        
+        // Try finding the node before performing removal operation
+        DocSet docSet = request.getSearcher().getDocSet(new TermQuery(new Term(FIELD_SOLR4_ID, errorDocId)));
+        
+        if (docSet.size() > 0)
+        {
+            DeleteUpdateCommand delErrorDocCmd = new DeleteUpdateCommand(request);
+            delErrorDocCmd.setId(errorDocId);
+            processor.processDelete(delErrorDocCmd);
+        }
+        
     }
-
 
     private void deleteNode(UpdateRequestProcessor processor, SolrQueryRequest request, Node node) throws IOException
     {
@@ -2208,12 +2220,20 @@ public class SolrInformationServer implements InformationServer
         // MNT-13767 fix, remove by node DBID.
         deleteNode(processor, request, node.getId());
     }
-
+    
     private void deleteNode(UpdateRequestProcessor processor, SolrQueryRequest request, long dbid) throws IOException
     {
-        DeleteUpdateCommand delDocCmd = new DeleteUpdateCommand(request);
-        delDocCmd.setQuery(FIELD_DBID + ":" + dbid);
-        processor.processDelete(delDocCmd);
+        
+        // Try finding the node before performing removal operation
+        DocSet docSet = request.getSearcher().getDocSet(LongPoint.newExactQuery(FIELD_DBID, dbid));
+        
+        if (docSet.size() > 0)
+        {
+            DeleteUpdateCommand delDocCmd = new DeleteUpdateCommand(request);
+            delDocCmd.setQuery(FIELD_DBID + ":" + dbid);
+            processor.processDelete(delDocCmd);
+        }
+        
     }
 
     private boolean isContentIndexedForNode(Map<QName, PropertyValue> properties)
