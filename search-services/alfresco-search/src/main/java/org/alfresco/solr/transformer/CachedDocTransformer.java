@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2020 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,33 +18,23 @@
  */
 package org.alfresco.solr.transformer;
 
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_SOLR4_ID;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-
-import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.AlfrescoSolrDataModel;
-import org.alfresco.solr.AlfrescoSolrDataModel.TenantAclIdDbId;
-import org.alfresco.solr.SolrInformationServer;
-import org.alfresco.solr.content.SolrContentStore;
 import org.apache.lucene.index.IndexableField;
 import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.params.ModifiableSolrParams;
-import org.apache.solr.core.CoreContainer;
 import org.apache.solr.response.DocsStreamer;
 import org.apache.solr.response.ResultContext;
 import org.apache.solr.response.transform.DocTransformer;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.SolrReturnFields;
-import org.codehaus.janino.Mod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 /**
- * @author Andy
+ * @author Andy, Elia
  *
  */
 public class CachedDocTransformer extends DocTransformer
@@ -73,67 +63,39 @@ public class CachedDocTransformer extends DocTransformer
      * @see org.apache.solr.response.transform.DocTransformer#transform(org.apache.solr.common.SolrDocument, int)
      */
     @Override
-    public void transform(SolrDocument doc, int docid, float score) throws IOException
-    {
+    public void transform(SolrDocument doc, int docid, float score) {
         Collection<String> fieldNames = new ArrayList<>(doc.getFieldNames());
         solrReturnFields = new SolrReturnFields(context.getRequest().getParams().get("originalFl"), context.getRequest());
+
+
         for (String fieldName : fieldNames)
         {
            SchemaField schemaField = context.getSearcher().getSchema().getFieldOrNull(fieldName);
-
            if(schemaField != null)
            {
-               boolean isTrasformedFieldName = isTrasformedField(fieldName);
                String alfrescoFieldName = AlfrescoSolrDataModel.getInstance().getAlfrescoPropertyFromSchemaField(fieldName);
-               if (isRequestedField(alfrescoFieldName))
+               if (isRequestedField(alfrescoFieldName) || alfrescoFieldName.equals("id"))
                {
-                   if(schemaField.multiValued())
+                   Object value = doc.getFieldValue(fieldName);
+                   doc.removeFields(fieldName);
+                   if (schemaField.multiValued())
                    {
-                       Collection<Object> values = doc.getFieldValues(fieldName);
-                       doc.removeFields(fieldName);
-
-                       if (!isTrasformedFieldName)
-                       {
-                           doc.addField(fieldName, values);
-                       }
-                       else
-                       {
-                           //Guard against null pointer in case data model field name does not match up with cachedDoc field name.
-                           if(values != null) {
-                               ArrayList<Object> newValues = new ArrayList<>(values.size());
-                               for (Object value : values) {
-                                   newValues.add(getFieldValue(value));
-                               }
-                               doc.removeFields(alfrescoFieldName);
-                               doc.addField(alfrescoFieldName, newValues);
-                           }
-                       }
+                       Object collectionValue = ((Collection<Object>) value).stream()
+                               .map(elem -> getFieldValue(schemaField, elem))
+                               .collect(Collectors.toSet());
+                       doc.setField(alfrescoFieldName, collectionValue);
                    }
                    else
                    {
-                       Object value = DocsStreamer.getValue(schemaField, (IndexableField) doc.getFieldValue(fieldName));
-                       doc.removeFields(fieldName);
-
-                       if (!isTrasformedFieldName)
-                       {
-                           doc.removeFields(fieldName);
-                           doc.addField(fieldName, value);
-                       }
-                       else
-                       {
-                           alfrescoFieldName = transformToUnderscoreNotation(alfrescoFieldName);
-                           doc.removeFields(alfrescoFieldName);
-                           doc.addField(alfrescoFieldName, getFieldValue(value));
-                       }
+                       doc.setField(transformToUnderscoreNotation(alfrescoFieldName),
+                               getFieldValue(schemaField, value));
                    }
+
                }
                else
                {
-                   if (!fieldName.equals("id"))
-                   {
-                       doc.remove(fieldName);
-                       doc.remove(alfrescoFieldName);
-                   }
+                   doc.removeFields(alfrescoFieldName);
+                   doc.removeFields(fieldName);
                }
            }
         }
@@ -144,15 +106,9 @@ public class CachedDocTransformer extends DocTransformer
         return solrReturnFields.wantsField(fieldName.replace(":", "_"));
     }
 
-    private String transformToUnderscoreNotation(String value)
+    private static String transformToUnderscoreNotation(String value)
     {
         return value.contains(":") ? value.replace(":", "_") : value;
-    }
-
-    private boolean isTrasformedField(String fieldName)
-    {
-        int index = fieldName.lastIndexOf("@{");
-        return index != -1;
     }
 
     private String removeLocale(String value)
@@ -165,36 +121,8 @@ public class CachedDocTransformer extends DocTransformer
         }
     }
 
-    private Object getFieldValue(Object value){
-        if (value instanceof String)
-            return removeLocale((String) value );
-        else
-            return value;
-    }
-
-    
-    private String getFieldValueString(SolrDocument doc, String fieldName)
-    {
-        Object o = doc.getFieldValue(fieldName);
-        if(o != null)
-        {
-            if(o instanceof IndexableField)
-            {
-                IndexableField field = (IndexableField)o;
-                return  field.stringValue();
-            }
-            else if(o instanceof String)
-            {
-                return (String)o;
-            }
-            else
-            {
-                return o.toString();
-            }
-        }
-        else
-        {
-            return null;
-        }
+    private Object getFieldValue(SchemaField schemaField, Object value){
+        Object indexedValue = DocsStreamer.getValue(schemaField, (IndexableField) value);
+        return indexedValue instanceof String? removeLocale((String) indexedValue) : indexedValue;
     }
 }
