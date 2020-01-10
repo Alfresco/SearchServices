@@ -184,7 +184,7 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
     }
 
     @Test
-    public void transformDocument_docTransformerGlobsFieldRequested_shouldReturnCorrespondingFields() throws Exception
+    public void transformDocument_docTransformerGlobsFieldRequested_shouldReturnMatchedFields() throws Exception
     {
         putHandleDefaults();
 
@@ -196,6 +196,20 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
         assertNotNull(docWithAllFields.get("cm_title"));
         assertNotNull(docWithAllFields.get("cm:title"));
         assertNotNull(docWithAllFields.get("cm_name"));
+    }
+
+    @Test
+    public void transformDocument_docTransformerIsUsedWithOtherTransformer_shouldExecuteBothTranformers() throws Exception
+    {
+        putHandleDefaults();
+
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_title, [cached], [explain]"));
+        assertNotNull(resp);
+        SolrDocumentList results = resp.getResults();
+        SolrDocument docWithAllFields = results.get(0);
+        assertEquals(2, docWithAllFields.size());
+        assertNotNull(docWithAllFields.get("cm_title"));
+        assertNotNull(docWithAllFields.get("[explain]"));
     }
 
     private static void populateAlfrescoData() throws Exception

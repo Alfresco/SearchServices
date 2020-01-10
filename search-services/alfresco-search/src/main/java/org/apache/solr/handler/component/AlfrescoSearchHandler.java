@@ -303,16 +303,20 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 
 		Set<String> fieldListSet = new HashSet<>();
 
-		Set<String> allowedNonCachedFields = Set.of("id","DBID", "_version_", "score");
+		Set<String> allowedNonCachedFields = Set.of("id","DBID", "_version_");
 		SolrReturnFields solrReturnFields = new SolrReturnFields(req);
 		String originalFieldList = req.getParams().get("fl");
 
 		boolean cacheTransformer = originalFieldList != null && originalFieldList.contains("[cached]");
 		ModifiableSolrParams params = new ModifiableSolrParams(req.getParams());
+
+
+		// In case cache transformer is no set, we need to modify the field list in order return
+		// only id, DBID and _version_ fields
 		if (!cacheTransformer){
 			if (solrReturnFields.wantsAllFields())
 			{
-				fieldListSet.addAll(Set.of("id","DBID", "_version_"));
+				fieldListSet.addAll(allowedNonCachedFields);
 			}
 			else
 			{
@@ -321,6 +325,7 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 						.filter(field -> allowedNonCachedFields.contains(field))
 						.collect(Collectors.toSet()));
 			}
+
 			params.set("fl", fieldListSet.stream().collect(Collectors.joining(",")));
 		}
 		else
