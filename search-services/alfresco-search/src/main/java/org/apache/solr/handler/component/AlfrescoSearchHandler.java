@@ -303,7 +303,10 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 
 		Set<String> fieldListSet = new HashSet<>();
 
-		Set<String> allowedNonCachedFields = Set.of("id","DBID", "_version_");
+		Set<String> defaultNonCachedFields = Set.of("id","DBID", "_version_");
+		Set<String> allowedNonCachedFields = new HashSet<>(defaultNonCachedFields);
+		allowedNonCachedFields.add("score");
+
 		SolrReturnFields solrReturnFields = new SolrReturnFields(req);
 		String originalFieldList = req.getParams().get("fl");
 
@@ -316,7 +319,7 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 		if (!cacheTransformer){
 			if (solrReturnFields.wantsAllFields())
 			{
-				fieldListSet.addAll(allowedNonCachedFields);
+				fieldListSet.addAll(defaultNonCachedFields);
 			}
 			else
 			{
