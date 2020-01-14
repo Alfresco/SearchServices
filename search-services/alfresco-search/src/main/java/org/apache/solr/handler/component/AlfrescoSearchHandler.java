@@ -318,7 +318,7 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 		SolrReturnFields solrReturnFields = new SolrReturnFields(req);
 		String originalFieldList = req.getParams().get("fl");
 
-		boolean cacheTransformer = originalFieldList != null && originalFieldList.contains("[cached]");
+		boolean cacheTransformer = originalFieldList != null && solrReturnFields.getTransformer().getName().contains("alfrescoMapper");
 		ModifiableSolrParams params = new ModifiableSolrParams(req.getParams());
 
 

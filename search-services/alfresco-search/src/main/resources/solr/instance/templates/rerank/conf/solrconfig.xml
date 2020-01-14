@@ -1785,11 +1785,11 @@
      <transformer name="qecBooster" class="org.apache.solr.response.transform.EditorialMarkerFactory" />
     -->
     
-  <transformer name="cached" class="org.alfresco.solr.transformer.CachedDocTransformerFactory" >
-  </transformer>
+  <transformer name="cached" class="org.alfresco.solr.transformer.AlfrescoFieldMapperTransformerFactory" />
 
-  <transformer name="dv" class="org.alfresco.solr.transformer.DocValueDocTransformerFactory" >
-  </transformer>
+  <transformer name="alfrescoMapper" class="org.alfresco.solr.transformer.AlfrescoFieldMapperTransformerFactory" />
+
+  <transformer name="dv" class="org.alfresco.solr.transformer.DocValueDocTransformerFactory" />
 
 
   <!-- Legacy config for the admin interface -->

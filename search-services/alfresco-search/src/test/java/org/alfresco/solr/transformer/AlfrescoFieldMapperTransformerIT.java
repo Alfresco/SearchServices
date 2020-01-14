@@ -56,7 +56,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
 
 @SolrTestCaseJ4.SuppressSSL
-public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
+public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistributedIT
 {
     public static final String ALFRESCO_JSON = "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}";
 
@@ -64,7 +64,7 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
     public static void initData() throws Throwable
     {
         // FIXME: 1 shard??
-        initSolrServers(1, CachedDocTransformerIT.getSimpleClassName(), null);
+        initSolrServers(1, AlfrescoFieldMapperTransformerIT.getSimpleClassName(), null);
         populateAlfrescoData();
     }
 
@@ -203,7 +203,7 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
     {
         putHandleDefaults();
 
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_title, [cached], [explain]"));
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_title, [explain], [cached]"));
         assertNotNull(resp);
         SolrDocumentList results = resp.getResults();
         SolrDocument docWithAllFields = results.get(0);
