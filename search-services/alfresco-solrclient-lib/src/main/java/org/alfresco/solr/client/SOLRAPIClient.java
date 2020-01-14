@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -73,6 +74,7 @@ import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.util.DateUtil;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -1118,13 +1120,14 @@ public class SOLRAPIClient
         
         GetRequest req = new GetRequest(url.toString());
         
+        Map<String, String> headers = new HashMap<String, String>();
         if(modifiedSince != null)
         {
-            Map<String, String> headers = new HashMap<String, String>(1, 1.0f);
             headers.put("If-Modified-Since", String.valueOf(DateUtil.formatDate(new Date(modifiedSince))));
-            req.setHeaders(headers);
         }
-
+        headers.put("Accept-Encoding", "gzip");
+        req.setHeaders(headers);
+        
         Response response = repositoryHttpClient.sendRequest(req);
         
         if(response.getStatus() != Status.STATUS_NOT_MODIFIED && response.getStatus() != Status.STATUS_NO_CONTENT && response.getStatus() != Status.STATUS_OK)
@@ -1482,6 +1485,7 @@ public class SOLRAPIClient
         private String transformException;
         private String transformStatusStr;
         private Long transformDuration;
+        private String contentEncoding;
 
         public GetTextContentResponse(Response response) throws IOException
         {
@@ -1492,6 +1496,7 @@ public class SOLRAPIClient
             this.transformException = response.getHeader("X-Alfresco-transformException");
             String tmp = response.getHeader("X-Alfresco-transformDuration");
             this.transformDuration = (tmp != null ? Long.valueOf(tmp) : null);
+            this.contentEncoding = response.getHeader("Content-Encoding");
             setStatus();
         }
 
@@ -1557,6 +1562,11 @@ public class SOLRAPIClient
         public Long getTransformDuration()
         {
             return transformDuration;
+        }
+        
+        public String getContentEncoding()
+        {
+            return contentEncoding;
         }
     }
 
