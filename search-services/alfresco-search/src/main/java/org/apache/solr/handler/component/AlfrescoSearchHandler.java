@@ -296,6 +296,14 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 		return shardHandler;
 	}
 
+
+	/**
+	 * Transform the fieldlist depending on the use of cached transformer:
+	 * [cached] -> add to the field list the translations of the fiels to the internal schema notation
+	 * otherwise -> modify the field list in order to contains a subset of the following fields:
+	 * 		id, DBID, _version_ and score
+	 * @param req
+	 */
 	private void transformFieldList(SolrQueryRequest req)
 	{
 		if (req.getParams().get("originalFl") != null)
@@ -357,6 +365,7 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 			params.add("fl", fieldListSet.stream().collect(Collectors.joining(",")));
 		}
 
+		// This is added for filtering the fields in the cached transformer.
 		params.set("originalFl", originalFieldList);
 		req.setParams(params);
 	}

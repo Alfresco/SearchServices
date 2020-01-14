@@ -67,7 +67,6 @@ public class CachedDocTransformer extends DocTransformer
         Collection<String> fieldNames = new ArrayList<>(doc.getFieldNames());
         solrReturnFields = new SolrReturnFields(context.getRequest().getParams().get("originalFl"), context.getRequest());
 
-
         for (String fieldName : fieldNames)
         {
            SchemaField schemaField = context.getSearcher().getSchema().getFieldOrNull(fieldName);
@@ -103,7 +102,7 @@ public class CachedDocTransformer extends DocTransformer
 
     private boolean isRequestedField(String fieldName)
     {
-        return solrReturnFields.wantsField(fieldName.replace(":", "_"));
+        return solrReturnFields.wantsField(transformToUnderscoreNotation(fieldName));
     }
 
     private static String transformToUnderscoreNotation(String value)
