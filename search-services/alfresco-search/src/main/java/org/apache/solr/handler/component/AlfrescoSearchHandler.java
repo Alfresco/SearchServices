@@ -18,6 +18,8 @@
  */
 package org.apache.solr.handler.component;
 
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static org.alfresco.solr.AlfrescoSolrDataModel.FieldUse.FACET;
 import static org.alfresco.solr.AlfrescoSolrDataModel.FieldUse.FTS;
 import static org.alfresco.solr.AlfrescoSolrDataModel.FieldUse.ID;
@@ -318,7 +320,11 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 		SolrReturnFields solrReturnFields = new SolrReturnFields(req);
 		String originalFieldList = req.getParams().get("fl");
 
-		boolean cacheTransformer = originalFieldList != null && solrReturnFields.getTransformer().getName().contains("alfrescoMapper");
+		boolean cacheTransformer = ofNullable(solrReturnFields.getTransformer())
+				.map(t -> t.getName())
+				.map(name -> name.contains("alfrescoMapper"))
+				.orElse(false);
+
 		ModifiableSolrParams params = new ModifiableSolrParams(req.getParams());
 
 
