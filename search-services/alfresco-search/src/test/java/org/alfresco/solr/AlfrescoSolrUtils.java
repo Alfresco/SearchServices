@@ -89,7 +89,6 @@ import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.client.Transaction;
 import org.alfresco.util.ISO9075;
-import org.alfresco.util.Pair;
 import org.apache.solr.SolrTestCaseJ4.XmlDoc;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.CoreAdminParams;
@@ -612,9 +611,8 @@ public class AlfrescoSolrUtils
         if (properties != null)
         {
             final boolean isContentIndexedForNode = true;
-            final SolrInputDocument cachedDoc = null;
             final boolean transformContentFlag = true;
-            SolrInformationServer.addPropertiesToDoc(properties, isContentIndexedForNode, doc, cachedDoc, transformContentFlag);
+            SolrInformationServer.populateProperties(properties, isContentIndexedForNode, doc, transformContentFlag);
             addContentToDoc(doc, content);
         }
         

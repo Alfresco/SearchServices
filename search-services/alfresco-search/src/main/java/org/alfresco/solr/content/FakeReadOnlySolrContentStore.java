@@ -20,11 +20,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 
@@ -37,7 +35,6 @@ public class FakeReadOnlySolrContentStore extends SolrContentStore
     private final static Logger LOGGER = LoggerFactory.getLogger(SolrContentStore.class);
     private final SolrCore core;
 
-    // /tmp/alfresco is just a dummy path, it is not used at all by this content store.
     public FakeReadOnlySolrContentStore(SolrCore core)
     {
         super("/tmp");
@@ -63,12 +60,9 @@ public class FakeReadOnlySolrContentStore extends SolrContentStore
                 SolrDocument document = convertLuceneDocToSolrDocument(searcher.doc(scoreDoc.doc), core.getLatestSchema());
 
                 Set<String> dvFields =
-                        core.getLatestSchema()
-                            .getFields()
-                            .entrySet()
-                            .stream()
-                            .map(Map.Entry::getKey)
-                            .collect(Collectors.toSet());
+                        new HashSet<>(core.getLatestSchema()
+                                .getFields()
+                                .keySet());
 
                 searcher.getDocFetcher().decorateDocValueFields(document, scoreDoc.doc, dvFields);
 

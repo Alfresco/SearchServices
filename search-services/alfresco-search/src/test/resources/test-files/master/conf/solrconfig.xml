@@ -83,15 +83,15 @@
           <arr name="env"> <str>MYVAR=val1</str> </arr>
         </listener>
         -->
-<!--
+
         <updateLog enable="${enable.update.log:true}">
             <str name="dir">${solr.ulog.dir:}</str>
         </updateLog>
-
-        <commitWithin>
-            <softCommit>${solr.commitwithin.softcommit:true}</softCommit>
-        </commitWithin>
-        -->
+        <!--
+                <commitWithin>
+                    <softCommit>${solr.commitwithin.softcommit:true}</softCommit>
+                </commitWithin>
+                -->
 
     </updateHandler>
 
@@ -465,6 +465,23 @@
             <str name="echoHandler">true</str>
         </lst>
     </requestHandler>
+
+    <updateProcessor name="field-values-deduplication" class="solr.UniqFieldsUpdateProcessorFactory">
+        <arr name="fieldName">
+            <str>FIELDS</str>
+        </arr>
+    </updateProcessor>
+
+    <updateRequestProcessorChain name="uniq-fields" default="true" post-processor="field-values-deduplication">
+        <processor class="solr.LogUpdateProcessorFactory" />
+        <processor class="solr.RunUpdateProcessorFactory" />
+    </updateRequestProcessorChain>
+
+    <initParams path="/update/**">
+        <lst name="defaults">
+            <str name="update.chain">uniq-fields</str>
+        </lst>
+    </initParams>
 
     <admin>
         <defaultQuery>solr</defaultQuery>

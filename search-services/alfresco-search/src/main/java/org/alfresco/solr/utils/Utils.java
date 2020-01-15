@@ -18,15 +18,16 @@
  */
 package org.alfresco.solr.utils;
 
+import static java.util.Collections.emptyList;
+import static java.util.Optional.ofNullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
-
-import static java.util.Optional.ofNullable;
+import java.util.List;
 
 /**
  * SearchServices Booch utilities.
@@ -47,7 +48,32 @@ public abstract class Utils
      */
     public static <T> Collection<T> notNullOrEmpty(Collection<T> values)
     {
-        return values != null ? values : Collections.emptyList();
+        return values != null ? values : emptyList();
+    }
+
+    /**
+     * Returns the same input list if that is not null, otherwise a new empty list.
+     * Provides a safe way for iterating over a returned list (which could be null).
+     *
+     * @param values the input list.
+     * @param <T> the list elements type.
+     * @return the same input list if that is not null, otherwise a new empty list.
+     */
+    public static <T> List<T> notNullOrEmpty(List<T> values)
+    {
+        return values != null ? values : emptyList();
+    }
+
+    /**
+     * Makes sure we are not dealing with a null array.
+     *
+     * @param values the input array.
+     * @param <T> the array type.
+     * @return the input array if it is not null, an empty array otherwise.
+     */
+    public static <T> T[] notNullOrEmpty(final T[] values)
+    {
+        return values != null ? values : emptyList().toArray(values);
     }
 
     /**
@@ -131,5 +157,18 @@ public abstract class Utils
         return ofNullable(value)
                     .map(v -> v.charAt(0) == '\u0000')
                     .orElse(false);
+    }
+
+    public static Double doubleOrNull(String value)
+    {
+        try
+        {
+            return Double.parseDouble(value);
+        }
+        catch(Exception exception)
+        {
+            LOGGER.error("Input string >{}< cannot be converted in a valid double ", value);
+            return null;
+        }
     }
 }

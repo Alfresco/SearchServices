@@ -106,6 +106,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * @author Andy
  *
@@ -117,6 +119,13 @@ public class AlfrescoSolrDataModel implements QueryConstants
         public String tenant;
         public Long aclId;
         public Long dbId;
+
+        public Map<String, Object> optionalBag = new HashMap<>();
+
+        public void setProperty(String name, Object value)
+        {
+            optionalBag.put(name, value);
+        }
     }
 
     public enum FieldUse

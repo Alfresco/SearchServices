@@ -321,12 +321,10 @@
          is recommended (see below).
          "dir" - the target directory for transaction logs, defaults to the
                 solr data directory.  --> 
-    <!--
     <updateLog>
       <str name="dir">${solr.ulog.dir:}</str>
     </updateLog>
-    -->
- 
+
     <!-- AutoCommit
 
          Perform a hard commit automatically under certain conditions.
@@ -854,33 +852,27 @@
 
 
     <requestHandler name="/native" class="org.apache.solr.handler.component.AlfrescoSearchHandler">
-    <!-- default values for query parameters can be specified, these
-         will be overridden by parameters in the request
-      -->
-     <lst name="defaults">
-       <str name="echoParams">explicit</str>
-       <int name="rows">10</int>
-       <str name="df">suggest</str>
-     </lst>
-
-
-   <arr name="components">
-      <str>setLocale</str>
-      <str>rewriteFacetParameters</str>
-       <str>consistencyComponent</str>
-      <str>query</str>
-      <str>facet</str>
-      <str>mlt</str>
-      <str>highlight</str>
-      <str>stats</str>
-      <str>debug</str>
-      <str>clearLocale</str>
-      <str>rewriteFacetCounts</str>
-      <!--<str>addTxId</str>-->
-      <str>setProcessedDenies</str>
-    </arr>
-
-      <shardHandlerFactory class="org.apache.solr.handler.component.AlfrescoHttpShardHandlerFactory" />
+        <lst name="defaults">
+            <str name="echoParams">explicit</str>
+            <int name="rows">10</int>
+            <str name="df">suggest</str>
+        </lst>
+        <arr name="components">
+            <str>setLocale</str>
+            <str>rewriteFacetParameters</str>
+            <str>consistencyComponent</str>
+            <str>query</str>
+            <str>facet</str>
+            <str>mlt</str>
+            <str>highlight</str>
+            <str>stats</str>
+            <str>debug</str>
+            <str>clearLocale</str>
+            <str>rewriteFacetCounts</str>
+            <!--<str>addTxId</str>-->
+            <str>setProcessedDenies</str>
+        </arr>
+        <shardHandlerFactory class="org.apache.solr.handler.component.AlfrescoHttpShardHandlerFactory" />
     </requestHandler>
 
   <!-- A request handler that returns indented JSON by default -->
@@ -1621,7 +1613,24 @@
 
        http://wiki.apache.org/solr/UpdateRequestProcessor
 
-    --> 
+    -->
+
+    <updateProcessor name="field-values-deduplication" class="solr.UniqFieldsUpdateProcessorFactory">
+        <arr name="fieldName">
+            <str>FIELDS</str>
+        </arr>
+    </updateProcessor>
+
+    <updateRequestProcessorChain name="uniq-fields" default="true" post-processor="field-values-deduplication">
+        <processor class="solr.LogUpdateProcessorFactory" />
+        <processor class="solr.RunUpdateProcessorFactory" />
+    </updateRequestProcessorChain>
+
+    <initParams path="/update/**">
+        <lst name="defaults">
+            <str name="update.chain">uniq-fields</str>
+        </lst>
+    </initParams>
   <!-- Deduplication
 
        An example dedup update processor that creates the "id" field

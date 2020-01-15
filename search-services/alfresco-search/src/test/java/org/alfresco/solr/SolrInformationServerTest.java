@@ -82,7 +82,7 @@ public class SolrInformationServerTest
     {
         when(core.getResourceLoader()).thenReturn(resourceLoader);
         when(resourceLoader.getCoreProperties()).thenReturn(new Properties());
-        infoServer = new SolrInformationServer(adminHandler, core, client, contentStore)
+        infoServer = new SolrInformationServer(adminHandler, core, client)
         {
             // @Override
             SolrQueryResponse newSolrQueryResponse()

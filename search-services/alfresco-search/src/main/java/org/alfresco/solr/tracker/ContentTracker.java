@@ -28,6 +28,8 @@ import org.alfresco.solr.client.SOLRAPIClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
+
 /**
  * This tracker queries for docs with unclean content, and then updates them.
  * Similar to org.alfresco.repo.search.impl.lucene.ADMLuceneIndexerImpl
@@ -59,37 +61,41 @@ public class ContentTracker extends AbstractTracker implements Tracker
     @Override
     protected void doTrack() throws Exception
     {
-        //System.out.println("############## Content Tracker doTrack()");
-        try {
+        try
+        {
             long startElapsed = System.nanoTime();
 
             checkShutdown();
             final int ROWS = contentReadBatchSize;
             int start = 0;
-            long totalDocs = 0l;
+            long totalDocs = 0L;
             checkShutdown();
-            while (true) {
+            while (true)
+            {
                 try
                 {
 
                     getWriteLock().acquire();
 
-                    List<TenantAclIdDbId> docs = this.infoSrv.getDocsWithUncleanContent(start, ROWS);
-                    //System.out.println("####################### Unclean content: "+docs.size()+" ##############################:"+totalDocs);
-                    if (docs.size() == 0) {
+                    List<TenantAclIdDbId> docs = notNullOrEmpty(infoSrv.getDocsWithUncleanContent(start, ROWS));
+                    if (docs.isEmpty())
+                    {
+                        log.debug("No unclean document has been detected in the current ContentTracker cycle.");
                         break;
                     }
 
                     int docsUpdatedSinceLastCommit = 0;
-                    for (TenantAclIdDbId doc : docs) {
+                    for (TenantAclIdDbId doc : docs)
+                    {
                         ContentIndexWorkerRunnable ciwr = new ContentIndexWorkerRunnable(super.threadHandler, doc, infoSrv);
                         super.threadHandler.scheduleTask(ciwr);
                         docsUpdatedSinceLastCommit++;
 
-                        if (docsUpdatedSinceLastCommit >= contentUpdateBatchSize) {
+                        if (docsUpdatedSinceLastCommit >= contentUpdateBatchSize)
+                        {
                             super.waitForAsynchronous();
                             checkShutdown();
-                            //this.infoSrv.commit();
+
                             long endElapsed = System.nanoTime();
                             trackerStats.addElapsedContentTime(docsUpdatedSinceLastCommit, endElapsed - startElapsed);
                             startElapsed = endElapsed;
@@ -97,7 +103,8 @@ public class ContentTracker extends AbstractTracker implements Tracker
                         }
                     }
 
-                    if (docsUpdatedSinceLastCommit > 0) {
+                    if (docsUpdatedSinceLastCommit > 0)
+                    {
                         super.waitForAsynchronous();
                         checkShutdown();
                         //this.infoSrv.commit();
@@ -113,7 +120,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
                 }
             }
 
-            log.info("total number of docs with content updated: " + totalDocs);
+            log.info("Total number of docs with content updated: {}", totalDocs);
         }
         catch(Exception e)
         {
@@ -142,6 +149,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
         ContentIndexWorkerRunnable(QueueHandler queueHandler, TenantAclIdDbId doc, InformationServer infoServer)
         {
             super(queueHandler);
+
             this.doc = doc;
             this.infoServer = infoServer;
         }
@@ -150,8 +158,8 @@ public class ContentTracker extends AbstractTracker implements Tracker
         protected void doWork() throws Exception
         {
             checkShutdown();
-            //System.out.println("################ Update doc:"+doc.dbId);
-            this.infoServer.updateContentToIndexAndCache(doc.dbId, doc.tenant);
+
+            infoServer.updateContent(doc);
         }
         
         @Override
