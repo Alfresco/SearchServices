@@ -56,7 +56,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
 
 @SolrTestCaseJ4.SuppressSSL
-public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
+public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistributedIT
 {
     public static final String ALFRESCO_JSON = "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}";
 
@@ -64,7 +64,7 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
     public static void initData() throws Throwable
     {
         // FIXME: 1 shard??
-        initSolrServers(1, CachedDocTransformerIT.getSimpleClassName(), null);
+        initSolrServers(1, AlfrescoFieldMapperTransformerIT.getSimpleClassName(), null);
         populateAlfrescoData();
     }
 
@@ -181,6 +181,35 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
         assertNotNull(docWithAllFields.get("cm_created"));
         assertNotNull(docWithAllFields.get("score"));
         assertNotNull(docWithAllFields.get("DBID"));
+    }
+
+    @Test
+    public void transformDocument_docTransformerGlobsFieldRequested_shouldReturnMatchedFields() throws Exception
+    {
+        putHandleDefaults();
+
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm?title, *name, [cached]"));
+        assertNotNull(resp);
+        SolrDocumentList results = resp.getResults();
+        SolrDocument docWithAllFields = results.get(0);
+        assertEquals(4, docWithAllFields.size());
+        assertNotNull(docWithAllFields.get("cm_title"));
+        assertNotNull(docWithAllFields.get("cm:title"));
+        assertNotNull(docWithAllFields.get("cm_name"));
+    }
+
+    @Test
+    public void transformDocument_docTransformerIsUsedWithOtherTransformer_shouldExecuteBothTranformers() throws Exception
+    {
+        putHandleDefaults();
+
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_title, [explain], [cached]"));
+        assertNotNull(resp);
+        SolrDocumentList results = resp.getResults();
+        SolrDocument docWithAllFields = results.get(0);
+        assertEquals(2, docWithAllFields.size());
+        assertNotNull(docWithAllFields.get("cm_title"));
+        assertNotNull(docWithAllFields.get("[explain]"));
     }
 
     private static void populateAlfrescoData() throws Exception
