@@ -1827,7 +1827,7 @@
 
         <lst name="invariants">
             <str name="rows">0</str>
-            <str name="q">{!edismax df=NODE_UUID DBID tie=0 mm=1 v=$id}</str>
+            <str name="q">{!edismax qf='DBID NODE_UUID' tie=0 mm=1 v=$id}</str>
         </lst>
 
         <arr name="last-components">
