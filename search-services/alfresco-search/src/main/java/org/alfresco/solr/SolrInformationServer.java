@@ -225,7 +225,9 @@ public class SolrInformationServer implements InformationServer
 
     private static final Set<String> REQUEST_ONLY_ID_FIELD = new HashSet<>(Collections.singletonList(FIELD_SOLR4_ID));
     private static final String LATEST_APPLIED_CONTENT_VERSION_ID = "LATEST_APPLIED_CONTENT_VERSION_ID";
-    private static final Set<String> ID_AND_CONTENT_VERSION_ID = new HashSet<>(asList(FIELD_SOLR4_ID, "LATEST_APPLIED_CONTENT_VERSION_ID"));
+    private static final String CONTENT_LOCALE = "content@s__locale@{http://www.alfresco.org/model/content/1.0}content";
+    private static final Set<String> ID_AND_CONTENT_VERSION_ID =
+            new HashSet<>(asList(FIELD_SOLR4_ID, "LATEST_APPLIED_CONTENT_VERSION_ID", CONTENT_LOCALE));
 
     private static final String INDEX_CAP_ID = "TRACKER!STATE!CAP";
 
@@ -714,8 +716,12 @@ public class SolrInformationServer implements InformationServer
 
             if(collector.getTotalHits() == 0)
             {
+System.out.println("NO UNCLEAN DOCS FOUND");
                 return docIds;
             }
+
+
+System.out.println("UNCLEAN DOCS FOUND : " + collector.getTotalHits());
 
             ScoreDoc[] scoreDocs = collector.topDocs().scoreDocs;
             List<LeafReaderContext> leaves = searcher.getTopReaderContext().leaves();
@@ -761,6 +767,8 @@ public class SolrInformationServer implements InformationServer
             IntArrayList docList = docListCollector.getDocs();
             int size = docList.size();
 
+
+
             List<Long> processedTxns = new ArrayList<>();
             for (int i = 0; i < size; ++i)
             {
@@ -778,6 +786,11 @@ public class SolrInformationServer implements InformationServer
                     IndexableField id = document.getField(FIELD_SOLR4_ID);
                     String idString = id.stringValue();
                     TenantAclIdDbId tenantAndDbId = AlfrescoSolrDataModel.decodeNodeDocumentId(idString);
+
+                    ofNullable(document.getField(CONTENT_LOCALE))
+                            .map(IndexableField::stringValue)
+                            .ifPresent(value -> tenantAndDbId.setProperty(CONTENT_LOCALE, value));
+
                     tenantAndDbId.setProperty(
                             LATEST_APPLIED_CONTENT_VERSION_ID,
                             ofNullable(document.getField(LATEST_APPLIED_CONTENT_VERSION_ID))
@@ -1708,6 +1721,8 @@ public class SolrInformationServer implements InformationServer
     {
         long dbId = docRef.dbId;
 
+System.out.println("updating the content of doc " + docRef.dbId);
+
         UpdateRequestProcessor processor = null;
         try (SolrQueryRequest request = newSolrQueryRequest())
         {
@@ -1737,18 +1752,45 @@ public class SolrInformationServer implements InformationServer
 //            if (doc != null)
 //            {
             SolrInputDocument doc = new PartialSolrInputDocument();
-            addContentToDoc(doc, dbId);
+            doc.setField(FIELD_SOLR4_ID,
+                    AlfrescoSolrDataModel.getNodeDocumentId(
+                            docRef.tenant,
+                            docRef.aclId,
+                            docRef.dbId));
+            //doc.setField(FIELD_VERSION, 0);
+            addContentToDoc(docRef, doc, dbId);
+
+System.out.println("DOC AGGIUNtO " + dbId);
 
             // Marks as clean since the doc's content is now up to date
             // TODO ISOLATE IN A COMPOSE METHOD FOR A BETTER UNDERSTANDING!
             doc.setField("DIRTY_MARKER", docRef.optionalBag.get("LATEST_APPLIED_CONTENT_VERSION_ID"));
             doc.setField(FIELD_FTSSTATUS, FTSStatus.Clean.toString());
 
+System.out.println(">>>>>>" + doc.get("content@s___t@{http://www.alfresco.org/model/content/1.0}content"));
+
             // Add to index
             AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
             addDocCmd.overwrite = true;
             addDocCmd.solrDoc = doc;
-            processor.processAdd(addDocCmd);
+
+            try {
+                processor.processAdd(addDocCmd);
+            } catch (Exception ex)
+            {
+                doc.forEach( (name, field) -> {
+                    if (field.getValues() instanceof Map) {
+                        System.out.println(name + "=> {");
+                        ((Map)field.getValue()).forEach((k,v) -> v.getClass().toString());
+                        System.out.println("}");
+                    } else
+                    {
+                        System.out.println(name + " = "+ field.getValue() + ","+ field.getValue().getClass());
+                    }
+                });
+                ex.printStackTrace();
+            }
+System.out.println("DOC " + dbId + " has been marked as clean");
 //            }
         }
         finally
@@ -2249,7 +2291,7 @@ public class SolrInformationServer implements InformationServer
                 doc.addField(fieldInstance.getField(), textContentResponse.getTransformException());
                 break;
             case TRANSFORMATION_STATUS:
-                doc.addField(fieldInstance.getField(), textContentResponse.getStatus());
+                doc.addField(fieldInstance.getField(), textContentResponse.getStatus().name());
                 break;
             case TRANSFORMATION_TIME:
                 doc.addField(fieldInstance.getField(), textContentResponse.getTransformDuration());
@@ -2417,8 +2459,16 @@ public class SolrInformationServer implements InformationServer
         }
     }
     
-    private void addContentToDoc(SolrInputDocument doc, long dbId) throws AuthenticationException, IOException
+    private void addContentToDoc(TenantAclIdDbId docRef, SolrInputDocument doc, long dbId) throws AuthenticationException, IOException
     {
+        if (docRef.optionalBag.containsKey(CONTENT_LOCALE))
+        {
+            String locale = (String) docRef.optionalBag.get(CONTENT_LOCALE);
+            String qNamePart = CONTENT_LOCALE.substring(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX.length());
+            QName propertyQName = QName.createQName(qNamePart);
+            addContentPropertyToDocUsingAlfrescoRepository(doc, propertyQName, dbId, locale);
+        }
+/*
         Collection<String> fieldNames = doc.deepCopy().getFieldNames();
         for (String fieldName : fieldNames)
         {
@@ -2431,6 +2481,7 @@ public class SolrInformationServer implements InformationServer
             }
             // Could update multi content but it is broken ....
         }
+ */
     }
     
     private void addContentPropertyToDocUsingAlfrescoRepository(
@@ -2465,6 +2516,8 @@ public class SolrInformationServer implements InformationServer
         {
             response.release();
         }
+
+System.out.println("TEXT CONTENT of " + dbId + " => " + textContent);
 
         if(minHash && textContent.length() > 0)
         {
@@ -3792,6 +3845,7 @@ public class SolrInformationServer implements InformationServer
 
     private static void addFieldIfNotSet(SolrInputDocument doc, FieldInstance field)
     {
+        // TODO: qua il partial doc mi mette un set ma io devo aggiungere e deduplicare
         doc.addField(FIELD_FIELDS, field.getField());
     }
 
