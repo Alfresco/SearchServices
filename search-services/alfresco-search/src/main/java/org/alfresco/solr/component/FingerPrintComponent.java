@@ -19,15 +19,6 @@
 
 package org.alfresco.solr.component;
 
-import java.io.IOException;
-import java.util.*;
-
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
-import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.solr.AlfrescoCoreAdminHandler;
-import org.alfresco.solr.AlfrescoSolrDataModel;
-import org.alfresco.solr.SolrInformationServer;
-import org.alfresco.solr.content.SolrContentStore;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
@@ -36,22 +27,22 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
-import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.SolrInputField;
 import org.apache.solr.common.util.NamedList;
-import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
-import org.apache.solr.handler.component.*;
-import org.apache.solr.request.SolrQueryRequest;
+import org.apache.solr.handler.component.ResponseBuilder;
+import org.apache.solr.handler.component.SearchComponent;
 import org.apache.solr.response.DocsStreamer;
 import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
-import org.apache.solr.search.DocIterator;
-import org.apache.solr.search.DocListAndSet;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.util.plugin.SolrCoreAware;
 
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_FINGERPRINT;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_LID;
 
 /**
