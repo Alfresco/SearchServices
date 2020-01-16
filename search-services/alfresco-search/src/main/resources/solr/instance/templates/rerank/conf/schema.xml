@@ -102,6 +102,13 @@
          </analyzer>
       </fieldType>
 
+      <fieldType name="node_uuid_type" class="solr.TextField" positionIncrementGap="100">
+        <analyzer>
+          <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+          <filter class="solr.PatternReplaceFilterFactory" pattern=".*SpacesStore/" replacement="" replace="all"/>
+        </analyzer>
+      </fieldType>
+
       <fieldType name="text_min_hash" class="solr.TextField" positionIncrementGap="100">
          <analyzer type="index">
             <tokenizer class="solr.ICUTokenizerFactory"/>
@@ -793,6 +800,9 @@
       <field name="ACLID" type="long" docValues="true" />
       <field name="PARENTASSOCCRC" type="long" />
       <field name="CASCADETX" type="long" docValues="true" />
+
+      <field name="NODE_UUID" type="node_uuid_type" indexed="true" stored="true"/>
+      <copyField source="LID" dest="NODE_UUID" />
 
       <!--
         Used to store the last transaction and acl transaction for real time get

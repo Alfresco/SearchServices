@@ -41,6 +41,11 @@ import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.handler.component.*;
 import org.apache.solr.request.SolrQueryRequest;
+import org.apache.solr.response.DocsStreamer;
+import org.apache.solr.schema.IndexSchema;
+import org.apache.solr.schema.SchemaField;
+import org.apache.solr.search.DocIterator;
+import org.apache.solr.search.DocListAndSet;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.util.plugin.SolrCoreAware;
 
@@ -67,70 +72,30 @@ public class FingerPrintComponent extends SearchComponent implements SolrCoreAwa
             return;
         }
 
-        SolrContentStore solrContentStore = getContentStore(responseBuilder.req);
+        DocListAndSet results = responseBuilder.getResults();
+        if (results.docList.matches() == 0 ){
+            return;
+        }
+
+        int docId = results.docList.iterator().nextDoc();
 
         NamedList response = responseBuilder.rsp.getValues();
-        String id = responseBuilder.req.getParams().get("id");
-
-        long dbid = fetchDBID(id, responseBuilder.req.getSearcher());
-        if(dbid == -1 && isNumber(id) ) {
-            dbid = Long.parseLong(id);
-        }
+        Document doc = responseBuilder.req.getSearcher().doc(docId, Set.of("MINHASH"));
 
         NamedList fingerPrint = new NamedList();
-        if(dbid > -1) {
-            SolrInputDocument solrDoc = solrContentStore.retrieveDocFromSolrContentStore(AlfrescoSolrDataModel.getTenantId(TenantService.DEFAULT_DOMAIN), dbid);
-            if (solrDoc != null) {
-                SolrInputField mh = solrDoc.getField("MINHASH");
-                if (mh != null) {
-                    Collection col = mh.getValues();
-                    List l = new ArrayList();
-                    l.addAll(col);
-                    fingerPrint.add("MINHASH", l);
-                }
-            }
-        }
 
-        response.add("fingerprint", fingerPrint);
-    }
-
-    private long fetchDBID(String UUID, SolrIndexSearcher searcher) throws IOException {
-        String query = "workspace://SpacesStore/"+UUID;
-        TermQuery q = new TermQuery(new Term(QueryConstants.FIELD_LID, query));
-        TopDocs docs = searcher.search(q, 1);
-        Set<String> fields = new HashSet();
-        fields.add(QueryConstants.FIELD_DBID);
-        if(docs.totalHits == 1) {
-            ScoreDoc scoreDoc = docs.scoreDocs[0];
-            Document doc = searcher.doc(scoreDoc.doc, fields);
-            IndexableField dbidField = doc.getField(QueryConstants.FIELD_DBID);
-            return dbidField.numericValue().longValue();
-        }
-
-        return -1;
-    }
-
-    private boolean isNumber(String s) {
-        for(int i=0; i<s.length(); i++) {
-            if(!Character.isDigit(s.charAt(i))) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-
-    private SolrContentStore getContentStore(SolrQueryRequest req)
-    {
-        if(req.getSearcher() != null)
+        List<Object> values = new ArrayList<>();
+        IndexSchema schema = responseBuilder.req.getCore().getLatestSchema();
+        IndexableField[] minHashes = doc.getFields("MINHASH");
+        for (IndexableField minHash : minHashes)
         {
-            CoreContainer coreContainer = req.getSearcher().getCore().getCoreContainer();
-            AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
-            SolrInformationServer srv = (SolrInformationServer) coreAdminHandler.getInformationServers().get(req.getSearcher().getCore().getName());
-            return srv.getSolrContentStore();
+            SchemaField sf = schema.getFieldOrNull(minHash.name());
+            Object value = DocsStreamer.getValue(sf, minHash);
+            values.add(value);
         }
-        return null;
+
+        fingerPrint.add("MINHASH", values);
+        response.add("fingerprint", fingerPrint);
     }
 
     public String getDescription() {
