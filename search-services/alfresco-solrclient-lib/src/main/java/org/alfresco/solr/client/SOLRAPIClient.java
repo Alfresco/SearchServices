@@ -114,16 +114,33 @@ public class SOLRAPIClient
     private DictionaryService dictionaryService;
     private JsonFactory jsonFactory;
     private NamespaceDAO namespaceDAO;
+    
+    /**
+     * This option enables ("Accept-Encoding": "gzip") header for compression
+     * in GET_CONTENT requests. Additional configuration is required in 
+     * Alfresco Repository Tomcat Connector or HTTP Web Proxy to deal w
+     * with compressed requests.
+     */
+    private boolean compression;
 
     public SOLRAPIClient(AlfrescoHttpClient repositoryHttpClient,
             DictionaryService dictionaryService,
             NamespaceDAO namespaceDAO)
+    {
+        this(repositoryHttpClient, dictionaryService, namespaceDAO, false);
+    }
+    
+    public SOLRAPIClient(AlfrescoHttpClient repositoryHttpClient,
+            DictionaryService dictionaryService,
+            NamespaceDAO namespaceDAO,
+            boolean compression)
     {
         this.repositoryHttpClient = repositoryHttpClient;
         this.dictionaryService = dictionaryService;
         this.namespaceDAO = namespaceDAO;
         this.deserializer = new SOLRDeserializer(namespaceDAO);
         this.jsonFactory = new JsonFactory();
+        this.compression = compression;
     }
     
     /**
@@ -1125,7 +1142,10 @@ public class SOLRAPIClient
         {
             headers.put("If-Modified-Since", String.valueOf(DateUtil.formatDate(new Date(modifiedSince))));
         }
-        headers.put("Accept-Encoding", "gzip");
+        if (compression)
+        {
+            headers.put("Accept-Encoding", "gzip");
+        }
         req.setHeaders(headers);
         
         Response response = repositoryHttpClient.sendRequest(req);
