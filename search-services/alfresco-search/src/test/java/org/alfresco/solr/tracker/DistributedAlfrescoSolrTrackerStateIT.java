@@ -63,7 +63,7 @@ import java.util.stream.Collectors;
  * This test makes sure that state is consistent across the two mentioned approaches. That is, properties returned by the
  * Core SUMMARY must have the same value of the same properties in the ShardState.
  *
- * Note that this is the distributed version of {@link AlfrescoSolrTrackerStateTest}.
+ * Note that this is the distributed version of {@link AlfrescoSolrTrackerStateIT}.
  *
  * @author agazzarini
  */
@@ -71,7 +71,7 @@ import java.util.stream.Collectors;
 public class DistributedAlfrescoSolrTrackerStateIT extends AbstractAlfrescoDistributedIT
 {
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
         initSolrServers(5, getClassName(),null);
 
@@ -80,7 +80,7 @@ public class DistributedAlfrescoSolrTrackerStateIT extends AbstractAlfrescoDistr
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }

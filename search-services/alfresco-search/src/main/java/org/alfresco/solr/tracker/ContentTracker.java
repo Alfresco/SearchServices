@@ -25,8 +25,6 @@ import java.util.Properties;
 import org.alfresco.solr.AlfrescoSolrDataModel.TenantAclIdDbId;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.client.SOLRAPIClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
 
@@ -38,8 +36,6 @@ import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
  */
 public class ContentTracker extends AbstractTracker implements Tracker
 {
-
-    protected final static Logger log = LoggerFactory.getLogger(ContentTracker.class);
     private int contentReadBatchSize;
     private int contentUpdateBatchSize;
     
@@ -80,7 +76,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
                     List<TenantAclIdDbId> docs = notNullOrEmpty(infoSrv.getDocsWithUncleanContent(start, ROWS));
                     if (docs.isEmpty())
                     {
-                        log.debug("No unclean document has been detected in the current ContentTracker cycle.");
+                        LOGGER.debug("No unclean document has been detected in the current ContentTracker cycle.");
                         break;
                     }
 
@@ -120,7 +116,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
                 }
             }
 
-            log.info("Total number of docs with content updated: {}", totalDocs);
+            LOGGER.info("Total number of docs with content updated: {}", totalDocs);
         }
         catch(Exception e)
         {
@@ -128,15 +124,18 @@ public class ContentTracker extends AbstractTracker implements Tracker
         }
     }
 
-    public boolean hasMaintenance() {
+    public boolean hasMaintenance()
+    {
         return false;
     }
 
-    public void maintenance() {
-        return;
+    public void maintenance()
+    {
+        // Nothing to be done here
     }
 
-    public void invalidateState() {
+    public void invalidateState()
+    {
         super.invalidateState();
         this.infoSrv.setCleanContentTxnFloor(-1);
     }
@@ -144,13 +143,13 @@ public class ContentTracker extends AbstractTracker implements Tracker
     class ContentIndexWorkerRunnable extends AbstractWorkerRunnable
     {
         InformationServer infoServer;
-        TenantAclIdDbId doc;
+        TenantAclIdDbId docRef;
 
-        ContentIndexWorkerRunnable(QueueHandler queueHandler, TenantAclIdDbId doc, InformationServer infoServer)
+        ContentIndexWorkerRunnable(QueueHandler queueHandler, TenantAclIdDbId docRef, InformationServer infoServer)
         {
             super(queueHandler);
 
-            this.doc = doc;
+            this.docRef = docRef;
             this.infoServer = infoServer;
         }
 
@@ -159,7 +158,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
         {
             checkShutdown();
 
-            infoServer.updateContent(doc);
+            infoServer.updateContent(docRef);
         }
         
         @Override

@@ -89,11 +89,13 @@ import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.client.Transaction;
 import org.alfresco.util.ISO9075;
+import org.apache.lucene.util.BytesRef;
 import org.apache.solr.SolrTestCaseJ4.XmlDoc;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
+import org.apache.solr.common.util.JavaBinCodec;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.common.util.XML;
 import org.apache.solr.core.CoreContainer;
@@ -531,7 +533,7 @@ public class AlfrescoSolrUtils
         doc.addField(FIELD_SOLR4_ID, id);
         doc.addField(FIELD_VERSION, 0);
         doc.addField(FIELD_DBID, "" + dbid);
-        doc.addField(FIELD_LID, nodeRef);
+        doc.addField(FIELD_LID, String.valueOf(nodeRef));
         doc.addField(FIELD_INTXID, "" + txid);
         doc.addField(FIELD_ACLID, "" + aclId);
         doc.addField(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_NODE);
@@ -560,13 +562,12 @@ public class AlfrescoSolrUtils
                 }
                 qNameBuffer.append(ISO9075.getXPathName(childAssocRef.getQName()));
                 assocTypeQNameBuffer.append(ISO9075.getXPathName(childAssocRef.getTypeQName()));
-                doc.addField(FIELD_PARENT, childAssocRef.getParentRef());
+                doc.addField(FIELD_PARENT, ofNullable(childAssocRef.getParentRef()).map(Object::toString).orElse(null));
                 
                 if (childAssocRef.isPrimary())
                 {
-                    doc.addField(FIELD_PRIMARYPARENT, childAssocRef.getParentRef());
-                    doc.addField(FIELD_PRIMARYASSOCTYPEQNAME,
-                            ISO9075.getXPathName(childAssocRef.getTypeQName()));
+                    doc.addField(FIELD_PRIMARYPARENT,  ofNullable(childAssocRef.getParentRef()).map(Object::toString).orElse(null));
+                    doc.addField(FIELD_PRIMARYASSOCTYPEQNAME,  ISO9075.getXPathName(childAssocRef.getTypeQName()));
                     doc.addField(FIELD_PRIMARYASSOCQNAME, ISO9075.getXPathName(childAssocRef.getQName()));
                 }
             }
@@ -612,21 +613,21 @@ public class AlfrescoSolrUtils
         {
             final boolean isContentIndexedForNode = true;
             final boolean transformContentFlag = true;
-            SolrInformationServer.populateProperties(properties, isContentIndexedForNode, doc, transformContentFlag);
+            SolrInformationServer.populateProperties(Long.parseLong(id), properties, isContentIndexedForNode, doc, transformContentFlag);
             addContentToDoc(doc, content);
         }
         
-        doc.addField(FIELD_TYPE, type);
+        doc.addField(FIELD_TYPE, String.valueOf(type));
         if (aspects != null)
         {
             for (QName aspect : aspects)
             {
-                doc.addField(FIELD_ASPECT, aspect);
+                doc.addField(FIELD_ASPECT, String.valueOf(aspect));
             }
         }
         doc.addField(FIELD_ISNODE, "T");
         doc.addField(FIELD_TENANT, AlfrescoSolrDataModel.DEFAULT_TENANT);
-        
+
         return doc;
     }
     private static void addContentToDoc(SolrInputDocument cachedDoc, Map<QName, String> content)
