@@ -43,14 +43,14 @@ import org.json.JSONException;
 
 /**
  * This is the interface to the information server, whether it be Solr or some other search server.
- * @author Ahmed Owian
  *
+ * @author Ahmed Owian
  */
 public interface InformationServer extends InformationServerCollectionProvider
 {
-    public static final String PROP_PREFIX_PARENT_TYPE = "alfresco.metadata.ignore.datatype.";
+    String PROP_PREFIX_PARENT_TYPE = "alfresco.metadata.ignore.datatype.";
 
-    public static final String PROP_PREFIX_PARENT_ASPECT = "alfresco.metadata.ignore.aspect.";
+    String PROP_PREFIX_PARENT_ASPECT = "alfresco.metadata.ignore.aspect.";
 
     void rollback() throws IOException;
 
@@ -118,9 +118,9 @@ public interface InformationServer extends InformationServerCollectionProvider
 
     boolean isInIndex(String id) throws IOException;
 
-    public void setCleanContentTxnFloor(long cleanContentTxnFloor);
+    void setCleanContentTxnFloor(long cleanContentTxnFloor);
 
-    public void setCleanCascadeTxnFloor(long cleanCascadeTxnFloor);
+    void setCleanCascadeTxnFloor(long cleanCascadeTxnFloor);
 
     Set<Long> getErrorDocIds() throws IOException;
 

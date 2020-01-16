@@ -128,7 +128,6 @@ import org.alfresco.solr.client.SOLRAPIClient.GetTextContentResponse;
 import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.client.Transaction;
 import org.alfresco.solr.config.ConfigUtil;
-import org.alfresco.solr.content.SolrContentStore;
 import org.alfresco.solr.logging.Log;
 import org.alfresco.solr.tracker.IndexHealthReport;
 import org.alfresco.solr.tracker.TrackerStats;
@@ -2882,12 +2881,6 @@ public class SolrInformationServer implements InformationServer
     public void setCleanCascadeTxnFloor(long cleanCascadeTxnFloor)
     {
         // Nothing to be done here
-    }
-
-    // TODO (REMOVE) currently this is called only by Solr4QueryParser for FINGERPRINT QUERIES!
-    public SolrContentStore getSolrContentStore()
-    {
-        throw new RuntimeException("WARNING!!!!!! ILLEGAL SOLRCONTENTSTORE CALL!!!!!");
     }
 
     public Properties getProps()
