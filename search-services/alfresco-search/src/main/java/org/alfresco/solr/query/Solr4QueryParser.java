@@ -64,15 +64,12 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoAnalyzerWrapper;
-import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.AlfrescoSolrDataModel.ContentFieldType;
 import org.alfresco.solr.AlfrescoSolrDataModel.FieldInstance;
 import org.alfresco.solr.AlfrescoSolrDataModel.FieldUse;
 import org.alfresco.solr.AlfrescoSolrDataModel.IndexedField;
-import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.component.FingerPrintComponent;
-import org.alfresco.solr.content.SolrContentStore;
 import org.alfresco.solr.utils.ThrowingFunction;
 import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.Pair;
@@ -103,6 +100,7 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.BooleanQuery.Builder;
 import org.apache.lucene.search.ConstantScoreQuery;
+import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.Query;
@@ -130,11 +128,11 @@ import org.apache.solr.common.SolrInputField;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
-import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.handler.component.HttpShardHandlerFactory;
 import org.apache.solr.handler.component.ShardHandlerFactory;
 import org.apache.solr.request.SolrQueryRequest;
+import org.apache.solr.response.DocsStreamer;
 import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.SolrIndexSearcher;
@@ -167,7 +165,6 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         setAnalyzeRangeTerms(true);
         this.rerankPhase = rerankPhase;
         this.schema = req.getSchema();
-        this.solrContentStore = getContentStore(req);
         this.solrParams = req.getParams();
         SolrCore core = req.getCore();
         if(core != null) {
@@ -178,26 +175,10 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
     }
 
     private RerankPhase rerankPhase;
-    private SolrContentStore solrContentStore;
     private SolrParams solrParams;
     private ShardHandlerFactory shardHandlerFactory;
     private SolrQueryRequest request;
-    /**
-     * Extracts the contentStore from SolrQueryRequest.
-     * @param req
-     * @return
-     */
-    private SolrContentStore getContentStore(SolrQueryRequest req)
-    {
-        if(req.getSearcher() != null)
-        {
-            CoreContainer coreContainer = req.getSearcher().getCore().getCoreContainer();
-            AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
-            SolrInformationServer srv = (SolrInformationServer) coreAdminHandler.getInformationServers().get(req.getSearcher().getCore().getName());
-            return srv.getSolrContentStore();
-        }
-        return null;
-    }
+
 
     IndexSchema schema;
 
@@ -710,33 +691,12 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                     json = new JSONObject();
                 }
 
-
-                //Is the fingerprint in the local SolrContentStore
-                if(values == null)
-                {
-                    long dbid = fetchDBID(nodeId);
-                    if(dbid == -1 && isNumber(nodeId))
-                    {
-                        dbid = Long.parseLong(nodeId);
-                    }
-
-                    if(dbid > -1)
-                    {
-                        SolrInputDocument solrDoc = solrContentStore.retrieveDocFromSolrContentStore(AlfrescoSolrDataModel.getTenantId(TenantService.DEFAULT_DOMAIN), dbid);
-                        if (solrDoc != null)
-                        {
-                            SolrInputField mh = solrDoc.getField("MINHASH");
-                            if (mh != null)
-                            {
-                                values = mh.getValues();
-                            }
-                        }
-                    }
+                if (values == null) {
+                    values = fetchMinHash(nodeId);
                 }
 
                 String shards = this.solrParams.get("shards");
-                if(values == null && shards != null)
-                {
+                if(values == null && shards != null) {
                     //we are in distributed mode
                     //Fetch the fingerPrint from the shards.
                     //The UUID and DBID will both work for method call.
@@ -744,8 +704,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 }
 
                 //If we're in distributed mode then add the fingerprint to the json
-                if(values != null && shards != null && fingerPrint == null)
-                {
+                if(values != null && shards != null && fingerPrint == null) {
                     ModifiableSolrParams newParams = new ModifiableSolrParams();
                     newParams.add(solrParams);
                     solrParams = newParams;
@@ -795,21 +754,50 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
     }
 
 
-    private long fetchDBID(String UUID) throws IOException {
+    /**
+     * fetch MINHASH values from lucene index
+     * @param id argument of search. It is taken as DBID if is numberic, LID otherwise
+     * @return List of minhashes
+     * @throws IOException
+     */
+    private Collection fetchMinHash(String id) throws IOException {
         SolrIndexSearcher searcher = request.getSearcher();
-        String query = UUID.startsWith("workspace") ? UUID : "workspace://SpacesStore/"+UUID;
-        TermQuery q = new TermQuery(new Term(FIELD_LID, query));
+
+
+        Query q;
+        if(isNumber(id))
+        {
+            long dbid = Long.parseLong(id);
+            q = LegacyNumericRangeQuery.newLongRange("DBID", dbid, dbid + 1, true, false);
+        }
+        else
+        {
+            String query = id.startsWith("workspace") ? id : "workspace://SpacesStore/"+id;
+            q = new TermQuery(new Term(FIELD_LID, query));
+        }
+
         TopDocs docs = searcher.search(q, 1);
         Set<String> fields = new HashSet();
-        fields.add(FIELD_DBID);
+        fields.add(FIELD_FINGERPRINT);
+
         if(docs.totalHits == 1) {
             ScoreDoc scoreDoc = docs.scoreDocs[0];
             Document doc = searcher.doc(scoreDoc.doc, fields);
-            IndexableField dbidField = doc.getField(FIELD_DBID);
-            return dbidField.numericValue().longValue();
+
+            List<Object> values = new ArrayList<>();
+
+            IndexableField[] minHashes = doc.getFields("MINHASH");
+            for (IndexableField minHash : minHashes)
+            {
+                SchemaField sf = schema.getFieldOrNull(minHash.name());
+                Object value = DocsStreamer.getValue(sf, minHash);
+                values.add(value);
+            }
+
+            return values;
         }
 
-        return -1;
+        return null;
     }
 
     private Collection fetchFingerPrint(String shards, String nodeId) {
