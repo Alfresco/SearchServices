@@ -1785,11 +1785,11 @@
      <transformer name="qecBooster" class="org.apache.solr.response.transform.EditorialMarkerFactory" />
     -->
     
-  <transformer name="cached" class="org.alfresco.solr.transformer.AlfrescoFieldMapperTransformerFactory" />
+  <transformer name="cached" class="org.alfresco.solr.transformer.CachedDocTransformerFactory" >
+  </transformer>
 
-  <transformer name="alfrescoMapper" class="org.alfresco.solr.transformer.AlfrescoFieldMapperTransformerFactory" />
-
-  <transformer name="dv" class="org.alfresco.solr.transformer.DocValueDocTransformerFactory" />
+  <transformer name="dv" class="org.alfresco.solr.transformer.DocValueDocTransformerFactory" >
+  </transformer>
 
 
   <!-- Legacy config for the admin interface -->
@@ -1822,19 +1822,11 @@
   </requestHandler>
 
 
-
-    <requestHandler name="/fingerprint" class="org.apache.solr.handler.component.AlfrescoSearchHandler" lazy="true" >
-
-        <lst name="invariants">
-            <str name="rows">0</str>
-            <str name="q">{!edismax qf='DBID NODE_UUID' tie=0 mm=1 v=$id}</str>
-        </lst>
-
-        <arr name="last-components">
+  <requestHandler name="/fingerprint" class="org.apache.solr.handler.component.AlfrescoSearchHandler" lazy="true" >
+      <arr name="components">
             <str>fingerprint</str>
-        </arr>
-
-    </requestHandler>
+      </arr>
+  </requestHandler>
 
   <requestHandler name="/afts" class="org.apache.solr.handler.component.AlfrescoSearchHandler" lazy="true" >
     <lst name="defaults">
@@ -1848,7 +1840,6 @@
      <str name="spellcheck.collate">true</str>
      <str name="spellcheck.collateExtendedResults">true</str>
      <str name="spellcheck.maxCollationTries">5</str>
-     <str name="spellcheck.maxCollations">3</str>
      <str name="spellcheck.maxCollations">3</str>
 
      <str name="carrot.title">mltext@m___t@{http://www.alfresco.org/model/content/1.0}title</str>
