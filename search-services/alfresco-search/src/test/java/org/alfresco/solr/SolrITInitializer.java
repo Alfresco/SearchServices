@@ -1,10 +1,11 @@
 package org.alfresco.solr;
 
+import static org.alfresco.solr.AlfrescoSolrUtils.createCoreUsingTemplate;
+
 import com.carrotsearch.randomizedtesting.annotations.ThreadLeakLingering;
 import org.alfresco.solr.basics.RandomSupplier;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.apache.commons.io.FileUtils;
-import org.apache.hadoop.util.Time;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.embedded.JettyConfig;
@@ -15,7 +16,6 @@ import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.BeforeClass;
-import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,8 +46,6 @@ import java.util.Properties;
 import java.util.SortedMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.alfresco.solr.AlfrescoSolrUtils.createCoreUsingTemplate;
-
 /**
  * Clone of a helper base class for distributed search test cases
  *
@@ -72,7 +70,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.createCoreUsingTemplate;
 @ThreadLeakLingering(linger = 5000)
 public abstract class SolrITInitializer extends SolrTestCaseJ4
 {
-    private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     
     private static AtomicInteger nodeCnt;
     protected static boolean useExplicitNodeNames;
@@ -105,7 +103,6 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
      * Test configs may use the <code>${hostContext}</code> variable to access
      * this system property.
      * </p>
-     *
      */
     @BeforeClass
     public static void setup()
@@ -182,7 +179,6 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
 
     public static void dismissSolrServers()
     {
-
         try
         {
             destroyServers();
@@ -193,7 +189,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         }
         catch (Exception e)
         {
-            log.error("Failed to shutdown test properly ", e);
+            LOGGER.error("Failed to shutdown test properly ", e);
         }
     }
     
@@ -230,7 +226,6 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         SOLRAPIQueueClient.nodeMap.clear();
     }
 
-    
     /**
      * Creates a JettySolrRunner (if one didn't exist already). DOES NOT START IT.
      */
@@ -275,7 +270,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
                 in = new FileInputStream(solrcoreProperties);
                 properties.load(in);
                 in.close();
-                additionalProperties.entrySet().forEach(x-> properties.put(x.getKey(),x.getValue()));
+                additionalProperties.forEach(properties::put);
                 out = new FileOutputStream(solrcoreProperties);
                 properties.store(out, null);
             }
@@ -326,7 +321,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         {
             String url = buildUrl(jettyPort) + "/" + coreName;
 
-            log.info(url);
+            LOGGER.info(url);
 
             solrCollectionNameToStandaloneClient.put(coreName, createNewSolrClient(url));
         }
@@ -338,6 +333,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         {
             additionalProperties = new Properties();
         }
+
         String[] ranges = {"0-100", "100-200", "200-300", "300-400"};
         for (int i = 0; i < numShards; i++)
         {
@@ -360,7 +356,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
             solrShards.add(j);
             startJetty(j);
             String shardStr = buildUrl(j.getLocalPort()) + "/" + shardname;
-            log.info(shardStr);
+            LOGGER.info(shardStr);
             SolrClient clientShard = createNewSolrClient(shardStr);
             clientShards.add(clientShard);
             shardsArr[i] = shardStr;
@@ -437,10 +433,10 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
 
         if(basicAuth)
         {
-            log.info("###### adding basic auth ######");
+            LOGGER.info("###### adding basic auth ######");
             config = JettyConfig.builder().setContext("/solr").setPort(port).withFilter(BasicAuthFilter.class, "/sql/*").stopAtShutdown(true).withSSLConfig(sslConfig).build();
         } else {
-            log.info("###### no basic auth ######");
+            LOGGER.info("###### no basic auth ######");
             config = JettyConfig.builder().setContext("/solr").setPort(port).stopAtShutdown(true).withSSLConfig(sslConfig).build();
         }
 

@@ -1778,16 +1778,6 @@ System.out.println(">>>>>>" + doc.get("content@s___t@{http://www.alfresco.org/mo
                 processor.processAdd(addDocCmd);
             } catch (Exception ex)
             {
-                doc.forEach( (name, field) -> {
-                    if (field.getValues() instanceof Map) {
-                        System.out.println(name + "=> {");
-                        ((Map)field.getValue()).forEach((k,v) -> v.getClass().toString());
-                        System.out.println("}");
-                    } else
-                    {
-                        System.out.println(name + " = "+ field.getValue() + ","+ field.getValue().getClass());
-                    }
-                });
                 ex.printStackTrace();
             }
 System.out.println("DOC " + dbId + " has been marked as clean");
@@ -2353,10 +2343,14 @@ System.out.println("DOC " + dbId + " has been marked as clean");
         {
             // Marks it as Clean so we do not get the actual content
             // TODO ISOLATE IN A COMPOSE METHOD FOR A BETTER UNDERSTANDING!
-            newDoc.setField("LATEST_APPLIED_CONTENT_VERSION_ID", contentPropertyValue.getId());
-            newDoc.setField("DIRTY_MARKER", contentPropertyValue.getId());
+            if (contentPropertyValue.getId() != null) {
+                newDoc.setField("LATEST_APPLIED_CONTENT_VERSION_ID", contentPropertyValue.getId());
+                newDoc.setField("DIRTY_MARKER", contentPropertyValue.getId());
+            }
+
             newDoc.setField(FIELD_FTSSTATUS, FTSStatus.Clean.toString());
             return;
+
         }
         
 //        if (cachedDoc != null)
@@ -2405,9 +2399,11 @@ System.out.println("DOC " + dbId + " has been marked as clean");
 //            {
             String fldName = getSolrFieldNameForContentPropertyMetadata(propertyQName, AlfrescoSolrDataModel.ContentFieldType.DOCID);
 
-            newDoc.addField("LATEST_APPLIED_CONTENT_VERSION_ID", contentPropertyValue.getId());
-            newDoc.setField("DIRTY_MARKER", Map.of("removeregex", "^(" + contentPropertyValue.getId() + ")"));
-
+            if (contentPropertyValue.getId() != null)
+            {
+                newDoc.addField("LATEST_APPLIED_CONTENT_VERSION_ID", contentPropertyValue.getId());
+                newDoc.setField("DIRTY_MARKER", Map.of("removeregex", "^(" + contentPropertyValue.getId() + ")"));
+            }
 //                long cachedDocContentDocid = Long.parseLong(String.valueOf(cachedDoc.getFieldValue(fldName)));
 //                long currentContentDocid = contentPropertyValue.getId();
 //                // If we have used out of date content we mark it as dirty

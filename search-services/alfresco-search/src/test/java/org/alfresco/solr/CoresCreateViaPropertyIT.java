@@ -18,7 +18,6 @@
  */
 package org.alfresco.solr;
 
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
@@ -39,7 +38,6 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getCore;
  * @author Gethin James
  */
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class CoresCreateViaPropertyIT extends AbstractAlfrescoDistributedIT
 {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
