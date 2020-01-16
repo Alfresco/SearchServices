@@ -18,6 +18,12 @@
  */
 package org.apache.solr.handler.component;
 
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
+import static org.alfresco.solr.AlfrescoSolrDataModel.FieldUse.FACET;
+import static org.alfresco.solr.AlfrescoSolrDataModel.FieldUse.FTS;
+import static org.alfresco.solr.AlfrescoSolrDataModel.FieldUse.ID;
+import static org.alfresco.solr.AlfrescoSolrDataModel.FieldUse.SORT;
 import static org.apache.solr.common.params.CommonParams.PATH;
 
 import java.io.BufferedReader;
@@ -28,9 +34,13 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.query.AbstractQParser;
+import org.apache.cxf.transport.http.auth.HttpAuthHeader;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.ExitableDirectoryReader;
 import org.apache.lucene.index.IndexableField;
@@ -58,6 +68,7 @@ import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.DocIterator;
 import org.apache.solr.search.DocList;
 import org.apache.solr.search.SolrQueryTimeoutImpl;
+import org.apache.solr.search.SolrReturnFields;
 import org.apache.solr.search.facet.FacetModule;
 import org.apache.solr.util.RTimerTree;
 import org.apache.solr.util.SolrPluginUtils;
@@ -287,10 +298,90 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 		return shardHandler;
 	}
 
+
+	/**
+	 * Transform the fieldlist depending on the use of cached transformer:
+	 * [cached] -> add to the field list the translations of the fiels to the internal schema notation
+	 * otherwise -> modify the field list in order to contains a subset of the following fields:
+	 * 		id, DBID, _version_ and score
+	 * @param req
+	 */
+	private void transformFieldList(SolrQueryRequest req)
+	{
+		if (req.getParams().get("originalFl") != null)
+			return;
+
+		Set<String> fieldListSet = new HashSet<>();
+
+		Set<String> defaultNonCachedFields = Set.of("id","DBID", "_version_");
+		Set<String> allowedNonCachedFields = new HashSet<>(defaultNonCachedFields);
+		allowedNonCachedFields.add("score");
+
+		SolrReturnFields solrReturnFields = new SolrReturnFields(req);
+		String originalFieldList = req.getParams().get("fl");
+
+		boolean cacheTransformer = ofNullable(solrReturnFields.getTransformer())
+				.map(t -> t.getName())
+				.map(name -> name.contains("alfrescoMapper"))
+				.orElse(false);
+
+		ModifiableSolrParams params = new ModifiableSolrParams(req.getParams());
+
+
+		// In case cache transformer is no set, we need to modify the field list in order return
+		// only id, DBID and _version_ fields
+		if (!cacheTransformer){
+			if (solrReturnFields.wantsAllFields())
+			{
+				fieldListSet.addAll(defaultNonCachedFields);
+			}
+			else
+			{
+				fieldListSet.addAll(solrReturnFields.getLuceneFieldNames()
+						.stream()
+						.filter(field -> allowedNonCachedFields.contains(field))
+						.collect(Collectors.toSet()));
+			}
+
+			params.set("fl", fieldListSet.stream().collect(Collectors.joining(",")));
+		}
+		else
+		{
+			if (solrReturnFields.wantsAllFields() || solrReturnFields.hasPatternMatching())
+			{
+				fieldListSet.add("*");
+			}
+			else
+			{
+				List<AlfrescoSolrDataModel.FieldUse> fieldUsed = List.of(FTS, FACET, ID, SORT);
+				fieldListSet.addAll(solrReturnFields.getLuceneFieldNames().stream()
+						.flatMap(field ->
+								fieldUsed.stream()
+										.map( fieldUse ->  AlfrescoSolrDataModel.getInstance()
+												.mapProperty(field, fieldUse, req)))
+						.filter(schemaFieldName -> schemaFieldName != null)
+						.map(schemaFieldName -> schemaFieldName.chars()
+								.mapToObj(c -> (char) c)
+								.map(c -> Character.isJavaIdentifierPart(c)? c : '?')
+								.map(Object::toString)
+								.collect(Collectors.joining()))
+						.collect(Collectors.toSet()));
+			}
+
+			params.add("fl", fieldListSet.stream().collect(Collectors.joining(",")));
+		}
+
+		// This is added for filtering the fields in the cached transformer.
+		params.set("originalFl", originalFieldList);
+		req.setParams(params);
+	}
+
 	@Override
 	public void handleRequestBody(SolrQueryRequest req, SolrQueryResponse rsp)
 			throws Exception {
 		readJsonIntoContent(req);
+
+		transformFieldList(req);
 
 		List<SearchComponent> components = getComponents();
 		ResponseBuilder rb = new ResponseBuilder(req, rsp, components);

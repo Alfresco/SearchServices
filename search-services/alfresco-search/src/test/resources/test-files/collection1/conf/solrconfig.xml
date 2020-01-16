@@ -570,7 +570,7 @@
     <searchComponent name="rewriteFacetCounts"     class="org.alfresco.solr.component.RewriteFacetCountsComponent" />
     <searchComponent name="setProcessedDenies"     class="org.alfresco.solr.component.SetProcessedDeniesComponent" />
 
-    <transformer name="cached" class="org.alfresco.solr.transformer.CachedDocTransformerFactory" >
+    <transformer name="cached" class="org.alfresco.solr.transformer.AlfrescoFieldMapperTransformerFactory" >
     </transformer>
 
 
