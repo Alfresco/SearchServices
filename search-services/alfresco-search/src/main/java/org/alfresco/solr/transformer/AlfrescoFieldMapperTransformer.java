@@ -44,13 +44,10 @@ public class AlfrescoFieldMapperTransformer extends DocTransformer
     private ResultContext context;
     private SolrReturnFields solrReturnFields;
     
-    /* (non-Javadoc)
-     * @see org.apache.solr.response.transform.DocTransformer#getName()
-     */
     @Override
     public String getName()
     {
-        return "alfrescoMapper";
+        return "fmap";
     }
 
     public void setContext( ResultContext context ) 

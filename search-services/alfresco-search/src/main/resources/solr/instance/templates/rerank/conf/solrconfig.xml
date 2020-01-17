@@ -1796,7 +1796,7 @@
 
     <!-- CachedDocTransformer has been renamed, but we retained both codes (new and old) for retro-compatibility -->
     <transformer name="cached" class="org.alfresco.solr.transformer.AlfrescoFieldMapperTransformerFactory" />
-    <transformer name="alfrescoMapper" class="org.alfresco.solr.transformer.AlfrescoFieldMapperTransformerFactory"/>
+    <transformer name="fmap" class="org.alfresco.solr.transformer.AlfrescoFieldMapperTransformerFactory"/>
 
     <transformer name="dv" class="org.alfresco.solr.transformer.DocValueDocTransformerFactory" />
 

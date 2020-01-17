@@ -63,6 +63,7 @@ import org.apache.solr.handler.RequestHandlerBase;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.ResultContext;
 import org.apache.solr.response.SolrQueryResponse;
+import org.apache.solr.response.transform.DocTransformer;
 import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.DocIterator;
@@ -321,8 +322,8 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 		String originalFieldList = req.getParams().get("fl");
 
 		boolean cacheTransformer = ofNullable(solrReturnFields.getTransformer())
-				.map(t -> t.getName())
-				.map(name -> name.contains("alfrescoMapper"))
+				.map(DocTransformer::getName)
+				.map(name -> name.contains("fmap"))
 				.orElse(false);
 
 		ModifiableSolrParams params = new ModifiableSolrParams(req.getParams());
