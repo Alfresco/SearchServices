@@ -1738,15 +1738,19 @@ public class SolrInformationServer implements InformationServer
                             docRef.tenant,
                             docRef.aclId,
                             docRef.dbId));
-            addContentToDoc(docRef, doc, docRef.dbId);
+
+            if (docRef.optionalBag.containsKey(CONTENT_LOCALE)) {
+                addContentToDoc(docRef, doc, docRef.dbId);
+            }
 
             LOGGER.debug("Text content of Document DBID={} has been updated (not yet indexed)", docRef.dbId);
 
             final Long latestAppliedVersionId =
-                    ofNullable(docRef.optionalBag.get(LATEST_APPLIED_CONTENT_VERSION_ID))
-                        .map(String.class::cast)
-                        .map(Long::parseLong)
-                        .orElse(CONTENT_UPDATED_MARKER);
+                        ofNullable(docRef.optionalBag.get(LATEST_APPLIED_CONTENT_VERSION_ID))
+                                .map(String.class::cast)
+                                .map(Long::parseLong)
+                                .orElse(CONTENT_UPDATED_MARKER);
+
 
             markAsContentInSynch(doc, latestAppliedVersionId);
 
@@ -2288,8 +2292,8 @@ public class SolrInformationServer implements InformationServer
     private static void markAsContentInSynch(SolrInputDocument document, Long id)
     {
         long contentVersionId = ofNullable(id).orElse(CONTENT_UPDATED_MARKER);
-        document.setField(LATEST_APPLIED_CONTENT_VERSION_ID, contentVersionId);
-        document.setField(LAST_INCOMING_CONTENT_VERSION_ID, contentVersionId);
+        document.addField(LATEST_APPLIED_CONTENT_VERSION_ID, contentVersionId);
+        document.addField(LAST_INCOMING_CONTENT_VERSION_ID, contentVersionId);
     }
 
     /**
@@ -2372,21 +2376,15 @@ public class SolrInformationServer implements InformationServer
         {
             insertContentUpdateMarker(document, propertyValue);
         }
-        else
-        {
-            markAsContentInSynch(document, propertyValue);
-        }
     }
     
     private void addContentToDoc(TenantAclIdDbId docRef, SolrInputDocument doc, long dbId) throws AuthenticationException, IOException
     {
-        if (docRef.optionalBag.containsKey(CONTENT_LOCALE))
-        {
-            String locale = (String) docRef.optionalBag.get(CONTENT_LOCALE);
-            String qNamePart = CONTENT_LOCALE.substring(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX.length());
-            QName propertyQName = QName.createQName(qNamePart);
-            addContentPropertyToDocUsingAlfrescoRepository(doc, propertyQName, dbId, locale);
-        }
+
+        String locale = (String) docRef.optionalBag.get(CONTENT_LOCALE);
+        String qNamePart = CONTENT_LOCALE.substring(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX.length());
+        QName propertyQName = QName.createQName(qNamePart);
+        addContentPropertyToDocUsingAlfrescoRepository(doc, propertyQName, dbId, locale);
     }
 
     /**
@@ -3086,13 +3084,16 @@ public class SolrInformationServer implements InformationServer
                         metadata.getAclId(),
                         metadata.getId()));
         doc.setField(FIELD_VERSION, 0);
-        doc.setField(FIELD_DBID, metadata.getId());
+
+        // Here is used add in order to make sure that the atomic update happens
+        doc.addField(FIELD_DBID, metadata.getId());
         doc.setField(FIELD_LID, metadata.getNodeRef().toString());
         doc.setField(FIELD_INTXID, metadata.getTxnId());
         doc.setField(FIELD_DOC_TYPE, docType);
         doc.setField(FIELD_ACLID, metadata.getAclId());
         return doc;
     }
+
 
     private void updatePathRelatedFields(NodeMetaData nodeMetaData, SolrInputDocument doc)
     {
@@ -3214,18 +3215,18 @@ public class SolrInformationServer implements InformationServer
             NodeMetaDataParameters nmdp = new NodeMetaDataParameters();
             nmdp.setFromNodeId(childId);
             nmdp.setToNodeId(childId);
-            nmdp.setIncludeAclId(false);
+            nmdp.setIncludeAclId(true);
             nmdp.setIncludeAspects(false);
             nmdp.setIncludeChildAssociations(false);
             nmdp.setIncludeChildIds(true);
-            nmdp.setIncludeNodeRef(false);
+            nmdp.setIncludeNodeRef(true);
             nmdp.setIncludeOwner(false);
             nmdp.setIncludeParentAssociations(false);
 
             // We only care about the path and ancestors (which is included) for this case
             nmdp.setIncludePaths(true);
             nmdp.setIncludeProperties(false);
-            nmdp.setIncludeType(false);
+            nmdp.setIncludeType(true);
             nmdp.setIncludeTxnId(true);
 
             // Gets only one
@@ -3247,44 +3248,18 @@ public class SolrInformationServer implements InformationServer
 
                         LOGGER.debug("Cascade update child doc {}", childId);
 
-                        // Gets the document that we have from the content store and updates it
-                        //String fixedTenantDomain = AlfrescoSolrDataModel.getTenantId(nodeMetaData.getTenantDomain());
-
-//                        // TODO: REMOVE!
-//                        if (document == null)
-//                        {
-//           document = recreateSolrDoc(nodeMetaData.getId(), fixedTenantDomain);
-//
-//                            // if we did not build it again it has been deleted
-//                            // We do the delete here to avoid doing this again if it for some reason persists in teh index
-//                            // This is a work around for ACE-3228/ACE-3258 and the way stores are expunged when deleting a tenant
-//                            if (document == null)
-//                            {
-//                                deleteNode(processor, request, nodeMetaData.getId());
-//                            }
-//                        }
-
-
-                        // TODO: ATOMIC UPDATE
-//                        if (document != null)
-//                        {
-
                         SolrInputDocument document = basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new);
 
-                            AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
-                            addDocCmd.overwrite = overwrite;
-                            addDocCmd.solrDoc = document;
+                        AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
+                        addDocCmd.overwrite = overwrite;
+                        addDocCmd.solrDoc = document;
 
-                            updatePathRelatedFields(nodeMetaData, document);
-                            updateNamePathRelatedFields(nodeMetaData, document);
-                            updateAncestorRelatedFields(nodeMetaData, document);
+                        updatePathRelatedFields(nodeMetaData, document);
+                        updateNamePathRelatedFields(nodeMetaData, document);
+                        updateAncestorRelatedFields(nodeMetaData, document);
 
-                            processor.processAdd(addDocCmd);
-//                        }
-//                        else
-//                        {
-//                            LOGGER.debug("No child doc found to update {}", childId);
-//                        }
+                        processor.processAdd(addDocCmd);
+
                     }
                     finally
                     {
