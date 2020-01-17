@@ -52,18 +52,16 @@ public class AlfrescoFieldMapperTransformer extends DocTransformer
     {
         return "alfrescoMapper";
     }
-    
-    
+
     public void setContext( ResultContext context ) 
     {
         this.context = context;
     }
-    
-    /* (non-Javadoc)
-     * @see org.apache.solr.response.transform.DocTransformer#transform(org.apache.solr.common.SolrDocument, int)
-     */
+
+    @SuppressWarnings("unchecked")
     @Override
-    public void transform(SolrDocument doc, int docid, float score) {
+    public void transform(SolrDocument doc, int docid, float score)
+    {
         Collection<String> fieldNames = new ArrayList<>(doc.getFieldNames());
         solrReturnFields = new SolrReturnFields(context.getRequest().getParams().get("originalFl"), context.getRequest());
 

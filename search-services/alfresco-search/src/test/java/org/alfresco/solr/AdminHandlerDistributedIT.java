@@ -18,7 +18,6 @@
  */
 package org.alfresco.solr;
 
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.CoreContainer;
@@ -42,7 +41,6 @@ import static org.alfresco.solr.AlfrescoSolrUtils.*;
  * @author Gethin James
  */
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class AdminHandlerDistributedIT extends AbstractAlfrescoDistributedIT
 {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -50,17 +48,18 @@ public class AdminHandlerDistributedIT extends AbstractAlfrescoDistributedIT
     static final String CORE_NAME = "newcoretesting";
     
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
-        initSolrServers(2, "AdminHandlerDistributedIT", null);
+        initSolrServers(2, AdminHandlerDistributedIT.getSimpleClassName(), null);
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }
-    
+
+    @SuppressWarnings("unchecked")
     @Test
     public void newCoreUsingAdminHandler() throws Exception
     {
@@ -91,4 +90,3 @@ public class AdminHandlerDistributedIT extends AbstractAlfrescoDistributedIT
         assertEquals(ACL_ID.toString(), props.get("shard.method"));
     }
 }
-
