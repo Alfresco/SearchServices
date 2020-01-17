@@ -81,7 +81,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
 import com.carrotsearch.hppc.IntArrayList;
 
@@ -2499,12 +2498,8 @@ public class SolrInformationServer implements InformationServer
                 response);
         addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_TIME,
                 response);
-        
+
         InputStream ris = response.getContent();
-        if (response.getContentEncoding().equals("gzip"))
-        {
-            ris = new GZIPInputStream(ris);
-        }
         String textContent = "";
         try
         {
