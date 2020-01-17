@@ -139,6 +139,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.LeafReaderContext;
@@ -229,17 +230,22 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    private final static Log LOGGER = new Log(SolrInformationServer.class);
-
+    private static final Log LOGGER = new Log(SolrInformationServer.class);
     private static final String NO_SITE = "_REPOSITORY_";
     private static final String SHARED_FILES = "_SHARED_FILES_";
 
-
     private static final Set<String> REQUEST_ONLY_ID_FIELD = new HashSet<>(Collections.singletonList(FIELD_SOLR4_ID));
+
     private static final String LATEST_APPLIED_CONTENT_VERSION_ID = "LATEST_APPLIED_CONTENT_VERSION_ID";
+    private static final String LAST_INCOMING_CONTENT_VERSION_ID = "LAST_INCOMING_CONTENT_VERSION_ID";
+
+    private static final long CONTENT_OUTDATED_MARKER = -10L;
+    private static final long CONTENT_UPDATED_MARKER = -20L;
+
     private static final String CONTENT_LOCALE = "content@s__locale@{http://www.alfresco.org/model/content/1.0}content";
-    private static final Set<String> ID_AND_CONTENT_VERSION_ID =
-            new HashSet<>(asList(FIELD_SOLR4_ID, "LATEST_APPLIED_CONTENT_VERSION_ID", CONTENT_LOCALE));
+
+    private static final Set<String> ID_AND_CONTENT_VERSION_ID_AND_CONTENT_LOCALE =
+            new HashSet<>(asList(FIELD_SOLR4_ID, LATEST_APPLIED_CONTENT_VERSION_ID, CONTENT_LOCALE));
 
     private static final String INDEX_CAP_ID = "TRACKER!STATE!CAP";
 
@@ -284,11 +290,11 @@ public class SolrInformationServer implements InformationServer
     private final Cloud cloud;
     private final TrackerStats trackerStats = new TrackerStats(this);
     private final AlfrescoSolrDataModel dataModel;
-    private final boolean transformContent;
+    private final boolean contentIndexingHasBeenEnabledOnThisInstance;
     private final boolean recordUnindexedNodes;
     private final long lag;
     private final long holeRetention;
-    private final boolean minHash;
+    private final boolean fingerprintHasBeenEnabledOnThisInstance;
     private final int contentStreamLimit;
 
     private long cleanContentLastPurged;
@@ -473,21 +479,24 @@ public class SolrInformationServer implements InformationServer
 
         Properties coreConfiguration = core.getResourceLoader().getCoreProperties();
 
-        transformContent = Boolean.parseBoolean(coreConfiguration.getProperty("alfresco.index.transformContent", "true"));
+        contentIndexingHasBeenEnabledOnThisInstance = Boolean.parseBoolean(coreConfiguration.getProperty("alfresco.index.transformContent", "true"));
+        LOGGER.info(
+                "Content Indexing (AKA Transformation) has been {} on this instance.",
+                contentIndexingHasBeenEnabledOnThisInstance ? "enabled" : "disabled");
+
         recordUnindexedNodes = Boolean.parseBoolean(coreConfiguration.getProperty("alfresco.recordUnindexedNodes", "true"));
         lag = Integer.parseInt(coreConfiguration.getProperty("alfresco.lag", "1000"));
         holeRetention = Integer.parseInt(coreConfiguration.getProperty("alfresco.hole.retention", "3600000"));
-        minHash = Boolean.parseBoolean(coreConfiguration.getProperty("alfresco.fingerprint", "true"));
 
-        if (minHash)
-        {
-            LOGGER.info("Fingerprinting has been enabled on this instance.");
-        }
+        fingerprintHasBeenEnabledOnThisInstance = Boolean.parseBoolean(coreConfiguration.getProperty("alfresco.fingerprint", "true"));
+        LOGGER.info(
+                "Fingerprint has been {} on this instance.",
+                fingerprintHasBeenEnabledOnThisInstance ? "enabled" : "disabled");
 
         dataModel = AlfrescoSolrDataModel.getInstance();
 
         contentStreamLimit = Integer.parseInt(coreConfiguration.getProperty("alfresco.contentStreamLimit", "10000000"));
-        
+
         props = AlfrescoSolrDataModel.getCommonConfig();
         hostName = ConfigUtil.locateProperty(SOLR_HOST, props.getProperty(SOLR_HOST));
 
@@ -527,7 +536,6 @@ public class SolrInformationServer implements InformationServer
         isSkippingDocsInitialized = true;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void addFTSStatusCounts(NamedList<Object> report)
     {
@@ -536,29 +544,40 @@ public class SolrInformationServer implements InformationServer
             ModifiableSolrParams params =
                     new ModifiableSolrParams(request.getParams())
                             .set(CommonParams.Q, "*:*")
+                            .set(CommonParams.FQ, FIELD_DOC_TYPE + ":" + DOC_TYPE_NODE)
                             .set(CommonParams.ROWS, 0)
                             .set(FacetParams.FACET, true)
-                            .set(FacetParams.FACET_FIELD, FIELD_FTSSTATUS);
+                            //.add(FacetParams.FACET_QUERY, "{!frange key='UPDATED' l=0}sub(LAST_INCOMING_CONTENT_VERSION_ID,LATEST_APPLIED_CONTENT_VERSION_ID)")
+                            .add(FacetParams.FACET_QUERY, "{!key='OUTDATED'}LATEST_APPLIED_CONTENT_VERSION_ID:{-10L TO -10L}");
 
             SolrQueryResponse response = cloud.getResponse(nativeRequestHandler, request, params);
 
-            NamedList<Integer> ftsStatusCounts =
+            long numFound =
+                    ofNullable(response)
+                        .map(SolrQueryResponse::getValues)
+                        .map(NamedList.class::cast)
+                        .map(facets -> facets.get("response"))
+                        .map(NamedList.class::cast)
+                        .map(rsp -> rsp.get("numFound"))
+                        .map(Number.class::cast)
+                        .map(Number::longValue)
+                        .orElse(0L);
+
+            long outdated =
                     ofNullable(response)
                         .map(SolrQueryResponse::getValues)
                         .map(NamedList.class::cast)
                         .map(facets -> facets.get("facet_counts"))
                         .map(NamedList.class::cast)
-                        .map(facetCounts -> facetCounts.get("facet_fields"))
+                        .map(facetCounts -> facetCounts.get("facet_queries"))
                         .map(NamedList.class::cast)
-                        .map(facetFields -> facetFields.get(FIELD_FTSSTATUS))
-                        .map(NamedList.class::cast)
-                        .orElseGet(SimpleOrderedMap::new);
+                        .map(facetQueries -> facetQueries.get("OUTDATED"))
+                        .map(Number.class::cast)
+                        .map(Number::longValue)
+                        .orElse(0L);
 
-            report.add("Node count whose content is in synch",
-                    getSafeCount(ftsStatusCounts, FTSStatus.Clean.toString()));
-
-            report.add("Node count whose content needs to be updated",
-                    getSafeCount(ftsStatusCounts, FTSStatus.Dirty.toString()));
+            report.add("Node count whose content doesn't have to be indexed or it is in synch", numFound - outdated);
+            report.add("Node count whose content needs to be updated", outdated);
         }
     }
     
@@ -794,7 +813,7 @@ public class SolrInformationServer implements InformationServer
             for (int i = 0; i < size; ++i)
             {
                 int doc = docList.get(i);
-                Document document = searcher.doc(doc, ID_AND_CONTENT_VERSION_ID);
+                Document document = searcher.doc(doc, ID_AND_CONTENT_VERSION_ID_AND_CONTENT_LOCALE);
                 index = ReaderUtil.subIndex(doc, leaves);
                 context = leaves.get(index);
                 longs = context.reader().getNumericDocValues(FIELD_INTXID);
@@ -1724,10 +1743,10 @@ public class SolrInformationServer implements InformationServer
             LOGGER.debug("Text content of Document DBID={} has been updated (not yet indexed)", docRef.dbId);
 
             final Long latestAppliedVersionId =
-                    ofNullable(docRef.optionalBag.get("LATEST_APPLIED_CONTENT_VERSION_ID"))
+                    ofNullable(docRef.optionalBag.get(LATEST_APPLIED_CONTENT_VERSION_ID))
                         .map(String.class::cast)
                         .map(Long::parseLong)
-                        .orElse(null);
+                        .orElse(CONTENT_UPDATED_MARKER);
 
             markAsContentInSynch(doc, latestAppliedVersionId);
 
@@ -1886,7 +1905,7 @@ public class SolrInformationServer implements InformationServer
                 metadata.getProperties(),
                 isContentIndexedForNode(metadata.getProperties()),
                 document,
-                transformContent);
+                contentIndexingHasBeenEnabledOnThisInstance);
 
         LOGGER.debug("Document cardinality after getting properties from node {} metadata: {}", metadata.getId(), document.size());
 
@@ -2020,12 +2039,15 @@ public class SolrInformationServer implements InformationServer
     static void populateProperties(
             long id,
             Map<QName, PropertyValue> properties,
-            boolean isContentIndexedForNode,
+            boolean contentIndexingHasBeenRequestedForThisNode,
             SolrInputDocument document,
-            boolean transformContentFlag)
+            boolean contentIndexingHasBeenEnabledOnThisInstance)
     {
-        LOGGER.debug("Does Node {} requires content indexing? {}", id, isContentIndexedForNode);
-        if (!isContentIndexedForNode)
+        boolean contentIndexingIsEnabled =
+                contentIndexingHasBeenEnabledOnThisInstance
+                        && contentIndexingHasBeenRequestedForThisNode;
+
+        if (!contentIndexingIsEnabled)
         {
             markAsContentInSynch(document);
         }
@@ -2052,13 +2074,7 @@ public class SolrInformationServer implements InformationServer
                 }
                 else if (value instanceof ContentPropertyValue)
                 {
-                    boolean transform = transformContentFlag;
-                    if (!isContentIndexedForNode)
-                    {
-                        transform = false;
-                    }
-
-                    addContentProperty(document, propertyQName, (ContentPropertyValue) value, transform);
+                    addContentProperty(document, propertyQName, (ContentPropertyValue) value, contentIndexingIsEnabled);
 
                 }
                 else if (value instanceof MultiPropertyValue)
@@ -2078,13 +2094,7 @@ public class SolrInformationServer implements InformationServer
                         }
                         else if (singleValue instanceof ContentPropertyValue)
                         {
-                            boolean transform = transformContentFlag;
-                            if (!isContentIndexedForNode)
-                            {
-                                transform = false;
-                            }
-
-                            addContentProperty(document, propertyQName, (ContentPropertyValue) singleValue, transform);
+                            addContentProperty(document, propertyQName, (ContentPropertyValue) singleValue, contentIndexingIsEnabled);
                         }
                     }
                 }
@@ -2266,7 +2276,7 @@ public class SolrInformationServer implements InformationServer
                 .map(ContentPropertyValue::getId)
                 .ifPresentOrElse(
                     id -> markAsContentInSynch(document, id),
-                    () -> document.setField("DIRTY_MARKER", FTSStatus.Clean.name()));
+                    () -> markAsContentInSynch(document, CONTENT_UPDATED_MARKER));
     }
 
     /**
@@ -2277,11 +2287,9 @@ public class SolrInformationServer implements InformationServer
      */
     private static void markAsContentInSynch(SolrInputDocument document, Long id)
     {
-        ofNullable(id)
-                .ifPresentOrElse(identifier -> {
-                            document.setField("LATEST_APPLIED_CONTENT_VERSION_ID", identifier);
-                            document.setField("DIRTY_MARKER", identifier);},
-                        () -> document.setField("DIRTY_MARKER", FTSStatus.Clean.name()));
+        long contentVersionId = ofNullable(id).orElse(CONTENT_UPDATED_MARKER);
+        document.setField(LATEST_APPLIED_CONTENT_VERSION_ID, contentVersionId);
+        document.setField(LAST_INCOMING_CONTENT_VERSION_ID, contentVersionId);
     }
 
     /**
@@ -2332,7 +2340,7 @@ public class SolrInformationServer implements InformationServer
      *          LATEST_APPLIED_CONTENT_VERSION_ID: as the name suggests, this is the latest DOCID applied to this document (again, not the lucene docid)
      *     </li>
      *     <li>
-     *          DIRTY_MARKER: a field that will contains "DIRTY" if the content is outdated, otherwise it will have the same value
+     *          LAST_INCOMING_CONTENT_VERSION_ID: a field that will contains "-10" if the content is outdated, otherwise it will have the same value
      *          of LATEST_APPLIED_CONTENT_VERSION_ID.
      *     </li>
      * </ul>
@@ -2341,17 +2349,18 @@ public class SolrInformationServer implements InformationServer
     {
         ofNullable(value)
                 .map(ContentPropertyValue::getId)
-                .ifPresent(id -> {
-                    document.setField("LATEST_APPLIED_CONTENT_VERSION_ID", id);
-                    document.setField("DIRTY_MARKER", Map.of("removeregex", "^(" + id + ")"));
-                });
+                .ifPresentOrElse(
+                        id -> {
+                            document.setField(LATEST_APPLIED_CONTENT_VERSION_ID, id);
+                            document.setField(LAST_INCOMING_CONTENT_VERSION_ID, Map.of("removeregex", "^" + id));},
+                        () ->  document.setField(LAST_INCOMING_CONTENT_VERSION_ID, CONTENT_OUTDATED_MARKER));
     }
 
     private static void addContentProperty(
             SolrInputDocument document,
             QName propertyName,
             ContentPropertyValue propertyValue,
-            boolean transformContentFlag)
+            boolean contentIndexingEnabled)
     {
         addContentPropertyMetadata(document, propertyName, propertyValue, AlfrescoSolrDataModel.ContentFieldType.DOCID);
         addContentPropertyMetadata(document, propertyName, propertyValue, AlfrescoSolrDataModel.ContentFieldType.SIZE);
@@ -2359,7 +2368,7 @@ public class SolrInformationServer implements InformationServer
         addContentPropertyMetadata(document, propertyName, propertyValue, AlfrescoSolrDataModel.ContentFieldType.MIMETYPE);
         addContentPropertyMetadata(document, propertyName, propertyValue, AlfrescoSolrDataModel.ContentFieldType.ENCODING);
 
-        if (transformContentFlag)
+        if (contentIndexingEnabled)
         {
             insertContentUpdateMarker(document, propertyValue);
         }
@@ -2421,7 +2430,7 @@ public class SolrInformationServer implements InformationServer
 
         final String textContent = textContentFrom(response);
 
-        if(minHash && !textContent.isBlank())
+        if(fingerprintHasBeenEnabledOnThisInstance && !textContent.isBlank())
         {
             Analyzer analyzer = core.getLatestSchema().getFieldType("min_hash").getIndexAnalyzer();
             TokenStream ts = analyzer.tokenStream("dummy_field", textContent);
@@ -3610,13 +3619,12 @@ public class SolrInformationServer implements InformationServer
 
     private Query dirtyOrNewContentQuery()
     {
-        TermQuery onlyDirtyDocuments = new TermQuery(new Term("DIRTY_MARKER", "DIRTY"));
-        TermQuery onlyDocuments = new TermQuery(new Term(FIELD_DOC_TYPE, DOC_TYPE_NODE));
-        TermQuery documentWithContentInSinch = new TermQuery(new Term(FIELD_FTSSTATUS, FTSStatus.Clean.name()));
+        Query onlyDirtyDocuments = LegacyNumericRangeQuery.newLongRange(LAST_INCOMING_CONTENT_VERSION_ID, CONTENT_OUTDATED_MARKER, CONTENT_OUTDATED_MARKER, true, true);
+        Query onlyDocuments = new TermQuery(new Term(FIELD_DOC_TYPE, DOC_TYPE_NODE));
+
         return new BooleanQuery.Builder()
                     .add(onlyDirtyDocuments, BooleanClause.Occur.MUST)
                     .add(onlyDocuments, BooleanClause.Occur.MUST)
-                    .add(documentWithContentInSinch, BooleanClause.Occur.MUST_NOT)
                     .build();
     }
 

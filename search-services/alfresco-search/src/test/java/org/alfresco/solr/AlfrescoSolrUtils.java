@@ -613,7 +613,7 @@ public class AlfrescoSolrUtils
         {
             final boolean isContentIndexedForNode = true;
             final boolean transformContentFlag = true;
-            SolrInformationServer.populateProperties(Long.parseLong(id), properties, isContentIndexedForNode, doc, transformContentFlag);
+            SolrInformationServer.populateProperties(dbid, properties, isContentIndexedForNode, doc, transformContentFlag);
             addContentToDoc(doc, content);
         }
         

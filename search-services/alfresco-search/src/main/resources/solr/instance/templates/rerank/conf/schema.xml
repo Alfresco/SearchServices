@@ -50,6 +50,7 @@
       <fieldType name="float" class="solr.TrieFloatField" indexed="true" stored="true" precisionStep="4" />
       <fieldType name="floats" class="solr.TrieFloatField" multiValued="true" indexed="true" stored="true" precisionStep="4" positionIncrementGap="100" />
 
+      <fieldType name="long_without_precision_step" class="solr.TrieLongField" precisionStep="0" positionIncrementGap="0" indexed="true" stored="true" docValues="true"/>
       <fieldType name="long" class="solr.TrieLongField" indexed="true" stored="true" precisionStep="6" />
       <fieldType name="longs" class="solr.TrieLongField" multiValued="true" indexed="true" stored="true" precisionStep="6" positionIncrementGap="100" />
 
@@ -794,8 +795,26 @@
       <field name="PARENTASSOCCRC" type="long" />
       <field name="CASCADETX" type="long" docValues="true" />
 
-      <field name="DIRTY_MARKER" type="identifier" default="DIRTY"/>
-      <field name="LATEST_APPLIED_CONTENT_VERSION_ID" type="identifier"/>
+      <!--
+        These 2 fields are used after the content store removal, for detecting the content indexing status
+        (Previsouly Clean, New, Dirty).
+
+        -10 => Default value of LAST_INCOMING_CONTENT_VERSION_ID which means "Dirty" (i.e. the content needs to be updated)
+        -20 => Means "Content updated"
+
+        LATEST_APPLIED_CONTENT_VERSION_ID
+        It corresponds to the identifier of the latest applied content property (DOCID). It can be null (i.e. the incoming
+        node doesn't have a value for that property, even if it requires content indexing)
+
+        LAST_INCOMING_CONTENT_VERSION_ID
+        This is used for detecting documents outdated or that require content indexing for the first time.
+        The field itself doesn't mean anything, it must be compared with the LATEST_APPLIED_CONTENT_VERSION_ID:
+        - if the two fields have the same value then content is up to date
+        - if the two fields doesn't have the same value then the document will be selected by the ContentTracker for
+          content indexing
+      -->
+      <field name="LATEST_APPLIED_CONTENT_VERSION_ID" type="long_without_precision_step"/>
+      <field name="LAST_INCOMING_CONTENT_VERSION_ID" type="long_without_precision_step" default="-10"/>
 
       <!--
         Used to store the last transaction and acl transaction for real time get
