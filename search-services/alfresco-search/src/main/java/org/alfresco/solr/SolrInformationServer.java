@@ -200,7 +200,7 @@ public class SolrInformationServer implements InformationServer
         @Override
         public void addField(String name, Object value)
         {
-            mutate(name, value, "add");
+            mutate(name, value, "set");
         }
 
 //        @Override
@@ -1731,17 +1731,17 @@ public class SolrInformationServer implements InformationServer
 
             markAsContentInSynch(doc, latestAppliedVersionId);
 
-            LOGGER.debug(
-                    "Text content of Document DBID={} has been marked as updated (latest content version ID = {})",
-                    docRef.dbId,
-                    latestAppliedVersionId);
-
             // Add to index
             AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
             addDocCmd.overwrite = true;
             addDocCmd.solrDoc = doc;
 
             processor.processAdd(addDocCmd);
+
+            LOGGER.debug(
+                    "Text content of Document DBID={} has been marked as updated (latest content version ID = {})",
+                    docRef.dbId,
+                    latestAppliedVersionId);
         }
         finally
         {
