@@ -118,7 +118,7 @@ public class SOLRAPIClient
     /**
      * This option enables ("Accept-Encoding": "gzip") header for compression
      * in GET_CONTENT requests. Additional configuration is required in 
-     * Alfresco Repository Tomcat Connector or HTTP Web Proxy to deal w
+     * Alfresco Repository Tomcat Connector or HTTP Web Proxy to deal
      * with compressed requests.
      */
     private boolean compression;
@@ -1137,7 +1137,7 @@ public class SOLRAPIClient
         
         GetRequest req = new GetRequest(url.toString());
         
-        Map<String, String> headers = new HashMap<String, String>();
+        Map<String, String> headers = new HashMap<>();
         if(modifiedSince != null)
         {
             headers.put("If-Modified-Since", String.valueOf(DateUtil.formatDate(new Date(modifiedSince))));

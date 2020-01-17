@@ -2501,7 +2501,7 @@ public class SolrInformationServer implements InformationServer
                 response);
         
         InputStream ris = response.getContent();
-        if (null != response.getContentEncoding() && response.getContentEncoding().equals("gzip"))
+        if (response.getContentEncoding().equals("gzip"))
         {
             ris = new GZIPInputStream(ris);
         }
