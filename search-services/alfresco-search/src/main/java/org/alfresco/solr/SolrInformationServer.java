@@ -1782,6 +1782,8 @@ public class SolrInformationServer implements InformationServer
             processor = this.core.getUpdateProcessingChain(null).createProcessor(request, newSolrQueryResponse());
 
             SolrInputDocument doc = new PartialSolrInputDocument();
+            doc.removeField(FIELD_SOLR4_ID);
+            doc.addField(FIELD_DBID, docRef.dbId);
             doc.setField(FIELD_SOLR4_ID,
                     AlfrescoSolrDataModel.getNodeDocumentId(
                             docRef.tenant,
@@ -2318,6 +2320,7 @@ public class SolrInformationServer implements InformationServer
     private static void markAsContentInSynch(SolrInputDocument document, Long id)
     {
         long contentVersionId = ofNullable(id).orElse(CONTENT_UPDATED_MARKER);
+
         document.setField(LATEST_APPLIED_CONTENT_VERSION_ID, contentVersionId);
         document.setField(LAST_INCOMING_CONTENT_VERSION_ID, contentVersionId);
     }
@@ -2479,11 +2482,13 @@ public class SolrInformationServer implements InformationServer
         this.getTrackerStats().addDocTransformationTime(System.nanoTime() - start);
 
         dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
+                .stream()
+                .peek(field -> doc.remove(field.getField()))
                 .forEach(field -> {
                     doc.addField(
                             field.getField(),
                             field.isLocalised()
-                                    ? Map.of("set", "\u0000" + locale + "\u0000" + textContent)
+                                    ? "\u0000" + locale + "\u0000" + textContent
                                     : textContent);
 
                     addFieldIfNotSet(doc, field.getField());
