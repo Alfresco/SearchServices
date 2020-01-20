@@ -280,6 +280,7 @@
         <arr name="components">
             <str>setLocale</str>
             <str>rewriteFacetParameters</str>
+            <str>rewriteFieldListComponent</str>
             <str>query</str>
             <str>facet</str>
             <str>facet_module</str>
@@ -563,6 +564,7 @@
     </searchComponent>
     <searchComponent name="spellcheckbackcompat" class="org.alfresco.solr.component.spellcheck.AlfrescoSpellCheckBackCompatComponent"/>
     <searchComponent name="rewriteFacetParameters" class="org.alfresco.solr.component.RewriteFacetParametersComponent" />
+    <searchComponent name="rewriteFieldListComponent"     class="org.alfresco.solr.component.RewriteFieldListComponent" />
     <searchComponent name="rewriteFacetCounts" class="org.alfresco.solr.component.RewriteFacetCountsComponent" />
     <searchComponent name="setProcessedDenies" class="org.alfresco.solr.component.SetProcessedDeniesComponent" />
 
