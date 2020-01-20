@@ -84,10 +84,12 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.carrotsearch.hppc.IntArrayList;
 
@@ -139,7 +141,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.LeafReaderContext;
@@ -195,42 +196,91 @@ public class SolrInformationServer implements InformationServer
     /**
      * A specialization of {@link SolrInputDocument} which allows to represent a partial document (used for issuing
      * atomic update requests) and interact with it using the same interface of a full document.
+     *
+     * The semantic is a little bit specialised so this class it's not meant to be reused outside
+     * the {@link SolrInformationServer}.
+     *
+     * Three methods have been overridden in order to fulfil the following behaviour:
+     *
+     * <ul>
+     *     <li>
+     *         {@link #removeField(String)}: removing a field on a full {@link SolrInputDocument} instance makes no
+     *         much sense. However, the previous code used the local content store document "image" in order to rebuild
+     *         the whole object: that's the reason why sometimes you will see this method called for "cleaning" up the
+     *         previous existing values before setting a field.
+     *         A call of {@link #removeField(String)} on a {@link PartialSolrInputDocument} instance will have the effect
+     *         to put a "delete all" (i.e. "set" command with null value) marker value on the given field.
+     *         That means if later some other method is called (e.g. {@link #setField(String, Object)},
+     *         {@link #addField(String, Object)}) then the marker will be replaced, otherwise, when the document will
+     *         be sent for indexing the field will be deleted.
+     *
+     *         IMPORTANT: a call to this method will set a "set" field modifier (with null value) on this field.
+     *         That means any subsequent {@link #addField(String, Object)} call will add a value using the SAME field
+     *         modifier. In other words at the end, when the document will be sent to indexing, the collected value(s)
+     *         will replaced (set) the existing indexed value(s).
+     *     </li>
+     *     <li>
+     *         {@link #addField(String, Object)}: this method call can have a double behaviour depending on if we
+     *         previously called {@link #removeField(String)} on this instance or not.
+     *         If we didn't call the {@link #removeField(String)} then the usual semantic applies: the collected  value(s)
+     *         are added to a field modifier (i.e. "add" command) which indicates we want to merge them with the
+     *         indexed value(s).
+     *         Instead, as explained in the previous point above, if {@link #removeField(String)} has been called on this
+     *         instance for a given field, then a "set" field modifier will be set and associated to that field, and
+     *         subsequent call to {@link #addField(String, Object)} will collect the incoming values under the "set" command.
+     *         In this latter case, when the document will be sent for indexing, the collected value(s) will replace the
+     *         indexed one(s).
+     *     </li>
+     *     <li>
+     *         {@link #setField(String, Object)}: the semantic doesn't change. A call to this method will indicate we want
+     *         to replace the indexed field value(s). Note this method doesn't collect the input values, so that means
+     *         unless you call it with a list, any subsequent call will replace the existing value.
+     *     </li>
+     * </ul>
      */
-    class PartialSolrInputDocument extends SolrInputDocument
+    static class PartialSolrInputDocument extends SolrInputDocument
     {
         @Override
+        @SuppressWarnings("unchecked")
         public void addField(String name, Object value)
         {
-            mutate(name, value, "set");
-        }
+            Map<String, List<Object>> fieldModifier =
+                    (Map<String, List<Object>>)computeIfAbsent(name, k -> {
+                        remove(name);
+                        setField(name, newFieldModifier("add"));
 
-//        @Override
-//        public void setField(String name, Object value)
-//        {
-//            mutate(name, value, "set");
-//        }
+                        return getField(name);
+                    }).getValue();
+
+            ofNullable(value)
+                    .ifPresent(v -> fieldModifier.computeIfAbsent(
+                                                    fieldModifier.keySet().iterator().next(),
+                                                    LAZY_EMPTY_MUTABLE_LIST).add(v));
+        }
 
         @Override
         public SolrInputField removeField(String name)
         {
-            setField(name, newFieldModifier());
+            setField(name, newFieldModifier("set"));
             return getField(name);
         }
 
-        @SuppressWarnings("unchecked")
-        private void mutate(String name, Object value, String op)
+        /**
+         * Creates a new field modifier description for inserting an atomic update command within a document.
+         *
+         * @return the field modifier (a {@link Map} instance with a null value associated to the "set" command).
+         */
+        private Map<String, List<String>> newFieldModifier(String op)
         {
-            Map<String, List<Object>> fieldModifier =
-                    (Map<String, List<Object>>)computeIfAbsent(name, k -> {
-                        setField(name, newFieldModifier());
-                        return getField(name);
-                    }).getValue();
-
-            ofNullable(value).ifPresent(v -> fieldModifier.computeIfAbsent(op, LAZY_EMPTY_MUTABLE_LIST).add(v));
+            return new HashMap<>()
+            {{
+                put(op, null);
+            }};
         }
     }
 
     private static final Log LOGGER = new Log(SolrInformationServer.class);
+
     private static final String NO_SITE = "_REPOSITORY_";
     private static final String SHARED_FILES = "_SHARED_FILES_";
 
@@ -239,13 +289,12 @@ public class SolrInformationServer implements InformationServer
     private static final String LATEST_APPLIED_CONTENT_VERSION_ID = "LATEST_APPLIED_CONTENT_VERSION_ID";
     private static final String LAST_INCOMING_CONTENT_VERSION_ID = "LAST_INCOMING_CONTENT_VERSION_ID";
 
-    private static final long CONTENT_OUTDATED_MARKER = -10L;
-    private static final long CONTENT_UPDATED_MARKER = -20L;
+    private static final long CONTENT_OUTDATED_MARKER = -10;
+    private static final long CONTENT_UPDATED_MARKER = -20;
 
-    private static final String CONTENT_LOCALE = "content@s__locale@{http://www.alfresco.org/model/content/1.0}content";
-
+    private static final String CONTENT_LOCALE_FIELD = "content@s__locale@{http://www.alfresco.org/model/content/1.0}content";
     private static final Set<String> ID_AND_CONTENT_VERSION_ID_AND_CONTENT_LOCALE =
-            new HashSet<>(asList(FIELD_SOLR4_ID, LATEST_APPLIED_CONTENT_VERSION_ID, CONTENT_LOCALE));
+            new HashSet<>(asList(FIELD_SOLR4_ID, LATEST_APPLIED_CONTENT_VERSION_ID, CONTENT_LOCALE_FIELD));
 
     private static final String INDEX_CAP_ID = "TRACKER!STATE!CAP";
 
@@ -548,7 +597,7 @@ public class SolrInformationServer implements InformationServer
                             .set(CommonParams.ROWS, 0)
                             .set(FacetParams.FACET, true)
                             //.add(FacetParams.FACET_QUERY, "{!frange key='UPDATED' l=0}sub(LAST_INCOMING_CONTENT_VERSION_ID,LATEST_APPLIED_CONTENT_VERSION_ID)")
-                            .add(FacetParams.FACET_QUERY, "{!key='OUTDATED'}LATEST_APPLIED_CONTENT_VERSION_ID:{-10L TO -10L}");
+                            .add(FacetParams.FACET_QUERY, "{!key='OUTDATED'}LATEST_APPLIED_CONTENT_VERSION_ID:{-10 TO -10}");
 
             SolrQueryResponse response = cloud.getResponse(nativeRequestHandler, request, params);
 
@@ -827,9 +876,9 @@ public class SolrInformationServer implements InformationServer
                     String idString = id.stringValue();
                     TenantAclIdDbId tenantAndDbId = AlfrescoSolrDataModel.decodeNodeDocumentId(idString);
 
-                    ofNullable(document.getField(CONTENT_LOCALE))
+                    ofNullable(document.getField(CONTENT_LOCALE_FIELD))
                             .map(IndexableField::stringValue)
-                            .ifPresent(value -> tenantAndDbId.setProperty(CONTENT_LOCALE, value));
+                            .ifPresent(value -> tenantAndDbId.setProperty(CONTENT_LOCALE_FIELD, value));
 
                     tenantAndDbId.setProperty(
                             LATEST_APPLIED_CONTENT_VERSION_ID,
@@ -1739,7 +1788,7 @@ public class SolrInformationServer implements InformationServer
                             docRef.aclId,
                             docRef.dbId));
 
-            if (docRef.optionalBag.containsKey(CONTENT_LOCALE))
+            if (docRef.optionalBag.containsKey(CONTENT_LOCALE_FIELD))
             {
                 addContentToDoc(docRef, doc, docRef.dbId);
             }
@@ -1751,7 +1800,6 @@ public class SolrInformationServer implements InformationServer
                                 .map(String.class::cast)
                                 .map(Long::parseLong)
                                 .orElse(CONTENT_UPDATED_MARKER);
-
 
             markAsContentInSynch(doc, latestAppliedVersionId);
 
@@ -1765,7 +1813,7 @@ public class SolrInformationServer implements InformationServer
             LOGGER.debug(
                     "Text content of Document DBID={} has been marked as updated (latest content version ID = {})",
                     docRef.dbId,
-                    latestAppliedVersionId);
+                    (latestAppliedVersionId == CONTENT_UPDATED_MARKER ? "N.A." : latestAppliedVersionId));
         }
         finally
         {
@@ -1906,7 +1954,6 @@ public class SolrInformationServer implements InformationServer
         LOGGER.debug("Document size (fields) after getting fields from node {} metadata: {}", metadata.getId(), document.size());
 
         populateProperties(
-                metadata.getId(),
                 metadata.getProperties(),
                 isContentIndexedForNode(metadata.getProperties()),
                 document,
@@ -1919,12 +1966,12 @@ public class SolrInformationServer implements InformationServer
 
     private void populateFields(NodeMetaData metadata, SolrInputDocument doc)
     {
-        doc.addField(FIELD_TYPE, metadata.getType().toString());
+        doc.setField(FIELD_TYPE, metadata.getType().toString());
         notNullOrEmpty(metadata.getAspects())
                 .stream()
                 .filter(Objects::nonNull)
                 .forEach(aspect -> {
-                    doc.addField(FIELD_ASPECT, aspect.toString());
+                    doc.setField(FIELD_ASPECT, aspect.toString());
                     if(aspect.equals(ContentModel.ASPECT_GEOGRAPHIC))
                     {
                         Optional<Double> latitude =
@@ -1943,7 +1990,7 @@ public class SolrInformationServer implements InformationServer
 
                         if (latitude.isPresent() && longitude.isPresent())
                         {
-                            doc.addField(FIELD_GEO, latitude.get() + ", " + longitude.get());
+                            doc.setField(FIELD_GEO, latitude.get() + ", " + longitude.get());
                         }
                         else
                         {
@@ -1951,16 +1998,16 @@ public class SolrInformationServer implements InformationServer
                         }
                     }
                 });
-        doc.addField(FIELD_ISNODE, "T");
-        doc.addField(FIELD_TENANT, AlfrescoSolrDataModel.getTenantId(metadata.getTenantDomain()));
+        doc.setField(FIELD_ISNODE, "T");
+        doc.setField(FIELD_TENANT, AlfrescoSolrDataModel.getTenantId(metadata.getTenantDomain()));
 
         updatePathRelatedFields(metadata, doc);
         updateNamePathRelatedFields(metadata, doc);
         updateAncestorRelatedFields(metadata, doc);
 
-        doc.addField(FIELD_PARENT_ASSOC_CRC, metadata.getParentAssocsCrc());
+        doc.setField(FIELD_PARENT_ASSOC_CRC, metadata.getParentAssocsCrc());
 
-        ofNullable(metadata.getOwner()).ifPresent(owner -> doc.addField(FIELD_OWNER, owner));
+        ofNullable(metadata.getOwner()).ifPresent(owner -> doc.setField(FIELD_OWNER, owner));
 
         StringBuilder qNameBuffer = new StringBuilder();
         StringBuilder assocTypeQNameBuffer = new StringBuilder();
@@ -1974,15 +2021,15 @@ public class SolrInformationServer implements InformationServer
                     }
                     qNameBuffer.append(ISO9075.getXPathName(childAssocRef.getQName()));
                     assocTypeQNameBuffer.append(ISO9075.getXPathName(childAssocRef.getTypeQName()));
-                    doc.addField(FIELD_PARENT, childAssocRef.getParentRef().toString());
+                    doc.setField(FIELD_PARENT, childAssocRef.getParentRef().toString());
 
                     if (childAssocRef.isPrimary())
                     {
                         if(doc.getField(FIELD_PRIMARYPARENT) == null)
                         {
-                            doc.addField(FIELD_PRIMARYPARENT, childAssocRef.getParentRef().toString());
-                            doc.addField(FIELD_PRIMARYASSOCTYPEQNAME, ISO9075.getXPathName(childAssocRef.getTypeQName()));
-                            doc.addField(FIELD_PRIMARYASSOCQNAME, ISO9075.getXPathName(childAssocRef.getQName()));
+                            doc.setField(FIELD_PRIMARYPARENT, childAssocRef.getParentRef().toString());
+                            doc.setField(FIELD_PRIMARYASSOCTYPEQNAME, ISO9075.getXPathName(childAssocRef.getTypeQName()));
+                            doc.setField(FIELD_PRIMARYASSOCQNAME, ISO9075.getXPathName(childAssocRef.getQName()));
                         }
                         else
                         {
@@ -2042,7 +2089,6 @@ public class SolrInformationServer implements InformationServer
     }
 
     static void populateProperties(
-            long id,
             Map<QName, PropertyValue> properties,
             boolean contentIndexingHasBeenRequestedForThisNode,
             SolrInputDocument document,
@@ -2057,6 +2103,10 @@ public class SolrInformationServer implements InformationServer
             markAsContentInSynch(document);
         }
 
+        final BiConsumer<String, Object> setValue = document::setField;
+        final BiConsumer<String, Object> addValue = document::addField;
+        final BiConsumer<String, Object> collectName = (name, value) -> addFieldIfNotSet(document, name);
+
         for (Entry<QName, PropertyValue> property : properties.entrySet())
         {
             QName propertyQName =  property.getKey();
@@ -2070,36 +2120,43 @@ public class SolrInformationServer implements InformationServer
                 if (value instanceof StringPropertyValue)
                 {
                     dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
-                            .forEach(field -> addStringProperty(document, field, (StringPropertyValue) value, properties));
+                            .forEach(field -> addStringProperty(setValue.andThen(collectName), field, (StringPropertyValue) value, properties));
                 }
                 else if (value instanceof MLTextPropertyValue)
                 {
                     dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
-                            .forEach(field -> addMLTextProperty(document, field, (MLTextPropertyValue) value));
+                            .forEach(field -> addMLTextProperty(setValue.andThen(collectName), field, (MLTextPropertyValue) value));
                 }
                 else if (value instanceof ContentPropertyValue)
                 {
-                    addContentProperty(document, propertyQName, (ContentPropertyValue) value, contentIndexingIsEnabled);
+                    addContentProperty(setValue.andThen(collectName), document, propertyQName, (ContentPropertyValue) value, contentIndexingIsEnabled);
 
                 }
                 else if (value instanceof MultiPropertyValue)
                 {
                     MultiPropertyValue typedValue = (MultiPropertyValue) value;
+                    clearFields(
+                            document,
+                            dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
+                                .stream()
+                                .map(FieldInstance::getField)
+                                .collect(Collectors.toList()));
+
                     for (PropertyValue singleValue : typedValue.getValues())
                     {
                         if (singleValue instanceof StringPropertyValue)
                         {
                             dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
-                                    .forEach(field -> addStringProperty(document, field, (StringPropertyValue) singleValue, properties));
+                                    .forEach(field -> addStringProperty(addValue.andThen(collectName), field, (StringPropertyValue) singleValue, properties));
                         }
                         else if (singleValue instanceof MLTextPropertyValue)
                         {
                             dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
-                                    .forEach(field -> addMLTextProperty(document, field, (MLTextPropertyValue) singleValue));
+                                    .forEach(field -> addMLTextProperty(addValue.andThen(collectName), field, (MLTextPropertyValue) singleValue));
                         }
                         else if (singleValue instanceof ContentPropertyValue)
                         {
-                            addContentProperty(document, propertyQName, (ContentPropertyValue) singleValue, contentIndexingIsEnabled);
+                            addContentProperty(addValue.andThen(collectName), document, propertyQName, (ContentPropertyValue) singleValue, contentIndexingIsEnabled);
                         }
                     }
                 }
@@ -2162,29 +2219,6 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    /**
-     * Gets the field name used in Solr for the specified content property.
-     * Assumes that the first defined field in Solr is the "right one".
-     * @param propertyQName the content property qualified name
-     * @param type the content property field type, i.e. DOCID
-     * @return a String representing the name of the field in Solr or null if not found
-     */
-    private static String getSolrFieldNameForContentPropertyMetadata(QName propertyQName, AlfrescoSolrDataModel.ContentFieldType type)
-    {
-        IndexedField indexedField = AlfrescoSolrDataModel.getInstance().getIndexedFieldForContentPropertyMetadata(propertyQName, type);
-        List<FieldInstance> fields = indexedField.getFields();
-        String fieldName = null;
-        if (fields != null && !fields.isEmpty())
-        {
-            FieldInstance instance = fields.get(0);
-            if (instance != null)
-            {
-                fieldName = instance.getField();
-            }
-        }
-        return fieldName;
-    }
-
     private void addContentPropertyMetadata(
             SolrInputDocument doc,
             QName propertyQName,
@@ -2194,26 +2228,16 @@ public class SolrInformationServer implements InformationServer
         IndexedField indexedField = dataModel.getIndexedFieldForContentPropertyMetadata(propertyQName, type);
         for (FieldInstance fieldInstance : indexedField.getFields())
         {
-            // The atomic update always sets (and therefore replaces) the field value because even if we have the
-            // multivalued and the single value field in the schema, the previous code removed the old field value:
-            //
-            // doc.removeField(fieldInstance.getField());
-            //
-            // before adding the new value. In addition, it seems the current implementation of the call above:
-            //
-            // dataModel.getIndexedFieldForContentPropertyMetadata(propertyQName, type);
-            //
-            // always returns the (s)ingle value field version.
             switch(type)
             {
             case TRANSFORMATION_EXCEPTION:
-                doc.addField(fieldInstance.getField(), textContentResponse.getTransformException());
+                doc.setField(fieldInstance.getField(), textContentResponse.getTransformException());
                 break;
             case TRANSFORMATION_STATUS:
-                doc.addField(fieldInstance.getField(), textContentResponse.getStatus().name());
+                doc.setField(fieldInstance.getField(), textContentResponse.getStatus().name());
                 break;
             case TRANSFORMATION_TIME:
-                doc.addField(fieldInstance.getField(), textContentResponse.getTransformDuration());
+                doc.setField(fieldInstance.getField(), textContentResponse.getTransformDuration());
                 break;
                 // Skips the ones that require the ContentPropertyValue
                 default:
@@ -2223,31 +2247,31 @@ public class SolrInformationServer implements InformationServer
     }
 
     private static void addContentPropertyMetadata(
-            SolrInputDocument doc,
+            BiConsumer<String, Object> consumer,
             QName propertyQName,
             ContentPropertyValue contentPropertyValue,
             AlfrescoSolrDataModel.ContentFieldType type)
     {
-        IndexedField indexedField = AlfrescoSolrDataModel.getInstance().getIndexedFieldForContentPropertyMetadata(
-                    propertyQName, type);
+        IndexedField indexedField =
+                AlfrescoSolrDataModel.getInstance().getIndexedFieldForContentPropertyMetadata(propertyQName, type);
         for (FieldInstance fieldInstance : indexedField.getFields())
         {
             switch(type)
             {
             case DOCID:
-                doc.addField(fieldInstance.getField(), contentPropertyValue.getId());
+                consumer.accept(fieldInstance.getField(), contentPropertyValue.getId());
                 break;
             case ENCODING:
-                doc.addField(fieldInstance.getField(), contentPropertyValue.getEncoding());
+                consumer.accept(fieldInstance.getField(), contentPropertyValue.getEncoding());
                 break;
             case LOCALE:
-                doc.addField(fieldInstance.getField(), contentPropertyValue.getLocale().toString());
+                consumer.accept(fieldInstance.getField(), contentPropertyValue.getLocale().toString());
                 break;
             case MIMETYPE:
-                doc.addField(fieldInstance.getField(), contentPropertyValue.getMimetype());
+                consumer.accept(fieldInstance.getField(), contentPropertyValue.getMimetype());
                 break;
             case SIZE:
-                doc.addField(fieldInstance.getField(), contentPropertyValue.getLength());
+                consumer.accept(fieldInstance.getField(), contentPropertyValue.getLength());
                 break;
                 // Skips the ones that require the text content response
                 default:
@@ -2293,8 +2317,8 @@ public class SolrInformationServer implements InformationServer
     private static void markAsContentInSynch(SolrInputDocument document, Long id)
     {
         long contentVersionId = ofNullable(id).orElse(CONTENT_UPDATED_MARKER);
-        document.addField(LATEST_APPLIED_CONTENT_VERSION_ID, contentVersionId);
-        document.addField(LAST_INCOMING_CONTENT_VERSION_ID, contentVersionId);
+        document.setField(LATEST_APPLIED_CONTENT_VERSION_ID, contentVersionId);
+        document.setField(LAST_INCOMING_CONTENT_VERSION_ID, contentVersionId);
     }
 
     /**
@@ -2362,16 +2386,17 @@ public class SolrInformationServer implements InformationServer
     }
 
     private static void addContentProperty(
+            BiConsumer<String, Object> consumer,
             SolrInputDocument document,
             QName propertyName,
             ContentPropertyValue propertyValue,
             boolean contentIndexingEnabled)
     {
-        addContentPropertyMetadata(document, propertyName, propertyValue, AlfrescoSolrDataModel.ContentFieldType.DOCID);
-        addContentPropertyMetadata(document, propertyName, propertyValue, AlfrescoSolrDataModel.ContentFieldType.SIZE);
-        addContentPropertyMetadata(document, propertyName, propertyValue, AlfrescoSolrDataModel.ContentFieldType.LOCALE);
-        addContentPropertyMetadata(document, propertyName, propertyValue, AlfrescoSolrDataModel.ContentFieldType.MIMETYPE);
-        addContentPropertyMetadata(document, propertyName, propertyValue, AlfrescoSolrDataModel.ContentFieldType.ENCODING);
+        addContentPropertyMetadata(consumer, propertyName, propertyValue, AlfrescoSolrDataModel.ContentFieldType.DOCID);
+        addContentPropertyMetadata(consumer, propertyName, propertyValue, AlfrescoSolrDataModel.ContentFieldType.SIZE);
+        addContentPropertyMetadata(consumer, propertyName, propertyValue, AlfrescoSolrDataModel.ContentFieldType.LOCALE);
+        addContentPropertyMetadata(consumer, propertyName, propertyValue, AlfrescoSolrDataModel.ContentFieldType.MIMETYPE);
+        addContentPropertyMetadata(consumer, propertyName, propertyValue, AlfrescoSolrDataModel.ContentFieldType.ENCODING);
 
         if (contentIndexingEnabled)
         {
@@ -2381,9 +2406,8 @@ public class SolrInformationServer implements InformationServer
     
     private void addContentToDoc(TenantAclIdDbId docRef, SolrInputDocument doc, long dbId) throws AuthenticationException, IOException
     {
-
-        String locale = (String) docRef.optionalBag.get(CONTENT_LOCALE);
-        String qNamePart = CONTENT_LOCALE.substring(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX.length());
+        String locale = (String) docRef.optionalBag.get(CONTENT_LOCALE_FIELD);
+        String qNamePart = CONTENT_LOCALE_FIELD.substring(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX.length());
         QName propertyQName = QName.createQName(qNamePart);
         addContentPropertyToDocUsingAlfrescoRepository(doc, propertyQName, dbId, locale);
     }
@@ -2461,11 +2485,11 @@ public class SolrInformationServer implements InformationServer
                                     ? Map.of("set", "\u0000" + locale + "\u0000" + textContent)
                                     : textContent);
 
-                    addFieldIfNotSet(doc, field);
+                    addFieldIfNotSet(doc, field.getField());
                 });
     }
 
-    private static void addMLTextProperty(SolrInputDocument doc, FieldInstance field, MLTextPropertyValue mlTextPropertyValue)
+    private static void addMLTextProperty(BiConsumer<String, Object> consumer, FieldInstance field, MLTextPropertyValue mlTextPropertyValue)
     {
         if (mlTextPropertyValue == null)
         {
@@ -2480,7 +2504,7 @@ public class SolrInformationServer implements InformationServer
                 final String propValue = mlTextPropertyValue.getValue(locale);
                 if((locale == null))
                 {
-                	continue;
+                    continue;
                 }
 
                 StringBuilder builder = new StringBuilder(propValue.length() + 16);
@@ -2488,7 +2512,7 @@ public class SolrInformationServer implements InformationServer
 
                 if(!field.isSort())
                 {
-                    doc.addField(field.getField(), builder.toString());
+                    consumer.accept(field.getField(), builder.toString());
                 }
 
                 if (sort.length() > 0)
@@ -2500,18 +2524,23 @@ public class SolrInformationServer implements InformationServer
 
             if(field.isSort())
             {
-                doc.addField(field.getField(), sort.toString());
+                consumer.accept(field.getField(), sort.toString());
             }
         }
         else
         {
-            notNullOrEmpty(mlTextPropertyValue.getLocales())
-                    .stream()
-                    .filter(Objects::nonNull)
-                    .map(mlTextPropertyValue::getValue)
-                    .forEach(value -> doc.addField(field.getField(), value));
+            List<String> localisedValues =
+                    notNullOrEmpty(mlTextPropertyValue.getLocales())
+                        .stream()
+                        .filter(Objects::nonNull)
+                        .map(mlTextPropertyValue::getValue)
+                        .collect(Collectors.toList());
+
+            if (!localisedValues.isEmpty())
+            {
+                consumer.accept(field.getField(), localisedValues);
+            }
         }
-        addFieldIfNotSet(doc, field);
     }
 
     @Override
@@ -3008,6 +3037,7 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
+    // TODO: Ci serve ancora???
     private void lock(Object id) throws IOException
     {
         long startTime = System.currentTimeMillis();
@@ -3087,7 +3117,9 @@ public class SolrInformationServer implements InformationServer
         doc.setField(FIELD_VERSION, 0);
 
         // Here is used add in order to make sure that the atomic update happens
+        doc.removeField(FIELD_DBID);
         doc.addField(FIELD_DBID, metadata.getId());
+
         doc.setField(FIELD_LID, metadata.getNodeRef().toString());
         doc.setField(FIELD_INTXID, metadata.getTxnId());
         doc.setField(FIELD_DOC_TYPE, docType);
@@ -3595,7 +3627,13 @@ public class SolrInformationServer implements InformationServer
 
     private Query dirtyOrNewContentQuery()
     {
-        Query onlyDirtyDocuments = LegacyNumericRangeQuery.newLongRange(LAST_INCOMING_CONTENT_VERSION_ID, CONTENT_OUTDATED_MARKER, CONTENT_OUTDATED_MARKER, true, true);
+        Query onlyDirtyDocuments =
+                LegacyNumericRangeQuery.newLongRange(
+                        LAST_INCOMING_CONTENT_VERSION_ID,
+                        CONTENT_OUTDATED_MARKER,
+                        CONTENT_OUTDATED_MARKER,
+                        true,
+                        true);
         Query onlyDocuments = new TermQuery(new Term(FIELD_DOC_TYPE, DOC_TYPE_NODE));
 
         return new BooleanQuery.Builder()
@@ -3686,44 +3724,49 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    private static void addStringProperty(SolrInputDocument doc, FieldInstance field, StringPropertyValue property, Map<QName, PropertyValue> properties)
+    private static void addStringProperty(BiConsumer<String, Object> consumer, FieldInstance field, StringPropertyValue property, Map<QName, PropertyValue> properties)
     {
         if(field.isLocalised())
         {
             Locale locale =
                     ofNullable(properties.get(ContentModel.PROP_LOCALE))
-                        .map(StringPropertyValue.class::cast)
-                        .map(StringPropertyValue::getValue)
-                        .map(value -> DefaultTypeConverter.INSTANCE.convert(Locale.class, value))
-                        .orElse(I18NUtil.getLocale());
+                            .map(StringPropertyValue.class::cast)
+                            .map(StringPropertyValue::getValue)
+                            .map(value -> DefaultTypeConverter.INSTANCE.convert(Locale.class, value))
+                            .orElse(I18NUtil.getLocale());
 
-            doc.addField(field.getField(), "\u0000" + locale.toString() + "\u0000" + property.getValue());
+            consumer.accept(field.getField(), "\u0000" + locale.toString() + "\u0000" + property.getValue());
         }
         else
         {
-            doc.addField(field.getField(), property.getValue());
+            consumer.accept(field.getField(), property.getValue());
         }
-
-        addFieldIfNotSet(doc, field);
     }
 
-    // TODO: Dubbio generale, sto cambiando la semantica dell'addField, che in realtà
-    // dovrebbe aggiungere ma il partial mi fa un "set" e quindi rimpiazza
-    private static void addFieldIfNotSet(SolrInputDocument doc, FieldInstance field)
-    {
-//        Object existingValue = doc.get(FIELD_FIELDS);
-//        ofNullable(existingValue)
-//                .ifPresentOrElse(value -> {
-//                    if (value instanceof Map)
-//                    {
+//    private static void addStringProperty(SolrInputDocument doc, FieldInstance field, StringPropertyValue property, Map<QName, PropertyValue> properties)
+//    {
+//        if(field.isLocalised())
+//        {
+//            Locale locale =
+//                    ofNullable(properties.get(ContentModel.PROP_LOCALE))
+//                        .map(StringPropertyValue.class::cast)
+//                        .map(StringPropertyValue::getValue)
+//                        .map(value -> DefaultTypeConverter.INSTANCE.convert(Locale.class, value))
+//                        .orElse(I18NUtil.getLocale());
 //
-//                    } else
-//                    {
-//                        final Map<String, Object> fieldModifier = new HashMap<>()
-//                    }
-//                });
-        // TODO: qua il partial doc mi mette un set ma io devo aggiungere e deduplicare
-        doc.addField(FIELD_FIELDS, field.getField());
+//            doc.addField(field.getField(), "\u0000" + locale.toString() + "\u0000" + property.getValue());
+//        }
+//        else
+//        {
+//            doc.addField(field.getField(), property.getValue());
+//        }
+//
+//        addFieldIfNotSet(doc, field);
+//    }
+
+    private static void addFieldIfNotSet(SolrInputDocument doc, String name)
+    {
+        doc.addField(FIELD_FIELDS, name);
     }
 
     private boolean mayHaveChildren(NodeMetaData nodeMetaData)
@@ -3800,20 +3843,12 @@ public class SolrInformationServer implements InformationServer
         return searchers;
     }
 
-    /**
-     * Creates a new field modifier description for inserting an atomic update command within a document.
-     *
-     * @return the field modifier (a {@link Map} instance with a null value associated to the "set" command).
-     */
-    private Map<String, List<String>> newFieldModifier()
+    private static void clearFields(SolrInputDocument document, List<String> fields)
     {
-        return new HashMap<>()
-    {{
-        put("set", null);
-    }};
+        notNullOrEmpty(fields).forEach(document::removeField);
     }
 
-    private void clearFields(SolrInputDocument document, String... fields)
+    private static void clearFields(SolrInputDocument document, String... fields)
     {
         stream(notNullOrEmpty(fields)).forEach(document::removeField);
     }

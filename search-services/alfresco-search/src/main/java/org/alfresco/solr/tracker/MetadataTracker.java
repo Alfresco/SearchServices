@@ -770,9 +770,9 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     private int indexBatchOfTransactions(List<Transaction> txBatch) throws AuthenticationException, IOException, JSONException
     {
         int nodeCount = 0;
-        ArrayList<Transaction> nonEmptyTxs = new ArrayList<>(txBatch.size());
+        List<Transaction> nonEmptyTxs = new ArrayList<>(txBatch.size());
         GetNodesParameters gnp = new GetNodesParameters();
-        ArrayList<Long> txIds = new ArrayList<Long>();
+        List<Long> txIds = new ArrayList<>();
         for (Transaction tx : txBatch)
         {
             if (tx.getUpdates() > 0 || tx.getDeletes() > 0)
@@ -786,7 +786,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         gnp.setStoreProtocol(storeRef.getProtocol());
         gnp.setStoreIdentifier(storeRef.getIdentifier());
         updateShardProperty();
-        shardProperty.ifPresent(p -> gnp.setShardProperty(p));
+        shardProperty.ifPresent(gnp::setShardProperty);
 
         gnp.setCoreName(coreName);
         List<Node> nodes = client.getNodes(gnp, Integer.MAX_VALUE);
@@ -848,17 +848,15 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         
         private List<Node> filterNodes(List<Node> nodes)
         {
-            ArrayList<Node> filteredList = new ArrayList<Node>(nodes.size());
+            List<Node> filteredList = new ArrayList<>(nodes.size());
             for(Node node : nodes)
             {
-
                 if(docRouter.routeNode(shardCount, shardInstance, node))
                 {
                     filteredList.add(node);
                 }
                 else
                 {
-
                     if(node.getStatus() == SolrApiNodeStatus.UPDATED)
                     {
                         Node doCascade = new Node();

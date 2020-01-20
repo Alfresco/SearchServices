@@ -106,14 +106,7 @@ public class AFTSRequestHandlerIT extends AbstractRequestHandlerIT implements Qu
     @Test
     public void primaryParentField()
     {
-
         assertResponseCardinality(FIELD_PRIMARYPARENT, "\"" + TEST_NODEREF + "\"", 2);
-    }
-
-    @Test
-    public void ftsStatusField()
-    {
-        assertResponseCardinality(FIELD_FTSSTATUS, "\"New\"", 2);
     }
 
     @Test

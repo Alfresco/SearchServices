@@ -546,10 +546,12 @@ public abstract class AbstractAlfrescoSolrIT implements SolrTestFiles, AlfrescoS
                 totalHits = topDocs.totalHits;
                 if (topDocs.totalHits == expectedNumFound)
                 {
+                    LOG.warn("Query \"" + query + "\" returned " + totalHits + " as expected");
                     return;
                 }
                 else
                 {
+                    LOG.warn("Query \"" + query + "\" returned " + totalHits + ", expected " + expectedNumFound);
                     Thread.sleep(2000);
                 }
             }
