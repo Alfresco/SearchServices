@@ -835,6 +835,7 @@
     <arr name="components">
       <str>setLocale</str>
       <str>rewriteFacetParameters</str>
+      <str>rewriteFieldListComponent</str>
       <str>consistencyComponent</str>
       <str>query</str>
       <str>facet</str>
@@ -867,6 +868,7 @@
    <arr name="components">
       <str>setLocale</str>
       <str>rewriteFacetParameters</str>
+      <str>rewriteFieldListComponent</str>
        <str>consistencyComponent</str>
       <str>query</str>
       <str>facet</str>
@@ -1801,6 +1803,7 @@
     <arr name="components">
       <str>setLocale</str>
       <str>rewriteFacetParameters</str>
+      <str>rewriteFieldListComponent</str>
       <str>consistencyComponent</str>
       <str>query</str>
       <str>facet</str>
@@ -1847,6 +1850,7 @@
     <arr name="components">
       <str>setLocale</str>
       <str>rewriteFacetParameters</str>
+      <str>rewriteFieldListComponent</str>
       <str>consistencyComponent</str>
       <str>query</str>
       <str>facet</str>
@@ -1873,6 +1877,7 @@
     <arr name="components">
       <str>setLocale</str>
       <str>rewriteFacetParameters</str>
+      <str>rewriteFieldListComponent</str>
       <str>consistencyComponent</str>
       <str>query</str>
       <str>facet</str>
@@ -1911,6 +1916,7 @@
   <searchComponent name="setLocale"     class="org.alfresco.solr.component.SetLocaleComponent" />
   <searchComponent name="clearLocale"   class="org.alfresco.solr.component.ClearLocaleComponent" />
   <searchComponent name="rewriteFacetParameters"     class="org.alfresco.solr.component.RewriteFacetParametersComponent" />
+  <searchComponent name="rewriteFieldListComponent"     class="org.alfresco.solr.component.RewriteFieldListComponent" />
   <searchComponent name="rewriteFacetCounts"     class="org.alfresco.solr.component.RewriteFacetCountsComponent" />
   <searchComponent name="setProcessedDenies"     class="org.alfresco.solr.component.SetProcessedDeniesComponent" />
   <searchComponent name="consistencyComponent"     class="org.alfresco.solr.component.ConsistencyComponent" />
