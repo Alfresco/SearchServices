@@ -1676,7 +1676,7 @@ public class SolrInformationServer implements InformationServer
             NodeMetaDataParameters nmdp = new NodeMetaDataParameters();
             nmdp.setFromNodeId(parentNodeId);
             nmdp.setToNodeId(parentNodeId);
-            nmdp.setIncludeAclId(false);
+            nmdp.setIncludeAclId(true);
             nmdp.setIncludeChildAssociations(false);
             nmdp.setIncludeChildIds(true);
             nmdp.setIncludeOwner(false);
@@ -1739,7 +1739,8 @@ public class SolrInformationServer implements InformationServer
                             docRef.aclId,
                             docRef.dbId));
 
-            if (docRef.optionalBag.containsKey(CONTENT_LOCALE)) {
+            if (docRef.optionalBag.containsKey(CONTENT_LOCALE))
+            {
                 addContentToDoc(docRef, doc, docRef.dbId);
             }
 
@@ -1902,7 +1903,7 @@ public class SolrInformationServer implements InformationServer
     {
         populateFields(metadata, document);
 
-        LOGGER.debug("Document cardinality after getting fields from node {} metadata: {}", metadata.getId(), document.size());
+        LOGGER.debug("Document size (fields) after getting fields from node {} metadata: {}", metadata.getId(), document.size());
 
         populateProperties(
                 metadata.getId(),
@@ -1911,7 +1912,7 @@ public class SolrInformationServer implements InformationServer
                 document,
                 contentIndexingHasBeenEnabledOnThisInstance);
 
-        LOGGER.debug("Document cardinality after getting properties from node {} metadata: {}", metadata.getId(), document.size());
+        LOGGER.debug("Document size (fields) after getting properties from node {} metadata: {}", metadata.getId(), document.size());
 
         return document;
     }

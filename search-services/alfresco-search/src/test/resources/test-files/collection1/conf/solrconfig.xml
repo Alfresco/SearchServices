@@ -468,6 +468,8 @@
     <updateProcessor name="field-values-deduplication" class="solr.UniqFieldsUpdateProcessorFactory">
         <arr name="fieldName">
             <str>FIELDS</str>
+            <str>PROPERTIES</str>
+            <str>NULLPROPERTIES</str>
         </arr>
     </updateProcessor>
 
@@ -475,12 +477,6 @@
         <processor class="solr.LogUpdateProcessorFactory" />
         <processor class="solr.RunUpdateProcessorFactory" />
     </updateRequestProcessorChain>
-
-    <initParams path="/update/**">
-        <lst name="defaults">
-            <str name="update.chain">uniq-fields</str>
-        </lst>
-    </initParams>
 
     <!-- test getting system property -->
     <!--  

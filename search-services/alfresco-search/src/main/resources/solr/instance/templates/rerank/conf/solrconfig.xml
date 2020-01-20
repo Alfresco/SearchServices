@@ -1618,6 +1618,8 @@
     <updateProcessor name="field-values-deduplication" class="solr.UniqFieldsUpdateProcessorFactory">
         <arr name="fieldName">
             <str>FIELDS</str>
+            <str>PROPERTIES</str>
+            <str>NULLPROPERTIES</str>
         </arr>
     </updateProcessor>
 
