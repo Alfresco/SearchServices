@@ -51,6 +51,7 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
+import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.core.SolrCore;
 import org.junit.After;
 import org.junit.Before;
@@ -70,6 +71,7 @@ import java.util.stream.Collectors;
  *
  * @author agazzarini
  */
+@SolrTestCaseJ4.SuppressSSL
 public class AlfrescoSolrTrackerStateIT extends AbstractAlfrescoSolrIT
 {
     @BeforeClass

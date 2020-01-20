@@ -165,6 +165,7 @@ import org.apache.solr.core.SolrInfoMBean;
 import org.apache.solr.request.LocalSolrQueryRequest;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.request.SolrRequestHandler;
+import org.apache.solr.response.BasicResultContext;
 import org.apache.solr.response.ResultContext;
 import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.schema.FieldType;
@@ -606,11 +607,10 @@ public class SolrInformationServer implements InformationServer
                         .map(SolrQueryResponse::getValues)
                         .map(NamedList.class::cast)
                         .map(facets -> facets.get("response"))
-                        .map(NamedList.class::cast)
-                        .map(rsp -> rsp.get("numFound"))
-                        .map(Number.class::cast)
-                        .map(Number::longValue)
-                        .orElse(0L);
+                        .map(BasicResultContext.class::cast)
+                        .map(BasicResultContext::getDocList)
+                        .map(DocList::matches)
+                        .orElse(0);
 
             long outdated =
                     ofNullable(response)
@@ -1998,6 +1998,7 @@ public class SolrInformationServer implements InformationServer
                         }
                     }
                 });
+
         doc.setField(FIELD_ISNODE, "T");
         doc.setField(FIELD_TENANT, AlfrescoSolrDataModel.getTenantId(metadata.getTenantDomain()));
 

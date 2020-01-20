@@ -23,6 +23,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.client.PropertyValue;
 import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.dataload.TestDataProvider;
+import org.apache.solr.SolrTestCaseJ4;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -49,9 +50,9 @@ import static com.google.common.collect.ImmutableMap.of;
  * This test set checks that in all these query types the default fields are involved in the search.
  *
  */
+@SolrTestCaseJ4.SuppressSSL
 public class AFTSDefaultTextQueryIT extends AbstractRequestHandlerIT
 {
-
     @BeforeClass
     public static void beforeClass() throws Exception
     {

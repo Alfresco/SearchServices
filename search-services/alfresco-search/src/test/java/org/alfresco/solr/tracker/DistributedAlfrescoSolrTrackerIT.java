@@ -18,6 +18,18 @@
  */
 package org.alfresco.solr.tracker;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.alfresco.solr.AlfrescoSolrUtils.TestActChanges;
+import static org.alfresco.solr.AlfrescoSolrUtils.ancestors;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
+import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
+
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.solr.AbstractAlfrescoDistributedIT;
 import org.alfresco.solr.client.Acl;
@@ -31,7 +43,6 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -40,33 +51,20 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.alfresco.solr.AlfrescoSolrUtils.TestActChanges;
-import static org.alfresco.solr.AlfrescoSolrUtils.ancestors;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
-import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
-import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
-import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
-import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
-import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
-import static org.alfresco.solr.AlfrescoSolrUtils.list;
-
 /**
  * @author Joel
  */
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedAlfrescoSolrTrackerIT extends AbstractAlfrescoDistributedIT
 {
-
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
-        initSolrServers(2, "DistributedAlfrescoSolrTrackerTest", null);
+        initSolrServers(2, DistributedAlfrescoSolrTrackerIT.class.getSimpleName(), null);
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }
@@ -106,8 +104,8 @@ public class DistributedAlfrescoSolrTrackerIT extends AbstractAlfrescoDistribute
         //Index the transaction, nodes, and nodeMetaDatas.
         //Note that the content is automatically created by the test framework.
         indexTransaction(txn,
-                         list(errorNode, folderNode, fileNode),
-                         list(errorMetaData, folderMetaData, fileMetaData));
+                         asList(errorNode, folderNode, fileNode),
+                asList(errorMetaData, folderMetaData, fileMetaData));
         /*
         * Query the index for the content
         */
@@ -125,12 +123,13 @@ public class DistributedAlfrescoSolrTrackerIT extends AbstractAlfrescoDistribute
         //Load 1000 nodes
 
         int numNodes = 1000;
-        List<Node> nodes = new ArrayList();
-        List<NodeMetaData> nodeMetaDatas = new ArrayList();
+        List<Node> nodes = new ArrayList<>();
+        List<NodeMetaData> nodeMetaDatas = new ArrayList<>();
 
         Transaction bigTxn = getTransaction(0, numNodes);
 
-        for(int i=0; i<numNodes; i++) {
+        for(int i=0; i<numNodes; i++)
+        {
             Node node = getNode(bigTxn, acl, Node.SolrApiNodeStatus.UPDATED);
             nodes.add(node);
             NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, acl, "mike", null, false);
@@ -150,17 +149,14 @@ public class DistributedAlfrescoSolrTrackerIT extends AbstractAlfrescoDistribute
         int numAcls = 1000;
         AclChangeSet bulkAclChangeSet = getAclChangeSet(numAcls);
 
-        List<Acl> bulkAcls = new ArrayList();
-        List<AclReaders> bulkAclReaders = new ArrayList();
+        List<Acl> bulkAcls = new ArrayList<>();
+        List<AclReaders> bulkAclReaders = new ArrayList<>();
 
-        for(int i=0; i<numAcls; i++) {
+        for(int i=0; i<numAcls; i++)
+        {
             Acl bulkAcl = getAcl(bulkAclChangeSet);
             bulkAcls.add(bulkAcl);
-            bulkAclReaders.add(getAclReaders(bulkAclChangeSet,
-                                             bulkAcl,
-                                             list("joel"),
-                                             list("phil"),
-                                             null));
+            bulkAclReaders.add(getAclReaders(bulkAclChangeSet, bulkAcl, singletonList("joel"), singletonList("phil"), null));
         }
 
         indexAclChangeSet(bulkAclChangeSet,
@@ -168,9 +164,5 @@ public class DistributedAlfrescoSolrTrackerIT extends AbstractAlfrescoDistribute
                           bulkAclReaders);
 
         waitForDocCountAllCores(new TermQuery(new Term(QueryConstants.FIELD_READER, "joel")), numAcls+1, 80000);
-
     }
-
-
 }
-
