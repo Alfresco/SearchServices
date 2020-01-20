@@ -2508,7 +2508,7 @@ public class SolrInformationServer implements InformationServer
             for (Locale locale : mlTextPropertyValue.getLocales())
             {
                 final String propValue = mlTextPropertyValue.getValue(locale);
-                if((locale == null))
+                if((locale == null) || propValue == null)
                 {
                     continue;
                 }
