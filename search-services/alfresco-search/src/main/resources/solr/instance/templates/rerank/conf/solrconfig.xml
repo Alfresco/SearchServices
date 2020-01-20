@@ -1622,6 +1622,14 @@
             <str>FIELDS</str>
             <str>PROPERTIES</str>
             <str>NULLPROPERTIES</str>
+            <str>ASPECT</str>
+            <str>ANCESTOR</str>
+            <str>PARENT</str>
+            <str>READER</str>
+            <str>DENIED</str>
+            <str>OWNER</str>
+            <str>SITE</str>
+            <str>TAG</str>
         </arr>
     </updateProcessor>
 

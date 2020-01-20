@@ -1973,7 +1973,7 @@ public class SolrInformationServer implements InformationServer
                 .stream()
                 .filter(Objects::nonNull)
                 .forEach(aspect -> {
-                    doc.setField(FIELD_ASPECT, aspect.toString());
+                    doc.addField(FIELD_ASPECT, aspect.toString());
                     if(aspect.equals(ContentModel.ASPECT_GEOGRAPHIC))
                     {
                         Optional<Double> latitude =
