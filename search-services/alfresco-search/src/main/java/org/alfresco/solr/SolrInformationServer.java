@@ -1782,7 +1782,7 @@ public class SolrInformationServer implements InformationServer
             processor = this.core.getUpdateProcessingChain(null).createProcessor(request, newSolrQueryResponse());
 
             SolrInputDocument doc = new PartialSolrInputDocument();
-            doc.removeField(FIELD_SOLR4_ID);
+            doc.removeField(FIELD_DBID);
             doc.addField(FIELD_DBID, docRef.dbId);
             doc.setField(FIELD_SOLR4_ID,
                     AlfrescoSolrDataModel.getNodeDocumentId(
