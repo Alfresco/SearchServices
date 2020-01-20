@@ -16,7 +16,6 @@ wsdl4j-1.6.3.jar        http://sourceforge.net/projects/wsdl4j
 
 
 === BSD 3 ===
-asm-3.3.1.jar   http://code.google.com/p/subethasmtp/
 antlr-runtime-3.5.2.jar http://www.antlr.org/
 ST4-4.0.8.jar   https://www.stringtemplate.org/license.html
 antlr-3.5.2.jar http://www.antlr.org/
@@ -41,7 +40,7 @@ mybatis-3.3.0.jar       http://www.mybatis.org/
 chemistry-opencmis-commons-impl-0.11.0.jar      http://chemistry.apache.org/
 chemistry-opencmis-commons-api-0.11.0.jar       http://chemistry.apache.org/
 xmlschema-core-2.2.3.jar http://ws.apache.org/commons/XmlSchema/
-HikariCP-java7-2.4.13.jar https://github.com/brettwooldridge/HikariCP
+HikariCP-java6-2.3.13.jar https://github.com/brettwooldridge/HikariCP
 cxf-core-3.2.5.jar https://cxf.apache.org/
 cxf-rt-bindings-soap-3.2.5.jar https://cxf.apache.org/
 cxf-rt-bindings-xml-3.2.5.jar https://cxf.apache.org/
@@ -148,7 +147,6 @@ curator-client-2.8.0.jar
 curator-framework-2.8.0.jar
 curator-recipes-2.8.0.jar
 curvesapi-1.04.jar
-dom4j-1.6.1.jar
 eigenbase-properties-1.1.5.jar
 fontbox-2.0.6.jar
 gmetric4j-1.0.7.jar
@@ -165,12 +163,7 @@ httpmime-4.4.1.jar
 icu4j-56.1.jar
 isoparser-1.1.18.jar
 jackcess-2.1.8.jar
-jackson-annotations-2.5.4.jar
-jackson-core-2.5.4.jar
-jackson-core-asl-1.9.13.jar
 jackson-databind-2.5.4.jar
-jackson-dataformat-smile-2.5.4.jar
-jackson-mapper-asl-1.9.13.jar
 janino-2.7.6.jar
 java-libpst-0.8.1.jar
 javax.servlet-api-3.1.0.jar
