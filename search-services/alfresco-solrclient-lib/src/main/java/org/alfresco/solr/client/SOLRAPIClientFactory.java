@@ -143,7 +143,6 @@ public class SOLRAPIClientFactory
         alfrescoHost = props.getProperty("alfresco.host", "localhost");
         alfrescoPort = Integer.parseInt(props.getProperty("alfresco.port", "8080"));
         alfrescoPortSSL = Integer.parseInt(props.getProperty("alfresco.port.ssl", "8443"));
-        boolean compression = Boolean.parseBoolean(props.getProperty("solr.request.content.compress", "false"));
 
         SOLRAPIClient client = getCachedClient(alfrescoHost, alfrescoPort, alfrescoPortSSL);
         if (client == null)
@@ -172,7 +171,7 @@ public class SOLRAPIClientFactory
             maxHostConnections = Integer.parseInt(props.getProperty("alfresco.maxHostConnections", "40"));
             socketTimeout = Integer.parseInt(props.getProperty("alfresco.socketTimeout", "60000"));
 
-            client = new SOLRAPIClient(getRepoClient(keyResourceLoader), dictionaryService, namespaceDAO, compression);
+            client = new SOLRAPIClient(getRepoClient(keyResourceLoader), dictionaryService, namespaceDAO);
             setCachedClient(alfrescoHost, alfrescoPort, alfrescoPortSSL, client);
         }
 
