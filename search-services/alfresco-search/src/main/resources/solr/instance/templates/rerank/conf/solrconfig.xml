@@ -321,10 +321,12 @@
          is recommended (see below).
          "dir" - the target directory for transaction logs, defaults to the
                 solr data directory.  --> 
+    <!--
     <updateLog>
       <str name="dir">${solr.ulog.dir:}</str>
     </updateLog>
-
+    -->
+ 
     <!-- AutoCommit
 
          Perform a hard commit automatically under certain conditions.
@@ -833,6 +835,7 @@
     <arr name="components">
       <str>setLocale</str>
       <str>rewriteFacetParameters</str>
+      <str>rewriteFieldListComponent</str>
       <str>consistencyComponent</str>
       <str>query</str>
       <str>facet</str>
@@ -852,27 +855,34 @@
 
 
     <requestHandler name="/native" class="org.apache.solr.handler.component.AlfrescoSearchHandler">
-        <lst name="defaults">
-            <str name="echoParams">explicit</str>
-            <int name="rows">10</int>
-            <str name="df">suggest</str>
-        </lst>
-        <arr name="components">
-            <str>setLocale</str>
-            <str>rewriteFacetParameters</str>
-            <str>consistencyComponent</str>
-            <str>query</str>
-            <str>facet</str>
-            <str>mlt</str>
-            <str>highlight</str>
-            <str>stats</str>
-            <str>debug</str>
-            <str>clearLocale</str>
-            <str>rewriteFacetCounts</str>
-            <!--<str>addTxId</str>-->
-            <str>setProcessedDenies</str>
-        </arr>
-        <shardHandlerFactory class="org.apache.solr.handler.component.AlfrescoHttpShardHandlerFactory" />
+    <!-- default values for query parameters can be specified, these
+         will be overridden by parameters in the request
+      -->
+     <lst name="defaults">
+       <str name="echoParams">explicit</str>
+       <int name="rows">10</int>
+       <str name="df">suggest</str>
+     </lst>
+
+
+   <arr name="components">
+      <str>setLocale</str>
+      <str>rewriteFacetParameters</str>
+       <str>rewriteFieldListComponent</str>
+       <str>consistencyComponent</str>
+      <str>query</str>
+      <str>facet</str>
+      <str>mlt</str>
+      <str>highlight</str>
+      <str>stats</str>
+      <str>debug</str>
+      <str>clearLocale</str>
+      <str>rewriteFacetCounts</str>
+      <!--<str>addTxId</str>-->
+      <str>setProcessedDenies</str>
+    </arr>
+
+      <shardHandlerFactory class="org.apache.solr.handler.component.AlfrescoHttpShardHandlerFactory" />
     </requestHandler>
 
   <!-- A request handler that returns indented JSON by default -->
@@ -1613,26 +1623,7 @@
 
        http://wiki.apache.org/solr/UpdateRequestProcessor
 
-    -->
-
-    <updateProcessor name="field-values-deduplication" class="solr.UniqFieldsUpdateProcessorFactory">
-        <arr name="fieldName">
-            <str>FIELDS</str>
-            <str>PROPERTIES</str>
-            <str>NULLPROPERTIES</str>
-        </arr>
-    </updateProcessor>
-
-    <updateRequestProcessorChain name="uniq-fields" default="true" post-processor="field-values-deduplication">
-        <processor class="solr.LogUpdateProcessorFactory" />
-        <processor class="solr.RunUpdateProcessorFactory" />
-    </updateRequestProcessorChain>
-
-    <initParams path="/update/**">
-        <lst name="defaults">
-            <str name="update.chain">uniq-fields</str>
-        </lst>
-    </initParams>
+    --> 
   <!-- Deduplication
 
        An example dedup update processor that creates the "id" field
@@ -1795,12 +1786,13 @@
       EditorialMarkerFactory will do exactly that:
      <transformer name="qecBooster" class="org.apache.solr.response.transform.EditorialMarkerFactory" />
     -->
+    
+  <transformer name="cached" class="org.alfresco.solr.transformer.AlfrescoFieldMapperTransformerFactory" />
 
-    <!-- CachedDocTransformer has been renamed, but we retained both codes (new and old) for retro-compatibility -->
-    <transformer name="cached" class="org.alfresco.solr.transformer.AlfrescoFieldMapperTransformerFactory" />
-    <transformer name="fmap" class="org.alfresco.solr.transformer.AlfrescoFieldMapperTransformerFactory"/>
+  <transformer name="alfrescoMapper" class="org.alfresco.solr.transformer.AlfrescoFieldMapperTransformerFactory" />
 
-    <transformer name="dv" class="org.alfresco.solr.transformer.DocValueDocTransformerFactory" />
+  <transformer name="dv" class="org.alfresco.solr.transformer.DocValueDocTransformerFactory" />
+
 
   <!-- Legacy config for the admin interface -->
   <admin>
@@ -1816,6 +1808,7 @@
     <arr name="components">
       <str>setLocale</str>
       <str>rewriteFacetParameters</str>
+      <str>rewriteFieldListComponent</str>
       <str>consistencyComponent</str>
       <str>query</str>
       <str>facet</str>
@@ -1866,6 +1859,7 @@
     <arr name="components">
       <str>setLocale</str>
       <str>rewriteFacetParameters</str>
+      <str>rewriteFieldListComponent</str>
       <str>consistencyComponent</str>
       <str>query</str>
       <str>facet</str>
@@ -1892,6 +1886,7 @@
     <arr name="components">
       <str>setLocale</str>
       <str>rewriteFacetParameters</str>
+      <str>rewriteFieldListComponent</str>
       <str>consistencyComponent</str>
       <str>query</str>
       <str>facet</str>
@@ -1934,6 +1929,7 @@
   <searchComponent name="setLocale"     class="org.alfresco.solr.component.SetLocaleComponent" />
   <searchComponent name="clearLocale"   class="org.alfresco.solr.component.ClearLocaleComponent" />
   <searchComponent name="rewriteFacetParameters"     class="org.alfresco.solr.component.RewriteFacetParametersComponent" />
+  <searchComponent name="rewriteFieldListComponent"     class="org.alfresco.solr.component.RewriteFieldListComponent" />
   <searchComponent name="rewriteFacetCounts"     class="org.alfresco.solr.component.RewriteFacetCountsComponent" />
   <searchComponent name="setProcessedDenies"     class="org.alfresco.solr.component.SetProcessedDeniesComponent" />
   <searchComponent name="consistencyComponent"     class="org.alfresco.solr.component.ConsistencyComponent" />
