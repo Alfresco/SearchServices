@@ -1,6 +1,6 @@
 ## Alfresco Search Services
 
-Alfresco Search Services ${project.version} using Apache Solr ${solr.version}
+Alfresco Search Services ${project.version} using Apache Solr ${solr.base.version}
 
 Find out more about Solr 6 and how to be installed at:
 
