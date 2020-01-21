@@ -2385,7 +2385,7 @@ public class SolrInformationServer implements InformationServer
                 .ifPresentOrElse(
                         id -> {
                             document.setField(LATEST_APPLIED_CONTENT_VERSION_ID, id);
-                            document.setField(LAST_INCOMING_CONTENT_VERSION_ID, Map.of("removeregex", "^" + id));},
+                            document.setField(LAST_INCOMING_CONTENT_VERSION_ID, Map.of("removeregex", "^(?!"+id+"$).*$"));},
                         () ->  document.setField(LAST_INCOMING_CONTENT_VERSION_ID, CONTENT_OUTDATED_MARKER));
     }
 
@@ -2483,7 +2483,7 @@ public class SolrInformationServer implements InformationServer
 
         dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
                 .stream()
-                .peek(field -> doc.remove(field.getField()))
+                .peek(field -> doc.removeField(field.getField()))
                 .forEach(field -> {
                     doc.addField(
                             field.getField(),
