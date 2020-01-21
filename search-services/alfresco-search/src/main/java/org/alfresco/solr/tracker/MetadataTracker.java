@@ -40,6 +40,7 @@ import org.alfresco.solr.client.Node.SolrApiNodeStatus;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.alfresco.solr.client.Transaction;
 import org.alfresco.solr.client.Transactions;
+import org.alfresco.util.Pair;
 import org.apache.commons.codec.EncoderException;
 import org.json.JSONException;
 import org.slf4j.Logger;
@@ -73,6 +74,15 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
      * {@link org.alfresco.solr.client.SOLRAPIClient#GET_NEXT_TX_COMMIT_TIME}
      */
     private boolean nextTxCommitTimeServiceAvailable = false;
+    
+    /**
+     * Check if txInteravlCommitTimeService is available in the repository.
+     * This service returns the minimum and the maximum commit time for transactions in a node id range,
+     * so method sharding DB_ID_RANGE can skip transactions not relevant for the DB ID range. 
+     * 
+     * {@link org.alfresco.solr.client.SOLRAPIClient#GET_TX_INTERVAL_COMMIT_TIME}
+     */
+    private boolean txIntervalCommitTimeServiceAvailable = false;
 
     public MetadataTracker(final boolean isMaster, Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
@@ -82,6 +92,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
         
+        // Try invoking getNextTxCommitTime service
         try
         {
             client.getNextTxCommitTime(coreName, 0l);
@@ -95,6 +106,23 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         {
             log.error("Checking nextTxCommitTimeService failed.", e);
         }
+
+        // Try invoking txIntervalCommitTime service
+        try
+        {
+            client.getTxIntervalCommitTime(coreName, 0l, 0l);
+            txIntervalCommitTimeServiceAvailable = true;
+        }
+        catch (NoSuchMethodException e)
+        {
+            log.warn("txIntervalCommitTimeServiceAvailable is not available. If you are using DB_ID_RANGE shard method, "
+                    + "upgrade your ACS Repository version in order to use this feature: {} ", e.getMessage());
+        }
+        catch (Exception e)
+        {
+            log.error("Checking txIntervalCommitTimeServiceAvailable failed.", e);
+        }
+    
     }
 
     MetadataTracker()
@@ -640,9 +668,46 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 *
                 */
 
-                Long fromCommitTime = getTxFromCommitTime(txnsFound, state.getLastGoodTxCommitTimeInIndex());
+                Long fromCommitTime = getTxFromCommitTime(txnsFound, 
+                        state.getLastIndexedTxCommitTime() == 0 ? state.getLastGoodTxCommitTimeInIndex() : state.getLastIndexedTxCommitTime());
                 log.debug("#### Check txnsFound : " + txnsFound.size());
                 log.debug("======= fromCommitTime: " + fromCommitTime);
+                
+                // When using DB_ID_RANGE, fromCommitTime cannot be before the commit time of the first transaction
+                // for the DB_ID_RANGE to be indexed and commit time of the last transaction cannot be lower than fromCommitTime. 
+                // When there isn't nodes in that range, -1 is returned as commit times
+                if (docRouter instanceof DBIDRangeRouter && txIntervalCommitTimeServiceAvailable)
+                {
+                    
+                    DBIDRangeRouter dbIdRangeRouter = (DBIDRangeRouter) docRouter;
+                    Pair<Long, Long> commitTimes = client.getTxIntervalCommitTime(coreName,
+                            dbIdRangeRouter.getStartRange(), dbIdRangeRouter.getEndRange());
+                    Long shardMinCommitTime = commitTimes.getFirst();
+                    Long shardMaxCommitTime = commitTimes.getSecond();
+
+                    // Node Range it's not still available in repository
+                    if (shardMinCommitTime == -1)
+                    {
+                        log.debug("#### [DB_ID_RANGE] No nodes in range [" + dbIdRangeRouter.getStartRange() + "-"
+                                + dbIdRangeRouter.getEndRange() + "] "
+                                + "exist in the repository. Skipping metadata tracking.");
+                        return;
+                    }
+                    if (fromCommitTime > shardMaxCommitTime)
+                    {
+                        log.debug("#### [DB_ID_RANGE] Last commit time is greater that max commit time in in range ["
+                                + dbIdRangeRouter.getStartRange() + "-" + dbIdRangeRouter.getEndRange() + "]. "
+                                + "Skipping metadata tracking.");
+                        return;
+                    }
+                    // Initial commit time for Node Range is greater than calculated from commit time
+                    if (fromCommitTime < shardMinCommitTime)
+                    {
+                        log.debug("#### [DB_ID_RANGE] SKIPPING TRANSACTIONS FROM " + fromCommitTime + " TO "
+                                + shardMinCommitTime);
+                        fromCommitTime = shardMinCommitTime;
+                    }
+                }
 
                 log.debug("#### Get txn from commit time: " + fromCommitTime);
                 transactions = getSomeTransactions(txnsFound, fromCommitTime, TIME_STEP_1_HR_IN_MS, 2000,
