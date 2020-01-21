@@ -2446,7 +2446,8 @@ public class SolrInformationServer implements InformationServer
      */
     private String textContentFrom(GetTextContentResponse response) throws IOException
     {
-        try (final InputStream ris = response.getContentEncoding().equals("gzip")?
+        try (final InputStream ris = ofNullable(response.getContentEncoding())
+                .map(c -> c.equals("gzip")).orElse(false)?
                 new GZIPInputStream(response.getContent()) : response.getContent())
         {
             if (ris != null)
