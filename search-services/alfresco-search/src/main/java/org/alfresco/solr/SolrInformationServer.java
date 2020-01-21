@@ -3177,9 +3177,7 @@ public class SolrInformationServer implements InformationServer
                         stream(notNullOrEmpty(ancestorPath.length() > 0 && ancestorPath.startsWith("/")
                                 ? ancestorPath.substring(1).split("/")
                                 : ancestorPath.split("/")))
-                                .filter(Objects::nonNull)
                                 .map(String::trim)
-                                .filter(value -> !value.isEmpty())
                                 .toArray(String[]::new);
 
                 StringBuilder builder = new StringBuilder();
