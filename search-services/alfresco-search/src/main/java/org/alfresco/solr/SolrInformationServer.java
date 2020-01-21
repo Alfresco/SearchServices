@@ -90,6 +90,7 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
 
 import com.carrotsearch.hppc.IntArrayList;
 
@@ -141,6 +142,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.LeafReaderContext;
@@ -173,6 +175,9 @@ import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.DelegatingCollector;
 import org.apache.solr.search.DocIterator;
 import org.apache.solr.search.DocList;
+import org.apache.solr.search.DocSet;
+import org.apache.solr.search.QueryCommand;
+import org.apache.solr.search.QueryResult;
 import org.apache.solr.search.QueryWrapperFilter;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.update.AddUpdateCommand;
@@ -2173,12 +2178,20 @@ public class SolrInformationServer implements InformationServer
 
     private void deleteErrorNode(UpdateRequestProcessor processor, SolrQueryRequest request, Node node) throws IOException
     {
-        String errorDocId = PREFIX_ERROR + node.getId();
-        DeleteUpdateCommand delErrorDocCmd = new DeleteUpdateCommand(request);
-        delErrorDocCmd.setId(errorDocId);
-        processor.processDelete(delErrorDocCmd);
-    }
 
+        String errorDocId = PREFIX_ERROR + node.getId();
+
+        // Try finding the node before performing removal operation
+        DocSet docSet = request.getSearcher().getDocSet(new TermQuery(new Term(FIELD_SOLR4_ID, errorDocId)));
+
+        if (docSet.size() > 0)
+        {
+            DeleteUpdateCommand delErrorDocCmd = new DeleteUpdateCommand(request);
+            delErrorDocCmd.setId(errorDocId);
+            processor.processDelete(delErrorDocCmd);
+        }
+
+    }
 
     private void deleteNode(UpdateRequestProcessor processor, SolrQueryRequest request, Node node) throws IOException
     {
@@ -2193,9 +2206,17 @@ public class SolrInformationServer implements InformationServer
 
     private void deleteNode(UpdateRequestProcessor processor, SolrQueryRequest request, long dbid) throws IOException
     {
-        DeleteUpdateCommand delDocCmd = new DeleteUpdateCommand(request);
-        delDocCmd.setQuery(FIELD_DBID + ":" + dbid);
-        processor.processDelete(delDocCmd);
+
+        // Try finding the node before performing removal operation
+        DocSet docSet = request.getSearcher().getDocSet(LongPoint.newExactQuery(FIELD_DBID, dbid));
+
+        if (docSet.size() > 0)
+        {
+            DeleteUpdateCommand delDocCmd = new DeleteUpdateCommand(request);
+            delDocCmd.setQuery(FIELD_DBID + ":" + dbid);
+            processor.processDelete(delDocCmd);
+        }
+
     }
 
     private boolean isContentIndexedForNode(Map<QName, PropertyValue> properties)
@@ -2407,7 +2428,7 @@ public class SolrInformationServer implements InformationServer
             insertContentUpdateMarker(document, propertyValue);
         }
     }
-    
+
     private void addContentToDoc(TenantAclIdDbId docRef, SolrInputDocument doc, long dbId) throws AuthenticationException, IOException
     {
         String locale = (String) docRef.optionalBag.get(CONTENT_LOCALE_FIELD);
@@ -2425,7 +2446,8 @@ public class SolrInformationServer implements InformationServer
      */
     private String textContentFrom(GetTextContentResponse response) throws IOException
     {
-        try (final InputStream ris = response.getContent())
+        try (final InputStream ris = response.getContentEncoding().equals("gzip")?
+                new GZIPInputStream(response.getContent()) : response.getContent())
         {
             if (ris != null)
             {
@@ -2447,10 +2469,10 @@ public class SolrInformationServer implements InformationServer
             String locale) throws AuthenticationException, IOException
     {
         long start = System.nanoTime();
-        
+
         // Expensive call to be done with ContentTracker
         GetTextContentResponse response = repositoryClient.getTextContent(dbId, propertyQName, null);
-        
+
         addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_STATUS, response);
         addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_EXCEPTION, response);
         addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_TIME, response);

@@ -3,8 +3,12 @@ set -e
 # By default its going to deploy "Master" setup configuration with "REPLICATION_TYPE=master".
 # Slave replica service can be enabled using "REPLICATION_TYPE=slave" environment value.
 
-SOLR_CONFIG_FILE=$PWD/solrhome/templates/rerank/conf/solrconfig.xml
-SOLR_CORE_FILE=$PWD/solrhome/templates/rerank/conf/solrcore.properties
+RERANK_TEMPLATE_PATH=$PWD/solrhome/templates/rerank/conf
+NORERANK_TEMPLATE_PATH=$PWD/solrhome/templates/noRerank/conf
+SOLR_RERANK_CONFIG_FILE=$RERANK_TEMPLATE_PATH/solrconfig.xml
+SOLR_NORERANK_CONFIG_FILE=$NORERANK_TEMPLATE_PATH/solrconfig.xml
+SOLR_RERANK_CORE_FILE=$RERANK_TEMPLATE_PATH/solrcore.properties
+SOLR_NORERANK_CORE_FILE=$NORERANK_TEMPLATE_PATH/solrcore.properties
 
 if [[ $REPLICATION_TYPE == "master" ]]; then
 
@@ -31,13 +35,13 @@ if [[ $REPLICATION_TYPE == "master" ]]; then
 
    replaceStringMaster+="\t<\/lst>"
 
-   sed -i "s/$findStringMaster/$findStringMaster$replaceStringMaster/g" $SOLR_CONFIG_FILE
-   sed -i "s/enable.alfresco.tracking=true/enable.alfresco.tracking=true\nenable.master=true\nenable.slave=false/g" $SOLR_CORE_FILE
+   sed -i "s/$findStringMaster/$findStringMaster$replaceStringMaster/g" $SOLR_RERANK_CONFIG_FILE $SOLR_NORERANK_CONFIG_FILE
+   sed -i "s/enable.alfresco.tracking=true/enable.alfresco.tracking=true\nenable.master=true\nenable.slave=false/g" $SOLR_RERANK_CORE_FILE $SOLR_NORERANK_CORE_FILE
 fi
 
 if [[ $REPLICATION_TYPE == "slave" ]]; then
 
-   if [[ $REPLICATION_MASTER_PROTOCOL == "" ]]; then
+   if [[ $REPLICATION_MASTER_PROTOCOL != https ]]; then
       REPLICATION_MASTER_PROTOCOL=http
    fi
 
@@ -49,20 +53,16 @@ if [[ $REPLICATION_TYPE == "slave" ]]; then
       REPLICATION_MASTER_PORT=8083
    fi
 
-   if [[ $REPLICATION_CORE_NAME == "" ]]; then
-      REPLICATION_CORE_NAME=alfresco
-   fi
-
    if [[ $REPLICATION_POLL_INTERVAL == "" ]]; then
       REPLICATION_POLL_INTERVAL=00:00:30
    fi
 
    sed -i 's/<requestHandler name="\/replication" class="org\.alfresco\.solr\.handler\.AlfrescoReplicationHandler">/<requestHandler name="\/replication" class="org\.alfresco\.solr\.handler\.AlfrescoReplicationHandler">\
       <lst name="slave">\
-         <str name="masterUrl">'$REPLICATION_MASTER_PROTOCOL':\/\/'$REPLICATION_MASTER_HOST':'$REPLICATION_MASTER_PORT'\/solr\/'$REPLICATION_CORE_NAME'<\/str>\
+         <str name="masterUrl">'$REPLICATION_MASTER_PROTOCOL':\/\/'$REPLICATION_MASTER_HOST':'$REPLICATION_MASTER_PORT'\/solr\/${solr.core.name}<\/str>\
          <str name="pollInterval">'$REPLICATION_POLL_INTERVAL'<\/str>\
-      <\/lst>/g' $SOLR_CONFIG_FILE
-   sed -i "s/enable.alfresco.tracking=true/enable.alfresco.tracking=false\nenable.master=false\nenable.slave=true/g" $SOLR_CORE_FILE
+      <\/lst>/g' $SOLR_RERANK_CONFIG_FILE $SOLR_NORERANK_CONFIG_FILE
+   sed -i "s/enable.alfresco.tracking=true/enable.alfresco.tracking=false\nenable.master=false\nenable.slave=true/g" $SOLR_RERANK_CORE_FILE $SOLR_NORERANK_CORE_FILE
 fi
 
 SOLR_IN_FILE=$PWD/solr.in.sh
@@ -85,8 +85,7 @@ fi
 # By default Docker Image is using TLS Mutual Authentication (SSL) for communications with Repository
 # Plain HTTP can be enabled by setting ALFRESCO_SECURE_COMMS to 'none'
 if [[ "none" == "$ALFRESCO_SECURE_COMMS" ]]; then
-   sed -i 's/alfresco.secureComms=https/alfresco.secureComms=none/' ${PWD}/solrhome/templates/rerank/conf/solrcore.properties
-   sed -i 's/alfresco.secureComms=https/alfresco.secureComms=none/' ${PWD}/solrhome/templates/noRerank/conf/solrcore.properties
+   sed -i 's/alfresco.secureComms=https/alfresco.secureComms=none/' $SOLR_RERANK_CORE_FILE $SOLR_NORERANK_CORE_FILE
    # Apply also the setting to existing SOLR cores property files when existing
    if [[ -f ${PWD}/solrhome/alfresco/conf/solrcore.properties ]]; then
        sed -i 's/alfresco.secureComms=https/alfresco.secureComms=none/' ${PWD}/solrhome/alfresco/conf/solrcore.properties

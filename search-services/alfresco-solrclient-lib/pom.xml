@@ -22,8 +22,8 @@
     </distributionManagement>
 
     <properties>
-        <dependency.alfresco-data-model.version>8.72</dependency.alfresco-data-model.version>
-        <dependency.jackson.version>2.10.1</dependency.jackson.version>
+        <dependency.alfresco-data-model.version>8.75</dependency.alfresco-data-model.version>
+        <dependency.jackson.version>2.10.2</dependency.jackson.version>
     </properties>
 
     <dependencies>
@@ -61,7 +61,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>4.13</version>
             <scope>test</scope>
         </dependency>
         <dependency>

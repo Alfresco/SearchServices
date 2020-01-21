@@ -1156,7 +1156,7 @@
 
        https://wiki.apache.org/solr/SolrCloud/
     -->
-  <requestHandler name="/replication" class="solr.ReplicationHandler" > 
+    <requestHandler name="/replication" class="org.alfresco.solr.handler.AlfrescoReplicationHandler">
     <!--
        To enable simple master/slave replication, uncomment one of the 
        sections below, depending on whether this solr instance should be
