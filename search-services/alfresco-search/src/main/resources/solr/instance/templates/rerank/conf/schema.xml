@@ -773,17 +773,6 @@
       -->
       <field name="FIELDS" type="identifiers" stored="true" docValues="true" />
 
-      <!--
-        A flag indicating whetever the node needs to have the text content added/updated.
-        Possible values for this field are:
-
-          - NEW: the node has been just added.
-          - DIRTY: the node has been marked as "updateable" (i.e. in the next content tracker cycle SearchServices will
-                   query Alfresco for gathering the corresponding text content.
-          - CLEAN: the node is up to date.
-      -->
-      <field name="FTSSTATUS" type="identifier" />
-
       <field name="DBID" type="long" docValues="true" />
       <field name="TXID" type="long" docValues="true" />
       <field name="INTXID" type="long" />
@@ -796,22 +785,27 @@
       <field name="CASCADETX" type="long" docValues="true" />
 
       <!--
-        These 2 fields are used after the content store removal, for detecting the content indexing status
-        (Previsouly Clean, New, Dirty).
+        These 2 fields are used after the content store removal, for detecting the content indexing status:
 
-        -10 => Default value of LAST_INCOMING_CONTENT_VERSION_ID which means "Dirty" (i.e. the content needs to be updated)
-        -20 => Means "Content updated"
+      LATEST_APPLIED_CONTENT_VERSION_ID
+      It corresponds to the identifier of the latest applied content property id (content@s__docid@* or content@m__docid@*).
+      Note It can be null (i.e. the incoming node doesn't have a value for that property, even if it requires content indexing)
 
-        LATEST_APPLIED_CONTENT_VERSION_ID
-        It corresponds to the identifier of the latest applied content property (DOCID). It can be null (i.e. the incoming
-        node doesn't have a value for that property, even if it requires content indexing)
+      LAST_INCOMING_CONTENT_VERSION_ID:
+      This is instead used for detecting documents outdated or that require content indexing.
+      If the field has the same value of the previous one (or it has  SolrInformationServer.CONTENT_UPDATED_MARKER as a value),
+      then the content is updated. Otherwise, if the value is different, is not SolrInformationServer.CONTENT_UPDATED_MARKER
+      or it is SolrInformationServer.CONTENT_OUTDATED_MARKER the content is intended as outdated and therefore it will
+      be managed (later) by the ContentTracker.
 
-        LAST_INCOMING_CONTENT_VERSION_ID
-        This is used for detecting documents outdated or that require content indexing for the first time.
-        The field itself doesn't mean anything, it must be compared with the LATEST_APPLIED_CONTENT_VERSION_ID:
-        - if the two fields have the same value then content is up to date
-        - if the two fields doesn't have the same value then the document will be selected by the ContentTracker for
-          content indexing
+      They can have the following values:
+        -10 (or SolrInformationServer.CONTENT_OUTDATED_MARKER)
+        Whatever is the content version in the incoming node, this constant marks a document as OUTDATED (i.e. it will
+        be later picked up by the ContentTracker for starting the content update process).
+        This is the default value of the LAST_INCOMING_CONTENT_VERSION_ID field.
+
+        -20 (or SolrInformationServer.CONTENT_UPDATED_MARKER)
+        This value marks a document/node as updated.
       -->
       <field name="LATEST_APPLIED_CONTENT_VERSION_ID" type="long_without_precision_step"/>
       <field name="LAST_INCOMING_CONTENT_VERSION_ID" type="long_without_precision_step" default="-10"/>

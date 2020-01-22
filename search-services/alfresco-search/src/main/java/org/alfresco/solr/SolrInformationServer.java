@@ -36,7 +36,6 @@ import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_T
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_EXCEPTION_MESSAGE;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_EXCEPTION_STACK;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_FIELDS;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_FTSSTATUS;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_GEO;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_INACLTXID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_INTXID;
@@ -176,8 +175,6 @@ import org.apache.solr.search.DelegatingCollector;
 import org.apache.solr.search.DocIterator;
 import org.apache.solr.search.DocList;
 import org.apache.solr.search.DocSet;
-import org.apache.solr.search.QueryCommand;
-import org.apache.solr.search.QueryResult;
 import org.apache.solr.search.QueryWrapperFilter;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.update.AddUpdateCommand;
@@ -377,8 +374,6 @@ public class SolrInformationServer implements InformationServer
 
     private String skippingDocsQueryString;
     private boolean isSkippingDocsInitialized;
-
-    protected enum FTSStatus {New, Dirty, Clean}
 
     static class DocListCollector implements Collector, LeafCollector
     {
@@ -591,8 +586,29 @@ public class SolrInformationServer implements InformationServer
         isSkippingDocsInitialized = true;
     }
 
+    /**
+     * The outdated node are computed counting all nodes that have
+     *
+     * <ul>
+     *     <li>
+     *          LATEST_APPLIED_CONTENT_VERSION_ID = {@link #CONTENT_OUTDATED_MARKER
+     *     </li>
+     *     <li>
+     *         DOC_TYPE = {@link #DOC_TYPE_NODE}
+     *     </li>
+     * </ul>
+     *
+     * The updated nodes are computed by simply subtracting the count above from the total number of documents that
+     * represent nodes. However, keep in mind that using the two fields LATEST_APPLIED_CONTENT_VERSION_ID and LAST_INCOMING_CONTENT_VERSION_ID
+     * there's another (more expensive) way to compute the same information: the following query should return the
+     * same result (i.e. number of updated nodes):
+     *
+     * <pre>
+     *   facet.query={!frange key='UPDATED' l=0}sub(LAST_INCOMING_CONTENT_VERSION_ID,LATEST_APPLIED_CONTENT_VERSION_ID)
+     * </pre>
+     */
     @Override
-    public void addFTSStatusCounts(NamedList<Object> report)
+    public void addContentOutdatedAndUpdatedCounts(NamedList<Object> report)
     {
         try (SolrQueryRequest request = newSolrQueryRequest())
         {
@@ -602,7 +618,6 @@ public class SolrInformationServer implements InformationServer
                             .set(CommonParams.FQ, FIELD_DOC_TYPE + ":" + DOC_TYPE_NODE)
                             .set(CommonParams.ROWS, 0)
                             .set(FacetParams.FACET, true)
-                            //.add(FacetParams.FACET_QUERY, "{!frange key='UPDATED' l=0}sub(LAST_INCOMING_CONTENT_VERSION_ID,LATEST_APPLIED_CONTENT_VERSION_ID)")
                             .add(FacetParams.FACET_QUERY, "{!key='OUTDATED'}LATEST_APPLIED_CONTENT_VERSION_ID:{-10 TO -10}");
 
             SolrQueryResponse response = cloud.getResponse(nativeRequestHandler, request, params);
@@ -630,7 +645,7 @@ public class SolrInformationServer implements InformationServer
                         .map(Number::longValue)
                         .orElse(0L);
 
-            report.add("Node count whose content doesn't have to be indexed or it is in synch", numFound - outdated);
+            report.add("Node count whose content is in sync", numFound - outdated);
             report.add("Node count whose content needs to be updated", outdated);
         }
     }
@@ -807,7 +822,7 @@ public class SolrInformationServer implements InformationServer
 
             DelegatingCollector delegatingCollector = new TxnCacheFilter(cleanContentCache); //Filter transactions that have already been processed.
             delegatingCollector.setLastDelegate(collector);
-            searcher.search(dirtyOrNewContentQuery(), delegatingCollector);
+            searcher.search(documentsWithOutdatedContentQuery(), delegatingCollector);
 
             if(collector.getTotalHits() == 0)
             {
@@ -828,7 +843,7 @@ public class SolrInformationServer implements InformationServer
             //The TxnCollector collects the transaction ids from the matching documents
             //The txnIds are limited to a range >= the txnFloor and < an arbitrary transaction ceiling.
             TxnCollector txnCollector = new TxnCollector(txnFloor);
-            searcher.search(dirtyOrNewContentQuery(), txnCollector);
+            searcher.search(documentsWithOutdatedContentQuery(), txnCollector);
             LongHashSet txnSet = txnCollector.getTxnSet();
 
             if(txnSet.size() == 0)
@@ -854,7 +869,7 @@ public class SolrInformationServer implements InformationServer
             DocListCollector docListCollector = new DocListCollector();
             BooleanQuery.Builder builder2 = new BooleanQuery.Builder();
 
-            builder2.add(dirtyOrNewContentQuery(), BooleanClause.Occur.MUST);
+            builder2.add(documentsWithOutdatedContentQuery(), BooleanClause.Occur.MUST);
             builder2.add(new QueryWrapperFilter(txnFilterQuery), BooleanClause.Occur.MUST);
 
             searcher.search(builder2.build(), docListCollector);
@@ -2323,8 +2338,6 @@ public class SolrInformationServer implements InformationServer
      */
     private static void markAsContentInSynch(SolrInputDocument document, ContentPropertyValue value)
     {
-        // Old status field, for retrocompatibility
-        document.setField(FIELD_FTSSTATUS, FTSStatus.Clean.toString());
         ofNullable(value)
                 .map(ContentPropertyValue::getId)
                 .ifPresentOrElse(
@@ -2398,6 +2411,8 @@ public class SolrInformationServer implements InformationServer
      *          of LATEST_APPLIED_CONTENT_VERSION_ID.
      *     </li>
      * </ul>
+     *
+     * As a side note, please keep in mind the FTSSTATUS field has been removed.
      */
     private static void insertContentUpdateMarker(SolrInputDocument document, ContentPropertyValue value)
     {
@@ -3652,20 +3667,20 @@ public class SolrInformationServer implements InformationServer
         return Long.parseLong(getFieldValueString(doc, fieldName));
     }
 
-    private Query dirtyOrNewContentQuery()
+    private Query documentsWithOutdatedContentQuery()
     {
-        Query onlyDirtyDocuments =
+        Query onlyDocumentsWhoseContentNeedsToBeUpdated =
                 LegacyNumericRangeQuery.newLongRange(
                         LAST_INCOMING_CONTENT_VERSION_ID,
                         CONTENT_OUTDATED_MARKER,
                         CONTENT_OUTDATED_MARKER,
                         true,
                         true);
-        Query onlyDocuments = new TermQuery(new Term(FIELD_DOC_TYPE, DOC_TYPE_NODE));
+        Query onlyDocumentsThatRepresentNodes = new TermQuery(new Term(FIELD_DOC_TYPE, DOC_TYPE_NODE));
 
         return new BooleanQuery.Builder()
-                    .add(onlyDirtyDocuments, BooleanClause.Occur.MUST)
-                    .add(onlyDocuments, BooleanClause.Occur.MUST)
+                    .add(onlyDocumentsWhoseContentNeedsToBeUpdated, BooleanClause.Occur.MUST)
+                    .add(onlyDocumentsThatRepresentNodes, BooleanClause.Occur.MUST)
                     .build();
     }
 
