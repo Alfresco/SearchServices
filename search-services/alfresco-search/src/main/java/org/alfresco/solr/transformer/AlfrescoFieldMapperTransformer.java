@@ -33,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+import static java.util.Optional.of;
+
 /**
  * @author Andy, Elia
  *
@@ -43,12 +45,13 @@ public class AlfrescoFieldMapperTransformer extends DocTransformer
 
     private ResultContext context;
     private SolrReturnFields solrReturnFields;
-    
+
     @Override
     public String getName()
     {
         return "fmap";
     }
+
 
     public void setContext( ResultContext context ) 
     {
@@ -116,7 +119,12 @@ public class AlfrescoFieldMapperTransformer extends DocTransformer
     }
 
     private Object getFieldValue(SchemaField schemaField, Object value){
-        Object indexedValue = DocsStreamer.getValue(schemaField, (IndexableField) value);
-        return indexedValue instanceof String? removeLocale((String) indexedValue) : indexedValue;
+        if (value instanceof IndexableField)
+        {
+            Object indexedValue = DocsStreamer.getValue(schemaField, (IndexableField) value);
+            return indexedValue instanceof String? removeLocale((String) indexedValue) : indexedValue;
+        }
+
+        return value;
     }
 }
