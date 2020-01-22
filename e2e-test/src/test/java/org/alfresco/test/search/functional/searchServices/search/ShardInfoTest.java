@@ -118,6 +118,7 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
             assertTrue(baseUrls.contains(instance.getBaseUrl()));
             
             assertEquals(instance.getState(), "ACTIVE");
+            assertEquals(instance.getMode(), "MIXED");
         }
     }
 
