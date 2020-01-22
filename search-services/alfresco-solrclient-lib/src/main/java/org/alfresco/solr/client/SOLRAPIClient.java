@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -74,7 +73,6 @@ import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.util.DateUtil;
-import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -107,6 +105,7 @@ public class SOLRAPIClient
     private static final String GET_MODEL = "api/solr/model";
     private static final String GET_MODELS_DIFF = "api/solr/modelsdiff";
     private static final String GET_NEXT_TX_COMMIT_TIME = "api/solr/nextTransaction";
+    private static final String GET_TX_INTERVAL_COMMIT_TIME = "api/solr/transactionInterval";
 
     private static final String CHECKSUM_HEADER = "XAlfresco-modelChecksum";
 
@@ -1296,7 +1295,55 @@ public class SOLRAPIClient
         }
 
         return Long.parseLong(json.get("nextTransactionCommitTimeMs").toString());
-    }    
+    }
+    
+    /**
+     * Returns the minimum and the maximum commit time for transactions in a node id range.
+     * 
+     * @param coreName alfresco, archive
+     * @param fromNodeId Id of the initial node
+     * @param toNodeId Id of the final node
+     * @return Time of the first transaction, time of the last transaction
+     * @throws IOException 
+     * @throws AuthenticationException 
+     * @throws NoSuchMethodException 
+     */
+    public Pair<Long, Long> getTxIntervalCommitTime(String coreName, Long fromNodeId, Long toNodeId)
+            throws AuthenticationException, IOException, NoSuchMethodException
+    {
+        StringBuilder url = new StringBuilder(GET_TX_INTERVAL_COMMIT_TIME);
+        url.append("?").append("fromNodeId").append("=").append(fromNodeId);
+        url.append("&").append("toNodeId").append("=").append(toNodeId);
+        GetRequest get = new GetRequest(url.toString());
+        Response response = null;
+        JSONObject json = null;
+        try
+        {
+            response = repositoryHttpClient.sendRequest(get);
+            if (response.getStatus() != HttpStatus.SC_OK)
+            {
+                throw new NoSuchMethodException(coreName + " - GetTxIntervalCommitTime return status is "
+                        + response.getStatus() + " when invoking " + url);
+            }
+
+            Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
+            json = new JSONObject(new JSONTokener(reader));
+        }
+        finally
+        {
+            if (response != null)
+            {
+                response.release();
+            }
+        }
+        if (log.isDebugEnabled())
+        {
+            log.debug(json.toString());
+        }
+
+        return new Pair<Long, Long>(Long.parseLong(json.get("minTransactionCommitTimeMs").toString()),
+                Long.parseLong(json.get("maxTransactionCommitTimeMs").toString()));
+    }
 
     /*
      * type conversions from serialized JSON values to SOLR-consumable objects 
