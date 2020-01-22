@@ -148,13 +148,6 @@ import java.util.stream.Stream;
  */
 public class Solr4QueryParser extends QueryParser implements QueryConstants
 {
-
-    /**
-     *            IndexSchema
-     * @param matchVersion
-     * @param f
-     * @param a
-     */
     public Solr4QueryParser(SolrQueryRequest req, Version matchVersion, String f, Analyzer a,
             FTSQueryParser.RerankPhase rerankPhase)
     {
@@ -630,9 +623,6 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                     namespacePrefixResolver, dictionaryService, field) != null)
             {
                 return createDataTypeDefinitionQuery(field, queryText, analysisMode, luceneFunction);
-            } else if (field.equals(FIELD_FTSSTATUS))
-            {
-                return createTermQuery(field, queryText);
             } else if (field.equals(FIELD_TXID))
             {
                 return createTxIdQuery(queryText);

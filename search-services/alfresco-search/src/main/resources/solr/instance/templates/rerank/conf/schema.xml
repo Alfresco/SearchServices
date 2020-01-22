@@ -773,17 +773,6 @@
       -->
       <field name="FIELDS" type="identifiers" stored="true" docValues="true" />
 
-      <!--
-        A flag indicating whetever the node needs to have the text content added/updated.
-        Possible values for this field are:
-
-          - NEW: the node has been just added.
-          - DIRTY: the node has been marked as "updateable" (i.e. in the next content tracker cycle SearchServices will
-                   query Alfresco for gathering the corresponding text content.
-          - CLEAN: the node is up to date.
-      -->
-      <field name="FTSSTATUS" type="identifier" />
-
       <field name="DBID" type="long" docValues="true" />
       <field name="TXID" type="long" docValues="true" />
       <field name="INTXID" type="long" />

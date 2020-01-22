@@ -154,7 +154,11 @@ public interface InformationServer extends InformationServerCollectionProvider
 
     void addCommonNodeReportInfo(NodeReport nodeReport);
 
-    void addFTSStatusCounts(NamedList<Object> ihr);
+    /**
+     * Adds to the input report container (a {@link NamedList}) the counts of nodes/documents whose content is
+     * outdated and updated (i.e. in synch with the CMS).
+     */
+    void addContentOutdatedAndUpdatedCounts(NamedList<Object> ihr);
 
     IndexHealthReport reportAclTransactionsInIndex(Long minAclTxId, IOpenBitSet aclTxIdsInDb, long maxAclTxId);
 
