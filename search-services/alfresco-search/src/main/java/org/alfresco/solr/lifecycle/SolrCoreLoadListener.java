@@ -251,7 +251,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
 
         MetadataTracker metadataTracker =
                 registerAndSchedule(
-                    new MetadataTracker(true, props, repositoryClient, core.getName(), srv),
+                    new MetadataTracker(true, props, repositoryClient, core.getName(), srv, true),
                         core,
                         props,
                         trackerRegistry,
