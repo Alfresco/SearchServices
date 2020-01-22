@@ -125,6 +125,14 @@ RUN if [ "$ENABLE_SHARDING" == "true" ] ; then \
   fi; \
 fi
 
+# GZIP COMPRESSION
+ARG COMPRESS_CONTENT
+ENV COMPRESS_CONTENT $COMPRESS_CONTENT
+RUN if [ "$COMPRESS_CONTENT" == "true" ] ; then \
+  sed -i '/^bash.*/i sed -i "'"s/solr.request.content.compress=false/solr.request.content.compress=true/g"'" ${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
+  ${DIST_DIR}/solr/bin/search_config_setup.sh; \
+fi
+
 # Useless for 'none'/'http' communications with Alfresco
 RUN mkdir ${DIST_DIR}/keystore \
     && chown -R solr:solr ${DIST_DIR}/keystore
