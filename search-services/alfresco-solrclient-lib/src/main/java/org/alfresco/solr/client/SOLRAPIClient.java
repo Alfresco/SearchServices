@@ -104,6 +104,8 @@ public class SOLRAPIClient
     private static final String GET_CONTENT = "api/solr/textContent";
     private static final String GET_MODEL = "api/solr/model";
     private static final String GET_MODELS_DIFF = "api/solr/modelsdiff";
+    private static final String GET_NEXT_TX_COMMIT_TIME = "api/solr/nextTransaction";
+    private static final String GET_TX_INTERVAL_COMMIT_TIME = "api/solr/transactionInterval";
 
     private static final String CHECKSUM_HEADER = "XAlfresco-modelChecksum";
 
@@ -112,16 +114,33 @@ public class SOLRAPIClient
     private DictionaryService dictionaryService;
     private JsonFactory jsonFactory;
     private NamespaceDAO namespaceDAO;
+    
+    /**
+     * This option enables ("Accept-Encoding": "gzip") header for compression
+     * in GET_CONTENT requests. Additional configuration is required in 
+     * Alfresco Repository Tomcat Connector or HTTP Web Proxy to deal
+     * with compressed requests.
+     */
+    private boolean compression;
 
     public SOLRAPIClient(AlfrescoHttpClient repositoryHttpClient,
             DictionaryService dictionaryService,
             NamespaceDAO namespaceDAO)
+    {
+        this(repositoryHttpClient, dictionaryService, namespaceDAO, false);
+    }
+    
+    public SOLRAPIClient(AlfrescoHttpClient repositoryHttpClient,
+            DictionaryService dictionaryService,
+            NamespaceDAO namespaceDAO,
+            boolean compression)
     {
         this.repositoryHttpClient = repositoryHttpClient;
         this.dictionaryService = dictionaryService;
         this.namespaceDAO = namespaceDAO;
         this.deserializer = new SOLRDeserializer(namespaceDAO);
         this.jsonFactory = new JsonFactory();
+        this.compression = compression;
     }
     
     /**
@@ -1118,13 +1137,17 @@ public class SOLRAPIClient
         
         GetRequest req = new GetRequest(url.toString());
         
+        Map<String, String> headers = new HashMap<>();
         if(modifiedSince != null)
         {
-            Map<String, String> headers = new HashMap<String, String>(1, 1.0f);
             headers.put("If-Modified-Since", String.valueOf(DateUtil.formatDate(new Date(modifiedSince))));
-            req.setHeaders(headers);
         }
-
+        if (compression)
+        {
+            headers.put("Accept-Encoding", "gzip");
+        }
+        req.setHeaders(headers);
+        
         Response response = repositoryHttpClient.sendRequest(req);
         
         if(response.getStatus() != Status.STATUS_NOT_MODIFIED && response.getStatus() != Status.STATUS_NO_CONTENT && response.getStatus() != Status.STATUS_OK)
@@ -1228,6 +1251,98 @@ public class SOLRAPIClient
         }
 
         return diffs;
+    }
+    
+    /**
+     * Returns the minimum and the maximum commit time for transactions in a node id range.
+     * 
+     * @param coreName alfresco, archive
+     * @param fromCommitTime initial transaction commit time
+     * @return Time of the next transaction
+     * @throws IOException 
+     * @throws AuthenticationException 
+     * @throws NoSuchMethodException 
+     */
+    public Long getNextTxCommitTime(String coreName, Long fromCommitTime) throws AuthenticationException, IOException, NoSuchMethodException
+    {
+        StringBuilder url = new StringBuilder(GET_NEXT_TX_COMMIT_TIME);
+        url.append("?").append("fromCommitTime").append("=").append(fromCommitTime);
+        GetRequest get = new GetRequest(url.toString());
+        Response response = null;
+        JSONObject json = null;
+        try
+        {
+            response = repositoryHttpClient.sendRequest(get);
+            if (response.getStatus() != HttpStatus.SC_OK)
+            {
+                throw new NoSuchMethodException(coreName + " - GetNextTxCommitTime return status is "
+                        + response.getStatus() + " when invoking " + url);
+            }
+
+            Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
+            json = new JSONObject(new JSONTokener(reader));
+        }
+        finally
+        {
+            if (response != null)
+            {
+                response.release();
+            }
+        }
+        if (log.isDebugEnabled())
+        {
+            log.debug(json.toString());
+        }
+
+        return Long.parseLong(json.get("nextTransactionCommitTimeMs").toString());
+    }
+    
+    /**
+     * Returns the minimum and the maximum commit time for transactions in a node id range.
+     * 
+     * @param coreName alfresco, archive
+     * @param fromNodeId Id of the initial node
+     * @param toNodeId Id of the final node
+     * @return Time of the first transaction, time of the last transaction
+     * @throws IOException 
+     * @throws AuthenticationException 
+     * @throws NoSuchMethodException 
+     */
+    public Pair<Long, Long> getTxIntervalCommitTime(String coreName, Long fromNodeId, Long toNodeId)
+            throws AuthenticationException, IOException, NoSuchMethodException
+    {
+        StringBuilder url = new StringBuilder(GET_TX_INTERVAL_COMMIT_TIME);
+        url.append("?").append("fromNodeId").append("=").append(fromNodeId);
+        url.append("&").append("toNodeId").append("=").append(toNodeId);
+        GetRequest get = new GetRequest(url.toString());
+        Response response = null;
+        JSONObject json = null;
+        try
+        {
+            response = repositoryHttpClient.sendRequest(get);
+            if (response.getStatus() != HttpStatus.SC_OK)
+            {
+                throw new NoSuchMethodException(coreName + " - GetTxIntervalCommitTime return status is "
+                        + response.getStatus() + " when invoking " + url);
+            }
+
+            Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
+            json = new JSONObject(new JSONTokener(reader));
+        }
+        finally
+        {
+            if (response != null)
+            {
+                response.release();
+            }
+        }
+        if (log.isDebugEnabled())
+        {
+            log.debug(json.toString());
+        }
+
+        return new Pair<Long, Long>(Long.parseLong(json.get("minTransactionCommitTimeMs").toString()),
+                Long.parseLong(json.get("maxTransactionCommitTimeMs").toString()));
     }
 
     /*
@@ -1482,6 +1597,7 @@ public class SOLRAPIClient
         private String transformException;
         private String transformStatusStr;
         private Long transformDuration;
+        private String contentEncoding;
 
         public GetTextContentResponse(Response response) throws IOException
         {
@@ -1492,6 +1608,7 @@ public class SOLRAPIClient
             this.transformException = response.getHeader("X-Alfresco-transformException");
             String tmp = response.getHeader("X-Alfresco-transformDuration");
             this.transformDuration = (tmp != null ? Long.valueOf(tmp) : null);
+            this.contentEncoding = response.getHeader("Content-Encoding");
             setStatus();
         }
 
@@ -1557,6 +1674,11 @@ public class SOLRAPIClient
         public Long getTransformDuration()
         {
             return transformDuration;
+        }
+        
+        public String getContentEncoding()
+        {
+            return contentEncoding;
         }
     }
 
