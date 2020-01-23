@@ -3462,13 +3462,6 @@ public class SolrInformationServer implements InformationServer
 
                     LOGGER.debug("Cascade update child doc {}", childId);
 
-//                    // Gets the document that we have from the content store and updates it
-//                    String fixedTenantDomain = AlfrescoSolrDataModel.getTenantId(nodeMetaData.getTenantDomain());
-//                    SolrInputDocument cachedDoc = solrContentStore.retrieveDocFromSolrContentStore(fixedTenantDomain, nodeMetaData.getId());
-//
-//                    if (cachedDoc != null)
-//                    {
-
                     SolrInputDocument document = basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new);
                         updatePathRelatedFields(nodeMetaData, document);
                         updateNamePathRelatedFields(nodeMetaData, document);
@@ -3479,12 +3472,6 @@ public class SolrInformationServer implements InformationServer
                         addDocCmd.solrDoc = document;
 
                         processor.processAdd(addDocCmd);
-                        //solrContentStore.storeDocOnSolrContentStore(fixedTenantDomain, nodeMetaData.getId(), cachedDoc);
-//                    }
-//                    else
-//                    {
-//                        LOGGER.debug("No child doc found to update {}", childId);
-//                    }
                 }
                 finally
                 {
