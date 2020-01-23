@@ -578,6 +578,6 @@
 
     <!-- CachedDocTransformer has been renamed, but we retained both codes (new and old) for retro-compatibility -->
     <transformer name="cached" class="org.alfresco.solr.transformer.AlfrescoFieldMapperTransformerFactory" />
-    <transformer name="fieldMapper" class="org.alfresco.solr.transformer.AlfrescoFieldMapperTransformerFactory"/>
+    <transformer name="fmap" class="org.alfresco.solr.transformer.AlfrescoFieldMapperTransformerFactory"/>
 </config>
 
