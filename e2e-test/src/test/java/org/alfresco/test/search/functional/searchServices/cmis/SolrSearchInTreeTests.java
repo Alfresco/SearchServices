@@ -7,6 +7,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.QueryModel;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -59,7 +60,7 @@ public class SolrSearchInTreeTests extends AbstractCmisE2ETest
     public void executeCMISQuery(QueryModel query) throws Exception
     {
         String currentQuery = String.format(query.getValue(), parentFolder.getNodeRef());
-        cmisApi.withQuery(currentQuery)
-            .assertResultsCount().equals(query.getResults());
+        cmisApi.authenticateUser(testUser);
+        Assert.assertTrue(waitForIndexing(currentQuery, query.getResults()), String.format("Result count not as expected for query: %s", currentQuery));
     }
 }
