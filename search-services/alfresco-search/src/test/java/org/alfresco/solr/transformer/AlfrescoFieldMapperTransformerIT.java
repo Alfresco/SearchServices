@@ -63,7 +63,6 @@ public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistribute
     @BeforeClass
     public static void initData() throws Throwable
     {
-        // FIXME: 1 shard??
         initSolrServers(1, AlfrescoFieldMapperTransformerIT.getSimpleClassName(), null);
         populateAlfrescoData();
     }
@@ -78,7 +77,7 @@ public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistribute
     public void transformDocument_noDocTransformer_shouldReturnBasicFields() throws Exception 
     {
         putHandleDefaults();
-        //Test 1: Running a simple query without invoking CachedDocTransformer, expected to see id,DBID and _version_
+        //Test 1: Running a simple query without invoking AlfrescoFieldMapperTransformer, expected to see id,DBID and _version_
         QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts"));
         assertNotNull(resp);
         SolrDocumentList results = resp.getResults();
@@ -104,8 +103,8 @@ public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistribute
     {
         putHandleDefaults();
         
-        //Test 2: Running simple query with CachedDocTransformer, expected to see all fields returned
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","*,[cached]"));
+        //Test 2: Running simple query with AlfrescoFieldMapperTransformer, expected to see all fields returned
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","*,[fmap]"));
         SolrDocument docWithAllFields = resp.getResults().get(0);
         assertTrue(docWithAllFields.size() > 3);
 
@@ -126,8 +125,8 @@ public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistribute
     {
         putHandleDefaults();
 
-        //Test 3: Running simple query with CachedDocTransformer, expected to see selected fields returned
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","id,DBID,[cached]"));
+        //Test 3: Running simple query with AlfrescoFieldMapperTransformer, expected to see selected fields returned
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","id,DBID,[fmap]"));
 
         assertNotNull(resp);
         SolrDocument docWithRequestedFields = resp.getResults().get(0);
@@ -141,8 +140,23 @@ public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistribute
     {
         putHandleDefaults();
         
-        //Test 4: Running simple query with CachedDocTransformer on non default fields, expected to see selected fields returned
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","id, cm_title,[cached]"));
+        //Test 4: Running simple query with fmapDocTransformer on non default fields, expected to see selected fields returned
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","id, cm_title,[fmap]"));
+
+        assertNotNull(resp);
+        SolrDocument docWithRequestedFields3 = resp.getResults().get(0);
+        assertEquals(2, docWithRequestedFields3.size());
+        assertNotNull(docWithRequestedFields3.get("id"));
+        String title = (String) docWithRequestedFields3.getFieldValue("cm_title");
+        assertEquals("title1", title);
+    }
+
+    @Test
+    public void transformDocument_docTransformerSetTwice_shouldWorkWithoutErrors() throws Exception
+    {
+        putHandleDefaults();
+
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","id, cm_title,[fmap], [fmap]"));
 
         assertNotNull(resp);
         SolrDocument docWithRequestedFields3 = resp.getResults().get(0);
@@ -157,7 +171,7 @@ public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistribute
     {
         putHandleDefaults();
 
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_name, score, [cached]"));
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_name, score, [fmap]"));
         assertNotNull(resp);
         SolrDocumentList results = resp.getResults();
         SolrDocument docWithAllFields = results.get(0);
@@ -172,7 +186,7 @@ public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistribute
     {
         putHandleDefaults();
 
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_title, cm_created, DBID, score, [cached]"));
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_title, cm_created, DBID, score, [fmap]"));
         assertNotNull(resp);
         SolrDocumentList results = resp.getResults();
         SolrDocument docWithAllFields = results.get(0);
@@ -188,7 +202,7 @@ public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistribute
     {
         putHandleDefaults();
 
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm?title, *name, [cached]"));
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm?title, *name, [fmap]"));
         assertNotNull(resp);
         SolrDocumentList results = resp.getResults();
         SolrDocument docWithAllFields = results.get(0);
@@ -203,7 +217,7 @@ public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistribute
     {
         putHandleDefaults();
 
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_title, [explain], [cached]"));
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_title, [explain], [fmap]"));
         assertNotNull(resp);
         SolrDocumentList results = resp.getResults();
         SolrDocument docWithAllFields = results.get(0);
