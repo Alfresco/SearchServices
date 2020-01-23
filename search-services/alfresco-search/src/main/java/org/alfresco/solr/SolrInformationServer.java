@@ -367,7 +367,6 @@ public class SolrInformationServer implements InformationServer
     private final LRU aclChangeSetCache = new LRU(250000);
     private final Map<Long, Long> cleanContentCache = Collections.synchronizedMap(new LRU(250000));
     private final LRU cleanCascadeCache = new LRU(250000);
-    private final Set<Object> lockRegistry = new HashSet<>();
 
     private final int port;
     private final String baseUrl;
@@ -1889,66 +1888,56 @@ public class SolrInformationServer implements InformationServer
                     long start = System.nanoTime();
 
                     Node node = nodeIdsToNodes.get(nodeMetaData.getId());
-                    long nodeId = node.getId();
-                    try
+                    if (nodeMetaData.getTxnId() > node.getTxnId())
                     {
-                        lock(nodeId);
+                        // the node has moved on to a later transaction
+                        // it will be indexed later
+                        continue;
+                    }
 
-                        if (nodeMetaData.getTxnId() > node.getTxnId())
+                    if (nodeIdsToNodes.get(nodeMetaData.getId()).getStatus() == SolrApiNodeStatus.NON_SHARD_UPDATED)
+                    {
+                        if (nodeMetaData.getProperties().get(ContentModel.PROP_CASCADE_TX) != null)
                         {
-                            // the node has moved on to a later transaction
-                            // it will be indexed later
-                            continue;
+                            indexNonShardCascade(nodeMetaData);
                         }
 
-                        if (nodeIdsToNodes.get(nodeMetaData.getId()).getStatus() == SolrApiNodeStatus.NON_SHARD_UPDATED)
+                        continue;
+                    }
+
+
+                    AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
+                    addDocCmd.overwrite = overwrite;
+
+                    // check index control
+                    Map<QName, PropertyValue> properties = nodeMetaData.getProperties();
+                    StringPropertyValue pValue = (StringPropertyValue) properties.get(ContentModel.PROP_IS_INDEXED);
+                    if (pValue != null)
+                    {
+                        boolean isIndexed = Boolean.parseBoolean(pValue.getValue());
+                        if (!isIndexed)
                         {
-                            if (nodeMetaData.getProperties().get(ContentModel.PROP_CASCADE_TX) != null)
+                            deleteNode(processor, request, node);
+                            addDocCmd.solrDoc = basicDocument(nodeMetaData, DOC_TYPE_UNINDEXED_NODE, SolrInputDocument::new);
+                            if (recordUnindexedNodes)
                             {
-                                indexNonShardCascade(nodeMetaData);
+                                processor.processAdd(addDocCmd);
                             }
 
-                            continue;
+                            this.trackerStats.addNodeTime(System.nanoTime() - start);
+                            continue NEXT_NODE;
                         }
-
-
-                        AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
-                        addDocCmd.overwrite = overwrite;
-
-                        // check index control
-                        Map<QName, PropertyValue> properties = nodeMetaData.getProperties();
-                        StringPropertyValue pValue = (StringPropertyValue) properties.get(ContentModel.PROP_IS_INDEXED);
-                        if (pValue != null)
-                        {
-                            boolean isIndexed = Boolean.parseBoolean(pValue.getValue());
-                            if (!isIndexed)
-                            {
-                                deleteNode(processor, request, node);
-                                addDocCmd.solrDoc = basicDocument(nodeMetaData, DOC_TYPE_UNINDEXED_NODE, SolrInputDocument::new);
-                                if (recordUnindexedNodes)
-                                {
-                                    processor.processAdd(addDocCmd);
-                                }
-
-                                this.trackerStats.addNodeTime(System.nanoTime() - start);
-                                continue NEXT_NODE;
-                            }
-                        }
-
-                        // Make sure any unindexed or error doc is removed.
-                        deleteErrorNode(processor, request, node);
-
-                        addDocCmd.solrDoc =
-                                populateWithMetadata(basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new),
-                                        nodeMetaData);
-                        processor.processAdd(addDocCmd);
-
-                        this.trackerStats.addNodeTime(System.nanoTime() - start);
                     }
-                    finally
-                    {
-                        unlock(nodeId);
-                    }
+
+                    // Make sure any unindexed or error doc is removed.
+                    deleteErrorNode(processor, request, node);
+
+                    addDocCmd.solrDoc =
+                            populateWithMetadata(basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new),
+                                    nodeMetaData);
+                    processor.processAdd(addDocCmd);
+
+                    this.trackerStats.addNodeTime(System.nanoTime() - start);
                 }
             }
         }
@@ -3081,33 +3070,6 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    // TODO: Ci serve ancora???
-    private void lock(Object id) throws IOException
-    {
-        long startTime = System.currentTimeMillis();
-        while(!lockRegistry.add(id))
-        {
-            try
-            {
-                Thread.sleep(100);
-            }
-            catch (InterruptedException e)
-            {
-                // I don't think we are concerned with this exception.
-            }
-
-            if(System.currentTimeMillis() - startTime > 120000)
-            {
-                throw new IOException("Unable to acquire lock on nodeId " + id + " after " + 120000 + " msecs.");
-            }
-        }
-    }
-
-    private synchronized void unlock(Object id)
-    {
-        lockRegistry.remove(id);
-    }
-
     private SolrDocumentList executeQueryRequest(SolrQueryRequest request, SolrQueryResponse response, SolrRequestHandler handler)
     {
         handler.handleRequest(request, response);
@@ -3316,30 +3278,19 @@ public class SolrInformationServer implements InformationServer
                 // We do not bring in changes from the future as nodes may switch shards and we do not want the logic here.
                 if (nodeMetaData.getTxnId() < parentNodeMetaData.getTxnId())
                 {
-                    long nodeId = nodeMetaData.getId();
-                    try
-                    {
-                        lock(nodeId);
+                    LOGGER.debug("Cascade update child doc {}", childId);
 
-                        LOGGER.debug("Cascade update child doc {}", childId);
+                    SolrInputDocument document = basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new);
 
-                        SolrInputDocument document = basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new);
+                    AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
+                    addDocCmd.overwrite = overwrite;
+                    addDocCmd.solrDoc = document;
 
-                        AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
-                        addDocCmd.overwrite = overwrite;
-                        addDocCmd.solrDoc = document;
+                    updatePathRelatedFields(nodeMetaData, document);
+                    updateNamePathRelatedFields(nodeMetaData, document);
+                    updateAncestorRelatedFields(nodeMetaData, document);
 
-                        updatePathRelatedFields(nodeMetaData, document);
-                        updateNamePathRelatedFields(nodeMetaData, document);
-                        updateAncestorRelatedFields(nodeMetaData, document);
-
-                        processor.processAdd(addDocCmd);
-
-                    }
-                    finally
-                    {
-                        unlock(nodeId);
-                    }
+                    processor.processAdd(addDocCmd);
                 }
             }
         }
@@ -3456,31 +3407,21 @@ public class SolrInformationServer implements InformationServer
                     updateDescendantDocs(nodeMetaData, overwrite, request, processor, stack);
                 }
 
-                try
-                {
-                    lock(childId);
+                LOGGER.debug("Cascade update child doc {}", childId);
 
-                    LOGGER.debug("Cascade update child doc {}", childId);
+                SolrInputDocument document = basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new);
+                updatePathRelatedFields(nodeMetaData, document);
+                updateNamePathRelatedFields(nodeMetaData, document);
+                updateAncestorRelatedFields(nodeMetaData, document);
 
-                    SolrInputDocument document = basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new);
-                        updatePathRelatedFields(nodeMetaData, document);
-                        updateNamePathRelatedFields(nodeMetaData, document);
-                        updateAncestorRelatedFields(nodeMetaData, document);
+                AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
+                addDocCmd.overwrite = overwrite;
+                addDocCmd.solrDoc = document;
 
-                        AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
-                        addDocCmd.overwrite = overwrite;
-                        addDocCmd.solrDoc = document;
-
-                        processor.processAdd(addDocCmd);
-                }
-                finally
-                {
-                    unlock(childId);
-                }
+                processor.processAdd(addDocCmd);
             }
         }
     }
-
 
     private long topNodeId(SolrQuery.ORDER order)
     {
@@ -3771,27 +3712,6 @@ public class SolrInformationServer implements InformationServer
             consumer.accept(field.getField(), property.getValue());
         }
     }
-
-//    private static void addStringProperty(SolrInputDocument doc, FieldInstance field, StringPropertyValue property, Map<QName, PropertyValue> properties)
-//    {
-//        if(field.isLocalised())
-//        {
-//            Locale locale =
-//                    ofNullable(properties.get(ContentModel.PROP_LOCALE))
-//                        .map(StringPropertyValue.class::cast)
-//                        .map(StringPropertyValue::getValue)
-//                        .map(value -> DefaultTypeConverter.INSTANCE.convert(Locale.class, value))
-//                        .orElse(I18NUtil.getLocale());
-//
-//            doc.addField(field.getField(), "\u0000" + locale.toString() + "\u0000" + property.getValue());
-//        }
-//        else
-//        {
-//            doc.addField(field.getField(), property.getValue());
-//        }
-//
-//        addFieldIfNotSet(doc, field);
-//    }
 
     private static void addFieldIfNotSet(SolrInputDocument doc, String name)
     {
