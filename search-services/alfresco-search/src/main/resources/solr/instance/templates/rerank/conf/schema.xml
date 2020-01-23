@@ -992,69 +992,69 @@
       <dynamicField name="noderef@sd@*"       type="identifier" stored="true" docValues="true" />
 
       <!-- Multi - value indexed  -->
-      <dynamicField name="any@m_@*"           type="oldStandardAnalysis" multiValued="true" />
-      <dynamicField name="encrypted@m_@*"     type="alfrescoFieldType" omitNorms="true" multiValued="true" />
-      <dynamicField name="int@m_@*"           type="ints" />
-      <dynamicField name="long@m_@*"          type="longs" />
-      <dynamicField name="float@m_@*"         type="floats" />
-      <dynamicField name="double@m_@*"        type="doubles" />
-      <dynamicField name="date@m_@*"          type="dates" />
-      <dynamicField name="datetime@m_@*"      type="dates" />
-      <dynamicField name="boolean@m_@*"       type="oldStandardAnalysis" multiValued="true" />
-      <dynamicField name="qname@m_@*"         type="path" multiValued="true" />
-      <dynamicField name="category@m_@*"      type="oldStandardAnalysis" multiValued="true" />
-      <dynamicField name="noderef@m_@*"       type="oldStandardAnalysis" multiValued="true" />
+      <dynamicField name="any@m_@*" type="oldStandardAnalysis" multiValued="true" />
+      <dynamicField name="encrypted@m_@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" />
+      <dynamicField name="int@m_@*" type="ints" />
+      <dynamicField name="long@m_@*" type="longs" />
+      <dynamicField name="float@m_@*" type="floats" />
+      <dynamicField name="double@m_@*" type="doubles" />
+      <dynamicField name="date@m_@*" type="dates" />
+      <dynamicField name="datetime@m_@*" type="dates" />
+      <dynamicField name="boolean@m_@*" type="oldStandardAnalysis" multiValued="true" />
+      <dynamicField name="qname@m_@*" type="path" multiValued="true" />
+      <dynamicField name="category@m_@*" type="oldStandardAnalysis" multiValued="true" />
+      <dynamicField name="noderef@m_@*" type="oldStandardAnalysis" multiValued="true" />
       <dynamicField name="childassocref@m_@*" type="oldStandardAnalysis" multiValued="true" />
-      <dynamicField name="assocref@m_@*"      type="oldStandardAnalysis" multiValued="true" />
-      <dynamicField name="path@m_@*"          type="oldStandardAnalysis" multiValued="true" />
-      <dynamicField name="locale@m_@*"        type="lowercase_id" multiValued="true" />
-      <dynamicField name="period@m_@*"        type="oldStandardAnalysis" multiValued="true" />
+      <dynamicField name="assocref@m_@*" type="oldStandardAnalysis" multiValued="true" />
+      <dynamicField name="path@m_@*" type="oldStandardAnalysis" multiValued="true" />
+      <dynamicField name="locale@m_@*" type="lowercase_id" multiValued="true" />
+      <dynamicField name="period@m_@*" type="oldStandardAnalysis" multiValued="true" />
 
       <!-- Multi + doc values value wildcard matches -->
-      <dynamicField name="int@md@*"           type="ints" stored="true" docValues="true" />
-      <dynamicField name="long@md@*"          type="longs" stored="true" docValues="true" />
-      <dynamicField name="float@md@*"         type="floats" stored="true" docValues="true" />
-      <dynamicField name="double@md@*"        type="doubles" stored="true" docValues="true" />
-      <dynamicField name="date@md@*"          type="dates" stored="true" docValues="true" />
-      <dynamicField name="datetime@md@*"      type="dates" stored="true" docValues="true" />
-      <dynamicField name="boolean@md@*"       type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
-      <dynamicField name="category@md@*"      type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
-      <dynamicField name="noderef@md@*"       type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
+      <dynamicField name="int@md@*" type="ints" stored="true" docValues="true" />
+      <dynamicField name="long@md@*" type="longs" stored="true" docValues="true" />
+      <dynamicField name="float@md@*" type="floats" stored="true" docValues="true" />
+      <dynamicField name="double@md@*" type="doubles" stored="true" docValues="true" />
+      <dynamicField name="date@md@*" type="dates" stored="true" docValues="true" />
+      <dynamicField name="datetime@md@*" type="dates" stored="true" docValues="true" />
+      <dynamicField name="boolean@md@*" type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
+      <dynamicField name="category@md@*" type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
+      <dynamicField name="noderef@md@*" type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
 
-      <dynamicField name="text@s____@*"          type="identifier" />
-      <dynamicField name="text@s__l_@*"          type="alfrescoFieldType" omitNorms="true" />
-      <dynamicField name="text@s__lt@*"          type="alfrescoFieldType" omitNorms="false" />
-      <dynamicField name="text@s___t@*"          type="text___" />
-      <dynamicField name="text@s__sort@*"        type="alfrescoCollatableTextFieldType" />
+      <dynamicField name="text@s____@*" type="identifier" />
+      <dynamicField name="text@s__l_@*" type="alfrescoFieldType" omitNorms="true" />
+      <dynamicField name="text@s__lt@*" type="alfrescoFieldType" omitNorms="false" />
+      <dynamicField name="text@s___t@*" type="text___" />
+      <dynamicField name="text@s__sort@*" type="alfrescoCollatableTextFieldType" />
 
       <dynamicField name="text@sd___@*" type="identifier" stored="true" docValues="true" />
 
-      <dynamicField name="text@m____@*"          type="identifiers" />
-      <dynamicField name="text@m__l_@*"          type="alfrescoFieldType" omitNorms="true" multiValued="true" />
-      <dynamicField name="text@m__lt@*"          type="alfrescoFieldType" omitNorms="true" multiValued="true" />
-      <dynamicField name="text@m___t@*"          type="text___" multiValued="true" />
+      <dynamicField name="text@m____@*" type="identifiers" />
+      <dynamicField name="text@m__l_@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" />
+      <dynamicField name="text@m__lt@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" />
+      <dynamicField name="text@m___t@*" type="text___" multiValued="true" />
 
       <dynamicField name="text@md___@*" type="identifiers" stored="true" docValues="true" />
 
       <dynamicField name="mltext@m____@*" type="identifiers" />
-      <dynamicField name="mltext@m__l_@*"          type="alfrescoFieldType" omitNorms="true" multiValued="true" />
-      <dynamicField name="mltext@m__lt@*"          type="alfrescoFieldType" omitNorms="true" multiValued="true" />
-      <dynamicField name="mltext@m___t@*"          type="text___" multiValued="true" />
-      <dynamicField name="mltext@m__sort@*"        type="alfrescoCollatableMLTextFieldType" />
+      <dynamicField name="mltext@m__l_@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" />
+      <dynamicField name="mltext@m__lt@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" />
+      <dynamicField name="mltext@m___t@*" type="text___" multiValued="true" />
+      <dynamicField name="mltext@m__sort@*" type="alfrescoCollatableMLTextFieldType" />
 
-      <dynamicField name="content@s__size@*"        type="long" stored="true" docValues="true" />
-      <dynamicField name="content@s__locale@*"           type="identifier" stored="true" docValues="true" useDocValuesAsStored="true"/>
-      <dynamicField name="content@s__mimetype@*"         type="identifier" stored="true" docValues="true" />
-      <dynamicField name="content@s__encoding@*"         type="identifier" stored="true" docValues="true" />
-      <dynamicField name="content@s__docid@*"            type="long"        stored="true" docValues="true" />
-      <dynamicField name="content@s__tr_ex@*"            type="identifier" />
-      <dynamicField name="content@s__tr_time@*"          type="long" />
-      <dynamicField name="content@s__tr_status@*"        type="lowercase_id" />
+      <dynamicField name="content@s__size@*" type="long" stored="true" docValues="true" />
+      <dynamicField name="content@s__locale@*" type="identifier" stored="true" docValues="true" useDocValuesAsStored="true"/>
+      <dynamicField name="content@s__mimetype@*" type="identifier" stored="true" docValues="true" />
+      <dynamicField name="content@s__encoding@*" type="identifier" stored="true" docValues="true" />
+      <dynamicField name="content@s__docid@*" type="long"        stored="true" docValues="true" />
+      <dynamicField name="content@s__tr_ex@*" type="identifier" />
+      <dynamicField name="content@s__tr_time@*" type="long" />
+      <dynamicField name="content@s__tr_status@*" type="lowercase_id" />
 
-      <dynamicField name="content@s____@*"          type="identifier" termPositions="false" />
-      <dynamicField name="content@s__l_@*"          type="alfrescoFieldType" omitNorms="true" termPositions="false" />
-      <dynamicField name="content@s__lt@*"          type="alfrescoFieldType" omitNorms="false" />
-      <dynamicField name="content@s___t@*"          type="text___" />
+      <dynamicField name="content@s____@*" type="identifier" termPositions="false" />
+      <dynamicField name="content@s__l_@*" type="alfrescoFieldType" omitNorms="true" termPositions="false" />
+      <dynamicField name="content@s__lt@*" type="alfrescoFieldType" omitNorms="false" />
+      <dynamicField name="content@s___t@*" type="text___" />
 
       <dynamicField name="content@m__size@*"             type="longs" stored="true" docValues="true" />
       <dynamicField name="content@m__locale@*"           type="identifiers" stored="true" docValues="true" />
