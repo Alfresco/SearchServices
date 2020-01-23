@@ -447,7 +447,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 
         // Matching Result, Spellcheck = searchInsteadFor: superbar
         Assert.assertTrue(isContentInSearchResponse(response, file1.getName()), "Expected file not returned in the search results: " + file1.getName());
-        testSearchSpellcheckResponse(response, "didYouMean", "superbar");
+        testSearchSpellcheckResponse(response, "didYouMean", "supercar");
 
         // Incorrect spelling with no field
         response = SearchSpellcheckQuery(testUser, "superbra", "superbra");
