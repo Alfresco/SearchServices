@@ -127,7 +127,6 @@ public class CascadeTracker extends AbstractTracker implements Tracker
 
     private void processCascades() throws IOException
     {
-        //System.out.println("######### processCascades()");
         int num = 50;
         List<Transaction> txBatch = null;
         do {
@@ -148,7 +147,6 @@ public class CascadeTracker extends AbstractTracker implements Tracker
 
                 List<NodeMetaData> nodeMetaDatas = infoSrv.getCascadeNodes(txIds);
 
-                //System.out.println("########### Cascade node meta datas:"+nodeMetaDatas.size());
                 if(nodeMetaDatas.size() > 0) {
                     LinkedList<NodeMetaData> stack = new LinkedList<NodeMetaData>();
                     stack.addAll(nodeMetaDatas);
@@ -167,7 +165,6 @@ public class CascadeTracker extends AbstractTracker implements Tracker
                 }
                 //Update the transaction records.
                 updateTransactionsAfterAsynchronous(txBatch);
-                //System.out.println("######################: Finished Cascade Run #########");
             }
             catch (AuthenticationException e)
             {
@@ -183,7 +180,6 @@ public class CascadeTracker extends AbstractTracker implements Tracker
             }
             finally
             {
-                //System.out.println("###################: Releasing Cascade write lock");
                 getWriteLock().release();
             }
 
