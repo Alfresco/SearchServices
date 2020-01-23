@@ -40,6 +40,7 @@ import org.alfresco.solr.client.Node.SolrApiNodeStatus;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.alfresco.solr.client.Transaction;
 import org.alfresco.solr.client.Transactions;
+import org.alfresco.util.Pair;
 import org.apache.commons.codec.EncoderException;
 import org.json.JSONException;
 import org.slf4j.Logger;
@@ -63,6 +64,25 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     private ConcurrentLinkedQueue<Long> nodesToIndex = new ConcurrentLinkedQueue<>();
     private ConcurrentLinkedQueue<Long> nodesToPurge = new ConcurrentLinkedQueue<>();
     private ConcurrentLinkedQueue<String> queriesToReindex = new ConcurrentLinkedQueue<>();
+    
+    /**
+     * Check if nextTxCommitTimeService is available in the repository.
+     * This service is used to find the next available transaction commit time from a given time,
+     * so periods of time where no document updating is happening can be skipped while getting 
+     * pending transactions list.
+     * 
+     * {@link org.alfresco.solr.client.SOLRAPIClient#GET_NEXT_TX_COMMIT_TIME}
+     */
+    private boolean nextTxCommitTimeServiceAvailable = false;
+    
+    /**
+     * Check if txInteravlCommitTimeService is available in the repository.
+     * This service returns the minimum and the maximum commit time for transactions in a node id range,
+     * so method sharding DB_ID_RANGE can skip transactions not relevant for the DB ID range. 
+     * 
+     * {@link org.alfresco.solr.client.SOLRAPIClient#GET_TX_INTERVAL_COMMIT_TIME}
+     */
+    private boolean txIntervalCommitTimeServiceAvailable = false;
 
     public MetadataTracker(final boolean isMaster, Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
@@ -71,6 +91,38 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
+        
+        // Try invoking getNextTxCommitTime service
+        try
+        {
+            client.getNextTxCommitTime(coreName, 0l);
+            nextTxCommitTimeServiceAvailable = true;
+        }
+        catch (NoSuchMethodException e)
+        {
+            log.warn("nextTxCommitTimeService is not available. Upgrade your ACS Repository version in order to use this feature: {} ", e.getMessage());
+        }
+        catch (Exception e)
+        {
+            log.error("Checking nextTxCommitTimeService failed.", e);
+        }
+
+        // Try invoking txIntervalCommitTime service
+        try
+        {
+            client.getTxIntervalCommitTime(coreName, 0l, 0l);
+            txIntervalCommitTimeServiceAvailable = true;
+        }
+        catch (NoSuchMethodException e)
+        {
+            log.warn("txIntervalCommitTimeServiceAvailable is not available. If you are using DB_ID_RANGE shard method, "
+                    + "upgrade your ACS Repository version in order to use this feature: {} ", e.getMessage());
+        }
+        catch (Exception e)
+        {
+            log.error("Checking txIntervalCommitTimeServiceAvailable failed.", e);
+        }
+    
     }
 
     MetadataTracker()
@@ -518,7 +570,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     }
 
     protected Transactions getSomeTransactions(BoundedDeque<Transaction> txnsFound, Long fromCommitTime, long timeStep,
-                int maxResults, long endTime) throws AuthenticationException, IOException, JSONException, EncoderException
+                int maxResults, long endTime) throws AuthenticationException, IOException, JSONException, EncoderException, NoSuchMethodException
     {
 
         long actualTimeStep = timeStep;
@@ -546,6 +598,17 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         {
             transactions = client.getTransactions(startTime, null, startTime + actualTimeStep, null, maxResults, shardstate);
             startTime += actualTimeStep;
+            
+            // If no transactions are found, advance the time window to the next available transaction commit time
+            if (nextTxCommitTimeServiceAvailable && transactions.getTransactions().size() == 0)
+            {
+                Long nextTxCommitTime = client.getNextTxCommitTime(coreName, startTime);
+                if (nextTxCommitTime != -1)
+                {
+                    log.info("Advancing transactions from {} to {}", startTime, nextTxCommitTime);
+                    transactions = client.getTransactions(nextTxCommitTime, null, nextTxCommitTime + actualTimeStep, null, maxResults, shardstate);
+                }
+            }
 
         } while (((transactions.getTransactions().size() == 0) && (startTime < endTime))
                     || ((transactions.getTransactions().size() > 0) && alreadyFoundTransactions(txnsFound, transactions)));
@@ -605,9 +668,46 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 *
                 */
 
-                Long fromCommitTime = getTxFromCommitTime(txnsFound, state.getLastGoodTxCommitTimeInIndex());
+                Long fromCommitTime = getTxFromCommitTime(txnsFound, 
+                        state.getLastIndexedTxCommitTime() == 0 ? state.getLastGoodTxCommitTimeInIndex() : state.getLastIndexedTxCommitTime());
                 log.debug("#### Check txnsFound : " + txnsFound.size());
                 log.debug("======= fromCommitTime: " + fromCommitTime);
+                
+                // When using DB_ID_RANGE, fromCommitTime cannot be before the commit time of the first transaction
+                // for the DB_ID_RANGE to be indexed and commit time of the last transaction cannot be lower than fromCommitTime. 
+                // When there isn't nodes in that range, -1 is returned as commit times
+                if (docRouter instanceof DBIDRangeRouter && txIntervalCommitTimeServiceAvailable)
+                {
+                    
+                    DBIDRangeRouter dbIdRangeRouter = (DBIDRangeRouter) docRouter;
+                    Pair<Long, Long> commitTimes = client.getTxIntervalCommitTime(coreName,
+                            dbIdRangeRouter.getStartRange(), dbIdRangeRouter.getEndRange());
+                    Long shardMinCommitTime = commitTimes.getFirst();
+                    Long shardMaxCommitTime = commitTimes.getSecond();
+
+                    // Node Range it's not still available in repository
+                    if (shardMinCommitTime == -1)
+                    {
+                        log.debug("#### [DB_ID_RANGE] No nodes in range [" + dbIdRangeRouter.getStartRange() + "-"
+                                + dbIdRangeRouter.getEndRange() + "] "
+                                + "exist in the repository. Skipping metadata tracking.");
+                        return;
+                    }
+                    if (fromCommitTime > shardMaxCommitTime)
+                    {
+                        log.debug("#### [DB_ID_RANGE] Last commit time is greater that max commit time in in range ["
+                                + dbIdRangeRouter.getStartRange() + "-" + dbIdRangeRouter.getEndRange() + "]. "
+                                + "Skipping metadata tracking.");
+                        return;
+                    }
+                    // Initial commit time for Node Range is greater than calculated from commit time
+                    if (fromCommitTime < shardMinCommitTime)
+                    {
+                        log.debug("#### [DB_ID_RANGE] SKIPPING TRANSACTIONS FROM " + fromCommitTime + " TO "
+                                + shardMinCommitTime);
+                        fromCommitTime = shardMinCommitTime;
+                    }
+                }
 
                 log.debug("#### Get txn from commit time: " + fromCommitTime);
                 transactions = getSomeTransactions(txnsFound, fromCommitTime, TIME_STEP_1_HR_IN_MS, 2000,
@@ -964,7 +1064,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     }
 
     public IndexHealthReport checkIndex(Long toTx, Long toAclTx, Long fromTime, Long toTime)
-                throws IOException, AuthenticationException, JSONException, EncoderException
+                throws IOException, AuthenticationException, JSONException, EncoderException, NoSuchMethodException
     {
         // DB TX Count
         long firstTransactionCommitTime = 0;
