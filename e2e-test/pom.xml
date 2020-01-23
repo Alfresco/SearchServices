@@ -11,10 +11,11 @@
    <name>Search Analytics E2E Tests</name>
    <description>Test Project to test Search Service and Analytics Features on a complete setup of Alfresco, Share</description>
    <properties>
-      <tas.rest.api.version>6.0.1.2</tas.rest.api.version>
-      <tas.cmis.api.version>6.0.0.4</tas.cmis.api.version>
-      <tas.utility.version>3.0.14</tas.utility.version>
-      <rm.version>3.2.0</rm.version>
+      <tas.rest.api.version>1.28</tas.rest.api.version>
+      <tas.rest.api.version>1.26</tas.rest.api.version>
+      <tas.cmis.api.version>1.13</tas.cmis.api.version>
+      <tas.utility.version>3.0.18</tas.utility.version>
+      <rm.version>3.3.0</rm.version>
       <suiteXmlFile>src/test/resources/SearchSuite.xml</suiteXmlFile>
       <test.exclude></test.exclude>
       <test.include></test.include>
@@ -44,7 +45,7 @@
       </dependency>
       <dependency>
          <groupId>org.alfresco.tas</groupId>
-         <artifactId>restapi-test</artifactId>
+         <artifactId>restapi</artifactId>
          <version>${tas.rest.api.version}</version>
          <scope>test</scope>
          <exclusions>
@@ -56,7 +57,7 @@
       </dependency>
       <dependency>
          <groupId>org.alfresco.tas</groupId>
-         <artifactId>cmis-test</artifactId>
+         <artifactId>cmis</artifactId>
          <version>${tas.cmis.api.version}</version>
          <scope>test</scope>
          <exclusions>
@@ -71,6 +72,12 @@
          <artifactId>alfresco-governance-services-automation-enterprise-rest-api</artifactId>
          <version>${rm.version}</version>
          <scope>test</scope>
+         <exclusions>
+            <exclusion>
+               <groupId>org.alfresco.tas</groupId>
+               <artifactId>restapi-test</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>com.fasterxml.jackson.core</groupId>
@@ -87,6 +94,10 @@
             <exclusion>
                <groupId>com.fasterxml.jackson.core</groupId>
                <artifactId>jackson-databind</artifactId>
+            </exclusion>
+            <exclusion>
+               <groupId>org.alfresco.tas</groupId>
+               <artifactId>restapi-test</artifactId>
             </exclusion>
          </exclusions>
       </dependency>

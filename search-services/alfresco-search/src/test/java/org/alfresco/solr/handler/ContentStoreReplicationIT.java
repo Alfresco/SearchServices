@@ -141,8 +141,8 @@ public class ContentStoreReplicationIT extends AbstractAlfrescoDistributedIT
     {
         master.stop();
         slave.stop();
-        FileUtils.forceDelete(new File(masterSolrHome.getParent().toUri()));
-        FileUtils.forceDelete(new File(slaveSolrHome.getParent().toUri()));
+        FileUtils.deleteQuietly(new File(masterSolrHome.getParent().toUri()));
+        FileUtils.deleteQuietly(new File(slaveSolrHome.getParent().toUri()));
 
         SOLRAPIQueueClient.nodeMetaDataMap.clear();
         SOLRAPIQueueClient.transactionQueue.clear();

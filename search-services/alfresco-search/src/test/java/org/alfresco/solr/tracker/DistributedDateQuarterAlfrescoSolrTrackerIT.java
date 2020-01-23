@@ -43,7 +43,7 @@ public class DistributedDateQuarterAlfrescoSolrTrackerIT extends DistributedDate
     }
 
     @AfterClass
-    private static void destroyData() throws Throwable
+    private static void destroyData()
     {
         dismissSolrServers();
     }

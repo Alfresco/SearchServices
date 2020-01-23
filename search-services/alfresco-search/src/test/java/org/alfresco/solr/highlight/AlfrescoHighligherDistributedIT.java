@@ -46,7 +46,7 @@ public class AlfrescoHighligherDistributedIT extends AbstractAlfrescoDistributed
     }
 
     @AfterClass
-    private static void destroyData() throws Throwable
+    private static void destroyData()
     {
         dismissSolrServers();
     }
