@@ -255,6 +255,8 @@ public class SolrInformationServer implements InformationServer
      */
     private static final int BATCH_FACET_TXS = 4096;
     private static final String FINGERPRINT_FIELD = "MINHASH";
+    /** Shared property to determine if the cascade tracking is enabled. */
+    public static final String CASCADE_TRACKER_ENABLED = "alfresco.cascade.tracker.enabled";
 
     private final AlfrescoCoreAdminHandler adminHandler;
     private final SolrCore core;
@@ -484,9 +486,9 @@ public class SolrInformationServer implements InformationServer
      *
      * @return true if cascade tracking is enabled (note that this is the default behaviour if not specified in the properties file).
      */
-    private boolean cascadeTrackingEnabled()
+    public boolean cascadeTrackingEnabled()
     {
-        String cascadeTrackerEnabledProp = ofNullable((String) props.get("alfresco.cascade.tracker.enabled")).orElse("true");
+        String cascadeTrackerEnabledProp = ofNullable((String) props.get(CASCADE_TRACKER_ENABLED)).orElse("true");
         return Boolean.valueOf(cascadeTrackerEnabledProp);
     }
 
