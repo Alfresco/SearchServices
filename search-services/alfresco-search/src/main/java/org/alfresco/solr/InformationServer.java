@@ -88,7 +88,7 @@ public interface InformationServer extends InformationServerCollectionProvider
 
     void indexNode(Node node, boolean overwrite) throws IOException, AuthenticationException, JSONException;
     
-    void indexNodes(List<Node> nodes, boolean overwrite, boolean cascade) throws IOException, AuthenticationException, JSONException;
+    void indexNodes(List<Node> nodes, boolean overwrite) throws IOException, AuthenticationException, JSONException;
 
     void cascadeNodes(List<NodeMetaData> nodes, boolean overwrite) throws IOException, AuthenticationException, JSONException;
 

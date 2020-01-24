@@ -957,7 +957,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
             List<Node> filteredNodes = filterNodes(nodes);
             if(filteredNodes.size() > 0)
             {
-                this.infoServer.indexNodes(filteredNodes, true, false);
+                this.infoServer.indexNodes(filteredNodes, true);
             }
         }
         
