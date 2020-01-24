@@ -1866,6 +1866,7 @@ public class SolrInformationServer implements InformationServer
                 nodeIds.addAll(shardUpdatedNodeIds);
                 nmdp.setNodeIds(nodeIds);
                 nmdp.setIncludeChildIds(false);
+                nmdp.setIncludeChildAssociations(false);
 
                 // Fetches bulk metadata
                 List<NodeMetaData> nodeMetaDatas = repositoryClient.getNodesMetaData(nmdp, Integer.MAX_VALUE);
