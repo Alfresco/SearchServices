@@ -1818,6 +1818,12 @@ public class SolrInformationServer implements InformationServer
                 {
                     NodeMetaDataParameters nmdp = new NodeMetaDataParameters();
                     nmdp.setNodeIds(unknownNodeIds);
+                    // When deleting nodes, no additional information is required
+                    nmdp.setIncludeChildIds(false);
+                    nmdp.setIncludeChildAssociations(false);
+                    nmdp.setIncludeAspects(false);
+                    nmdp.setIncludePaths(false);
+                    nmdp.setIncludeParentAssociations(false);
                     nodeMetaDatas.addAll(repositoryClient.getNodesMetaData(nmdp, Integer.MAX_VALUE));
                 }
 
@@ -1859,10 +1865,11 @@ public class SolrInformationServer implements InformationServer
                 nodeIds.addAll(unknownNodeIds);
                 nodeIds.addAll(shardUpdatedNodeIds);
                 nmdp.setNodeIds(nodeIds);
+                nmdp.setIncludeChildIds(false);
 
                 // Fetches bulk metadata
                 List<NodeMetaData> nodeMetaDatas = repositoryClient.getNodesMetaData(nmdp, Integer.MAX_VALUE);
-
+                
                 NEXT_NODE:
                 for (NodeMetaData nodeMetaData : nodeMetaDatas)
                 {
