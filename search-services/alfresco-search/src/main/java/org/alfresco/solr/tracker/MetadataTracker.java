@@ -110,7 +110,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
-        cascadeTrackerEnabled = ((SolrInformationServer) informationServer).cascadeTrackingEnabled();
+        cascadeTrackerEnabled = informationServer.cascadeTrackingEnabled();
         
         // In order to apply performance optimizations, checking the availability of Repo Web Scripts is required.
         // As these services are available from ACS 6.2

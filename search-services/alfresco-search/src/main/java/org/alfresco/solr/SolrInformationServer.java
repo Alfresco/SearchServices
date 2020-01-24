@@ -481,11 +481,8 @@ public class SolrInformationServer implements InformationServer
         return this.adminHandler;
     }
 
-    /**
-     * Check if cascade tracking is enabled.
-     *
-     * @return true if cascade tracking is enabled (note that this is the default behaviour if not specified in the properties file).
-     */
+    /** {@inheritDoc} */
+    @Override
     public boolean cascadeTrackingEnabled()
     {
         String cascadeTrackerEnabledProp = ofNullable((String) props.get(CASCADE_TRACKER_ENABLED)).orElse("true");

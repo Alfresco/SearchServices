@@ -181,4 +181,11 @@ public interface InformationServer extends InformationServerCollectionProvider
     String getBaseUrl();
 
     void flushContentStore() throws IOException;
+
+    /**
+     * Check if cascade tracking is enabled.
+     *
+     * @return true if cascade tracking is enabled (note that this is the default behaviour if not specified in the properties file).
+     */
+    boolean cascadeTrackingEnabled();
 }
