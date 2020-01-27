@@ -67,7 +67,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since solr 1.5
  * @author Michael Suzuki 
  */
-@ThreadLeakLingering(linger = 5000)
 public abstract class SolrITInitializer extends SolrTestCaseJ4
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -116,8 +115,11 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         
         testDir = new File(System.getProperty("user.dir") + "/target/jettys");
     }
-    
-    public static void initSolrServers(int numShards, String testClassName, Properties solrcoreProperties) throws Throwable
+
+    /**
+     * Initialises the Solr infrastructure and returns back the test folder used.
+     */
+    public static String initSolrServers(int numShards, String testClassName, Properties solrcoreProperties) throws Throwable
     {
         testClassName = testClassName + "_" + System.currentTimeMillis();
 
@@ -140,6 +142,8 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         createServers(testClassName, coreNames, numShards, solrcoreProperties);
 
         System.setProperty("solr.solr.home", testDir.toPath().resolve(testClassName).toString());
+
+        return testClassName;
     }
 
     private static Properties addExplicitShardingProperty(Properties solrcoreProperties)

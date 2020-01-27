@@ -19,7 +19,6 @@
 package org.alfresco.solr;
 
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CoreAdminParams;
@@ -52,13 +51,12 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getCore;
 @SolrTestCaseJ4.SuppressSSL
 public class CoresCreateUpdateDistributedIT extends AbstractAlfrescoDistributedIT
 {
-    private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    final static String JETTY_SERVER_ID = CoresCreateUpdateDistributedIT.class.getSimpleName();
+    static String testFolder;
 
     @Before
     public void initData() throws Throwable
     {
-        initSolrServers(0, JETTY_SERVER_ID , null);
+        testFolder = initSolrServers(0, CoresCreateUpdateDistributedIT.class.getSimpleName(), null);
     }
 
     @After
@@ -70,7 +68,7 @@ public class CoresCreateUpdateDistributedIT extends AbstractAlfrescoDistributedI
     @Test
     public void newCoreUsingAllDefaults() throws Exception
     {
-        CoreContainer coreContainer = jettyContainers.get(JETTY_SERVER_ID).getCoreContainer();
+        CoreContainer coreContainer = jettyContainers.get(testFolder).getCoreContainer();
 
         //Now create the new core with
         AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler)  coreContainer.getMultiCoreHandler();
@@ -91,7 +89,7 @@ public class CoresCreateUpdateDistributedIT extends AbstractAlfrescoDistributedI
     @Test
     public void newCoreWithUpdateSharedProperties() throws Exception
     {
-        CoreContainer coreContainer = jettyContainers.get(JETTY_SERVER_ID).getCoreContainer();
+        CoreContainer coreContainer = jettyContainers.get(testFolder).getCoreContainer();
 
         //Now create the new core with
         AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler) coreContainer.getMultiCoreHandler();
@@ -131,7 +129,7 @@ public class CoresCreateUpdateDistributedIT extends AbstractAlfrescoDistributedI
     @Test
     public void newCoreUsingArchiveStore() throws Exception
     {
-        CoreContainer coreContainer = jettyContainers.get(JETTY_SERVER_ID).getCoreContainer();
+        CoreContainer coreContainer = jettyContainers.get(testFolder).getCoreContainer();
 
         //Now create the new core with
         AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler)  coreContainer.getMultiCoreHandler();

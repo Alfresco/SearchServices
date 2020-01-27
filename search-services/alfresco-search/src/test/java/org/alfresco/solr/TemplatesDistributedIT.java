@@ -37,7 +37,7 @@ import org.junit.Test;
 @SolrTestCaseJ4.SuppressSSL
 public class TemplatesDistributedIT extends AbstractAlfrescoDistributedIT
 {
-    final static String JETTY_SERVER_ID = getSimpleClassName();
+    final static String JETTY_SERVER_ID = TemplatesDistributedIT.class.getSimpleName();
 
     @BeforeClass
     public static void initData() throws Throwable

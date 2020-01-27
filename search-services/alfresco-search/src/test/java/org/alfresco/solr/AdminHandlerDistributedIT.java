@@ -39,13 +39,13 @@ import static org.alfresco.solr.AlfrescoSolrUtils.*;
 @SolrTestCaseJ4.SuppressSSL
 public class AdminHandlerDistributedIT extends AbstractAlfrescoDistributedIT
 {
-    final static String JETTY_SERVER_ID = getSimpleClassName();
+    static String testFolder;
     static final String CORE_NAME = "newcoretesting";
     
     @BeforeClass
     public static void initData() throws Throwable
     {
-        initSolrServers(2, JETTY_SERVER_ID, null);
+        testFolder = initSolrServers(2, AdminHandlerDistributedIT.class.getSimpleName(), null);
     }
 
     @AfterClass
@@ -58,7 +58,7 @@ public class AdminHandlerDistributedIT extends AbstractAlfrescoDistributedIT
     @Test
     public void newCoreUsingAdminHandler() throws Exception
     {
-        CoreContainer coreContainer = jettyContainers.get(JETTY_SERVER_ID).getCoreContainer();
+        CoreContainer coreContainer = jettyContainers.get(testFolder).getCoreContainer();
 
         //Create the new core
         AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler)  coreContainer.getMultiCoreHandler();
