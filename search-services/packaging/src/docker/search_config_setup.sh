@@ -9,6 +9,7 @@ SOLR_RERANK_CONFIG_FILE=$RERANK_TEMPLATE_PATH/solrconfig.xml
 SOLR_NORERANK_CONFIG_FILE=$NORERANK_TEMPLATE_PATH/solrconfig.xml
 SOLR_RERANK_CORE_FILE=$RERANK_TEMPLATE_PATH/solrcore.properties
 SOLR_NORERANK_CORE_FILE=$NORERANK_TEMPLATE_PATH/solrcore.properties
+SOLR_CONTEXT_FILE=$PWD/solr/server/contexts/solr-jetty-context.xml
 
 if [[ $REPLICATION_TYPE == "master" ]]; then
 
@@ -63,6 +64,7 @@ if [[ $REPLICATION_TYPE == "slave" ]]; then
          <str name="pollInterval">'$REPLICATION_POLL_INTERVAL'<\/str>\
       <\/lst>/g' $SOLR_RERANK_CONFIG_FILE $SOLR_NORERANK_CONFIG_FILE
    sed -i "s/enable.alfresco.tracking=true/enable.alfresco.tracking=false\nenable.master=false\nenable.slave=true/g" $SOLR_RERANK_CORE_FILE $SOLR_NORERANK_CORE_FILE
+   sed -i 's/default="\/solr"/default="\/solr-slave"/g' $SOLR_CONTEXT_FILE
 fi
 
 SOLR_IN_FILE=$PWD/solr.in.sh
