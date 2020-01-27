@@ -24,10 +24,7 @@ import org.apache.solr.core.SolrCore;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
 import java.util.concurrent.TimeUnit;
 
 import static org.alfresco.solr.AlfrescoSolrUtils.getCore;
@@ -40,14 +37,13 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getCore;
 @SolrTestCaseJ4.SuppressSSL
 public class CoresCreateViaPropertyIT extends AbstractAlfrescoDistributedIT
 {
-    private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    final static String JETTY_SERVER_ID = CoresCreateViaPropertyIT.class.getSimpleName();
+    static String testFolder;
 
     @BeforeClass
     public static void initData() throws Throwable
     {
         System.setProperty(AlfrescoCoreAdminHandler.ALFRESCO_DEFAULTS, "alfresco,archive");
-        initSolrServers(0, JETTY_SERVER_ID, null);
+        testFolder = initSolrServers(0, CoresCreateViaPropertyIT.class.getSimpleName(), null);
     }
 
     @AfterClass
@@ -60,7 +56,7 @@ public class CoresCreateViaPropertyIT extends AbstractAlfrescoDistributedIT
     @Test
     public void newCoreUsingAllDefaults() throws Exception
     {
-        CoreContainer coreContainer = jettyContainers.get(JETTY_SERVER_ID).getCoreContainer();
+        CoreContainer coreContainer = jettyContainers.get(testFolder).getCoreContainer();
 
         //Now create the new core with
         AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler)  coreContainer.getMultiCoreHandler();

@@ -37,12 +37,12 @@ import org.junit.Test;
 @SolrTestCaseJ4.SuppressSSL
 public class TemplatesDistributedIT extends AbstractAlfrescoDistributedIT
 {
-    final static String JETTY_SERVER_ID = TemplatesDistributedIT.class.getSimpleName();
+    static String testFolder;
 
     @BeforeClass
     public static void initData() throws Throwable
     {
-        initSolrServers(0, JETTY_SERVER_ID, null);
+        testFolder = initSolrServers(0, TemplatesDistributedIT.class.getSimpleName(), null);
     }
 
     @AfterClass
@@ -55,7 +55,7 @@ public class TemplatesDistributedIT extends AbstractAlfrescoDistributedIT
     @Test
     public void newCoreUsinglshTemplate() throws Exception
     {
-        CoreContainer coreContainer = jettyContainers.get(JETTY_SERVER_ID).getCoreContainer();
+        CoreContainer coreContainer = jettyContainers.get(testFolder).getCoreContainer();
 
         //Now create the new core with
         AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler)  coreContainer.getMultiCoreHandler();
