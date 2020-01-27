@@ -31,7 +31,6 @@ import org.alfresco.solr.client.Transaction;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.core.SolrCore;
@@ -40,6 +39,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -61,17 +61,16 @@ import static org.alfresco.solr.tracker.DocRouterFactory.SHARD_KEY_KEY;
  */
 @SolrTestCaseJ4.SuppressSSL
 @SolrTestCaseJ4.SuppressObjectReleaseTracker (bugUrl = "RAMDirectory")
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedExplicitShardRoutingTrackerIT extends AbstractAlfrescoDistributedIT
 {
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
-        initSolrServers(3, "DistributedExplicitShardRoutingTrackerIT", getProperties());
+        initSolrServers(3, getSimpleClassName(), getProperties());
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }
@@ -84,8 +83,8 @@ public class DistributedExplicitShardRoutingTrackerIT extends AbstractAlfrescoDi
         int numAcls = 25;
         AclChangeSet bulkAclChangeSet = getAclChangeSet(numAcls);
 
-        List<Acl> bulkAcls = new ArrayList();
-        List<AclReaders> bulkAclReaders = new ArrayList();
+        List<Acl> bulkAcls = new ArrayList<>();
+        List<AclReaders> bulkAclReaders = new ArrayList<>();
 
 
         for (int i = 0; i < numAcls; i++) {
@@ -93,16 +92,16 @@ public class DistributedExplicitShardRoutingTrackerIT extends AbstractAlfrescoDi
             bulkAcls.add(bulkAcl);
             bulkAclReaders.add(getAclReaders(bulkAclChangeSet,
                     bulkAcl,
-                    list("king" + bulkAcl.getId()),
-                    list("king" + bulkAcl.getId()),
+                    Collections.singletonList("king" + bulkAcl.getId()),
+                    Collections.singletonList("king" + bulkAcl.getId()),
                     null));
         }
 
         indexAclChangeSet(bulkAclChangeSet, bulkAcls, bulkAclReaders);
 
         int numNodes = 1000;
-        List<Node> nodes = new ArrayList();
-        List<NodeMetaData> nodeMetaDatas = new ArrayList();
+        List<Node> nodes = new ArrayList<>();
+        List<NodeMetaData> nodeMetaDatas = new ArrayList<>();
 
         Transaction bigTxn = getTransaction(0, numNodes);
 
@@ -150,8 +149,8 @@ public class DistributedExplicitShardRoutingTrackerIT extends AbstractAlfrescoDi
         assertShardCount(2, contentQuery, 0);
 
         Transaction txn1 = getTransaction(0, 2);
-        List<Node> extraNodes = new ArrayList();
-        List<NodeMetaData> extraNodeMetaDatas = new ArrayList();
+        List<Node> extraNodes = new ArrayList<>();
+        List<NodeMetaData> extraNodeMetaDatas = new ArrayList<>();
 
         //Add a node that will get indexed by fallback to DBID
         Node node = getNode(txn1, bulkAcls.get(1), Node.SolrApiNodeStatus.UPDATED);

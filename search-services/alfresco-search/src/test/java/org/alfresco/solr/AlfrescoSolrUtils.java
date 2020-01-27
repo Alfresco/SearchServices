@@ -119,9 +119,6 @@ public class AlfrescoSolrUtils
 
     /**
      * Get transaction.
-     * @param deletes
-     * @param updates
-     * @return {@link Transaction}
      */
     public static Transaction getTransaction(int deletes, int updates)
     {

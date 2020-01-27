@@ -41,17 +41,17 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getCore;
 public class CoresCreateViaPropertyIT extends AbstractAlfrescoDistributedIT
 {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    final static String JETTY_SERVER_ID = "CoresCreateViaPropertyTest";
+    final static String JETTY_SERVER_ID = CoresCreateViaPropertyIT.class.getSimpleName();
 
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
         System.setProperty(AlfrescoCoreAdminHandler.ALFRESCO_DEFAULTS, "alfresco,archive");
         initSolrServers(0, JETTY_SERVER_ID, null);
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
         System.clearProperty(AlfrescoCoreAdminHandler.ALFRESCO_DEFAULTS);
@@ -74,8 +74,6 @@ public class CoresCreateViaPropertyIT extends AbstractAlfrescoDistributedIT
 
         assertNotNull(defaultCore);
         assertNotNull(archiveCore);
-
     }
-
 }
 

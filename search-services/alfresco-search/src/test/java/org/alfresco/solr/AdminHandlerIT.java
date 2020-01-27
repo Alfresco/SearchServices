@@ -1,6 +1,5 @@
 package org.alfresco.solr;
 
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.common.params.CoreAdminParams;

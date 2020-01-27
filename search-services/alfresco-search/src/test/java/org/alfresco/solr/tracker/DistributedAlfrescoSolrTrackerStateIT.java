@@ -73,7 +73,7 @@ public class DistributedAlfrescoSolrTrackerStateIT extends AbstractAlfrescoDistr
     @BeforeClass
     public static void initData() throws Throwable
     {
-        initSolrServers(5, getClassName(),null);
+        initSolrServers(5, getSimpleClassName(),null);
 
         Acl acl = createAndIndexSomeAclData();
         createAndIndexTransactionWithSomeNodes(5, acl, "first");

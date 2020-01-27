@@ -77,7 +77,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
 
     public static Properties DEFAULT_CORE_PROPS = new Properties();
 
-    protected static String currentTestName;
+    //protected static String currentTestName;
     protected static Map<String, JettySolrRunner> jettyContainers;
     protected static Map<String, SolrClient> solrCollectionNameToStandaloneClient;
     protected static List<JettySolrRunner> solrShards;
@@ -119,19 +119,26 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
     
     public static void initSolrServers(int numShards, String testClassName, Properties solrcoreProperties) throws Throwable
     {
+        testClassName = testClassName + "_" + System.currentTimeMillis();
+
         solrcoreProperties = addExplicitShardingProperty(solrcoreProperties);
+
         clientShards = new ArrayList<>();
         solrShards = new ArrayList<>();
         solrCollectionNameToStandaloneClient = new HashMap<>();
         jettyContainers = new HashMap<>();
         
         nodeCnt = new AtomicInteger(0);
-        currentTestName = testClassName;
+
+        //currentTestName = testClassName;
+
         String[] coreNames = new String[]{DEFAULT_TEST_CORENAME};
         
         distribSetUp(testClassName);
+
         RandomSupplier.RandVal.uniqueValues = new HashSet<>(); // reset random values
-        createServers(testClassName, coreNames, numShards,solrcoreProperties);
+        createServers(testClassName, coreNames, numShards, solrcoreProperties);
+
         System.setProperty("solr.solr.home", testDir.toPath().resolve(testClassName).toString());
     }
 
@@ -250,9 +257,9 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
     protected static void addCoreToJetty(String jettyKey, String sourceConfigName, String coreName, Properties additionalProperties) throws Exception
     {
         Path jettySolrHome = testDir.toPath().resolve(jettyKey);
-        Path coreSourceConfig = new File(getTestFilesHome() + "/"+sourceConfigName).toPath();
+        Path coreSourceConfig = new File(getTestFilesHome() + "/" + sourceConfigName).toPath();
         Path coreHome = jettySolrHome.resolve(coreName);
-        seedCoreDir(coreName, coreSourceConfig, coreHome);
+        seedCoreDir(jettyKey, coreName, coreSourceConfig, coreHome);
         updateSolrCoreProperties(coreHome, additionalProperties);
     }
 
@@ -367,10 +374,8 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
 
     protected static void destroyServers() throws Exception
     {
-        List<String> solrHomes = new ArrayList<>();
         for (JettySolrRunner jetty : jettyContainers.values())
         {
-            solrHomes.add(jetty.getSolrHome());
             jetty.stop();
         }
 
@@ -381,18 +386,12 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
 
         for (JettySolrRunner jetty : solrShards)
         {
-            solrHomes.add(jetty.getSolrHome());
             jetty.stop();
         }
 
         for (SolrClient client : clientShards)
         {
             client.close();
-        }
-
-        for(String home : solrHomes)
-        {
-            FileUtils.deleteDirectory(new File(home, "ContentStore"));
         }
 
         clientShards.clear();
@@ -513,7 +512,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
      * @see #writeCoreProperties(Path,String)
      * @see #CORE_PROPERTIES_FILENAME
      */
-    private static void seedCoreDir(String coreName, Path coreSourceConfig, Path coreDirectory) throws IOException
+    private static void seedCoreDir(String testFolder, String coreName, Path coreSourceConfig, Path coreDirectory) throws IOException
     {
         //Prepare alfresco solr core.
         Path confDir = coreDirectory.resolve("conf");
@@ -522,7 +521,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         {
             Properties coreProperties = new Properties();
             coreProperties.setProperty("name", coreName);
-            writeCoreProperties(coreDirectory, coreProperties, currentTestName);
+            writeCoreProperties(coreDirectory, coreProperties, testFolder);
         } // else nothing to do, DEFAULT_TEST_CORENAME already exists
         //Add alfresco solr configurations
         FileUtils.copyDirectory(coreSourceConfig.resolve("conf").toFile(), confDir.toFile());

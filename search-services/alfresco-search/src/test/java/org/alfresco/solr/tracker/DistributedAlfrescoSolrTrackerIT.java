@@ -60,7 +60,7 @@ public class DistributedAlfrescoSolrTrackerIT extends AbstractAlfrescoDistribute
     @BeforeClass
     public static void initData() throws Throwable
     {
-        initSolrServers(2, DistributedAlfrescoSolrTrackerIT.class.getSimpleName(), null);
+        initSolrServers(2, getSimpleClassName(), null);
     }
 
     @AfterClass

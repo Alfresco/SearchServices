@@ -47,7 +47,6 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
@@ -60,7 +59,6 @@ import org.junit.Test;
  * @author Joel
  */
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedAlfrescoSolrFingerPrintIT extends AbstractAlfrescoDistributedIT
 {
     private static long MAX_WAIT_TIME = 80000;
@@ -70,9 +68,9 @@ public class DistributedAlfrescoSolrFingerPrintIT extends AbstractAlfrescoDistri
     private static Acl ACL;
 
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
-        initSolrServers(2,getClassName(),null);
+        initSolrServers(2,DistributedAlfrescoSolrFingerPrintIT.getSimpleClassName(),null);
 
         AclChangeSet aclChangeSet = getAclChangeSet(1);
 
@@ -149,7 +147,7 @@ public class DistributedAlfrescoSolrFingerPrintIT extends AbstractAlfrescoDistri
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }

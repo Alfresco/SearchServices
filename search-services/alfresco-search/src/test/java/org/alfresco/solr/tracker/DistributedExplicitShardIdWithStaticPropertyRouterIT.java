@@ -29,7 +29,6 @@ import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.client.Transaction;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -52,21 +51,19 @@ import static org.carrot2.shaded.guava.common.collect.ImmutableList.of;
  */
 @SolrTestCaseJ4.SuppressSSL
 @SolrTestCaseJ4.SuppressObjectReleaseTracker (bugUrl = "RAMDirectory")
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedExplicitShardIdWithStaticPropertyRouterIT extends AbstractAlfrescoDistributedIT
 {
-    private static long MAX_WAIT_TIME = 80000;
     private final int timeout = 100000;
 
     @Before
-    private void initData() throws Throwable
+    public void initData() throws Throwable
     {
-        initSolrServers(2, getClass().getSimpleName(), getProperties());
+        initSolrServers(2, getSimpleClassName(), getProperties());
         indexData();
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }

@@ -31,7 +31,6 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -53,23 +52,20 @@ import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
  * @author Andrea Gazzarini
  */
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedAlfrescoSolrTrackerRaceIT extends AbstractAlfrescoDistributedIT
 {
 
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
         initSolrServers(2, "DistributedAlfrescoSolrTrackerRaceTest", null);
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }
-    
-    
 
     @Test
     public void testTracker() throws Exception

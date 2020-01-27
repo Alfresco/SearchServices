@@ -36,17 +36,16 @@ import static org.hamcrest.core.Is.is;
  * https://issues.alfresco.com/jira/browse/SEARCH-2012
  */
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class AlfrescoSolrSortIT extends AbstractAlfrescoDistributedIT
 {
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
         initSolrServers(1, getClassName(), null);
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }
@@ -58,7 +57,8 @@ public class AlfrescoSolrSortIT extends AbstractAlfrescoDistributedIT
     }
 
     @Test
-    public void AlfrescoCollatableFieldType_emptyValuesSortingAsc__shouldBeRankedFirst() throws Exception {
+    public void AlfrescoCollatableFieldType_emptyValuesSortingAsc__shouldBeRankedFirst() throws Exception
+    {
         prepareIndexSegmentWithAllNonNullFieldValues("text@s__sort@{http://www.alfresco.org/model/content/1.0}title");
         putHandleDefaults();
         // Docs with id 1, 3, 5 and 6 should be first (note that these will be sorted by indexing time).
@@ -68,7 +68,7 @@ public class AlfrescoSolrSortIT extends AbstractAlfrescoDistributedIT
                 "{\"query\":\"(id:(1 2 3 4 5 6))\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",
                 params("qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "100", "sort", "text@s__sort@{http://www.alfresco.org/model/content/1.0}title asc"));
 
-        NamedList res = response.getResponse();
+        NamedList<?> res = response.getResponse();
         SolrDocumentList searchResults = (SolrDocumentList)res.get("response");
         for(int i=0;i<searchResults.size();i++){
             assertThat(searchResults.get(i).get("id"),is(expectedRanking[i]));
@@ -76,7 +76,8 @@ public class AlfrescoSolrSortIT extends AbstractAlfrescoDistributedIT
     }
 
     @Test
-    public void AlfrescoMLCollatableFieldType_emptyValuesSortingDesc_shouldRankThemLast() throws Exception {
+    public void AlfrescoMLCollatableFieldType_emptyValuesSortingDesc_shouldRankThemLast() throws Exception
+    {
         prepareIndexSegmentWithAllNonNullFieldValues("mltext@m__sort@{http://www.alfresco.org/model/content/1.0}title");
 
         putHandleDefaults();
@@ -87,15 +88,17 @@ public class AlfrescoSolrSortIT extends AbstractAlfrescoDistributedIT
                 "{\"query\":\"(id:(1 2 3 4 5 6))\",\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}], \"authorities\": [\"joel\"], \"tenants\": []}",
                 params("qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "100", "sort", "mltext@m__sort@{http://www.alfresco.org/model/content/1.0}title desc"));
 
-        NamedList res = response.getResponse();
+        NamedList<?> res = response.getResponse();
         SolrDocumentList searchResults = (SolrDocumentList)res.get("response");
-        for(int i=0;i<searchResults.size();i++){
+        for(int i=0;i<searchResults.size();i++)
+        {
             assertThat(searchResults.get(i).get("id"),is(expectedRanking[i]));
         }
     }
 
     /** Create six documents where the field is null for docs with id 1, 3, 5 and 6, and populated for docs with id 2 and 4. */
-    private void prepareIndexSegmentWithAllNonNullFieldValues(String field) throws Exception {
+    private void prepareIndexSegmentWithAllNonNullFieldValues(String field) throws Exception
+    {
         index(getDefaultTestClient(), true, "id", "1", "_version_", "0", field, "");
         index(getDefaultTestClient(), true, "id", "2", "_version_", "0", field, "B");
         index(getDefaultTestClient(), true, "id", "3", "_version_", "0", field, "");
@@ -105,4 +108,3 @@ public class AlfrescoSolrSortIT extends AbstractAlfrescoDistributedIT
         commit(getDefaultTestClient(), true);
     }
 }
-

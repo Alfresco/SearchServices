@@ -29,7 +29,6 @@ import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.Transaction;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.junit.AfterClass;
@@ -56,18 +55,17 @@ import static org.alfresco.solr.AlfrescoSolrUtils.list;
  * @author Joel
  */
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedAclIdAlfrescoSolrTrackerIT extends AbstractAlfrescoDistributedIT
 {
 
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
-        initSolrServers(2, "DistributedAclIdAlfrescoSolrTrackerTest", getShardMethod());
+        initSolrServers(2, DistributedAclIdAlfrescoSolrTrackerIT.class.getSimpleName(), getShardMethod());
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }
@@ -80,17 +78,18 @@ public class DistributedAclIdAlfrescoSolrTrackerIT extends AbstractAlfrescoDistr
         int numAcls = 250;
         AclChangeSet bulkAclChangeSet = getAclChangeSet(numAcls);
 
-        List<Acl> bulkAcls = new ArrayList();
-        List<AclReaders> bulkAclReaders = new ArrayList();
+        List<Acl> bulkAcls = new ArrayList<>();
+        List<AclReaders> bulkAclReaders = new ArrayList<>();
 
 
-        for(int i=0; i<numAcls; i++) {
+        for(int i=0; i<numAcls; i++)
+        {
             Acl bulkAcl = getAcl(bulkAclChangeSet);
             bulkAcls.add(bulkAcl);
             bulkAclReaders.add(getAclReaders(bulkAclChangeSet,
                                              bulkAcl,
-                                             list("joel"+bulkAcl.getId()),
-                                             list("phil"+bulkAcl.getId()),
+                                             Collections.singletonList("joel"+bulkAcl.getId()),
+                                                Collections.singletonList("phil"+bulkAcl.getId()),
                                              null));
         }
 
@@ -99,12 +98,13 @@ public class DistributedAclIdAlfrescoSolrTrackerIT extends AbstractAlfrescoDistr
                           bulkAclReaders);
 
         int numNodes = 1000;
-        List<Node> nodes = new ArrayList();
-        List<NodeMetaData> nodeMetaDatas = new ArrayList();
+        List<Node> nodes = new ArrayList<>();
+        List<NodeMetaData> nodeMetaDatas = new ArrayList<>();
 
         Transaction bigTxn = getTransaction(0, numNodes);
 
-        for(int i=0; i<numNodes; i++) {
+        for(int i=0; i<numNodes; i++)
+        {
             int aclIndex = i % numAcls;
             Node node = getNode(bigTxn, bulkAcls.get(aclIndex), Node.SolrApiNodeStatus.UPDATED);
             nodes.add(node);
@@ -116,7 +116,8 @@ public class DistributedAclIdAlfrescoSolrTrackerIT extends AbstractAlfrescoDistr
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes, 100000);
         waitForDocCount(new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_ACL)), numAcls, 100000);
 
-        for(int i=0; i<numAcls; i++) {
+        for(int i=0; i<numAcls; i++)
+        {
             Acl acl = bulkAcls.get(i);
             long aclId = acl.getId();
 
@@ -131,7 +132,7 @@ public class DistributedAclIdAlfrescoSolrTrackerIT extends AbstractAlfrescoDistr
     protected static Properties getShardMethod() 
     {
         Random random = random();
-        List<ShardMethodEnum> methods = new ArrayList();
+        List<ShardMethodEnum> methods = new ArrayList<>();
         methods.add(ShardMethodEnum.ACL_ID);
         methods.add(ShardMethodEnum.MOD_ACL_ID);
         Collections.shuffle(methods, random);

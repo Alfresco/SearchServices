@@ -137,24 +137,24 @@ import java.util.List;
 public class AlfrescoHighligherDistributedIT extends AbstractAlfrescoDistributedIT
 {
     //@BeforeClass
-    public static void initData() throws Throwable
-    {
-        initSolrServers(2, "DistributedAlfrescoSolrFacetingIT", DEFAULT_CORE_PROPS);
-    }
+//    public static void initData() throws Throwable
+//    {
+//        initSolrServers(2, AlfrescoHighligherDistributedIT.class.getSimpleName(), DEFAULT_CORE_PROPS);
+//    }
 
     //@AfterClass
-    public static void destroyData()
-    {
-        dismissSolrServers();
-    }
+//    public static void destroyData()
+//    {
+//        dismissSolrServers();
+//    }
 
-    public void makeSureHighlightingIsProperlyConfigured()
-    {
-        SolrHighlighter highlighter = HighlightComponent.getHighlighter(defaultCore);
-        assertTrue(
-                "Wrong highlighter: " + highlighter.getClass(),
-                highlighter instanceof AlfrescoSolrHighlighter);
-    }
+//    public void makeSureHighlightingIsProperlyConfigured()
+//    {
+//        SolrHighlighter highlighter = HighlightComponent.getHighlighter(defaultCore);
+//        assertTrue(
+//                "Wrong highlighter: " + highlighter.getClass(),
+//                highlighter instanceof AlfrescoSolrHighlighter);
+//    }
 
     @Ignore
     @Test

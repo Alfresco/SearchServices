@@ -69,7 +69,7 @@ public class DistributedDateMonthAlfrescoSolrTrackerIT extends AbstractAlfrescoD
     @SuppressWarnings("unused")
     public static void initData() throws Throwable
     {
-        initSolrServers(5, DistributedDateMonthAlfrescoSolrTrackerIT.class.getSimpleName(), getShardMethod());
+        initSolrServers(5, getSimpleClassName(), getShardMethod());
     }
 
     @AfterClass

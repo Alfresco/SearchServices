@@ -33,7 +33,6 @@ import org.alfresco.solr.client.Transaction;
 import org.alfresco.util.CachingDateFormat;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.junit.Test;
@@ -62,7 +61,6 @@ import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
  * @author Gethin James
  */
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public abstract class DistributedDateAbstractSolrTrackerIT extends AbstractAlfrescoDistributedIT
 {
     @Test

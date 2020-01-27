@@ -50,20 +50,19 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getCore;
  * @author Gethin James
  */
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class CoresCreateUpdateDistributedIT extends AbstractAlfrescoDistributedIT
 {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    final static String JETTY_SERVER_ID = "CoresCreateUpdateDistributedTest";
+    final static String JETTY_SERVER_ID = CoresCreateUpdateDistributedIT.class.getSimpleName();
 
     @Before
-    private void initData() throws Throwable
+    public void initData() throws Throwable
     {
         initSolrServers(0, JETTY_SERVER_ID , null);
     }
 
     @After
-    private void destroyData()
+    public void destroyData()
     {
         dismissSolrServers();
     }
@@ -89,9 +88,9 @@ public class CoresCreateUpdateDistributedIT extends AbstractAlfrescoDistributedI
         assertSummaryCorrect(response, defaultCore.getName());
     }
 
-
     @Test
-    public void newCoreWithUpdateSharedProperties() throws Exception {
+    public void newCoreWithUpdateSharedProperties() throws Exception
+    {
         CoreContainer coreContainer = jettyContainers.get(JETTY_SERVER_ID).getCoreContainer();
 
         //Now create the new core with
@@ -115,10 +114,12 @@ public class CoresCreateUpdateDistributedIT extends AbstractAlfrescoDistributedI
 
         String solrHost = props.getProperty("solr.host");
         assertFalse(props.containsKey("new.property"));
-        try {
+        try
+        {
             updateShared(coreAdminHandler,"property.solr.host", "superhost", "property.new.property", "catchup", "property.alfresco.identifier.property.0", "not_this_time");
-            assertFalse(true); //Should not get here
-        } catch (SolrException se) {
+            fail();
+        } catch (SolrException se)
+        {
             assertEquals(SolrException.ErrorCode.BAD_REQUEST.code, se.code());
         }
         updateShared(coreAdminHandler,"property.solr.host", "superhost", "property.new.property", "catchup");
@@ -165,7 +166,8 @@ public class CoresCreateUpdateDistributedIT extends AbstractAlfrescoDistributedI
 
     public static void createSimpleCore(AlfrescoCoreAdminHandler coreAdminHandler,
                                         String coreName, String storeRef, String templateName,
-                                        String... extraParams) throws InterruptedException {
+                                        String... extraParams) throws InterruptedException
+    {
 
         ModifiableSolrParams coreParams = params(CoreAdminParams.ACTION, "NEWDEFAULTINDEX",
                 "storeRef", storeRef,
@@ -180,7 +182,8 @@ public class CoresCreateUpdateDistributedIT extends AbstractAlfrescoDistributedI
 
     public static void updateCore(AlfrescoCoreAdminHandler coreAdminHandler,
                                   String coreName,
-                                  String... extraParams) throws InterruptedException {
+                                  String... extraParams) throws InterruptedException
+    {
 
         ModifiableSolrParams coreParams = params(CoreAdminParams.ACTION, "UPDATECORE", "coreName", coreName);
         coreParams.add(params(extraParams));
@@ -191,7 +194,8 @@ public class CoresCreateUpdateDistributedIT extends AbstractAlfrescoDistributedI
     }
 
     public static void updateShared(AlfrescoCoreAdminHandler coreAdminHandler,
-                                    String... extraParams) throws InterruptedException {
+                                    String... extraParams) throws InterruptedException
+    {
 
         ModifiableSolrParams coreParams = params(CoreAdminParams.ACTION, "UPDATESHARED");
         coreParams.add(params(extraParams));
