@@ -19,6 +19,7 @@
 package org.alfresco.solr;
 
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.apache.commons.io.FileUtils;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CoreAdminParams;
@@ -31,14 +32,12 @@ import org.apache.solr.response.SolrQueryResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
+import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import static junit.framework.TestCase.assertNotNull;
 import static org.alfresco.solr.AlfrescoSolrUtils.assertSummaryCorrect;
 import static org.alfresco.solr.AlfrescoSolrUtils.getCore;
 
@@ -51,7 +50,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getCore;
 @SolrTestCaseJ4.SuppressSSL
 public class CoresCreateUpdateDistributedIT extends AbstractAlfrescoDistributedIT
 {
-    static String testFolder;
+    String testFolder;
 
     @Before
     public void initData() throws Throwable
@@ -63,6 +62,12 @@ public class CoresCreateUpdateDistributedIT extends AbstractAlfrescoDistributedI
     public void destroyData()
     {
         dismissSolrServers();
+
+        try {
+            FileUtils.deleteDirectory(new File(testDir.toPath().resolve(testFolder).toString()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     
     @Test

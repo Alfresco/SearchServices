@@ -3,7 +3,6 @@ package org.alfresco.solr;
 import static java.util.Arrays.asList;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
 
-import com.carrotsearch.randomizedtesting.annotations.ThreadLeakLingering;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
@@ -78,7 +77,6 @@ import java.util.Random;
  * @author Michael Suzuki
  * @author Andrea Gazzarini
  */
-//@ThreadLeakLingering(linger = 5000)
 public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
 {
     protected static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

@@ -2,7 +2,6 @@ package org.alfresco.solr;
 
 import static org.alfresco.solr.AlfrescoSolrUtils.createCoreUsingTemplate;
 
-import com.carrotsearch.randomizedtesting.annotations.ThreadLeakLingering;
 import org.alfresco.solr.basics.RandomSupplier;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.apache.commons.io.FileUtils;
@@ -76,7 +75,6 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
 
     public static Properties DEFAULT_CORE_PROPS = new Properties();
 
-    //protected static String currentTestName;
     protected static Map<String, JettySolrRunner> jettyContainers;
     protected static Map<String, SolrClient> solrCollectionNameToStandaloneClient;
     protected static List<JettySolrRunner> solrShards;
@@ -139,6 +137,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         distribSetUp(testClassName);
 
         RandomSupplier.RandVal.uniqueValues = new HashSet<>(); // reset random values
+
         createServers(testClassName, coreNames, numShards, solrcoreProperties);
 
         System.setProperty("solr.solr.home", testDir.toPath().resolve(testClassName).toString());
