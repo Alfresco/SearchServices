@@ -32,6 +32,7 @@ import org.alfresco.repo.index.shard.ShardState;
 import org.alfresco.solr.BoundedDeque;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.NodeReport;
+import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.TrackerState;
 import org.alfresco.solr.adapters.IOpenBitSet;
 import org.alfresco.solr.client.GetNodesParameters;
@@ -83,6 +84,8 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
      * {@link org.alfresco.solr.client.SOLRAPIClient#GET_TX_INTERVAL_COMMIT_TIME}
      */
     private boolean txIntervalCommitTimeServiceAvailable = false;
+    /** Whether the cascade tracking is enabled. */
+    private boolean cascadeTrackerEnabled = true;
 
     public MetadataTracker(final boolean isMaster, Properties p, SOLRAPIClient client, String coreName,
             InformationServer informationServer)
@@ -107,6 +110,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
+        cascadeTrackerEnabled = informationServer.cascadeTrackingEnabled();
         
         // In order to apply performance optimizations, checking the availability of Repo Web Scripts is required.
         // As these services are available from ACS 6.2
@@ -957,7 +961,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
             List<Node> filteredNodes = filterNodes(nodes);
             if(filteredNodes.size() > 0)
             {
-                this.infoServer.indexNodes(filteredNodes, true, false);
+                this.infoServer.indexNodes(filteredNodes, true);
             }
         }
         
@@ -977,9 +981,8 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 {
                     filteredList.add(node);
                 }
-                else
+                else if (cascadeTrackerEnabled)
                 {
-
                     if(node.getStatus() == SolrApiNodeStatus.UPDATED)
                     {
                         Node doCascade = new Node();
