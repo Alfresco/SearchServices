@@ -2,6 +2,7 @@ package org.alfresco.solr;
 
 import static org.alfresco.solr.AlfrescoSolrUtils.createCoreUsingTemplate;
 
+import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 import org.alfresco.solr.basics.RandomSupplier;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.apache.commons.io.FileUtils;
@@ -66,6 +67,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since solr 1.5
  * @author Michael Suzuki 
  */
+@ThreadLeakScope(ThreadLeakScope.Scope.NONE)
 public abstract class SolrITInitializer extends SolrTestCaseJ4
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
