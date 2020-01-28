@@ -511,7 +511,6 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
 
         //Add solr home conf folder with alfresco based configuration.
         FileUtils.copyDirectory(new File(getTestFilesHome() + "/conf"), jettyHome.resolve("conf").toFile());
-        FileUtils.forceDelete(new File(jettyHome.resolve("conf").toFile(), "shared.properties"));
         // Add alfresco data model def
         FileUtils.copyDirectory(new File(getTestFilesHome() + "/alfrescoModels"), jettyHome.resolve("alfrescoModels").toFile());
         // Add templates
