@@ -85,42 +85,63 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     private boolean txIntervalCommitTimeServiceAvailable = false;
 
     public MetadataTracker(final boolean isMaster, Properties p, SOLRAPIClient client, String coreName,
-                InformationServer informationServer)
+            InformationServer informationServer)
+    {
+        this(isMaster, p, client, coreName, informationServer, false);
+    }
+
+    /**
+     * MetadataTracker constructor
+     * 
+     * @param isMaster is true if SOLR instance is master, false otherwise
+     * @param p includes SOLR core properties (from environment variables and properties file)
+     * @param client Alfresco Repository http client
+     * @param coreName Name of the SOLR Core (alfresco, archive)
+     * @param informationServer SOLR Information Server
+     * @param checkRepoServicesAvailability is true if Repo Services availability needs to be checked
+     */
+    public MetadataTracker(final boolean isMaster, Properties p, SOLRAPIClient client, String coreName,
+                InformationServer informationServer, boolean checkRepoServicesAvailability)
     {
         super(isMaster, p, client, coreName, informationServer, Tracker.Type.METADATA);
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
         
-        // Try invoking getNextTxCommitTime service
-        try
+        // In order to apply performance optimizations, checking the availability of Repo Web Scripts is required.
+        // As these services are available from ACS 6.2
+        if (checkRepoServicesAvailability)
         {
-            client.getNextTxCommitTime(coreName, 0l);
-            nextTxCommitTimeServiceAvailable = true;
-        }
-        catch (NoSuchMethodException e)
-        {
-            log.warn("nextTxCommitTimeService is not available. Upgrade your ACS Repository version in order to use this feature: {} ", e.getMessage());
-        }
-        catch (Exception e)
-        {
-            log.error("Checking nextTxCommitTimeService failed.", e);
-        }
-
-        // Try invoking txIntervalCommitTime service
-        try
-        {
-            client.getTxIntervalCommitTime(coreName, 0l, 0l);
-            txIntervalCommitTimeServiceAvailable = true;
-        }
-        catch (NoSuchMethodException e)
-        {
-            log.warn("txIntervalCommitTimeServiceAvailable is not available. If you are using DB_ID_RANGE shard method, "
-                    + "upgrade your ACS Repository version in order to use this feature: {} ", e.getMessage());
-        }
-        catch (Exception e)
-        {
-            log.error("Checking txIntervalCommitTimeServiceAvailable failed.", e);
+            // Try invoking getNextTxCommitTime service
+            try
+            {
+                client.getNextTxCommitTime(coreName, 0l);
+                nextTxCommitTimeServiceAvailable = true;
+            }
+            catch (NoSuchMethodException e)
+            {
+                log.warn("nextTxCommitTimeService is not available. Upgrade your ACS Repository version in order to use this feature: {} ", e.getMessage());
+            }
+            catch (Exception e)
+            {
+                log.error("Checking nextTxCommitTimeService failed.", e);
+            }
+    
+            // Try invoking txIntervalCommitTime service
+            try
+            {
+                client.getTxIntervalCommitTime(coreName, 0l, 0l);
+                txIntervalCommitTimeServiceAvailable = true;
+            }
+            catch (NoSuchMethodException e)
+            {
+                log.warn("txIntervalCommitTimeServiceAvailable is not available. If you are using DB_ID_RANGE shard method, "
+                        + "upgrade your ACS Repository version in order to use this feature: {} ", e.getMessage());
+            }
+            catch (Exception e)
+            {
+                log.error("Checking txIntervalCommitTimeServiceAvailable failed.", e);
+            }
         }
     
     }
