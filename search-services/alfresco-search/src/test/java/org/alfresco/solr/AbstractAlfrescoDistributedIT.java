@@ -810,7 +810,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
         Collection<SolrCore> cores = getJettyCores(solrShards);
         List<AlfrescoCoreAdminHandler> alfrescoCoreAdminHandlers = getAdminHandlers(solrShards);
         SolrCore core = cores.stream()
-                .filter(solrcore -> solrcore.getName().endsWith("" + shard)).findAny().orElseThrow(RuntimeException::new);
+                .filter(solrcore -> solrcore.getName().equals("shard" + shard)).findAny().orElseThrow(RuntimeException::new);
 
 //        SolrCore core = cores.get(shard);
         AlfrescoCoreAdminHandler alfrescoCoreAdminHandler = alfrescoCoreAdminHandlers.get(shard);
