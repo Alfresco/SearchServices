@@ -61,6 +61,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerIT extends AbstractAlf
     public static void initData() throws Throwable
     {
         initSolrServers(2, getSimpleClassName(), getShardMethod());
+        Thread.sleep(10000);
     }
 
     @AfterClass

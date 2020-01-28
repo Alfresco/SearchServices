@@ -39,6 +39,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -119,7 +120,7 @@ public class DistributedExplicitShardRoutingTrackerIT extends AbstractAlfrescoDi
 
         Query contentQuery = new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world"));
         Query aclQuery = new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_ACL));
-        List<SolrCore> shards = getJettyCores(solrShards);
+        Collection<SolrCore> shards = getJettyCores(solrShards);
         List<SolrClient> shardClients = getShardedClients();
         long begin = System.currentTimeMillis();
 
@@ -132,7 +133,11 @@ public class DistributedExplicitShardRoutingTrackerIT extends AbstractAlfrescoDi
 
         for (int i = 0; i < shardClients.size(); ++i)
         {
-            SolrCore core = shards.get(i);
+            final int shardId = i;
+            SolrCore core = shards.stream()
+                    .filter(solrcore -> solrcore.getName().endsWith("" + shardId)).findAny().orElseThrow(RuntimeException::new);
+
+            //SolrCore core = shards.get(i);
             SolrClient client = shardClients.get(i);
             switch (core.getName())
             {

@@ -324,14 +324,17 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
     /**
      * Gets the cores for the jetty instances
      */
-    protected static List<SolrCore> getJettyCores(Collection<JettySolrRunner> runners)
+    protected static Collection<SolrCore> getJettyCores(Collection<JettySolrRunner> runners)
     {
+        return jettyContainers.values().iterator().next().getCoreContainer().getCores();
+        /*
         List<SolrCore> cores = new ArrayList<>();
         for (JettySolrRunner jettySolrRunner : runners)
         {
             cores.addAll(jettySolrRunner.getCoreContainer().getCores());
         }
         return cores;
+        */
     }
 
     protected static List<AlfrescoCoreAdminHandler> getAdminHandlers(Collection<JettySolrRunner> runners)
@@ -783,9 +786,10 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
     {
         while(true)
         {
-            List<SolrCore> cores = getJettyCores(solrShards);
+            Collection<SolrCore> cores = getJettyCores(solrShards);
             List<AlfrescoCoreAdminHandler> alfrescoCoreAdminHandlers = getAdminHandlers(solrShards);
-            SolrCore core = cores.get(shard);
+            SolrCore core = cores.stream()
+                    .filter(solrcore -> solrcore.getName().equals("shard" + shard)).findAny().orElseThrow(RuntimeException::new);
             AlfrescoCoreAdminHandler alfrescoCoreAdminHandler = alfrescoCoreAdminHandlers.get(shard);
             SolrQueryResponse response = callHandler(alfrescoCoreAdminHandler, core, "RANGECHECK");
             NamedList<?> values = response.getValues();
@@ -803,9 +807,12 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
 
     public static SolrQueryResponse expand(int shard, int value)
     {
-        List<SolrCore> cores = getJettyCores(solrShards);
+        Collection<SolrCore> cores = getJettyCores(solrShards);
         List<AlfrescoCoreAdminHandler> alfrescoCoreAdminHandlers = getAdminHandlers(solrShards);
-        SolrCore core = cores.get(shard);
+        SolrCore core = cores.stream()
+                .filter(solrcore -> solrcore.getName().endsWith("" + shard)).findAny().orElseThrow(RuntimeException::new);
+
+//        SolrCore core = cores.get(shard);
         AlfrescoCoreAdminHandler alfrescoCoreAdminHandler = alfrescoCoreAdminHandlers.get(shard);
         return callExpand(alfrescoCoreAdminHandler, core, value);
     }
