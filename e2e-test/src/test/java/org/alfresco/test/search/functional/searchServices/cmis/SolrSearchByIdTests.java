@@ -7,6 +7,7 @@ import org.alfresco.utility.data.provider.XMLTestDataProvider;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.QueryModel;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -87,7 +88,7 @@ public class SolrSearchByIdTests extends AbstractCmisE2ETest
     
     @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
     @XMLDataConfig(file = "src/test/resources/testdata/search-by-id.xml")
-    public void executeSearchByAspect(QueryModel query) throws Exception
+    public void executeSearchById(QueryModel query) throws Exception
     {
         String currentQuery = query.getValue()
                 .replace("NODE_REF[siteId]", siteDoclibNodeRef)
@@ -96,6 +97,7 @@ public class SolrSearchByIdTests extends AbstractCmisE2ETest
                 .replace("NODE_REF[f1]", tasFolder1.getNodeRef())
                 .replace("NODE_REF[f1-1]", tasSubFolder1.getNodeRef());
 
-        cmisApi.authenticateUser(testUser).withQuery(currentQuery).assertResultsCount().equals(query.getResults());
+        cmisApi.authenticateUser(testUser);
+        Assert.assertTrue(waitForIndexing(currentQuery, query.getResults()), String.format("Result count not as expected for query: %s", currentQuery));
     }
 }

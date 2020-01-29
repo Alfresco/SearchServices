@@ -101,6 +101,7 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
             RestShardInfoModel model = shardInfoModel.getModel();
             assertEquals(model.getTemplate(), "rerank");
             assertEquals(model.getShardMethod(), "DB_ID");
+            assertEquals(model.getMode(), "MIXED");
             assertTrue(model.getHasContent());
 
             assertTrue(stores.contains(model.getStores()));

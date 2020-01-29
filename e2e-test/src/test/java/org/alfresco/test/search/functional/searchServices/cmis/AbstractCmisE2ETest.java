@@ -61,7 +61,7 @@ public abstract class AbstractCmisE2ETest extends AbstractE2EFunctionalTest
     protected boolean waitForIndexing(String query, long expectedCountResults)
     {
 
-        for (int searchCount = 1; searchCount <= 3; searchCount++)
+        for (int searchCount = 1; searchCount <= SEARCH_MAX_ATTEMPTS; searchCount++)
         {
             
             try
@@ -71,7 +71,7 @@ public abstract class AbstractCmisE2ETest extends AbstractE2EFunctionalTest
             } 
             catch (AssertionError ae)
             {
-                LOGGER.debug(ae.toString());
+                LOGGER.info(String.format("WaitForIndexing in Progress: %s", ae.toString()));
             }
             
             
