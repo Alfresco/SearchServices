@@ -84,7 +84,7 @@
         </listener>
         -->
 
-        <updateLog enable="${enable.update.log:true}">
+        <updateLog enable="true">
             <str name="dir">${solr.ulog.dir:}</str>
         </updateLog>
         <!--
