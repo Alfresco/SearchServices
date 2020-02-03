@@ -7,6 +7,7 @@ import org.alfresco.utility.data.provider.XMLTestDataProvider;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.QueryModel;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -135,6 +136,7 @@ public class SolrSearchByAspectTests extends AbstractCmisE2ETest
                 .replace("NODE_REF[f1]", tasFolder1.getNodeRef())
                 .replace("NODE_REF[s1]", siteDoclibNodeRef);
 
-        cmisApi.authenticateUser(testUser).withQuery(currentQuery).assertResultsCount().equals(query.getResults());
+        cmisApi.authenticateUser(testUser);
+        Assert.assertTrue(waitForIndexing(currentQuery, query.getResults()), String.format("Result count not as expected for query: %s", currentQuery));
     }
 }

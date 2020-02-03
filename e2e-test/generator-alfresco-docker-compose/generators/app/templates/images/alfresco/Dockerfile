@@ -40,13 +40,27 @@ RUN if [ "$SOLR_COMMS" == "https" ] ; then \
 [[:space:]]\+<\/Engine>/\n\
         <\/Engine>\n\
         <Connector port=\"8443\" protocol=\"org.apache.coyote.http11.Http11Protocol\"\n\
+            connectionTimeout=\"20000\"\n\        
             SSLEnabled=\"true\" maxThreads=\"150\" scheme=\"https\"\n\
             keystoreFile=\"\/usr\/local\/tomcat\/alf_data\/keystore\/ssl.keystore\"\n\
-            keystorePass=\"${KEYSTORE_PASS}\" keystoreType=\"${KEYSTORE_TYPE}\" secure=\"true\" connectionTimeout=\"240000\"\n\
+            keystorePass=\"${KEYSTORE_PASS}\" keystoreType=\"${KEYSTORE_TYPE}\" secure=\"true\"\n\
             truststoreFile=\"\/usr\/local\/tomcat\/alf_data\/keystore\/ssl.truststore\"\n\
             truststorePass=\"${TRUSTSTORE_PASS}\" truststoreType=\"${TRUSTSTORE_TYPE}\" clientAuth=\"want\" sslProtocol=\"TLS\">\n\
         <\/Connector>/g" ${TOMCAT_DIR}/conf/server.xml; \
     fi
+
+# GZIP COMPRESSION
+ARG COMPRESS_CONTENT
+ENV COMPRESS_CONTENT $COMPRESS_CONTENT
+RUN if [ "$COMPRESS_CONTENT" == "true" ] ; then \
+      sed -i "s/\
+[[:space:]]\+connectionTimeout=\"20000\"/\n\
+        connectionTimeout=\"20000\"\n\
+        compression=\"on\"\n\
+        compressionMinSize=\"1\"\n\
+        /g" ${TOMCAT_DIR}/conf/server.xml; \
+    fi
+
 
 # Copy custom content model to deployment folder
 COPY model/* $TOMCAT_DIR/shared/classes/alfresco/extension/

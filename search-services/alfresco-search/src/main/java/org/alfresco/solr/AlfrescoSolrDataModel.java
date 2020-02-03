@@ -523,7 +523,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
         catch (IOException e)
         {
-            log.info("Failed to read shared properties fat  " + propertiesFile.getAbsolutePath());
+            log.info("Failed to read shared properties at  " + propertiesFile.getAbsolutePath());
         }
 
         return props;

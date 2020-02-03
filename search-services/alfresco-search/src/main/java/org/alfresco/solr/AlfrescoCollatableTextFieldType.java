@@ -104,16 +104,20 @@ public class AlfrescoCollatableTextFieldType extends StrField
         private final String[] values;
 
         private BinaryDocValues docTerms;
-        
-        private Bits docsWithField;
+
+        /**
+         * An array of flags - one for each document in the segment. Each bit is set to true if the document has the
+         * field or false otherwise. If this is set to null then all docs in the segment have the field.
+         */
+        Bits docsWithField;
 
         private final String field;
 
-        final Collator collator;
+        Collator collator;
 
-        private String bottom;
+        String bottom;
         
-        private String top;
+        String top;
 
         Locale collatorLocale;
 
@@ -141,7 +145,6 @@ public class AlfrescoCollatableTextFieldType extends StrField
         {
             final String comparableString = findBestValue(doc, docTerms.get(doc));
             return compareValues(bottom, comparableString);
-           
         }
 
         public void copy(int slot, int doc)
@@ -156,7 +159,8 @@ public class AlfrescoCollatableTextFieldType extends StrField
 
         private String findBestValue(int doc, BytesRef term)
         {
-            if (term.length == 0 && docsWithField.get(doc) == false) {
+            if (term.length == 0 && docsWithField != null && docsWithField.get(doc) == false)
+            {
                 return null;
             }
             

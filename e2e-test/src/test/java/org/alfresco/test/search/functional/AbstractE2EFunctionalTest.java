@@ -6,6 +6,16 @@
  */
 package org.alfresco.test.search.functional;
 
+import static java.util.Optional.ofNullable;
+
+import static lombok.AccessLevel.PROTECTED;
+import static org.testng.Assert.assertEquals;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import lombok.Getter;
 import org.alfresco.cmis.CmisWrapper;
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.dataprep.SiteService.Visibility;
@@ -38,19 +48,14 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeSuite;
 
-import lombok.Getter;
-
-import static java.util.Optional.ofNullable;
-import static lombok.AccessLevel.PROTECTED;
-
 /**
  * @author meenal bhave
  */
-@ContextConfiguration("classpath:alfresco-search-e2e-context.xml")
+@ContextConfiguration ("classpath:alfresco-search-e2e-context.xml")
 public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringContextTests
 {
     /** The number of retries that a query will be tried before giving up. */
-    private static final int SEARCH_MAX_ATTEMPTS = 6;
+    protected static final int SEARCH_MAX_ATTEMPTS = 6;
 
     private static final Logger LOGGER = LogFactory.getLogger();
 
@@ -76,26 +81,26 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     protected CmisWrapper cmisApi;
 
     @Autowired
-  //  @Getter(value = PROTECTED)
+    //  @Getter(value = PROTECTED)
     protected DataUser dataUser;
 
     @Autowired
-    @Getter(value = PROTECTED)
+    @Getter (value = PROTECTED)
     private ContentService contentService;
 
     protected UserModel testUser, adminUserModel, testUser2;
     protected SiteModel testSite, testSite2;
 
     protected static String unique_searchString;
-    
+
     protected static final String SEARCH_LANGUAGE_CMIS = "cmis";
-    
+
     protected enum SearchLanguage {
         CMIS,
         AFTS
-      }
+    }
 
-    @BeforeSuite(alwaysRun = true)
+    @BeforeSuite (alwaysRun = true)
     public void beforeSuite() throws Exception
     {
         super.springTestContextPrepareTestInstance();
@@ -105,7 +110,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         deployCustomModel("model/sharding-content-model.xml");
     }
 
-    @BeforeClass(alwaysRun = true)
+    @BeforeClass (alwaysRun = true)
     public void setup()
     {
         serverHealth.assertServerIsOnline();
@@ -210,7 +215,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
                     customModel.setNodeRef(modelInRepo.getId());
                     customModel.setNodeRef(customModel.getNodeRefWithoutVersion());
                     customModel.setCmisLocation(String.format("/Data Dictionary/Models/%s", fileName));
-                LOGGER.info("Custom Model file: " + customModel.getCmisLocation());
+                    LOGGER.info("Custom Model file: " + customModel.getCmisLocation());
                 }
                 else
                 {
@@ -240,9 +245,9 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
 
     /**
      * Wait for Solr to finish indexing and search to return appropriate results
-     * 
-     * @param userQuery Search Query
-     * @param contentToFind that's expected to be included / excluded from the results
+     *
+     * @param userQuery         Search Query
+     * @param contentToFind     that's expected to be included / excluded from the results
      * @param expectedInResults Whether we expect the content in the results or not.
      * @return true if search returns expected results, i.e. is given content is found or excluded from the results
      */
@@ -278,26 +283,25 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
 
         return false;
     }
-    
-    /**
-     * Method to check if the contentName is returned in the SearchResponse
-     * @param response
-     * @param contentName
-     * @return
-     */
-    public boolean isContentInSearchResponse(SearchResponse response, String contentName) 
-    {
-        boolean found = response.getEntries().stream()
-                .map(entry -> entry.getModel().getName())
-                .filter(name -> name.equalsIgnoreCase(contentName) || contentName.isBlank()).count() > 0;
 
-        return found;
+    /**
+     * Method to check if the contentName is returned in the SearchResponse.
+     *
+     * @param response    the search response
+     * @param contentName the text we are using as matching/verifying criteria.
+     * @return true if if the item with the contentName text is returned in the SearchResponse.
+     */
+    public boolean isContentInSearchResponse(SearchResponse response, String contentName)
+    {
+        return response.getEntries().stream()
+                       .map(entry -> entry.getModel().getName())
+                       .anyMatch(name -> name.equalsIgnoreCase(contentName) || contentName.isBlank());
     }
 
     /**
      * Wait for Solr to finish indexing: Indexing has caught up = true if search returns appropriate results
-     * 
-     * @param userQuery: search query, this can include the fieldname, unique search string will guarantee accurate results
+     *
+     * @param userQuery:         search query, this can include the fieldname, unique search string will guarantee accurate results
      * @param expectedInResults, true if entry is expected in the results set
      * @return true (indexing is finished) if search returns appropriate results
      */
@@ -309,7 +313,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
 
     /**
      * waitForIndexing method that matches / waits for filename, metadata to be indexed.
-     * 
+     *
      * @param userQuery
      * @param expectedInResults
      * @return
@@ -322,7 +326,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     /**
      * waitForIndexing method that matches / waits for content to be indexed, this can take longer than metadata indexing.
      * Since Metadata is indexed first, use this method where tests, queries need content to be indexed too.
-     * 
+     *
      * @param userQuery
      * @param expectedInResults
      * @return
@@ -334,9 +338,9 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
 
     /**
      * Wait for Solr to finish indexing: Indexing has caught up = true if search returns appropriate results
-     * 
-     * @param fieldName: specific field to search for, e.g. name. When specified, the query will become: name:'userQuery'
-     * @param userQuery: search string, unique search string will guarantee accurate results
+     *
+     * @param fieldName:         specific field to search for, e.g. name. When specified, the query will become: name:'userQuery'
+     * @param userQuery:         search string, unique search string will guarantee accurate results
      * @param expectedInResults, true if entry is expected in the results set
      * @return true (indexing is finished) if search returns appropriate results
      */
@@ -349,7 +353,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
 
     /**
      * Run a search as admin user and return the response
-     * 
+     *
      * @param queryString: string to search for, unique search string will guarantee accurate results
      * @return the search response from the API
      */
@@ -360,8 +364,8 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
 
     /**
      * Run a search as given user and return the response
-     * 
-     * @param user: UserModel for the user you wish to run the query as
+     *
+     * @param user:        UserModel for the user you wish to run the query as
      * @param queryString: string to search for, unique search string will guarantee accurate results
      * @return the search response from the API
      */
@@ -373,11 +377,11 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         searchRequest.setQuery(queryModel);
         return restClient.authenticateUser(user).withSearchAPI().search(searchRequest);
     }
-    
+
     /**
      * Run a search with Spellcheck as given user and return the response
-     * @param user UserModel for the user you wish to run the query as
-     * @param queryModel The queryModel to search for, containing the query
+     * @param user            UserModel for the user you wish to run the query as
+     * @param queryModel      The queryModel to search for, containing the query
      * @param spellcheckQuery The Spellcheck Model containing the query
      * @return the search response from the API
      */
@@ -418,32 +422,22 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         query.setQuery(queryReq);
         return query;
     }
-    
+
     protected DataUser getDataUser()
     {
         return dataUser;
     }
-    
+
     /**
      * Helper method to test if the search query works and count matches where provided
-     * @param query: AFTS or cmis query string
-     * @param expectedCount: Only successful response is checked, when expectedCount is null (can not be exactly specified), 
-     * @param setCmis: Query language is set to cmis when setCmis is true, AFTS when false
+     *
+     * @param query:         AFTS or cmis query string
+     * @param expectedCount: Only successful response is checked, when expectedCount is null (can not be exactly specified),
      * @return SearchResponse
      */
     protected SearchResponse testSearchQuery(String query, Integer expectedCount, SearchLanguage queryLanguage)
     {
-        RestRequestQueryModel queryModel = new RestRequestQueryModel();
-        queryModel.setQuery(query);
-
-        if (ofNullable(queryLanguage).isPresent())
-        {
-            queryModel.setLanguage(queryLanguage.toString());
-        }
-
-        SearchResponse response = queryAsUser(testUser, queryModel);
-
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        SearchResponse response = performSearch(testUser, query, queryLanguage);
 
         if (ofNullable(expectedCount).isPresent())
         {
@@ -452,7 +446,64 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
 
         return response;
     }
+
+    /**
+     * Helper method to test if the search query returns the expected results in the order given.
+     *
+     * @param query:         AFTS or cmis query string
+     * @param expectedNames: The ordered list of names expected to be returned,
+     * @return SearchResponse
+     */
+    protected SearchResponse testSearchQueryOrdered(String query, List<String> expectedNames, SearchLanguage queryLanguage)
+    {
+        SearchResponse response = performSearch(testUser, query, queryLanguage);
+
+        List<String> names = response.getEntries().stream().map(s -> s.getModel().getName()).collect(Collectors.toList());
+
+        // Include lists in failure message as TestNG won't do this for lists.
+        assertEquals(names, expectedNames, "Unexpected results for query: " + query + " Expected: " + expectedNames + " but got " + names);
     
+        return response;
+    }
+
+    /**
+     * Helper method to test if the search query returns the expected set of results.
+     *
+     * @param query:         AFTS or cmis query string
+     * @param expectedNames: The ordered list of names expected to be returned,
+     * @return SearchResponse
+     */
+    protected SearchResponse testSearchQueryUnordered(String query, Set<String> expectedNames, SearchLanguage queryLanguage)
+    {
+        SearchResponse response = performSearch(testUser, query, queryLanguage);
+    
+        Set<String> names = response.getEntries().stream().map(s -> s.getModel().getName()).collect(Collectors.toSet());
+    
+        assertEquals(names, expectedNames, "Unexpected results for query: " + query);
+    
+        return response;
+    }
+
+    private SearchResponse performSearch(UserModel asUser, String query, SearchLanguage queryLanguage)
+    {
+        RestRequestQueryModel queryModel = new RestRequestQueryModel();
+        queryModel.setQuery(query);
+
+        if (!ofNullable(asUser).isPresent())
+        {
+            asUser = testUser;
+        }
+
+        if (ofNullable(queryLanguage).isPresent())
+        {
+            queryModel.setLanguage(queryLanguage.toString());
+        }
+
+        SearchResponse response = queryAsUser(asUser, queryModel);
+
+        return response;
+    }
+
     /**
      * Method to create and run a simple spellcheck query
      * When a spellcheck query is run a user, the query inputed and the user query is inputted
@@ -464,8 +515,8 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     {
         RestRequestSpellcheckModel spellCheck = new RestRequestSpellcheckModel();
         spellCheck.setQuery(userQuery);
-        
-        UserModel searchUser = ofNullable(user).isPresent()? user: testUser;
+
+        UserModel searchUser = ofNullable(user).isPresent() ? user : testUser;
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery(query);
@@ -478,8 +529,8 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
 
     /**
      * Method to check the spellcheck object returned in the Search Response
-     * @param response SearchResponse
-     * @param spellCheckType String Values: searchInsteadFor, didYouMean or null
+     * @param response             SearchResponse
+     * @param spellCheckType       String Values: searchInsteadFor, didYouMean or null
      * @param spellCheckSuggestion String Values: suggestion string or null
      */
     public void testSearchSpellcheckResponse(SearchResponse response, String spellCheckType, String spellCheckSuggestion)
@@ -498,6 +549,6 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         {
             response.getContext().assertThat().field("spellCheck").isNotEmpty();
             response.getContext().getSpellCheck().assertThat().field("suggestions").contains(spellCheckSuggestion);
-        }        
+        }
     }
 }

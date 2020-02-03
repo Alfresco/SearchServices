@@ -70,7 +70,7 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
     }
 
     @AfterClass
-    private static void destroyData() throws Throwable
+    private static void destroyData()
     {
         dismissSolrServers();
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2019 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -17,6 +17,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.alfresco.solr.tracker;
+
+import static java.util.Optional.ofNullable;
 
 import java.lang.invoke.MethodHandles;
 import java.net.ConnectException;
@@ -49,11 +51,10 @@ public abstract class AbstractTracker implements Tracker
     protected SOLRAPIClient client;
     InformationServer infoSrv;
     protected String coreName;
-    protected StoreRef storeRef;
-    protected long batchCount;
-    protected String alfrescoVersion;
-    protected TrackerStats trackerStats;
-    protected boolean runPostModelLoadInit = true;
+    StoreRef storeRef;
+    long batchCount;
+    TrackerStats trackerStats;
+    boolean runPostModelLoadInit = true;
     private int maxLiveSearchers;
     private volatile boolean shutdown = false;
 
@@ -63,9 +64,9 @@ public abstract class AbstractTracker implements Tracker
     protected volatile TrackerState state;
     protected int shardCount;
     protected int shardInstance;
-    protected String shardMethod;
+    String shardMethod;
     protected boolean transformContent;
-    protected String shardTemplate;
+    String shardTemplate;
     protected volatile boolean rollback;
     protected final Type type;
 
@@ -102,12 +103,8 @@ public abstract class AbstractTracker implements Tracker
         transformContent = Boolean.parseBoolean(p.getProperty("alfresco.index.transformContent", "true"));
 
         this.trackerStats = this.infoSrv.getTrackerStats();
-
-        alfrescoVersion = p.getProperty("alfresco.version", "5.0.0");
         
         this.type = type;
-        
-        LOGGER.info("Solr built for Alfresco version: {}", alfrescoVersion);
     }
 
     
@@ -183,12 +180,9 @@ public abstract class AbstractTracker implements Tracker
             
             if(this.state == null)
             {
-                /*
-                * Set the global state for the tracker here.
-                */
                 this.state = getTrackerState();
-                LOGGER.debug("##### Setting tracker global state.");
-                LOGGER.debug("State set: {}", this.state.toString());
+
+                LOGGER.debug("Global Tracker State set to: {}", this.state.toString());
                 this.state.setRunning(true);
             }
             else
@@ -237,12 +231,11 @@ public abstract class AbstractTracker implements Tracker
         finally
         {
             infoSrv.unregisterTrackerThread();
-            if(state != null)
-            {
-                //During a rollback state is set to null.
+            ofNullable(state).ifPresent(tstate -> {
+                // During a rollback state is set to null.
                 state.setRunning(false);
                 state.setCheck(false);
-            }
+            });
             runLock.release();
         }
     }
@@ -284,7 +277,7 @@ public abstract class AbstractTracker implements Tracker
     /**
      * Allows time for the scheduled asynchronous tasks to complete
      */
-    protected synchronized void waitForAsynchronous()
+    synchronized void waitForAsynchronous()
     {
         AbstractWorkerRunnable currentRunnable = this.threadHandler.peekHeadReindexWorker();
         while (currentRunnable != null)
@@ -305,12 +298,12 @@ public abstract class AbstractTracker implements Tracker
         }
     }
 
-    public int getMaxLiveSearchers()
+    int getMaxLiveSearchers()
     {
         return maxLiveSearchers;
     }
 
-    protected void checkShutdown()
+    void checkShutdown()
     {
         if(shutdown)
         {
@@ -345,18 +338,9 @@ public abstract class AbstractTracker implements Tracker
         return this.writeLock;
     }
 
-    public Semaphore getRunLock()
+    Semaphore getRunLock()
     {
         return this.runLock;
-    }
-
-    /**
-     * @return Alfresco version Solr was built for
-     */
-    @Override
-    public String getAlfrescoVersion()
-    {
-        return alfrescoVersion;
     }
 
     public Properties getProps()

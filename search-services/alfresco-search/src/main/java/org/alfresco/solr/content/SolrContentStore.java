@@ -43,12 +43,14 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -236,7 +238,8 @@ public final class SolrContentStore implements Closeable, AccessMode
         {
             try
             {
-                return Files.lines(Paths.get(root, ".version"))
+                return Files.readAllLines(Paths.get(root, ".version"))
+                        .stream()
                         .map(Long::parseLong)
                         .findFirst()
                         .orElse(NO_VERSION_AVAILABLE);
@@ -250,18 +253,29 @@ public final class SolrContentStore implements Closeable, AccessMode
         @Override
         public void setLastCommittedVersion(long version)
         {
+
+            File tmpFile = new File(root, ".version-" + new SimpleDateFormat(SnapShooter.DATE_FMT, Locale.ROOT).format(new Date()));
             try
             {
-                File tmpFile = new File(root, ".version-" + new SimpleDateFormat(SnapShooter.DATE_FMT, Locale.ROOT).format(new Date()));
                 FileWriter wr = new FileWriter(tmpFile);
                 wr.write(Long.toString(version));
                 wr.close();
 
-                tmpFile.renameTo(new File(root, ".version"));
+                // file.renameTo(..) does not work on windows. Use Files.move instead.
+                Files.move(tmpFile.toPath(), new File(root, ".version").toPath(), StandardCopyOption.ATOMIC_MOVE);
+
             }
             catch (IOException exception)
             {
                 logger.error("Unable to persist the last committed content store version {}. See the stacktrace below for furtger details.", version, exception);
+                try
+                {
+                    Files.delete(tmpFile.toPath());
+                }
+                catch (IOException e)
+                {
+                    logger.error("Unable to delete tmp contentstore version file {}.", version);
+                }
             }
         }
 
