@@ -102,6 +102,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
 
         deployCustomModel("model/music-model.xml");
         deployCustomModel("model/finance-model.xml");
+        deployCustomModel("model/sharding-content-model.xml");
     }
 
     @BeforeClass(alwaysRun = true)
