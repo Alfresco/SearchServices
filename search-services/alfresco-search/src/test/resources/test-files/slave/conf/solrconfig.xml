@@ -93,6 +93,10 @@
         </commitWithin>
         -->
 
+        <updateLog enable="true">
+            <str name="dir">${solr.ulog.dir:}</str>
+        </updateLog>
+
     </updateHandler>
 
     <query>

@@ -321,7 +321,7 @@
          is recommended (see below).
          "dir" - the target directory for transaction logs, defaults to the
                 solr data directory.  -->
-    <updateLog enable="${enable.update.log:true}">
+    <updateLog enable="true">
       <str name="dir">${solr.ulog.dir:}</str>
     </updateLog>
 
