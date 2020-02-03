@@ -127,7 +127,7 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
         restClient.assertStatusCodeIs(HttpStatus.INTERNAL_SERVER_ERROR);
     }
     
-    @Test(groups = { TestGroup.ACS_60n, TestGroup.EXPLICIT_SHARDING })
+    @Test(groups = { TestGroup.ACS_60n })
     public void getShardInfoWithExplicitID() throws JsonProcessingException
     {
         RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI()
