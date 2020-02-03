@@ -269,7 +269,7 @@ module.exports = class extends Generator {
 
     // Empty addons directories.
     ['alfresco', 'share'].forEach(container => {
-      ['jars', 'modules'].forEach(addonType => {
+      ['jars', 'amps'].forEach(addonType => {
         this.fs.copy(
           this.templatePath('empty/empty'),
           this.destinationPath(container + '/modules/' + addonType + '/empty')
