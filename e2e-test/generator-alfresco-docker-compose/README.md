@@ -17,6 +17,8 @@ $ tree generators/app/templates/
 │   ├── .env
 │   ├── docker-compose-ce.yml
 │   └── docker-compose-ee.yml
+├── empty
+│   └── empty
 ├── images
 │   ├── alfresco
 │   │   ├── Dockerfile
@@ -180,6 +182,10 @@ Custom content forms can be added to Share configuration by modifying `share/mod
 Sample configuration is available in [images/share/model/sharding-share-config-custom.xml](generators/app/templates/images/share/model/sharding-share-config-custom.xml)
 
 If *Sharding* is selected, a default `share-config-custom-dev.xml` file with required forms configuration for Sharding custom model will be available in deployment folder. Add your configuration to this file.
+
+## Installing custom addons
+
+The generator will create `amps` and `jars` directories within `alfresco/modules` and `share/modules`. Any amps or jars placed in these directories will be installed in the corresponding container.
 
 ## Passing parameters from command line
 

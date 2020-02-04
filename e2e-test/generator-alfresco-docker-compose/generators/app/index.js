@@ -267,6 +267,16 @@ module.exports = class extends Generator {
       )
     }
 
+    // Empty addons directories.
+    ['alfresco', 'share'].forEach(container => {
+      ['jars', 'amps'].forEach(addonType => {
+        this.fs.copy(
+          this.templatePath('empty/empty'),
+          this.destinationPath(container + '/modules/' + addonType + '/empty')
+        );
+      });
+    });
+
     // Copy Docker Image for Search applying configuration
     this.fs.copyTpl(
       this.templatePath(imagesDirectory + '/search'),
