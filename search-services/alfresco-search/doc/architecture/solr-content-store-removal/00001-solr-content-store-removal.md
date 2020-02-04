@@ -362,7 +362,7 @@ the document state in the content store:
 the two values were different then the FTSSTATUS was set to **Dirty**
 - Once the _ContentTracker_ updated the document with the new text content, the FTSSTATUS was set to **Clean**    
 
-Briefly, we no longer have the content store, so the comparison above cannot be done. For example, when a _Node_ arrives we
+We no longer have the content store, so the comparison above cannot be done. For example, when a _Node_ arrives we
 cannot know if that corresponds to an existing document or if it is the first time we see it. 
 We could request that information to Solr but that would mean one query for each incoming _Node_, and that wouldn't be efficient. 
   
@@ -372,15 +372,14 @@ The new approach uses two fields:
 (content@s__docid@* or content@m__docid@*). It can be null (i.e. the incoming node doesn't have a value for that property, 
 even if it requires content indexing)
 
-- **LAST_INCOMING_CONTENT_VERSION_ID**: this is instead used for detecting documents that require content indexing.
-        If the field has the same value of the previous one (or it is equal to _SolrInformationServer.CONTENT_UPDATED_MARKER_),
+- **LAST_INCOMING_CONTENT_VERSION_ID**: If the field has the same value of the previous one (or it is equal to _SolrInformationServer.CONTENT_UPDATED_MARKER_),
         then the content is supposed to be in synch. Otherwise, if the value is different, it is not _SolrInformationServer.CONTENT_UPDATED_MARKER_
         or it is _SolrInformationServer.CONTENT_OUTDATED_MARKER_ the content is intended as outdated and therefore it will
-        be selected (later) by the _ContentTracker_ for executing the text update process.
+        be selected (later) by the _ContentTracker_.
 
 ### AlfrescoReplicationHandler
 
-This set of components, introduced for including in the Solr replication mechanism the content store, has been removed 
+This set of components, [introduced in SearchServices 1.4.x](https://issues.alfresco.com/jira/browse/SEARCH-1850) for including the content store in the Solr replication mechanism, has been removed 
 because we no longer have any external folder/file to be synched between master and slave(s). As consequence of that 
 the built-in Solr ReplicationHandler is used. 
 
