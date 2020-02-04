@@ -2071,10 +2071,13 @@ public class SolrInformationServer implements InformationServer
 
         doc.addField(FIELD_TENANT, AlfrescoSolrDataModel.getTenantId(nodeMetaData.getTenantDomain()));
 
-        updatePathRelatedFields(nodeMetaData, doc);
-        updateNamePathRelatedFields(nodeMetaData, doc);
-        updateAncestorRelatedFields(nodeMetaData, doc);
-        doc.addField(FIELD_PARENT_ASSOC_CRC, nodeMetaData.getParentAssocsCrc());
+        if (cascadeTrackingEnabled())
+        {
+            updatePathRelatedFields(nodeMetaData, doc);
+            updateNamePathRelatedFields(nodeMetaData, doc);
+            updateAncestorRelatedFields(nodeMetaData, doc);
+            doc.addField(FIELD_PARENT_ASSOC_CRC, nodeMetaData.getParentAssocsCrc());
+        }
 
         if (nodeMetaData.getOwner() != null)
         {
@@ -3423,9 +3426,12 @@ public class SolrInformationServer implements InformationServer
 
                         if (cachedDoc != null)
                         {
-                            updatePathRelatedFields(nodeMetaData, cachedDoc);
-                            updateNamePathRelatedFields(nodeMetaData, cachedDoc);
-                            updateAncestorRelatedFields(nodeMetaData, cachedDoc);
+                            if (cascadeTrackingEnabled())
+                            {
+                                updatePathRelatedFields(nodeMetaData, cachedDoc);
+                                updateNamePathRelatedFields(nodeMetaData, cachedDoc);
+                                updateAncestorRelatedFields(nodeMetaData, cachedDoc);
+                            }
 
                             AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
                             addDocCmd.overwrite = overwrite;
@@ -3447,152 +3453,6 @@ public class SolrInformationServer implements InformationServer
             }
         }
     }
-
-    private void updateDescendantDocs(NodeMetaData parentNodeMetaData, boolean overwrite,
-                                      SolrQueryRequest request, UpdateRequestProcessor processor, LinkedHashSet<Long> stack)
-            throws AuthenticationException, IOException, JSONException
-    {
-        if (stack.contains(parentNodeMetaData.getId()))
-        {
-            LOGGER.warning("Found descendant data loop for node id {}", parentNodeMetaData.getId());
-            LOGGER.warning("Stack to node = {} ", stack);
-        }
-        else
-        {
-            try
-            {
-                stack.add(parentNodeMetaData.getId());
-                doUpdateDescendantDocs(parentNodeMetaData, overwrite, request, processor, stack);
-            }
-            finally
-            {
-                stack.remove(parentNodeMetaData.getId());
-            }
-        }
-    }
-
-    private boolean shouldBeIgnoredByAnyAspect(Set<QName> aspects)
-    {
-        if (null == aspects)
-        {
-            return false;
-        }
-
-        for (QName aspectForSkipping : aspectsForSkippingDescendantDocs)
-        {
-            if (aspects.contains(aspectForSkipping))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void doUpdateDescendantDocs(NodeMetaData parentNodeMetaData, boolean overwrite,
-                                        SolrQueryRequest request, UpdateRequestProcessor processor, LinkedHashSet<Long> stack)
-            throws AuthenticationException, IOException, JSONException
-    {
-
-        // skipDescendantDocsForSpecificAspects is initialised on a synchronised method, so access must be also synchronised 
-        synchronized (this)
-        {
-            if ((skipDescendantDocsForSpecificTypes && typesForSkippingDescendantDocs.contains(parentNodeMetaData.getType())) ||
-                    (skipDescendantDocsForSpecificAspects && shouldBeIgnoredByAnyAspect(parentNodeMetaData.getAspects())))
-            {
-                return;
-            }
-        }
-
-        Set<Long> childIds = new HashSet<>();
-
-        if (parentNodeMetaData.getChildIds() != null)
-        {
-            childIds.addAll(parentNodeMetaData.getChildIds());
-        }
-
-        String query = FIELD_PARENT + ":\"" + parentNodeMetaData.getNodeRef() + "\"";
-        ModifiableSolrParams params =
-                new ModifiableSolrParams(request.getParams())
-                        .set(CommonParams.Q, query)
-                        .set(CommonParams.FL, FIELD_SOLR4_ID);
-
-        if (skippingDocsQueryString != null && !skippingDocsQueryString.isEmpty())
-        {
-            params.set(CommonParams.FQ, "NOT ( " + skippingDocsQueryString + " )");
-        }
-
-        SolrDocumentList docs = cloud.getSolrDocumentList(nativeRequestHandler, request, params);
-        for (SolrDocument doc : docs)
-        {
-            String id = getFieldValueString(doc, FIELD_SOLR4_ID);
-            TenantAclIdDbId ids = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
-            childIds.add(ids.dbId);
-        }
-
-        for (Long childId : childIds)
-        {
-            NodeMetaDataParameters nmdp = new NodeMetaDataParameters();
-            nmdp.setFromNodeId(childId);
-            nmdp.setToNodeId(childId);
-            nmdp.setIncludeAclId(false);
-            nmdp.setIncludeAspects(false);
-            nmdp.setIncludeChildAssociations(false);
-            nmdp.setIncludeChildIds(true);
-            nmdp.setIncludeNodeRef(false);
-            nmdp.setIncludeOwner(false);
-            nmdp.setIncludeParentAssociations(false);
-            // We only care about the path and ancestors (which is included) for this case
-            nmdp.setIncludePaths(true);
-            nmdp.setIncludeProperties(false);
-            nmdp.setIncludeType(false);
-            nmdp.setIncludeTxnId(false);
-            // Gets only one
-            List<NodeMetaData> nodeMetaDatas = repositoryClient.getNodesMetaData(nmdp, 1);
-
-            if (!nodeMetaDatas.isEmpty())
-            {
-                NodeMetaData nodeMetaData = nodeMetaDatas.get(0);
-                if (mayHaveChildren(nodeMetaData))
-                {
-                    updateDescendantDocs(nodeMetaData, overwrite, request, processor, stack);
-                }
-
-                try
-                {
-                    lock(childId);
-
-                    LOGGER.debug("Cascade update child doc {}", childId);
-
-                    // Gets the document that we have from the content store and updates it
-                    String fixedTenantDomain = AlfrescoSolrDataModel.getTenantId(nodeMetaData.getTenantDomain());
-                    SolrInputDocument cachedDoc = solrContentStore.retrieveDocFromSolrContentStore(fixedTenantDomain, nodeMetaData.getId());
-
-                    if (cachedDoc != null)
-                    {
-                        updatePathRelatedFields(nodeMetaData, cachedDoc);
-                        updateNamePathRelatedFields(nodeMetaData, cachedDoc);
-                        updateAncestorRelatedFields(nodeMetaData, cachedDoc);
-
-                        AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
-                        addDocCmd.overwrite = overwrite;
-                        addDocCmd.solrDoc = cachedDoc;
-
-                        processor.processAdd(addDocCmd);
-                        solrContentStore.storeDocOnSolrContentStore(fixedTenantDomain, nodeMetaData.getId(), cachedDoc);
-                    }
-                    else
-                    {
-                        LOGGER.debug("No child doc found to update {}", childId);
-                    }
-                }
-                finally
-                {
-                    unlock(childId);
-                }
-            }
-        }
-    }
-
 
     private long topNodeId(String sortDir)
     {
