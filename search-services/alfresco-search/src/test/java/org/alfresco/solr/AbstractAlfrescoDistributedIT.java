@@ -53,6 +53,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 /**
@@ -327,14 +328,6 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
     protected static Collection<SolrCore> getJettyCores(Collection<JettySolrRunner> runners)
     {
         return jettyContainers.values().iterator().next().getCoreContainer().getCores();
-        /*
-        List<SolrCore> cores = new ArrayList<>();
-        for (JettySolrRunner jettySolrRunner : runners)
-        {
-            cores.addAll(jettySolrRunner.getCoreContainer().getCores());
-        }
-        return cores;
-        */
     }
 
     protected static List<AlfrescoCoreAdminHandler> getAdminHandlers(Collection<JettySolrRunner> runners)
@@ -784,7 +777,8 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
 
     public static SolrQueryResponse rangeCheck(int shard) throws Exception
     {
-        while(true)
+        int maxAttemps = 10;
+        for (int attemp=0; attemp < maxAttemps; ++attemp)
         {
             Collection<SolrCore> cores = getJettyCores(solrShards);
             List<AlfrescoCoreAdminHandler> alfrescoCoreAdminHandlers = getAdminHandlers(solrShards);
@@ -793,16 +787,27 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
             AlfrescoCoreAdminHandler alfrescoCoreAdminHandler = alfrescoCoreAdminHandlers.get(shard);
             SolrQueryResponse response = callHandler(alfrescoCoreAdminHandler, core, "RANGECHECK");
             NamedList<?> values = response.getValues();
-            String ex = (String)values.get("exception");
-            if(ex == null || !ex.contains("not initialized"))
-            {
-                return response;
-            }
-            else
+
+            boolean isReady = !Optional.ofNullable(values.get("report"))
+                        .map(Object::toString)
+                        .filter(r -> r.contains("WARNING=The requested endpoint is not available on the slave"))
+                        .isPresent() &&
+                    !Optional.ofNullable(values.get("exception"))
+                        .map(Object::toString)
+                        .filter(ex -> ex.contains("not initialized"))
+                        .isPresent();
+
+            if (!isReady)
             {
                 Thread.sleep(1000);
             }
+            else
+            {
+                return response;
+            }
         }
+
+        throw new Exception("impossible to perform rangeChack");
     }
 
     public static SolrQueryResponse expand(int shard, int value)

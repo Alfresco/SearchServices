@@ -261,7 +261,6 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
     {
         Path jettySolrHome = testDir.toPath().resolve(jettyKey);
         System.setProperty("solr.solr.home", jettySolrHome.toString());
-        //Path coreSourceConfig = new File(getTestFilesHome()).toPath();
         Path coreSourceConfig = new File(getTestFilesHome() + "/" + sourceConfigName).toPath();
         Path coreHome = jettySolrHome.resolve(coreName);
         seedCoreDir(jettyKey, coreName, coreSourceConfig, coreHome);
@@ -348,12 +347,8 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
                 props.put("shard.range", ranges[i]);
             }
 
-            //String shardKey = jettyKey + "/shard" + i;
-//            JettySolrRunner j =  createJetty(shardKey, basicAuth);
             //use the first corename specified as the Share template
             addCoreToJetty(jettyKey, coreNames[0], shardname, props);
-            //solrShards.add(j);
-            //startJetty(j);
         }
 
         //Now start jetty

@@ -137,7 +137,6 @@ public class DistributedExplicitShardRoutingTrackerIT extends AbstractAlfrescoDi
             SolrCore core = shards.stream()
                     .filter(solrcore -> solrcore.getName().endsWith("" + shardId)).findAny().orElseThrow(RuntimeException::new);
 
-            //SolrCore core = shards.get(i);
             SolrClient client = shardClients.get(i);
             switch (core.getName())
             {
