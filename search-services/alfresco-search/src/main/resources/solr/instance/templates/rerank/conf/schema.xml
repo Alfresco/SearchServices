@@ -787,25 +787,25 @@
       <!--
         These 2 fields are used after the content store removal, for detecting the content indexing status:
 
-      LATEST_APPLIED_CONTENT_VERSION_ID
-      It corresponds to the identifier of the latest applied content property id (content@s__docid@* or content@m__docid@*).
-      Note It can be null (i.e. the incoming node doesn't have a value for that property, even if it requires content indexing)
+        LATEST_APPLIED_CONTENT_VERSION_ID
+        It corresponds to the identifier of the latest applied content property id (content@s__docid@* or content@m__docid@*).
+        Note It can be null (i.e. the incoming node doesn't have a value for that property, even if it requires content indexing)
 
-      LAST_INCOMING_CONTENT_VERSION_ID:
-      This is instead used for detecting documents outdated or that require content indexing.
-      If the field has the same value of the previous one (or it has  SolrInformationServer.CONTENT_UPDATED_MARKER as a value),
-      then the content is updated. Otherwise, if the value is different, is not SolrInformationServer.CONTENT_UPDATED_MARKER
-      or it is SolrInformationServer.CONTENT_OUTDATED_MARKER the content is intended as outdated and therefore it will
-      be managed (later) by the ContentTracker.
+        LAST_INCOMING_CONTENT_VERSION_ID:
+        This is instead used for detecting documents outdated or that require content indexing.
+        If the field has the same value of the previous one (or it has  SolrInformationServer.CONTENT_UPDATED_MARKER as a value),
+        then the content is updated. Otherwise, if the value is different, is not SolrInformationServer.CONTENT_UPDATED_MARKER
+        or it is SolrInformationServer.CONTENT_OUTDATED_MARKER the content is intended as outdated and therefore it will
+        be managed (later) by the ContentTracker.
 
-      They can have the following values:
-        -10 (or SolrInformationServer.CONTENT_OUTDATED_MARKER)
-        Whatever is the content version in the incoming node, this constant marks a document as OUTDATED (i.e. it will
-        be later picked up by the ContentTracker for starting the content update process).
-        This is the default value of the LAST_INCOMING_CONTENT_VERSION_ID field.
+        They can have the following values:
+          -10 (or SolrInformationServer.CONTENT_OUTDATED_MARKER)
+              Whatever is the content version in the incoming node, this constant marks a document as OUTDATED (i.e. it will
+              be later picked up by the ContentTracker for starting the content update process).
+              This is the default value of the LAST_INCOMING_CONTENT_VERSION_ID field.
 
         -20 (or SolrInformationServer.CONTENT_UPDATED_MARKER)
-        This value marks a document/node as updated.
+            This value marks a document/node as updated.
       -->
       <field name="LATEST_APPLIED_CONTENT_VERSION_ID" type="long_without_precision_step"/>
       <field name="LAST_INCOMING_CONTENT_VERSION_ID" type="long_without_precision_step" default="-10"/>

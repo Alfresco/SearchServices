@@ -88,7 +88,7 @@ public interface InformationServer extends InformationServerCollectionProvider
 
     void indexNode(Node node, boolean overwrite) throws IOException, AuthenticationException, JSONException;
     
-    void indexNodes(List<Node> nodes, boolean overwrite, boolean cascade) throws IOException, AuthenticationException, JSONException;
+    void indexNodes(List<Node> nodes, boolean overwrite) throws IOException, AuthenticationException, JSONException;
 
     void cascadeNodes(List<NodeMetaData> nodes, boolean overwrite) throws IOException, AuthenticationException, JSONException;
 
@@ -183,4 +183,11 @@ public interface InformationServer extends InformationServerCollectionProvider
     String getHostName();
     
     String getBaseUrl();
+
+    /**
+     * Check if cascade tracking is enabled.
+     *
+     * @return true if cascade tracking is enabled (note that this is the default behaviour if not specified in the properties file).
+     */
+    boolean cascadeTrackingEnabled();
 }

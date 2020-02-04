@@ -9,6 +9,7 @@ import org.alfresco.utility.data.provider.XMLTestDataProvider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
@@ -54,8 +55,8 @@ public class SolrSearchScoreQueryTests extends AbstractCmisE2ETest
         this.testData = testData;
         this.testData.createUsers(dataUser);
         this.testData.createSitesStructure(dataSite, dataContent, dataUser);
-        cmisApi.authenticateUser(dataUser.getCurrentUser());
-        
+        testUser = dataUser.getCurrentUser();
+        cmisApi.authenticateUser(testUser);
     }
 
     /**
@@ -70,68 +71,50 @@ public class SolrSearchScoreQueryTests extends AbstractCmisE2ETest
                 + "FROM cmis:document "
                 + "WHERE CONTAINS('Quidditch') " 
                 + "ORDER BY orderCriteria";
-        
-        if (waitForIndexing(query, 3))
-        {
-            cmisApi
-            .withQuery(query)
-            .assertColumnIsOrdered().isOrderedAsc("orderCriteria");
-        }
-        else
-        {
-            throw new AssertionError("Wait for indexing has failed!");
-        }
-        
+
+        Assert.assertTrue(waitForIndexing(query, 3), String.format("Result count not as expected for query: %s", query));
+
+        cmisApi.withQuery(query).assertColumnIsOrdered().isOrderedAsc("orderCriteria");
+
     }
-    
-	/**
-	 * Verify that results are inverse ordered
-	 * @throws Exception
-	 */
-	@Test(dependsOnMethods = "prepareDataForScoreSearch")
+
+    /**
+     * Verify that results are inverse ordered
+     * 
+     * @throws Exception
+     */
+    @Test(dependsOnMethods = "prepareDataForScoreSearch")
     public void scoreQueryOrderedDesc() throws Exception
     {
 
-	    String query = "SELECT cmis:objectId, SCORE() AS orderCriteria "
+        String query = "SELECT cmis:objectId, SCORE() AS orderCriteria "
                 + "FROM cmis:document "
                 + "WHERE CONTAINS('Quidditch') "
                 + "ORDER BY orderCriteria DESC";
-	    
-        if (waitForIndexing(query, 3))
-        {
-    	    cmisApi
-    	    .withQuery(query).assertColumnIsOrdered().isOrderedDesc("orderCriteria");
-        }
-        else
-        {
-            throw new AssertionError("Wait for indexing has failed!");
-        }
-        
+
+        Assert.assertTrue(waitForIndexing(query, 3), String.format("Result count not as expected for query: %s", query));
+
+        cmisApi.withQuery(query).assertColumnIsOrdered().isOrderedDesc("orderCriteria");
+
     }
-    
-	/**
-	 * Verify that all SCORE results are between 0 and 1
-	 * @throws Exception
-	 */
-	@Test(groups = { TestGroup.ACS_62n }, dependsOnMethods = "prepareDataForScoreSearch")
+
+    /**
+     * Verify that all SCORE results are between 0 and 1
+     * 
+     * @throws Exception
+     */
+    @Test(groups = { TestGroup.ACS_62n }, dependsOnMethods = "prepareDataForScoreSearch")
     public void scoreQueryInRange() throws Exception
     {
-	    
-	    String query = "SELECT cmis:objectId, SCORE() "
-                + "FROM cmis:document "
-                + "WHERE CONTAINS('Quidditch')"; 
+
+        String query = "SELECT cmis:objectId, SCORE() " 
+                     + "FROM cmis:document " 
+                     + "WHERE CONTAINS('Quidditch')";
     	
-        if (waitForIndexing(query, 3))
-        {
-    	    cmisApi
-    	    .withQuery(query)
-    	    .assertColumnValuesRange().isReturningValuesInRange("SEARCH_SCORE", BigDecimal.ZERO, BigDecimal.ONE);
-        }
-        else
-        {
-            throw new AssertionError("Wait for indexing has failed!");
-        }
-    	
+        Assert.assertTrue(waitForIndexing(query, 3), String.format("Result count not as expected for query: %s", query));
+
+        cmisApi.withQuery(query).assertColumnValuesRange().isReturningValuesInRange("SEARCH_SCORE", BigDecimal.ZERO, BigDecimal.ONE);
+
     }
     
     /**
@@ -143,45 +126,33 @@ public class SolrSearchScoreQueryTests extends AbstractCmisE2ETest
     {
         
         String query = "SELECT cmis:objectId, SCORE() AS orderCriteria "
-                + "FROM cmis:document "
-                + "WHERE CONTAINS('Quidditch')";
-        
-        if (waitForIndexing(query, 3))
-        {
-            cmisApi
-            .withQuery(query)
-            .assertColumnValuesRange().isReturningValuesInRange("orderCriteria", BigDecimal.ZERO, BigDecimal.ONE);
-        }
-        else
-        {
-            throw new AssertionError("Wait for indexing has failed!");
-        }
-        
+                    + "FROM cmis:document "
+                    + "WHERE CONTAINS('Quidditch')";
+
+        Assert.assertTrue(waitForIndexing(query, 3), String.format("Result count not as expected for query: %s", query));
+
+        cmisApi.withQuery(query).assertColumnValuesRange().isReturningValuesInRange("orderCriteria", BigDecimal.ZERO, BigDecimal.ONE);        
+
     }
 
-	/**
-	 * Verify that SCORE is valid name for an alias
-	 * Currently only supported with double quotes
-	 * @throws Exception
-	 */
-	@Test(dependsOnMethods = "prepareDataForScoreSearch")
+    /**
+     * Verify that SCORE is valid name for an alias
+     * Currently only supported with double quotes
+     * 
+     * @throws Exception
+     */
+    @Test(dependsOnMethods = "prepareDataForScoreSearch")
     public void scoreQueryScoreAsAlias() throws Exception
     {
-    	
-	    String query = "SELECT cmis:objectId, SCORE() AS \"score\" "
-                + "FROM cmis:document "
-                + "WHERE CONTAINS('Quidditch')"; 
-	    
-        if (waitForIndexing(query, 3))
-        {
-    	    cmisApi
-    	    .withQuery(query).assertResultsCount().equals(3);
-        }
-        else
-        {
-            throw new AssertionError("Wait for indexing has failed!");
-        }
-    	
+
+        String query = "SELECT cmis:objectId, SCORE() AS \"score\" " 
+                    + "FROM cmis:document " 
+                    + "WHERE CONTAINS('Quidditch')";
+
+        Assert.assertTrue(waitForIndexing(query, 3), String.format("Result count not as expected for query: %s", query));
+ 
+        cmisApi.withQuery(query).assertResultsCount().equals(3);
+
     }	
 
 }

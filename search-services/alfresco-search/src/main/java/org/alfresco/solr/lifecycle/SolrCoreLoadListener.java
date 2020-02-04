@@ -21,6 +21,15 @@ package org.alfresco.solr.lifecycle;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 
+import static org.alfresco.solr.SolrInformationServer.CASCADE_TRACKER_ENABLED;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.AlfrescoSolrDataModel;
@@ -52,13 +61,6 @@ import org.apache.solr.request.SolrRequestHandler;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 /**
  * Listeners for *FIRST SEARCHER* events in order to prepare and register the SolrContentStore and the Tracking Subsystem.
@@ -254,19 +256,27 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
                         trackerRegistry,
                         scheduler);
 
-        CascadeTracker cascadeTracker =
-                registerAndSchedule(
-                    new CascadeTracker(props, repositoryClient, core.getName(), srv),
-                        core,
-                        props,
-                        trackerRegistry,
-                        scheduler);
+        List<Tracker> trackers = new ArrayList<>();
+
+        String cascadeTrackerEnabledProp = ofNullable((String) props.get(CASCADE_TRACKER_ENABLED)).orElse("true");
+        if (Boolean.valueOf(cascadeTrackerEnabledProp))
+        {
+            CascadeTracker cascadeTracker =
+                    registerAndSchedule(
+                            new CascadeTracker(props, repositoryClient, core.getName(), srv),
+                            core,
+                            props,
+                            trackerRegistry,
+                            scheduler);
+            trackers.add(cascadeTracker);
+        }
 
         //The CommitTracker will acquire these locks in order
         //The ContentTracker will likely have the longest runs so put it first to ensure the MetadataTracker is not paused while
         //waiting for the ContentTracker to release it's lock.
         //The aclTracker will likely have the shortest runs so put it last.
-        return asList(cascadeTracker, contentTracker, metadataTracker, aclTracker);
+        trackers.addAll(asList(contentTracker, metadataTracker, aclTracker));
+        return trackers;
     }
 
     /**

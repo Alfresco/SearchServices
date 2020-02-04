@@ -10,6 +10,7 @@ import org.alfresco.utility.data.provider.XMLTestDataProvider;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.QueryModel;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -104,7 +105,8 @@ public class SolrSearchByPropertyTests extends AbstractCmisE2ETest
                                                 .addProperty("tas:IntPropertyC", 2223));
 
         // wait for solr index
-        Utility.waitToLoopTime(getSolrWaitTimeInSeconds());
+        cmisApi.authenticateUser(testUser);
+        waitForIndexing("SELECT * FROM tas:document where cmis:name = 'testc3.txt'", 1);
     }
 
     @Test
