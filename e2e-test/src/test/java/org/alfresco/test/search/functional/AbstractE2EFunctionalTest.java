@@ -55,7 +55,7 @@ import org.testng.annotations.BeforeSuite;
 public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringContextTests
 {
     /** The number of retries that a query will be tried before giving up. */
-    private static final int SEARCH_MAX_ATTEMPTS = 6;
+    protected static final int SEARCH_MAX_ATTEMPTS = 6;
 
     private static final Logger LOGGER = LogFactory.getLogger();
 

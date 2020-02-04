@@ -18,6 +18,30 @@
  */
 package org.alfresco.solr.lifecycle;
 
+import static java.util.Arrays.asList;
+
+import static org.alfresco.solr.SolrInformationServer.CASCADE_TRACKER_ENABLED;
+import static org.alfresco.solr.tracker.Tracker.Type.ACL;
+import static org.alfresco.solr.tracker.Tracker.Type.CASCADE;
+import static org.alfresco.solr.tracker.Tracker.Type.CONTENT;
+import static org.alfresco.solr.tracker.Tracker.Type.METADATA;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.alfresco.solr.tracker.AclTracker;
@@ -26,6 +50,7 @@ import org.alfresco.solr.tracker.ContentTracker;
 import org.alfresco.solr.tracker.MetadataTracker;
 import org.alfresco.solr.tracker.SolrTrackerScheduler;
 import org.alfresco.solr.tracker.Tracker;
+import org.alfresco.solr.tracker.Tracker.Type;
 import org.alfresco.solr.tracker.TrackerRegistry;
 import org.apache.solr.core.SolrConfig;
 import org.apache.solr.core.SolrCore;
@@ -35,20 +60,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.xml.sax.InputSource;
-
-import java.util.List;
-import java.util.Properties;
-
-import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for the {@link SolrCoreLoadListener}.
@@ -83,6 +94,8 @@ public class SolrCoreLoadListenerTest
     @Before
     public void setUp()
     {
+        initMocks(this);
+
         listener = new SolrCoreLoadListener(core);
         when(core.getName()).thenReturn(coreName);
 
@@ -104,7 +117,29 @@ public class SolrCoreLoadListenerTest
         verify(scheduler).schedule(any(MetadataTracker.class), eq(coreName), same(coreProperties));
         verify(scheduler).schedule(any(CascadeTracker.class), eq(coreName), same(coreProperties));
 
-        assertEquals(4, coreTrackers.size());
+        Set<Type> trackerTypes = coreTrackers.stream().map(Tracker::getType).collect(Collectors.toSet());
+        assertEquals("Unexpected trackers found.", Set.of(ACL, CONTENT, METADATA, CASCADE), trackerTypes);
+    }
+
+    @Test
+    public void testDisabledCascadeTracking()
+    {
+        coreProperties.put(CASCADE_TRACKER_ENABLED, "false");
+
+        List<Tracker> coreTrackers = listener.createAndScheduleCoreTrackers(core, registry, coreProperties, scheduler, api, informationServer);
+
+        verify(registry).register(eq(coreName), any(AclTracker.class));
+        verify(registry).register(eq(coreName), any(ContentTracker.class));
+        verify(registry).register(eq(coreName), any(MetadataTracker.class));
+        verify(registry, never()).register(eq(coreName), any(CascadeTracker.class));
+
+        verify(scheduler).schedule(any(AclTracker.class), eq(coreName), same(coreProperties));
+        verify(scheduler).schedule(any(ContentTracker.class), eq(coreName), same(coreProperties));
+        verify(scheduler).schedule(any(MetadataTracker.class), eq(coreName), same(coreProperties));
+        verify(scheduler, never()).schedule(any(CascadeTracker.class), eq(coreName), same(coreProperties));
+
+        Set<Type> trackerTypes = coreTrackers.stream().map(Tracker::getType).collect(Collectors.toSet());
+        assertEquals("Unexpected trackers found.", Set.of(ACL, CONTENT, METADATA), trackerTypes);
     }
 
     @Test
