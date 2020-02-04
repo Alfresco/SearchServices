@@ -45,12 +45,12 @@ With that flow in mind, at a given time T, the main difference between a documen
 index is that: 
 
 - the content store file represents a verbatim copy of the _SolrInputDocument_ created starting from the corresponding _Node_
-- it can be easily individuated because it corresponds to a single file in the content store; the Solr document definition 
-instead doesn't have a "single" representation in the filesystem because it has been passed through the text analysis process. 
+- it can be easily individuated because it corresponds to a single file in the content store; for comparison the Solr document definition 
+doesn't have a "single" representation in the filesystem because it has been passed through the text analysis process. 
 
 ### Apache Solr Domain Model
 In order to understand the reason why the content store approach has been adopted until SearchServices 1.4.x, we need to 
-briefly describes how Solr manages the fields of the managed documents.
+briefly describe how Solr manages the fields of the managed documents.
 
 In Solr, the configuration file where fields are declared and configured is called "schema.xml". Each field can have 
 different attributes that define 
@@ -79,10 +79,10 @@ Content Store is involved on each interaction which requires the stored content.
 - **Fields retrieval**: Solr stored only DBID, id and version fields; in search results we want to be able to retrieve 
 also other fields (e.g. name, title, LID, PATH) 
 - **Highlighting**: highlighted snippets are built using the fields stored value(s)  
-- **Clustering**: runtime clusters generation use the fields stored value(s), as well  
+- **Clustering**: runtime clusters generation use the fields stored value(s)
 - **Fingerprint**: the Fingerprint (custom) SearchComponent returns the (stored value of the) MINHASH field computed from the text content associated 
 with a given document    
-- **Text Content Management**: this is strictly connected with how the _ContentTracker_ works. See this [ADR](../trackers/00001-content-tracker.md) for a detailed exaplanation about the text content lifecycle in SearchServices.
+- **Text Content Management**: this is strictly connected with how the _ContentTracker_ works. See this [ADR](../trackers/00001-content-tracker.md) for a detailed explanation about the text content lifecycle in SearchServices.
 
 ### Read/Write Path on Solr Content Store 
 Every time a search request involves one of the points listed in the previous section we need to interact
@@ -92,10 +92,10 @@ Every time a search request involves one of the points listed in the previous se
 
 The Solr Content Store interaction can have two purposes:    
 
-- **Read only**: we need to read the stored fields associated to one or more documents 
+- **Read only**: we need to read the stored fields associated with one or more documents 
 - **Read/Write**: we need to read and update the document definition (i.e. some field has been updated)
 
-The two paths execution requires additional I/O and CPU work on top of what Solr already normally does; Specifically:
+The two execution paths require additional I/O and CPU work on top of what Solr already normally does; Specifically:
 
 The **Read Path** consists of the following steps (remember, this needs to be done for each match produced by a query): 
 
@@ -113,7 +113,7 @@ Every time the document D is needed (even if our interaction requires just one f
 - read
 
 Such capability is instead possible using Lucene: the IndexSearcher class can load a partial document definition which
-contains only fields actually needed. For example, if we want to highlight search terms in two fields, let's say 
+contains only the fields actually needed. For example, if we want to highlight search terms in two fields, let's say 
 "name" and "title"
 
 - the _AlfrescoHighlighter_ loads the whole document in memory
@@ -122,7 +122,7 @@ contains only fields actually needed. For example, if we want to highlight searc
 This can make a relevant difference if we are in a context where the fields cardinality for each document is high, or if 
 we have one or more big fields (not needed) with a lot of text content.   
 
-The **Write Path** is even worst because it adds to the list above the following steps: 
+The **Write Path** is even worse because it adds the following steps to the list above: 
 
 - Update the _SolrInputDocument_ instance with updated values
 - Delete the old compressed file in the filesystem
@@ -140,19 +140,19 @@ advantages in terms of
 - product improvements with short iterations (e.g. enhancements, bug fixing)
     
 Although the underlying reasons for introducing a customisation could be perfectly acceptable, it's important to keep in 
-mind that increasing such customisation level necessarily creates a gap, a distance with the open source product.   
+mind that increasing such customisation level necessarily creates a gap, a distance from the open source product.   
 From one side, the customisation allows to implement some functional requirement not covered by the open source version, 
 on the other side the same customisation won't have the required support from the community. 
 
 The initial approach to this task consisted of a verification [Spike](https://issues.alfresco.com/jira/browse/SEARCH-1669) where 
-we investigated pro and cons about having/removing the _SolrContentStore_.   
+we investigated the pros and cons of having/removing the _SolrContentStore_.   
 Summarised, the output has been in favour of the removal, because the Solr storage capabilities are definitely more efficient 
 than the approach adopted in the _SolrContentStore_.         
     
 #### Less Solr customisations 
 This is a direct consequence of the preceding point. As you can read below, when we describe the major components affected 
-by the removal task, some customised component (e.g. Clustering) has been removed at all while some other else (e.g. Highlighter) 
-has been simplified a lot, leveraging the Solr built-in capabilities as much as possible.    
+by the removal task, some customised components (e.g. Clustering) have been removed while others (e.g. Highlighter) 
+have been simplified a lot, leveraging the Solr built-in capabilities as much as possible.    
 
 ### Only Solr data files
 SearchServices no longer has to manage external files or folders. In SearchServices 1.4.x the content store required a 
@@ -166,13 +166,13 @@ the whole stored content management has been centralised in Solr; as consequence
 are no longer valid.   
  
 ### Better compression 
-Compressing at single document level is not very efficient because the small amount of data available. Moving such task 
-at Solr level can deliver very good results for two main reason: 
+Compressing at single document level is not very efficient due to the small amount of data available. Moving this task 
+to the Solr level can deliver very good results for two main reasons: 
 
 - data cardinality is higher, so that means the compression algorithm can work with more representative and efficient stats
 - data compression and index organisation is one area where the Solr community dedicated and dedicates a considerable amount of effort        
 
-### Less, more efficient I/O and CPU(compress/decompress) resources usage
+### Less, more efficient I/O and CPU (compress/decompress) resources usage
 This is again related with the Read/Write paths we described above: once the _SolrContentStore_ has been removed, we do not have to 
 deal with external files and folders and the read, write, compress, uncompress, serialise, deserialise tasks will be no longer needed. 
 
@@ -182,7 +182,7 @@ In an ideal context the OS would put the entire Solr index in the page cache so 
 Unfortunately, the cache size is usually smaller than that, so a certain amount of time is spent by the OS in order to load/unload the
 requested files.   
 
-In a context like that, the less number of files we have to manage, the better: having a component like the content store 
+In a context like that, the fewer files we have to manage, the better: having a component like the content store 
 which requires a relevant amount of I/O operations, it means a significant impact on the hardware resources (e.g. disk, cpu) 
 and a less efficient usage of the OS Page cache (e.g. the OS could unload the Solr datafiles for working with Solr content store files).  
 
@@ -198,7 +198,7 @@ The Solr schema (schema.xml) includes the following changes:
 attribute has been defined at field type level.
 - **cleanup and new field types**: there are several new field types that declare the default values applied to a field. 
 The naming is quite intuitive (e.g. "long" is a single value numeric field, "longs" is for multiValued numeric fields). 
-That change allowed a more clear fields definitions (i.e. fields definitions that don't override default values are very short and concise)
+This change allowed clearer field definitions (i.e. field definitions that don't override default values are very short and concise)
 
 ![Field Types](schema_field_types.png)         
 
@@ -214,7 +214,7 @@ Before the content store removal, the _AlfrescoSolrHighlighter_ class was a cust
 Instead of extending the Solr component, at time of writing that class had been 
 
 - copied 
-- renamed in _AlfrescoSolrHighlighter_
+- renamed _AlfrescoSolrHighlighter_
 - customised 
  
 As consequence of that, the class was a mix of Alfresco and Solr code. Specifically, the custom code (and this is valid for all the customised 
@@ -228,13 +228,13 @@ The new _AlfrescoSolrHighlighter_
 
 - removes any interactions with the content store
 - extends the _DefaultSolrHighlighter_
-- contains at 95% the Alfresco specific logic (mainly related with the field mapping/renaming). Each time it needs to execute
+- consists of 95% Alfresco specific logic (mainly related with the field mapping/renaming). Each time it needs to execute
 the highlighting logic, it delegates the Solr superclass.
-- it still has a 5% of code copied from the superclass. That because sometime it has't been possible to decorate 
+- 5% of the code is still copied from the superclass. This is because sometimes it has't been possible to decorate 
 Solr methods from the superclass (see _getSpanQueryScorer_ or _getHighlighter_ methods)
 
 The field mapping/renaming didn't allow to remove completely the custom component. However, the refactoring described above could be 
-a first step for externalising (in an intermediate REST layer) that logic. Once did that, the custom highlighter could be removed and replaced with 
+a first step for externalising (in an intermediate REST layer) that logic. Once that was done, the custom highlighter could be removed and replaced with 
 the plain Solr built-in component.  
 
 ### Clustering
@@ -248,7 +248,7 @@ Jira Ticket: [SEARCH-1694](https://issues.alfresco.com/jira/browse/SEARCH-1694)
 
 Two components have been affected by the content store removal: 
 
-- the [_Solr4QueryParser_](https://issues.alfresco.com/jira/browse/SEARCH-1694?focusedCommentId=622599&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-622599): the component which is in charge to parse incoming queries (FINGERPRINT queries in this case) 
+- the [_Solr4QueryParser_](https://issues.alfresco.com/jira/browse/SEARCH-1694?focusedCommentId=622599&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-622599): the component which is in charge of parsing incoming queries (FINGERPRINT queries in this case) 
 - _FingerprintComponent_: this is a custom _SearchComponent_ which accepts in input a node identifier and returns a response consisting of the corresponding fingerprint (i.e. the MINHASH multivalued field). Note that the MINHASH value(s) is not computed on the fly. Instead it is computed at index time when the text context is indexed.      
 
 ### CachedDocTransformer
@@ -311,13 +311,13 @@ huge class which contains all methods for manipulating the index. Those methods 
 subsystem. 
 
 It had a strong connection/interaction with the content store because it represents the central point where the three 
-different representations of the same data 
+different representations of the same data are managed, manipulated, updated or deleted, and finally indexed.  The three
+different representations are: 
 
 - the incoming Node representing new or updated data which will create the "updated" version of document D
 - the document D in the content store 
 - the document D in the Solr index
-
-are managed, manipulated, updated or deleted, and finally indexed. 
+ 
 A first big change which affected the _SolrInformationServer_ has been the removal of all interactions with the content store. 
 
 #### Atomic Updates
@@ -373,14 +373,14 @@ The new approach uses two fields:
 even if it requires content indexing)
 
 - **LAST_INCOMING_CONTENT_VERSION_ID**: If the field has the same value of the previous one (or it is equal to _SolrInformationServer.CONTENT_UPDATED_MARKER_),
-        then the content is supposed to be in synch. Otherwise, if the value is different, it is not _SolrInformationServer.CONTENT_UPDATED_MARKER_
+        then the content is supposed to be in sync. Otherwise, if the value is different, it is not _SolrInformationServer.CONTENT_UPDATED_MARKER_
         or it is _SolrInformationServer.CONTENT_OUTDATED_MARKER_ the content is intended as outdated and therefore it will
         be selected (later) by the _ContentTracker_.
 
 ### AlfrescoReplicationHandler
 
 This set of components, [introduced in SearchServices 1.4.x](https://issues.alfresco.com/jira/browse/SEARCH-1850) for including the content store in the Solr replication mechanism, has been removed 
-because we no longer have any external folder/file to be synched between master and slave(s). As consequence of that 
+because we no longer have any external folder/file to be synced between master and slave(s). As consequence of that 
 the built-in Solr ReplicationHandler is used. 
 
 ### Content Store Package and Tests
