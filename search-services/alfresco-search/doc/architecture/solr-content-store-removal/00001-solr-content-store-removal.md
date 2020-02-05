@@ -388,7 +388,49 @@ the built-in Solr ReplicationHandler is used.
 Jira Tickets: [SEARCH-1692](https://issues.alfresco.com/jira/browse/SEARCH-1692),[SEARCH-2025](https://issues.alfresco.com/jira/browse/SEARCH-2025)
 
 Once the content store references have been removed from the components listed in the sections above, the _org.alfresco.solr.content_
-package has been completely removed.  
+package has been completely removed.
+
+## Code Metrics
+This section provides some metrics about the lines of code of the components affected by the content store removal task, 
+before and after the change. 
+The table compares the classes size (the lines of code) in this branch with the same class in the master branch.
+
+| Class                  | Master Branch    | Content Store Removal Branch           | Gain |      
+| --------------------------|:----------:|------------------------------------|------------:|
+|org.apache.solr.handler.component.AlfrescoSolrHighlighter   |728       |504|-224|
+|org.alfresco.solr.SolrInformationServer   |3979       |3898|-88|
+|org.apache.solr.handler.component.AlfrescoClusteringComponent   |400       |0|-400|
+|org.alfresco.solr.transformer.AlfrescoFieldMapperTransformer*   |197       |130|-67|
+|org.alfresco.solr.handler.AlfrescoIndexFetcher   |2762       |0|-2762|
+|org.alfresco.solr.handler.AlfrescoReplicationHandler   |2377       |0|-2377|
+|org.alfresco.solr.handler.OldBackupDirectory   |377       |0|-377|
+|org.alfresco.solr.handler.Snapshooter   |139       |0|-139|
+|org.alfresco.solr.component.FingerPrintComponent   |130       |131|+1|
+|org.alfresco.solr.content.AccessMode   |106       |0|-106|
+|org.alfresco.solr.content.InitialisableAccessMode   |33       |0|-33|
+|org.alfresco.solr.content.SolrContentStore   |707       |0|-707|
+|org.alfresco.solr.content.SolrContentUrlBuilder   |213       |0|-213|
+|org.alfresco.solr.content.SolrFileContentReader   |265       |0|-265|
+|org.alfresco.solr.content.SolrFileContentWriter   |277       |0|-277|
+|org.alfresco.solr.content.SolrContentStoreChangeSetTest   |291       |0|-291|
+|org.alfresco.solr.content.SolrContentStoreTest   |424       |0|-424|
+|org.alfresco.solr.content.SolrContentUrlBuilderTest   |217       |0|-217|
+|org.alfresco.solr.content.SolrContentWriterTest   |86       |0|-86|
+|org.alfresco.solr.handler.ContentStoreReplicationIT   |286       |0|-286|
+|  |        | | |
+| TOTAL |13944|4633|-9311|
+
+
+
+
+
+
+
+
+
+
+
+  
 
 
       

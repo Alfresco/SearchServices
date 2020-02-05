@@ -19,6 +19,8 @@
 
 package org.alfresco.solr.component;
 
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_LID;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
@@ -28,14 +30,12 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.solr.common.util.NamedList;
-import org.apache.solr.core.SolrCore;
 import org.apache.solr.handler.component.ResponseBuilder;
 import org.apache.solr.handler.component.SearchComponent;
 import org.apache.solr.response.DocsStreamer;
 import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.SolrIndexSearcher;
-import org.apache.solr.util.plugin.SolrCoreAware;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,33 +43,31 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_LID;
-
 /**
  * @author Joel Bernstein
  * @since 5.2
  */
-
-public class FingerPrintComponent extends SearchComponent implements SolrCoreAware
+public class FingerPrintComponent extends SearchComponent
 {
     public static final String COMPONENT_NAME = "fingerprint";
 
-    public void inform(SolrCore core) {
+    @Override
+    public void prepare(ResponseBuilder responseBuilder)
+    {
 
     }
 
-    public void prepare(ResponseBuilder responseBuilder) {
-
-    }
-
-    public void process(ResponseBuilder responseBuilder) throws IOException {
-
-        if(!responseBuilder.req.getParams().getBool(FingerPrintComponent.COMPONENT_NAME, false)) {
+    @Override
+    @SuppressWarnings("unchecked")
+    public void process(ResponseBuilder responseBuilder) throws IOException
+    {
+        if(!responseBuilder.req.getParams().getBool(FingerPrintComponent.COMPONENT_NAME, false))
+        {
             return;
         }
 
         String id = responseBuilder.req.getParams().get("id");
-        NamedList response = responseBuilder.rsp.getValues();
+        NamedList<Object> response = responseBuilder.rsp.getValues();
         IndexSchema schema = responseBuilder.req.getSchema();
         SolrIndexSearcher searcher = responseBuilder.req.getSearcher();
 
@@ -89,15 +87,15 @@ public class FingerPrintComponent extends SearchComponent implements SolrCoreAwa
         }
 
         TopDocs docs = searcher.search(q, 1);
-        Set<String> fields = new HashSet();
+        Set<String> fields = new HashSet<>();
         fields.add("MINHASH");
 
-        NamedList fingerPrint = new NamedList();
+        NamedList<Object> fingerPrint = new NamedList<>();
         List<Object> values = new ArrayList<>();
-        if(docs.totalHits == 1) {
+        if(docs.totalHits == 1)
+        {
             ScoreDoc scoreDoc = docs.scoreDocs[0];
             Document doc = searcher.doc(scoreDoc.doc, fields);
-
 
             IndexableField[] minHashes = doc.getFields("MINHASH");
             for (IndexableField minHash : minHashes)
@@ -112,9 +110,12 @@ public class FingerPrintComponent extends SearchComponent implements SolrCoreAwa
         response.add("fingerprint", fingerPrint);
     }
 
-    private boolean isNumber(String s) {
-        for(int i=0; i<s.length(); i++) {
-            if(!Character.isDigit(s.charAt(i))) {
+    private boolean isNumber(String s)
+    {
+        for(int i=0; i<s.length(); i++)
+        {
+            if(!Character.isDigit(s.charAt(i)))
+            {
                 return false;
             }
         }
@@ -122,7 +123,9 @@ public class FingerPrintComponent extends SearchComponent implements SolrCoreAwa
         return true;
     }
 
-    public String getDescription() {
+    @Override
+    public String getDescription()
+    {
         return null;
     }
 }
