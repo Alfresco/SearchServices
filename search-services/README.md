@@ -433,11 +433,21 @@ cd packaging/target/docker-resources/6.x
 docker-compose up
 ```
 
+##Docker Master-Slave setup
+We have seperate docker compose file for slave. To setup Master slave setup
+
+`docker-compose -f docker-compose.yml -f ./master-slave/docker-compose.slave.yml up`
+
+The slave running behind the nginx load balancer under 8084, so we can spin up multiple slaves with the same port. To deploy multiple slaves
+
+`docker-compose -f docker-compose.yml -f ./master-slave/docker-compose.slave.yml up --scale search_slave=2`
+
 This will start up Alfresco, Postgres, Share and SearchServices. You can access the applications using the following URLs:
 
  * Alfresco: http://localhost:8081/alfresco
  * Share: http://localhost:8082/share
  * Solr: http://localhost:8083/solr
+ * Solr-slave: http://localhost:8084/solr
 
 If you start version 5.x instead you can also access the API Explorer:
 

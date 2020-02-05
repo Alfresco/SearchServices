@@ -1,4 +1,4 @@
-version: '3.7'
+version: "3.7"
 
 services:
   alfresco:
@@ -9,12 +9,12 @@ services:
         -Ddb.username=alfresco
         -Ddb.password=alfresco
         -Ddb.url=jdbc:postgresql://postgres:5432/alfresco
-        -Dsolr.host=search
-        -Dsolr.port=8983
+        -Dsolr.host=search_slave_load_balancer
+        -Dsolr.port=80
         -Dalfresco.protocol=http
         -Dsolr.secureComms=none
         -Dalfresco.secureComms=none
-        -Dsolr.baseUrl=/solr
+        -Dsolr.baseUrl=/solr-slave
         -Dindex.subsystem.name=solr6
         -Dalfresco.restApi.basicAuthScheme=true
         -Dcsrf.filter.enabled=false
@@ -31,36 +31,17 @@ services:
         -DlocalTransform.pdfrenderer.url=
         -DlocalTransform.imagemagick.url=
         "
-    ports:
-      - "7203:7203" #JMX connect via service:jmx:rmi:///jndi/rmi://localhost:7203/jmxrmi
-      - "5005:5005" #Java debugging
-      - "8081:8080" #Browser port for Alfresco
 
-  share:
-    image: ${SHARE_IMAGE}:${SHARE_TAG}
-    environment:
-      - REPO_HOST=alfresco
-      - REPO_PORT=8080
-    ports:
-      - 8082:8080 #Browser port for Share
-
-  postgres:
-    image: postgres:${POSTGRES_TAG}
-    environment:
-      - POSTGRES_PASSWORD=alfresco
-      - POSTGRES_USER=alfresco
-      - POSTGRES_DB=alfresco
-    ports:
-      - 5432:5432
-
+# Insight Engine or Search Services
   search:
-    image: quay.io/alfresco/insight-engine:${SEARCH_TAG}
+    image: quay.io/alfresco/search-services:test
     environment:
-      #Replication properties
-      # - REPLICATION_TYPE=master
       #Solr needs to know how to register itself with Alfresco
+      - REPLICATION_TYPE=master
       - SOLR_ALFRESCO_HOST=alfresco
       - SOLR_ALFRESCO_PORT=8080
+      - REPLICATION_AFTER=commit,startup
+      - REPLICATION_CONFIG_FILES=schema.xml,stopwords.txt
       #Alfresco needs to know how to call solr
       - SOLR_SOLR_HOST=search
       - SOLR_SOLR_PORT=8983
@@ -73,10 +54,34 @@ services:
     ports:
       - 8083:8983 #Browser port
 
-  activemq:
-    image: alfresco/alfresco-activemq:5.15.6
+  search_slave_load_balancer:
+    image: nginx:${NGINX_TAG}
+    links:
+      - search_slave
+    volumes:
+      - ./master-slave/nginx.conf:/etc/nginx/conf.d/default.conf
     ports:
-      - 8161:8161 # Web Console
-      - 5672:5672 # AMQP
-      - 61616:61616 # OpenWire
-      - 61613:61613 # STOMP
+      - 8084:80
+
+  search_slave:
+    image: quay.io/alfresco/insight-engine:test
+    environment:
+      #Replication properties
+      - REPLICATION_TYPE=slave
+      - REPLICATION_MASTER_HOST=search
+      - REPLICATION_MASTER_PORT=8983
+      #- REPLICATION_CORE_NAME=${solr.core.name}
+      #- REPLICATION_MASTER_PROTOCOL=http
+      #- REPLICATION_POLL_INTERVAL=00:00:60
+      #Solr needs to know how to register itself with Alfresco
+      - SOLR_ALFRESCO_HOST=alfresco
+      - SOLR_ALFRESCO_PORT=8080
+      #Alfresco needs to know how to call solr
+      - SOLR_SOLR_HOST=search
+      - SOLR_SOLR_PORT=8983
+      #Create the default alfresco and archive cores
+      - SOLR_CREATE_ALFRESCO_DEFAULTS=alfresco,archive
+      #HTTP by default
+      - ALFRESCO_SECURE_COMMS=none
+    ports:
+      - 8983 #Browser port
