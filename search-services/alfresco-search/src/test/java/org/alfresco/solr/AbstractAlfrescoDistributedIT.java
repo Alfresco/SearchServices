@@ -325,7 +325,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
     /**
      * Gets the cores for the jetty instances
      */
-    protected static Collection<SolrCore> getJettyCores(Collection<JettySolrRunner> runners)
+    protected static Collection<SolrCore> getCores(Collection<JettySolrRunner> runners)
     {
         return jettyContainers.values().iterator().next().getCoreContainer().getCores();
     }
@@ -780,7 +780,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
         int maxAttemps = 10;
         for (int attemp=0; attemp < maxAttemps; ++attemp)
         {
-            Collection<SolrCore> cores = getJettyCores(solrShards);
+            Collection<SolrCore> cores = getCores(solrShards);
             List<AlfrescoCoreAdminHandler> alfrescoCoreAdminHandlers = getAdminHandlers(solrShards);
             SolrCore core = cores.stream()
                     .filter(solrcore -> solrcore.getName().equals("shard" + shard)).findAny().orElseThrow(RuntimeException::new);
@@ -812,7 +812,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
 
     public static SolrQueryResponse expand(int shard, int value)
     {
-        Collection<SolrCore> cores = getJettyCores(solrShards);
+        Collection<SolrCore> cores = getCores(solrShards);
         List<AlfrescoCoreAdminHandler> alfrescoCoreAdminHandlers = getAdminHandlers(solrShards);
         SolrCore core = cores.stream()
                 .filter(solrcore -> solrcore.getName().equals("shard" + shard)).findAny().orElseThrow(RuntimeException::new);

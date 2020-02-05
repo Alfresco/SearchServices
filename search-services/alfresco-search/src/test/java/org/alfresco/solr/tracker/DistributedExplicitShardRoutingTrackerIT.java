@@ -52,7 +52,6 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
 import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
 import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
-import static org.alfresco.solr.AlfrescoSolrUtils.list;
 import static org.alfresco.solr.tracker.DocRouterFactory.SHARD_KEY_KEY;
 
 /**
@@ -120,7 +119,7 @@ public class DistributedExplicitShardRoutingTrackerIT extends AbstractAlfrescoDi
 
         Query contentQuery = new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world"));
         Query aclQuery = new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_ACL));
-        Collection<SolrCore> shards = getJettyCores(solrShards);
+        Collection<SolrCore> shards = getCores(solrShards);
         List<SolrClient> shardClients = getShardedClients();
         long begin = System.currentTimeMillis();
 
