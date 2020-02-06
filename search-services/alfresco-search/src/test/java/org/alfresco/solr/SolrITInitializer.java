@@ -142,8 +142,6 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
 
         createServers(testClassName, coreNames, numShards, solrcoreProperties);
 
-        System.setProperty("solr.solr.home", testDir.toPath().resolve(testClassName).toString());
-
         return testClassName;
     }
 
@@ -262,6 +260,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
     protected static void addCoreToJetty(String jettyKey, String sourceConfigName, String coreName, Properties additionalProperties) throws Exception
     {
         Path jettySolrHome = testDir.toPath().resolve(jettyKey);
+        System.setProperty("solr.solr.home", jettySolrHome.toString());
         Path coreSourceConfig = new File(getTestFilesHome() + "/" + sourceConfigName).toPath();
         Path coreHome = jettySolrHome.resolve(coreName);
         seedCoreDir(jettyKey, coreName, coreSourceConfig, coreHome);
@@ -297,7 +296,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
     /**
      * Starts jetty if its not already running
      */
-    protected static void startJetty(JettySolrRunner jsr) throws Exception
+    protected static void start(JettySolrRunner jsr) throws Exception
     {
         if (!jsr.isRunning())
         {
@@ -309,8 +308,8 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
     {
         boolean basicAuth = additionalProperties != null ? Boolean.parseBoolean(additionalProperties.getProperty("BasicAuth", "false")) : false;
 
-        JettySolrRunner jsr =  createJetty(jettyKey, basicAuth);
-        jettyContainers.put(jettyKey, jsr);
+        JettySolrRunner solr = createJetty(jettyKey, basicAuth);
+        jettyContainers.put(jettyKey, solr);
 
         Properties properties = new Properties();
 
@@ -325,21 +324,8 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
             addCoreToJetty(jettyKey, coreName, coreName, properties);
         }
 
-        //Now start jetty
-        startJetty(jsr);
-
-        int jettyPort = jsr.getLocalPort();
-        for (String coreName : coreNames)
-        {
-            String url = buildUrl(jettyPort) + "/" + coreName;
-
-            LOGGER.info(url);
-
-            solrCollectionNameToStandaloneClient.put(coreName, createNewSolrClient(url));
-        }
-
         shardsArr = new String[numShards];
-        StringBuilder sb = new StringBuilder();
+
 
         if (additionalProperties == null)
         {
@@ -351,7 +337,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         {
             Properties props = new Properties();
             props.putAll(additionalProperties);
-            if (sb.length() > 0) sb.append(',');
+
             final String shardname = "shard" + i;
             props.put("shard.instance", Integer.toString(i));
             props.put("shard.count", Integer.toString(numShards));
@@ -361,18 +347,36 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
                 props.put("shard.range", ranges[i]);
             }
 
-            String shardKey = jettyKey+"_shard_" + i + "/solrhome";
-            JettySolrRunner j =  createJetty(shardKey, basicAuth);
             //use the first corename specified as the Share template
-            addCoreToJetty(shardKey, coreNames[0], shardname, props);
-            solrShards.add(j);
-            startJetty(j);
-            String shardStr = buildUrl(j.getLocalPort()) + "/" + shardname;
+            addCoreToJetty(jettyKey, coreNames[0], shardname, props);
+        }
+
+        //Now start jetty
+        start(solr);
+
+
+        int jettyPort = solr.getLocalPort();
+        for (String coreName : coreNames)
+        {
+            String url = buildUrl(jettyPort) + "/" + coreName;
+
+            LOGGER.info(url);
+
+            solrCollectionNameToStandaloneClient.put(coreName, createNewSolrClient(url));
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < numShards; i++)
+        {
+            if (sb.length() > 0) sb.append(',');
+            final String shardname = "shard" + i;
+            String shardStr = buildUrl(solr.getLocalPort()) + "/" + shardname;
             LOGGER.info(shardStr);
             SolrClient clientShard = createNewSolrClient(shardStr);
             clientShards.add(clientShard);
             shardsArr[i] = shardStr;
             sb.append(shardStr);
+            solrShards.add(solr);
         }
         shards = sb.toString();
     }

@@ -90,7 +90,7 @@ public class DistributedAlfrescoSolrTrackerStateIT extends AbstractAlfrescoDistr
     {
         putHandleDefaults();
 
-        getJettyCores(solrShards).forEach(core -> {
+        getCores(solrShards).forEach(core -> {
             MetadataTracker tracker =
                     of(coreAdminHandler(core))
                             .map(AlfrescoCoreAdminHandler::getTrackerRegistry)
