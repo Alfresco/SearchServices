@@ -40,7 +40,7 @@ import org.springframework.http.HttpStatus;
 public class ShardInfoTest extends AbstractE2EFunctionalTest
 {
     /* The test that will be excluded when running master slave setup, excluding the ASS_MASTER test group. */
-    @Test(groups = { TestGroup.ACS_60n, TestGroup.ASS_MASTER })
+    @Test(groups = { TestGroup.ACS_60n, TestGroup.ASS_MASTER, TestGroup.EXPLICIT_SHARDING })
     public void getShardInfoWithAdminAuthority() throws JsonProcessingException
     {
         RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI()
