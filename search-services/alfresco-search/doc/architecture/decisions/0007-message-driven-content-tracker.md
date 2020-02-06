@@ -4,7 +4,7 @@ Date: 09/04/2019
 
 ## Status
 
-Approved
+~~Approved~~ Postponed, see [version 2](0009-message-driven-content-tracker-next-gen.md)
 
 ## Context
 
