@@ -34,6 +34,12 @@
       <!-- Strings -->
       <fieldType name="identifier" class="solr.StrField" indexed="true" stored="true" sortMissingLast="true" />
       <fieldType name="identifiers" class="solr.StrField" indexed="true" stored="true" multiValued="true" positionIncrementGap="100" />
+      <fieldType name="text-identifier" class="solr.TextField" positionIncrementGap="100" indexed="true" stored="false">
+        <analyzer>
+          <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(#0;.*#0;)" replacement=""/>
+          <tokenizer class="solr.KeywordTokenizerFactory"/>
+        </analyzer>
+      </fieldType>
 
       <fieldType name="lowercase_id" class="solr.TextField" indexed="true" stored="true" sortMissingLast="true" omitNorms="true" positionIncrementGap="100">
         <analyzer>
@@ -91,11 +97,12 @@
       <!-- Suggestion -->
 
       <fieldType name="text_shingle" class="solr.TextField" positionIncrementGap="100">
-         <analyzer type="index">
-            <tokenizer class="solr.ICUTokenizerFactory"/>
-            <filter class="solr.ICUNormalizer2FilterFactory" name="nfkc_cf" mode="compose" />
-	    <filter class="solr.ShingleFilterFactory" minShingleSize="2" maxShingleSize="3" outputUnigrams="true" outputUnigramsIfNoShingles="true" tokenSeparator=" " />
-         </analyzer>
+        <analyzer type="index">
+           <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(#0;.*#0;)" replacement=""/>
+           <tokenizer class="solr.ICUTokenizerFactory"/>
+           <filter class="solr.ICUNormalizer2FilterFactory" name="nfkc_cf" mode="compose" />
+           <filter class="solr.ShingleFilterFactory" minShingleSize="2" maxShingleSize="3" outputUnigrams="true" outputUnigramsIfNoShingles="true" tokenSeparator=" " />
+        </analyzer>
          <analyzer type="query">
             <tokenizer class="solr.ICUTokenizerFactory"/>
             <filter class="solr.ICUNormalizer2FilterFactory" name="nfkc_cf" mode="compose" />
@@ -131,6 +138,7 @@
 
       <fieldType name="text___" class="solr.TextField" positionIncrementGap="100" indexed="true" stored="true">
          <analyzer>
+            <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(#0;.*#0;)" replacement=""/>
             <tokenizer class="solr.ICUTokenizerFactory"/>
             <!-- <tokenizer class="org.apache.solr.analysis.WhitespaceTokenizerFactory" /> -->
             <filter class="org.apache.solr.analysis.WordDelimiterFilterFactory"
@@ -1021,13 +1029,26 @@
       <dynamicField name="category@md@*" type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
       <dynamicField name="noderef@md@*" type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
 
-      <dynamicField name="text@s____@*" type="identifier" />
-      <dynamicField name="text@s__l_@*" type="alfrescoFieldType" omitNorms="true" />
-      <dynamicField name="text@s__lt@*" type="alfrescoFieldType" omitNorms="false" />
-      <dynamicField name="text@s___t@*" type="text___" />
-      <dynamicField name="text@s__sort@*" type="alfrescoCollatableTextFieldType" />
+      <!-- GX -->
+      <dynamicField name="text@s_stored@*" type="identifier" indexed="false" stored="true"/>
 
-      <dynamicField name="text@sd___@*" type="identifier" stored="true" docValues="true" />
+      <dynamicField name="text@s____@*" type="text-identifier" />
+      <dynamicField name="text@s__l_@*" type="alfrescoFieldType" omitNorms="true" stored="false"/>
+      <dynamicField name="text@s__lt@*" type="alfrescoFieldType" omitNorms="false" stored="false"/>
+      <dynamicField name="text@s___t@*" type="text___" stored="false"/>
+      <dynamicField name="text@s__sort@*" type="alfrescoCollatableTextFieldType" stored="false"/>
+      <dynamicField name="text@sd___@*" type="identifier" docValues="true" stored="false"/>
+
+      <!-- END -->
+
+      <copyField source="text@s_stored@*" dest="text@s____@*" />
+      <copyField source="text@s_stored@*" dest="text@s__l_@*" />
+      <copyField source="text@s_stored@*" dest="text@s___t@*" />
+      <copyField source="text@s_stored@*" dest="text@s___t@*" />
+      <copyField source="text@s_stored@*" dest="text@s__sort@*" />
+      <copyField source="text@s_stored@*" dest="text@sd___@*" />
+      <copyField source="text@s_stored@*" dest="suggest_*" />
+
 
       <dynamicField name="text@m____@*" type="identifiers" />
       <dynamicField name="text@m__l_@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" />

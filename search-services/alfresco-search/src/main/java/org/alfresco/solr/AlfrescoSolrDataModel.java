@@ -778,6 +778,9 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     private void addHighlightSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
     {
+        FieldInstance field = new FieldInstance("text@s_stored@" + propertyDefinition.getName(), false, false);
+        indexedField.getFields().add(field);
+        /*
         if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE)
                 || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
         {
@@ -795,6 +798,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         {
             indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
         }
+         */
     }
 
     /*

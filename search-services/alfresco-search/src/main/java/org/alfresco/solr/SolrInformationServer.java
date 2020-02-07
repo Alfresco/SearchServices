@@ -2184,6 +2184,15 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
+    static String propertyToString(Object id, String type, QName propertyName, PropertyValue value, FieldInstance field)
+    {
+        return "***** " + propertyName + "******\n" +
+                "ID: " + id + "\n" +
+                "TYPE: " + type + "\n" +
+                "VALUE: " + value + "\n" +
+                "FIELD: Name = " + field.getField() + ", Localised = " + field.localised + ", Sort = " + field.sort;
+    }
+
     static void populateProperties(
             Map<QName, PropertyValue> properties,
             boolean contentIndexingHasBeenRequestedForThisNode,
@@ -2213,14 +2222,43 @@ public class SolrInformationServer implements InformationServer
             if(value != null)
             {
                 AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
+
                 if (value instanceof StringPropertyValue)
                 {
-                    dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
-                            .forEach(field -> addStringProperty(setValue.andThen(collectName), field, (StringPropertyValue) value, properties));
+                    /*
+                     *
+                     * Boolean properties (like isIndexed) are classified are StringPropertyValue
+                     */
+                    List<FieldInstance> fields = dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields();
+                    if (fields.size() > 1) {
+                        System.out.println(propertyQName + "=>" + dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields().size());
+                        String storedFieldName = "text@s_stored@" + propertyQName;
+                        System.out.println(storedFieldName);
+
+                        document.setField(storedFieldName, getLocalisedValue((StringPropertyValue) value, properties));
+                    /* the schema have been changed so all the stored field above is copied on every text@...@ fields
+                        The only exception is the text@sd___@ which has docvalues enabled. We can't copy the stored field
+                        there because the locale prefix cannot be removed (as it happens with the other non-localised text@ fields)
+                     */
+
+                        dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
+                                .stream()
+                                .filter(field -> field.getField().startsWith("text@sd___@"))
+                                .forEach(field -> addStringProperty(setValue.andThen(collectName), field, (StringPropertyValue) value, properties));
+                    } else {
+
+// OLD CODE
+                        dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
+                                .stream()
+                                //.peek(field -> System.out.println(propertyToString(document.get("DBID"), "Single StringPropertyValue", propertyQName, value, field)))
+                                .forEach(field -> addStringProperty(setValue.andThen(collectName), field, (StringPropertyValue) value, properties));
+                    }
                 }
                 else if (value instanceof MLTextPropertyValue)
                 {
                     dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
+                            .stream()
+                            //.peek(field -> System.out.println(propertyToString(document.get("id"), "Single MLTextPropertyValue", propertyQName, value, field)))
                             .forEach(field -> addMLTextProperty(setValue.andThen(collectName), field, (MLTextPropertyValue) value));
                 }
                 else if (value instanceof ContentPropertyValue)
@@ -2243,12 +2281,15 @@ public class SolrInformationServer implements InformationServer
                         if (singleValue instanceof StringPropertyValue)
                         {
                             dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
+                                    .stream()
+                                    .peek(field -> System.out.println(propertyToString(document.get("DBID"), "Multiple StringPropertyValue", propertyQName, value, field)))
                                     .forEach(field -> addStringProperty(addValue.andThen(collectName), field, (StringPropertyValue) singleValue, properties));
                         }
                         else if (singleValue instanceof MLTextPropertyValue)
                         {
                             dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
-                                    .forEach(field -> addMLTextProperty(addValue.andThen(collectName), field, (MLTextPropertyValue) singleValue));
+                                    .stream()
+                                    .peek(field -> System.out.println(propertyToString(document.get("DBID"), "Multiple MLTextPropertyValue", propertyQName, value, field)))                                    .forEach(field -> addMLTextProperty(addValue.andThen(collectName), field, (MLTextPropertyValue) singleValue));
                         }
                         else if (singleValue instanceof ContentPropertyValue)
                         {
@@ -3777,6 +3818,18 @@ public class SolrInformationServer implements InformationServer
             cmd.solrDoc = input;
             processor.processAdd(cmd);
         }
+    }
+
+    private static String getLocalisedValue(StringPropertyValue property, Map<QName, PropertyValue> properties)
+    {
+        Locale locale =
+                ofNullable(properties.get(ContentModel.PROP_LOCALE))
+                        .map(StringPropertyValue.class::cast)
+                        .map(StringPropertyValue::getValue)
+                        .map(value -> DefaultTypeConverter.INSTANCE.convert(Locale.class, value))
+                        .orElse(I18NUtil.getLocale());
+
+        return "\u0000" + locale.toString() + "\u0000" + property.getValue();
     }
 
     private static void addStringProperty(BiConsumer<String, Object> consumer, FieldInstance field, StringPropertyValue property, Map<QName, PropertyValue> properties)
