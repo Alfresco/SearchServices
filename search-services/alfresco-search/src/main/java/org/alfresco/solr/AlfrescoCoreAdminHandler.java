@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -92,6 +93,26 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     public static final String DATA_DIR_ROOT = "data.dir.root";
     public static final String ALFRESCO_DEFAULTS = "create.alfresco.defaults";
     public static final String DEFAULT_TEMPLATE = "rerank";
+    
+    /**
+     * Action status to be added to response
+     * - success: the action has been executed successfully
+     * - error: the action has not been executed, error message is added to the response
+     * - scheduled: the action will be executed as part of the Tracker Maintenance step
+     */
+    private static final String ACTION_STATUS_SUCCESS = "success";
+    private static final String ACTION_STATUS_ERROR = "error";
+    private static final String ACTION_STATUS_SCHEDULED = "scheduled";
+    
+    /**
+     * JSON/XML labels for the Action response
+     */
+    private static final String ACTION_LABEL = "action";
+    private static final String ACTION_STATUS_LABEL = "status";
+    private static final String ACTION_ERROR_MESSAGE_LABEL = "errorMessage";
+    private static final String ACTION_TX_TO_REINDEX = "txToReindex";
+    private static final String ACTION_ACL_CHANGE_SET_TO_REINDEX = "aclChangeSetToReindex";
+
 
     private SolrTrackerScheduler scheduler = null;
     private TrackerRegistry trackerRegistry = null;
@@ -187,7 +208,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             log.error("Failed to create default alfresco cores (workspace/archive stores)", e);
         }
     }
-
+    
     /**
      * Shutsdown services that exist outside of the core.
      */
@@ -225,8 +246,22 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
-    private void initResourceBasedLogging(String resource)
+    /**
+     * Update memory loading from "log4j.properties" file for each Core
+     * 
+     * Synchronous execution
+     * 
+     * @param resource The name of the resource file to be reloaded
+     * @param rsp Query Response including the action result:
+     * - action.status: success, when the resource has been reloaded
+     * - action.status: error, when the resource has NOT been reloaded
+     * - action.errorMessage: message, if action status is "error" an error message node is included
+     */
+    private void initResourceBasedLogging(String resource, SolrQueryResponse rsp)
     {
+        
+        NamedList<Object> response = new SimpleOrderedMap<>();
+
         try
         {
             Class<?> clazz = Class.forName("org.apache.log4j.PropertyConfigurator");
@@ -235,84 +270,118 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             Properties p = new Properties();
             p.load(is);
             method.invoke(null, p);
+            response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SUCCESS);
+            
         }
         catch (ClassNotFoundException e)
         {
-            return;
+            response.add(ACTION_STATUS_LABEL, ACTION_STATUS_ERROR);
+            response.add(ACTION_ERROR_MESSAGE_LABEL, "ClassNotFoundException: org.apache.log4j.PropertyConfigurator");
         }
         catch (Exception e)
         {
+            response.add(ACTION_STATUS_LABEL, ACTION_STATUS_ERROR);
+            response.add(ACTION_ERROR_MESSAGE_LABEL, e.getMessage());
             log.info("Failed to load " + resource, e);
         }
+        
+        rsp.add(ACTION_LABEL, response);
     }
 
     protected void handleCustomAction(SolrQueryRequest req, SolrQueryResponse rsp)
     {
         log.info("######## Handle Custom Action ###########");
         SolrParams params = req.getParams();
-        String cname = params.get(CoreAdminParams.CORE);
+        String cname = (params.get(CoreAdminParams.CORE) != null ? params.get(CoreAdminParams.CORE) : params.get("coreName"));
         String action = params.get(CoreAdminParams.ACTION);
-        action = action==null?"":action.toUpperCase();
+        action = action== null ? "" : action.toUpperCase();
+        log.info("Running action {} for core {} with params {}", action, cname, params);
         try
         {
             switch (action) {
+                // Create a new Core in SOLR
                 case "NEWCORE":
                     newCore(req, rsp);
                     break;
+                // Reload an existing Core in SOLR
                 case "UPDATECORE":
                     updateCore(req, rsp);
                     break;
+                // Update memory loading from "shared.properties" file for each Core
                 case "UPDATESHARED":
                     updateShared(req, rsp);
                     break;
+                // Unload an existing Core from SOLR
                 case "REMOVECORE":
                     removeCore(req, rsp);
                     break;
+                // Create a new Core in SOLR with default settings    
                 case "NEWDEFAULTINDEX":
                     newDefaultCore(req, rsp);
                     break;
+                // Enable check flag on a SOLR Core
                 case "CHECK":
-                    actionCHECK(cname);
+                    actionCHECK(cname, rsp);
                     break;
+                // Get a report from a nodeId with the associated txId and the indexing status
                 case "NODEREPORT":
                     actionNODEREPORTS(rsp, params, cname);
                     break;
+                // Get a report from an aclId with the count of documents associated to the ACL    
                 case "ACLREPORT":
                     actionACLREPORT(rsp, params, cname);
                     break;
+                // Get a report from a txId with detailed information related with the Transaction
                 case "TXREPORT":
                     actionTXREPORT(rsp, params, cname);
                     break;
+                // Get a report from an aclTxId with detailed information related with nodes indexed 
+                // for an ACL inside a Transaction
                 case "ACLTXREPORT":
                     actionACLTXREPORT(rsp, params, cname);
                     break;
+                // Get a detailed report including storage and sizing for a Shards configured 
+                // with Shard DB_ID_RANGE method. If SOLR is not using this configuration,
+                // "expand = -1" is returned
                 case "RANGECHECK":
                     rangeCheck(rsp, cname);
                     break;
+                // Expand the range for a Shard configured with DB_ID_RANGE having more than 75%
+                // space used. This configuration is not persisted in solrcore.properties
                 case "EXPAND":
                     expand(rsp, params, cname);
                     break;
+                // Get a detailed report for a core or for every core. This action accepts 
+                // filtering based on commitTime, txid and acltxid
                 case "REPORT":
                     actionREPORT(rsp, params, cname);
                     break;
+                // Add a nodeid, txid, acltxid or aclid to be purged on the next maintenance
+                // operation performed by MetadataTracker and AclTracker. 
+                // Asynchronous.
                 case "PURGE":
                     if (cname != null) {
-                        actionPURGE(params, cname);
+                        actionPURGE(params, cname, rsp);
                     } else {
                         for (String coreName : getTrackerRegistry().getCoreNames()) {
-                            actionPURGE(params, coreName);
+                            actionPURGE(params, coreName, rsp);
                         }
                     }
                     break;
+                // Add a nodeid, txid, acltxid, aclid or SOLR query to be reindexed on the 
+                // next maintenance operation performed by MetadataTracker and AclTracker. 
+                // Asynchronous.
                 case "REINDEX":
                     if (cname != null) {
-                        actionREINDEX(params, cname);
+                        actionREINDEX(params, cname, rsp);
                     } else {
                         for (String coreName : getTrackerRegistry().getCoreNames()) {
-                            actionREINDEX(params, coreName);
+                            actionREINDEX(params, coreName, rsp);
                         }
                     }
                     break;
+                // Reindex every node marked as ERROR in a core or in every core.
+                // Asynchronous.
                 case "RETRY":
                     if (cname != null) {
                         actionRETRY(rsp, cname);
@@ -322,24 +391,33 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                         }
                     }
                     break;
+                // Add a nodeid, txid, acltxid or aclid to be indexed on the next maintenance
+                // operation performed by MetadataTracker and AclTracker. 
+                // Asynchronous.
                 case "INDEX":
                     if (cname != null) {
-                        actionINDEX(params, cname);
+                        actionINDEX(params, cname, rsp);
                     } else {
                         for (String coreName : getTrackerRegistry().getCoreNames()) {
-                            actionINDEX(params, coreName);
+                            actionINDEX(params, coreName, rsp);
                         }
                     }
                     break;
+                // Find transactions and acls missing or duplicated in the cores and
+                // add them to be reindexed on the next maintenance operation 
+                // performed by MetadataTracker and AclTracker.
+                // Asynchronous.
                 case "FIX":
                     if (cname != null) {
-                        actionFIX(cname);
+                        actionFIX(cname, rsp);
                     } else {
                         for (String coreName : getTrackerRegistry().getCoreNames()) {
-                            actionFIX(coreName);
+                            actionFIX(coreName, rsp);
                         }
                     }
                     break;
+                // Get detailed report for a core or for every core including information
+                // related with handlers and trackers. 
                 case "SUMMARY":
                     if (cname != null) {
                         NamedList<Object> report = new SimpleOrderedMap<Object>();
@@ -353,12 +431,14 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                         rsp.add("Summary", report);
                     }
                     break;
+                 // Update memory loading from "log4j.properties" file for each Core
                 case "LOG4J":
-                    String resource = "log4j-solr.properties";
-                    if (params.get("resource") != null) {
+                    String resource = "log4j.properties";
+                    if (params.get("resource") != null) 
+                    {
                         resource = params.get("resource");
                     }
-                    initResourceBasedLogging(resource);
+                    initResourceBasedLogging(resource, rsp);
                     break;
                 default:
                     super.handleCustomAction(req, rsp);
@@ -372,11 +452,38 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
-    private boolean newCore(SolrQueryRequest req, SolrQueryResponse rsp) {
+    /**
+     * Create a new Core in SOLR
+     * 
+     * Synchronous execution
+     * 
+     * @param req Query Request including following parameters:
+     * - coreName, mandatory, the name of the core to be created
+     * - storeRef, mandatory, the storeRef for the SOLR Core (workspace://SpacesStore, archive://SpacesStore)
+     * - shardIds, optional, a String including a list of ShardIds separated with comma
+     * - numShards, optional, the number of Shards to be created
+     * - template, optional, the name of the SOLR template used to create the core (rerank, norerank)
+     * - replicationFactor, optional, number of Core replicas
+     * - nodeInstance, optional, number of the Node instance
+     * - numNodes, optional, number of Nodes
+     * 
+     * @param rsp Query Response including the action result:
+     * - action.status: success, when the core has been created
+     * - action.status: error, when the core has NOT been created
+     * - action.errorMessage: message, if action status is "error" an error message node is included
+     */
+    private void newCore(SolrQueryRequest req, SolrQueryResponse rsp) 
+    {
+        
         SolrParams params = req.getParams();
         req.getContext();
+        
+        NamedList<Object> response = new SimpleOrderedMap<>();
 
-        // If numCore > 1 we are createing a collection of cores for a sole node in a cluster
+        String coreName = params.get("coreName");
+        String shardIds = params.get("shardIds");
+
+        // If numCore > 1 we are creating a collection of cores for a sole node in a cluster
         int numShards = params.getInt("numShards", 1);
 
         String store = "";
@@ -384,7 +491,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             store = params.get("storeRef");
         }
         if ((store == null) || (store.length() == 0)) {
-            return false;
+            response.add(ACTION_STATUS_LABEL, ACTION_STATUS_ERROR);
+            response.add(ACTION_ERROR_MESSAGE_LABEL, "Core " + coreName + " has NOT been created as storeRef param is required");
+            rsp.add(ACTION_LABEL, response);
+            return;
         }
         StoreRef storeRef = new StoreRef(store);
 
@@ -397,27 +507,64 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         int nodeInstance =  params.getInt("nodeInstance", -1);
         int numNodes =  params.getInt("numNodes", 1);
 
-        String coreName = params.get("coreName");
-        String shardIds = params.get("shardIds");
-
         Properties properties = extractCustomProperties(params);
-        return newCore(coreName, numShards, storeRef, templateName, replicationFactor, nodeInstance, numNodes, shardIds, properties, rsp);
+        boolean coreCreated = newCore(coreName, numShards, storeRef, templateName, replicationFactor, nodeInstance, numNodes, shardIds, properties, rsp);
+        if (coreCreated)
+        {
+            
+            response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SUCCESS);
+        }
+        else 
+        {
+            response.add(ACTION_STATUS_LABEL, ACTION_STATUS_ERROR);
+            response.add(ACTION_ERROR_MESSAGE_LABEL, "Core " + coreName + " has NOT been created. Check the log to find out the reason.");
+        }
+        rsp.add(ACTION_LABEL, response);
+        
     }
 
-    private boolean newDefaultCore(SolrQueryRequest req, SolrQueryResponse rsp) {
+    /**
+     * Create a new Core in SOLR with default settings
+     * 
+     * Synchronous execution
+     * 
+     * @param req Query Request including following parameters:
+     * - coreName, mandatory, the name of the core to be reloaded
+     * - storeRef, optional, the storeRef for the SOLR Core: workspace://SpacesStore (default value), archive://SpacesStore
+     * - template, optional, the name of the SOLR template used to create the core (rerank, norerank)
+     * 
+     * @param rsp Query Response including the action result:
+     * - action.status: success, when the core has been created
+     * - action.status: error, when the core has NOT been created
+     * - action.errorMessage: message, if action status is "error" an error message node is included
+     */
+    private void newDefaultCore(SolrQueryRequest req, SolrQueryResponse rsp) {
 
         SolrParams params = req.getParams();
         String coreName = params.get("coreName") != null?params.get("coreName"):"alfresco";
         StoreRef storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
         String templateName = params.get("template") != null?params.get("template"): DEFAULT_TEMPLATE;
         Properties extraProperties = extractCustomProperties(params);
+        
+        NamedList<Object> response = new SimpleOrderedMap<>();
 
         if (params.get("storeRef") != null) {
             String store = params.get("storeRef");
             storeRef = new StoreRef(store);
         }
 
-        return newDefaultCore(coreName, storeRef, templateName, extraProperties, rsp);
+        boolean coreCreated = newDefaultCore(coreName, storeRef, templateName, extraProperties, rsp);
+        if (coreCreated)
+        {
+            response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SUCCESS);
+        }
+        else 
+        {
+            response.add(ACTION_STATUS_LABEL, ACTION_STATUS_ERROR);
+            response.add(ACTION_ERROR_MESSAGE_LABEL, "Core " + coreName + " has NOT been created. Check the log to find out the reason.");
+        }
+        rsp.add(ACTION_LABEL, response);
+
     }
 
     protected boolean newDefaultCore(String coreName, StoreRef storeRef, String templateName, Properties extraProperties, SolrQueryResponse rsp)
@@ -434,7 +581,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             File templates = new File(solrHome, "templates");
             File template = new File(templates, templateName);
 
-            if(numShards > 1 )
+            if (numShards > 1 )
             {
 
                 String collectionName = templateName + "--" + storeRef.getProtocol() + "-" + storeRef.getIdentifier() + "--shards--"+numShards + "-x-"+replicationFactor+"--node--"+nodeInstance+"-of-"+numNodes;
@@ -467,26 +614,28 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     shards = policy.getShardIdsForNode(nodeInstance);
                 }
                 
-                for(Integer shard : shards)
+                List<String> coresNotCreated = new ArrayList<>();
+                for (Integer shard : shards)
                 {
                     coreName = coreBase+shard;
                     File newCore = new File(baseDirectory, coreName);
-                    String solrCoreName = coreName;
-                    if (coreName == null)
+                    boolean coreCreated = createAndRegisterNewCore(rsp, extraProperties, storeRef, template, coreName, newCore, numShards, shard, templateName);
+                    if (!coreCreated)
                     {
-                        if(storeRef.equals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE))
-                        {
-                            solrCoreName = "alfresco-"+shard;
-                        }
-                        else if(storeRef.equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE))
-                        {
-                            solrCoreName = "archive-"+shard;
-                        }
+                        coresNotCreated.add(coreName);
                     }
-                    createAndRegisterNewCore(rsp, extraProperties, storeRef, template, solrCoreName, newCore, numShards, shard, templateName);
                 }
-                       
-                return true;
+                if (coresNotCreated.size() > 0)
+                {
+                    NamedList<Object> response = new SimpleOrderedMap<>();
+                    response.add(ACTION_ERROR_MESSAGE_LABEL, "Following cores have not been created: " + coresNotCreated);
+                    rsp.add(ACTION_LABEL, response);
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
             }
             else
             {
@@ -495,9 +644,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     coreName = storeRef.getProtocol() + "-" + storeRef.getIdentifier();
                 }
                 File newCore = new File(solrHome, coreName);
-                createAndRegisterNewCore(rsp, extraProperties, storeRef, template, coreName, newCore, 0, 0, templateName);
-
-                return true;
+                return createAndRegisterNewCore(rsp, extraProperties, storeRef, template, coreName, newCore, 0, 0, templateName);
             }
           
         }
@@ -542,15 +689,15 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * @throws IOException
      * @throws FileNotFoundException
      */
-    private void createAndRegisterNewCore(SolrQueryResponse rsp, Properties extraProperties, StoreRef storeRef, File template, String coreName, File newCore, int shardCount, int shardInstance, String templateName) throws IOException,
+    private boolean createAndRegisterNewCore(SolrQueryResponse rsp, Properties extraProperties, StoreRef storeRef, File template, String coreName, File newCore, int shardCount, int shardInstance, String templateName) throws IOException,
             FileNotFoundException
     {
         if (coreContainer.getLoadedCoreNames().contains(coreName))
         {
-            //Core alfresco exists
+            // Core alfresco exists
             log.warn(coreName + " already exists, not creating again.");
-            rsp.add("core", coreName);
-            return;
+            rsp.add("core", "core " + coreName + " already exists, not creating again.");
+            return false;
         }
 
         FileUtils.copyDirectory(template, newCore, false);
@@ -596,6 +743,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
         SolrCore core = coreContainer.create(coreName, newCore.toPath(), new HashMap<String, String>(), false);
         rsp.add("core", core.getName());
+        return true;
     }
 
     /**
@@ -613,44 +761,90 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         return false;
     }
 
-    private boolean updateShared(SolrQueryRequest req, SolrQueryResponse rsp)
+    /**
+     * Update memory loading from "shared.properties" file for each Core
+     * 
+     * Synchronous execution
+     * 
+     * @param req Query Request with no parameters
+     * @param rsp Query Response including the action result:
+     * - action.status: success, when the properties has been reloaded
+     * - action.status: error, when the properties has NOT been reloaded
+     * - action.errorMessage: message, if action status is "error" an error message node is included
+     */
+    private void updateShared(SolrQueryRequest req, SolrQueryResponse rsp)
     {
         SolrParams params = req.getParams();
 
+        NamedList<Object> response = new SimpleOrderedMap<>();
+        
         try {
 
             File config = new File(AlfrescoSolrDataModel.getResourceDirectory(), AlfrescoSolrDataModel.SHARED_PROPERTIES);
             updateSharedProperties(params, config, hasAlfrescoCore(coreContainer.getCores()));
 
-            coreContainer.getCores().forEach(aCore -> coreContainer.reload(aCore.getName()));
+            coreContainer.getCores().forEach(aCore -> {
+                coreContainer.reload(aCore.getName());
+                log.info("Action UPDATESHARED - Shared properties for core {} have been reloaded", aCore.getName());
+            });
+            
+            response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SUCCESS);
 
-            return true;
-        } catch (IOException e)
+        } 
+        catch (IOException e)
         {
+            response.add(ACTION_STATUS_LABEL, ACTION_STATUS_ERROR);
+            response.add(ACTION_ERROR_MESSAGE_LABEL, "Shared properties couldn't be reloaded for some core. Check the log to find out the reason.");
             log.error("Failed to update Shared properties ", e);
         }
-        return false;
+        rsp.add(ACTION_LABEL, response);
+        
     }
 
-    private boolean updateCore(SolrQueryRequest req, SolrQueryResponse rsp)
+    /**
+     * Reload an existing Core in SOLR
+     * 
+     * Synchronous execution
+     * 
+     * @param req Query Request including following parameters:
+     * - coreName, mandatory, the name of the core to be reloaded
+     * 
+     * @param rsp Query Response including the action result:
+     * - action.status: success, when the core has been reloaded
+     * - action.status: error, when the core has NOT been reloaded
+     * - action.errorMessage: message, if action status is "error" an error message node is included
+     */
+    private void updateCore(SolrQueryRequest req, SolrQueryResponse rsp)
     {
             String coreName = null;
             SolrParams params = req.getParams();
+            
+            NamedList<Object> response = new SimpleOrderedMap<>();
 
             if (params.get("coreName") != null)
             {
                 coreName = params.get("coreName");
             }
             
-            if ((coreName == null) || (coreName.length() == 0)) { return false; }
+            if ((coreName == null) || (coreName.length() == 0)) 
+            {
+                response.add(ACTION_STATUS_LABEL, ACTION_STATUS_ERROR);
+                response.add(ACTION_ERROR_MESSAGE_LABEL, "Core has NOT been updated as coreName param is required");
+                rsp.add(ACTION_LABEL, response);
+                return; 
+            }
 
             SolrCore core = null;
-            try {
+            try 
+            {
                 core = coreContainer.getCore(coreName);
 
-                if(core == null)
+                if (core == null)
                 {
-                    return false;
+                    response.add(ACTION_STATUS_LABEL, ACTION_STATUS_ERROR);
+                    response.add(ACTION_ERROR_MESSAGE_LABEL, "Core " + coreName + " has NOT been updated as it doesn't exist");
+                    rsp.add(ACTION_LABEL, response);
+                    return; 
                 }
 
                 String  configLocaltion = core.getResourceLoader().getConfigDir();
@@ -659,7 +853,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
                 coreContainer.reload(coreName);
                 
-                return true;
+                response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SUCCESS);
+                rsp.add(ACTION_LABEL, response);
+                
             }
             finally
             {
@@ -671,16 +867,39 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             }
     }
 
-    private boolean removeCore(SolrQueryRequest req, SolrQueryResponse rsp)
+    /**
+     * Unload an existing Core from SOLR
+     * 
+     * Synchronous execution
+     * 
+     * @param req Query Request including following parameters:
+     * - coreName, mandatory, the name of the core to be unloaded
+     * - storeRef, mandatory, the storeRef for the SOLR Core (workspace://SpacesStore, archive://SpacesStore)
+     * 
+     * @param rsp Query Response including the action result:
+     * - action.status: success, when the core has been unloaded
+     * - action.status: error, when the core has NOT been unloaded
+     * - action.errorMessage: message, if action status is "error" an error message node is included
+     */
+    private void removeCore(SolrQueryRequest req, SolrQueryResponse rsp)
     {
         String store = "";
         SolrParams params = req.getParams();
+        
+        NamedList<Object> response = new SimpleOrderedMap<>();
+        
         if (params.get("storeRef") != null)
         {
             store = params.get("storeRef");
         }
 
-        if ((store == null) || (store.length() == 0)) { return false; }
+        if ((store == null) || (store.length() == 0)) 
+        { 
+            response.add(ACTION_STATUS_LABEL, ACTION_STATUS_ERROR);
+            response.add(ACTION_ERROR_MESSAGE_LABEL, "Core " + params.get("coreName") + " has NOT been removed as storeRef param is required");
+            rsp.add(ACTION_LABEL, response);
+            return; 
+        }
 
         StoreRef storeRef = new StoreRef(store);
         String coreName = storeRef.getProtocol() + "-" + storeRef.getIdentifier();
@@ -688,16 +907,51 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         {
             coreName = params.get("coreName");
         }
+        
+        SolrCore core = coreContainer.getCore(coreName);
+
+        if(core == null)
+        {
+            response.add(ACTION_STATUS_LABEL, ACTION_STATUS_ERROR);
+            response.add(ACTION_ERROR_MESSAGE_LABEL, "Core " + params.get("coreName") + " has NOT been removed as it doesn't exist");
+            rsp.add(ACTION_LABEL, response);
+            return;
+        }
+        
+        // Close the references to the core to unload before actually unloading it,
+        // otherwise this operation gets into and endless loop
+        while (core.getOpenCount() > 1)
+        {
+            core.close();
+        }
 
         // remove core
         coreContainer.unload(coreName, true, true, true);
 
-        return true;
+        response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SUCCESS);
+        rsp.add(ACTION_LABEL, response);
+        
     }
 
-
-
-    private void actionFIX(String coreName) throws AuthenticationException, IOException, JSONException, EncoderException
+    /**
+     * Find transactions and acls missing or duplicated in the cores and
+     * add them to be reindexed on the next maintenance operation 
+     * performed by MetadataTracker and AclTracker.
+     * 
+     * Asynchronous execution
+     * 
+     * @param coreName The name of the SOLR Core
+     * @param rsp  Query Response including the action result:
+     * - action.status: scheduled, as it will be executed by Trackers on the next maintenance operation
+     * - txToReindex: list of Transaction Ids that are going to be reindexed
+     * - aclChangeSetToReindex: list of ACL Change Set Ids that are going to be reindexed
+     * 
+     * @throws AuthenticationException
+     * @throws IOException
+     * @throws JSONException
+     * @throws EncoderException
+     */
+    private void actionFIX(String coreName, SolrQueryResponse rsp) throws AuthenticationException, IOException, JSONException, EncoderException
     {
         // Gets Metadata health and fixes any problems
         MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
@@ -707,9 +961,11 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         toReindex.or(indexHealthReport.getMissingTxFromIndex());
         long current = -1;
         // Goes through problems in the index
+        Set<Long> txToReindex = new TreeSet<>();
         while ((current = toReindex.nextSetBit(current + 1)) != -1)
         {
             metadataTracker.addTransactionToReindex(current);
+            txToReindex.add(current);
         }
         
         // Gets the Acl health and fixes any problems
@@ -720,13 +976,33 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         toReindex.or(indexHealthReport.getMissingAclTxFromIndex());
         current = -1;
         // Goes through the problems in the index
+        Set<Long> aclChangeSetToReindex = new TreeSet<>();
         while ((current = toReindex.nextSetBit(current + 1)) != -1)
         {
             aclTracker.addAclChangeSetToReindex(current);
+            aclChangeSetToReindex.add(current);
         }
+        
+        NamedList<Object> response = new SimpleOrderedMap<>();
+        response.add(ACTION_TX_TO_REINDEX, txToReindex);
+        response.add(ACTION_ACL_CHANGE_SET_TO_REINDEX, aclChangeSetToReindex);
+        response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SCHEDULED);
+        rsp.add(ACTION_LABEL, response);
+        
     }
 
-    private void actionCHECK(String cname)
+    /**
+     * Enable check flag on a SOLR Core or on every SOLR Core
+     * 
+     * Synchronous execution
+     * 
+     * @param req Query Request without parameters
+     * - coreName, optional, the name of the core to be checked
+     * 
+     * @param rsp Query Response including the action result:
+     * - action.status: success, when the core has been created
+     */
+    private void actionCHECK(String cname, SolrQueryResponse rsp)
     {
         if (cname != null)
         {
@@ -745,8 +1021,26 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 }
             }
         }
+        
+        NamedList<Object> response = new SimpleOrderedMap<>();
+        response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SUCCESS);
+        rsp.add(ACTION_LABEL, response);
     }
 
+    /**
+     * Get a report from an aclId with the count of documents associated to the ACL
+     * 
+     * Synchronous execution
+     * 
+     * @param rsp Query Response including the action result:
+     * - report: an Object with the details of the report
+     * @param params Query Request with following parameters:
+     * - aclId, mandatory, the number of the ACL to build the report
+     * @param cname The name of the SOLR Core or "null" to get the report for every core
+     * 
+     * @throws IOException
+     * @throws JSONException
+     */
     private void actionACLREPORT(SolrQueryResponse rsp, SolrParams params, String cname) throws IOException,
                 JSONException
     {
@@ -776,6 +1070,22 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
+    /**
+     * Get a report from a txId with detailed information related with the Transaction
+     * 
+     * Synchronous execution
+     * 
+     * @param rsp Query Response including the action result:
+     * - report: an Object with the details of the report
+     * @param params Query Request with following parameters:
+     * - txId, mandatory, the number of the Transaction to build the report
+     * @param cname The name of the SOLR Core or "null" to get the report for every core
+     * 
+     * @throws AuthenticationException
+     * @throws IOException
+     * @throws JSONException
+     * @throws EncoderException
+     */
     private void actionTXREPORT(SolrQueryResponse rsp, SolrParams params, String cname) throws AuthenticationException,
                 IOException, JSONException, EncoderException
     {
@@ -798,7 +1108,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             NamedList<Object> report = new SimpleOrderedMap<Object>();
             for (String coreName : trackerRegistry.getCoreNames())
             {
-                MetadataTracker tracker = trackerRegistry.getTrackerForCore(cname,
+                MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName,
                             MetadataTracker.class);
                 report.add(coreName, buildTxReport(getTrackerRegistry(), informationServers.get(coreName), coreName, tracker, txid));
             }
@@ -806,6 +1116,23 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
+    /**
+     * Get a report from an aclTxId with detailed information related with nodes indexed 
+     * for an ACL inside a Transaction
+     * 
+     * Synchronous execution
+     * 
+     * @param rsp Query Response including the action result:
+     * - report: an Object with the details of the report
+     * @param params Query Request with following parameters:
+     * - acltxid, mandatory, the number of the ACL TX Id to build the report
+     * @param cname The name of the SOLR Core or "null" to get the report for every core
+     * 
+     * @throws AuthenticationException
+     * @throws IOException
+     * @throws JSONException
+     * @throws EncoderException
+     */
     private void actionACLTXREPORT(SolrQueryResponse rsp, SolrParams params, String cname)
                 throws AuthenticationException, IOException, JSONException, EncoderException
     {
@@ -835,6 +1162,28 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
+    /**
+     * Get a detailed report for a core or for every core. This action accepts 
+     * filtering based on commitTime, txid and acltxid
+     * 
+     * Synchronous execution
+     * 
+     * @param rsp Query Response including the action result:
+     * - report.core: multiple Objects with the details of the report ("core" is the name of the Core)
+     * @param params Query Request with following parameters:
+     * - fromTime, optional: from transaction commit time to filter report results
+     * - toTime, optional: to transaction commit time to filter report results
+     * - fromTx, optional: from transaction Id to filter report results
+     * - toTx, optional: to transaction Id time to filter report results
+     * - fromAclTx, optional: from ACL transaction Id to filter report results
+     * - toCalTx, optional: to ACL transaction Id to filter report results
+     * @param cname The name of the SOLR Core or "null" to get the report for every core
+     * 
+     * @throws IOException
+     * @throws JSONException
+     * @throws AuthenticationException
+     * @throws EncoderException
+     */
     private void actionREPORT(SolrQueryResponse rsp, SolrParams params, String cname) throws IOException,
                 JSONException, AuthenticationException, EncoderException
     {
@@ -893,7 +1242,19 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     }
 
 
-    private void rangeCheck(SolrQueryResponse rsp,String cname) throws IOException
+    /**
+     * Get a detailed report including storage and sizing for a Shards configured with Shard DB_ID_RANGE method. 
+     * If SOLR is not using this configuration,"expand = -1" is returned
+     * 
+     * Synchronous execution
+     * 
+     * @param rsp Query Response including the action result:
+     * - report: An Object with the report details
+     * @param cname The name of the SOLR Core
+     * 
+     * @throws IOException
+     */
+    private void rangeCheck(SolrQueryResponse rsp, String cname) throws IOException
     {
         InformationServer informationServer = informationServers.get(cname);
 
@@ -974,6 +1335,21 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
+    /**
+     * Expand the range for a Shard configured with DB_ID_RANGE having more than 75%
+     * space used. This configuration is not persisted in solrcore.properties
+     * 
+     * Synchronous execution
+     * 
+     * @param rsp Query Response including the action result:
+     * - expand: The number of the new End Range limit or -1 if the action failed
+     * - exception: Error message if expand is -1
+     * @param params Query Request with following parameters:
+     * - add, mandatory: the number of nodes to be added to the End Range limit
+     * @param cname The name of the SOLR Core
+     * 
+     * @throws IOException
+     */
     private synchronized void expand(SolrQueryResponse rsp, SolrParams params, String cname)
         throws IOException
     {
@@ -1040,6 +1416,20 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
+    /**
+     * Get a report from a nodeId with the associated txId and the indexing status
+     * 
+     * Synchronous execution
+     * 
+     * @param rsp Query Response including the action result:
+     * - report: An Object with the report details
+     * @param params Query Request with following parameters:
+     * - nodeId, mandatory: the number of the node to build the report
+     * @param cname The name of the SOLR Core or "null" to get the report for every core
+     * 
+     * @throws IOException
+     * @throws JSONException
+     */
     private void actionNODEREPORTS(SolrQueryResponse rsp, SolrParams params, String cname) throws IOException,
                 JSONException
     {
@@ -1084,6 +1474,22 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
+    /**
+     * Get detailed report for a core or for every core including information
+     * related with handlers and trackers.
+     * 
+     * Asynchronous execution
+     * 
+     * @param params Query Request with following parameters:
+     * - detail, optional, when true adds details to the report
+     * - hist, optional, when true adds historic details to the report
+     * - values, optional, when true adds values detail to the report
+     * - reset, optional, when true stats are reset
+     * @param report (Key, Value) list with the results of the report
+     * @param coreName The name of the SOLR Core
+     * 
+     * @throws IOException
+     */
     private void actionSUMMARY(SolrParams params, NamedList<Object> report, String coreName) throws IOException
     {
         boolean detail = getSafeBoolean(params, "detail");
@@ -1108,7 +1514,22 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     }
 
 
-    private void actionINDEX(SolrParams params, String coreName)
+    /**
+     * Add a nodeid, txid, acltxid or aclid to be indexed on the next maintenance
+     * operation performed by MetadataTracker and AclTracker.
+     * 
+     * Asynchronous execution
+     * 
+     * @param params Query Request with following parameters:
+     * - txid, optional, the number of the Transaction to index
+     * - acltxid, optional, the number of the ACL Transaction to index
+     * - nodeId, optional, the number of the node to index
+     * - aclid, optional, the number of the ACL to index
+     * @param coreName The name of the SOLR Core
+     * @param rsp  Query Response including the action result:
+     * - action.status: scheduled, as it will be executed by Trackers on the next maintenance operation
+     */
+    private void actionINDEX(SolrParams params, String coreName, SolrQueryResponse rsp)
     {
         if (params.get(ARG_TXID) != null)
         {
@@ -1134,8 +1555,25 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
             tracker.addAclToIndex(aclid);
         }
+        
+        NamedList<Object> response = new SimpleOrderedMap<>();
+        response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SCHEDULED);
+        rsp.add(ACTION_LABEL, response);
+        
     }
 
+    /**
+     * Reindex every node marked as ERROR in a core or in every core.
+     * 
+     * Asynchronous execution
+     * 
+     * @param rsp  Query Response including the action result:
+     * - action.status: scheduled, as it will be executed by Trackers on the next maintenance operation
+     * - core: list of Document Ids with error that are going to reindexed
+     * @param coreName The name of the SOLR Core
+     * 
+     * @throws IOException
+     */
     private void actionRETRY(SolrQueryResponse rsp, String coreName) throws IOException
     {
         MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
@@ -1146,9 +1584,28 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             tracker.addNodeToReindex(nodeid);
         }
         rsp.add(coreName, errorDocIds);
+        NamedList<Object> response = new SimpleOrderedMap<>();
+        response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SCHEDULED);
+        rsp.add(ACTION_LABEL, response);
     }
 
-    private void actionREINDEX(SolrParams params, String coreName)
+    /**
+     * Add a nodeid, txid, acltxid, aclid or SOLR query to be reindexed on the 
+     * next maintenance operation performed by MetadataTracker and AclTracker. 
+     * 
+     * Asynchronous execution
+     * 
+     * @param params Query Request with following parameters:
+     * - txid, optional, the number of the Transaction to reindex
+     * - acltxid, optional, the number of the ACL Transaction to reindex
+     * - nodeId, optional, the number of the node to reindex
+     * - aclid, optional, the number of the ACL to reindex
+     * - query, optional, SOLR Query to reindex results
+     * @param cname The name of the SOLR Core
+     * @param rsp  Query Response including the action result:
+     * - action.status: scheduled, as it will be executed by Trackers on the next maintenance operation
+     */
+    private void actionREINDEX(SolrParams params, String coreName, SolrQueryResponse rsp)
     {
         if (params.get(ARG_TXID) != null)
         {
@@ -1180,9 +1637,28 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
             tracker.addQueryToReindex(query);
         }
+        
+        NamedList<Object> response = new SimpleOrderedMap<>();
+        response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SCHEDULED);
+        rsp.add(ACTION_LABEL, response);
     }
 
-    private void actionPURGE(SolrParams params, String coreName)
+    /**
+     * Add a nodeid, txid, acltxid or aclid to be purged on the next maintenance
+     * operation performed by MetadataTracker and AclTracker.
+     *  
+     * Asynchronous execution
+     *  
+     * @param params Query Request with following parameters:
+     * - txid, optional, the number of the Transaction to purge
+     * - acltxid, optional, the number of the ACL Transaction to purge
+     * - nodeId, optional, the number of the node to purge
+     * - aclid, optional, the number of the ACL to purge
+     * @param cname The name of the SOLR Core
+     * @param rsp  Query Response including the action result:
+     * - action.status: scheduled, as it will be executed by Trackers on the next maintenance operation
+     */
+    private void actionPURGE(SolrParams params, String coreName, SolrQueryResponse rsp)
     {
         if (params.get(ARG_TXID) != null)
         {
@@ -1208,6 +1684,11 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             AclTracker tracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
             tracker.addAclToPurge(aclid);
         }
+        
+        NamedList<Object> response = new SimpleOrderedMap<>();
+        response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SCHEDULED);
+        rsp.add(ACTION_LABEL, response);
+        
     }
 
     public ConcurrentHashMap<String, InformationServer> getInformationServers()

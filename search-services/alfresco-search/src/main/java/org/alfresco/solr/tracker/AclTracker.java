@@ -135,7 +135,12 @@ public class AclTracker extends AbstractTracker
                         indexAcl(readers, false);
                     }
                     this.infoSrv.indexAclTransaction(changeSet, false);
+                    log.info("INDEX ACTION - AclChangeSetId {} has been indexed", aclChangeSetId);
                     requiresCommit = true;
+                }
+                else
+                {
+                    log.info("INDEX ACTION - AclChangeSetId {} was not found in database, it has NOT been reindexed", aclChangeSetId);
                 }
             }
             checkShutdown();
@@ -160,6 +165,7 @@ public class AclTracker extends AbstractTracker
                 //AclReaders r = readers.get(0);
                 //System.out.println("############## READERS ID:"+r.getId()+":"+r.getReaders());
                 indexAcl(readers, false);
+                log.info("INDEX ACTION - AclId {} has been indexed", aclId);
             }
             checkShutdown();
         }
@@ -187,7 +193,12 @@ public class AclTracker extends AbstractTracker
                     }
 
                     this.infoSrv.indexAclTransaction(changeSet, true);
+                    log.info("REINDEX ACTION - AclChangeSetId {} has been reindexed", aclChangeSetId);
                     requiresCommit = true;
+                }
+                else
+                {
+                    log.info("REINDEX ACTION - AclChangeSetId {} was not found in database, it has NOT been reindexed", aclChangeSetId);
                 }
             }
             checkShutdown();
@@ -212,6 +223,7 @@ public class AclTracker extends AbstractTracker
                 Acl acl = new Acl(0, aclId);
                 List<AclReaders> readers = client.getAclReaders(Collections.singletonList(acl));
                 indexAcl(readers, true);
+                log.info("REINDEX ACTION - aclId {} has been reindexed", aclId);
                 requiresCommit = true;
             }
             checkShutdown();
@@ -231,6 +243,7 @@ public class AclTracker extends AbstractTracker
             if (aclChangeSetId != null)
             {
                 this.infoSrv.deleteByAclChangeSetId(aclChangeSetId);
+                log.info("PURGE ACTION - Purged aclChangeSetId {}", aclChangeSetId);
             }
             checkShutdown();
         }
@@ -245,6 +258,7 @@ public class AclTracker extends AbstractTracker
             if (aclId != null)
             {
                 this.infoSrv.deleteByAclId(aclId);
+                log.info("PURGE ACTION - Purged aclId {}", aclId);                
             }
             checkShutdown();
         }
