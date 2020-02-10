@@ -168,22 +168,20 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
             assertEquals(instance.getState(), "ACTIVE");
             
             // shardparams related checks
-            String shardParams = instance.getShardParams();
-            if(shardingMethod == "EXPLICIT_ID"){
-            	assertNotNull(shardParams, "shard.key=");
-            }
-            
-            if(shardingMethod == "DB_ID_RANGE"){
-            	assertNotNull(shardParams, "");
-            }
-            
-            if(shardingMethod == "DATE"){
-            	assertNotNull(shardParams, "shard.key= "
-            			+ "shard.date.grouping");
-            }
-            
-            if(shardingMethod == "PROPERTY"){
-            	assertNotNull(shardParams, "shard.key=");
+            String shardParams = instance.getShardParams();            
+            switch (shardingMethod)
+            {
+                case "DB_ID_RANGE":
+                	assertTrue(shardParams.contains("shard.key="));   
+                case "PROPERTY":
+                	assertTrue(shardParams.contains("shard.key="));   
+                case "EXPLICIT_ID":
+                	assertTrue(shardParams.contains("shard.key="));   
+                case "DATE":
+                	assertTrue(shardParams.contains("shard.key="));               
+                break;
+                default:
+                    throw new AssertionError("Not as expected: " + shardParams.toString());
             }
         }
     }
