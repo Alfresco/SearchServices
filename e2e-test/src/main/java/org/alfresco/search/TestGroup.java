@@ -30,6 +30,7 @@ public class TestGroup
     public static final String ASS_MASTER_SLAVE = "ASS_Master_Slave"; // Alfresco Search Services using master slave configurations
     public static final String ASS_MASTER ="ASS_Master"; // Alfresco search services using master/stand alone mode
     public static final String EXPLICIT_SHARDING ="Explicit_Sharding"; // Alfresco search services using sharded environment and explicit routing
+    public static final String SHARDING ="Sharding"; // Alfresco search services using sharded environment
 
     public static final String NOT_INSIGHT_ENGINE = "Not_InsightEngine"; // When Alfresco Insight Engine 1.0 isn't running
     

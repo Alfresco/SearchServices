@@ -40,7 +40,7 @@ import org.springframework.http.HttpStatus;
 public class ShardInfoTest extends AbstractE2EFunctionalTest
 {
     /* The test that will be excluded when running master slave setup, excluding the ASS_MASTER test group. */
-    @Test(groups = { TestGroup.ACS_60n, TestGroup.ASS_MASTER, TestGroup.EXPLICIT_SHARDING })
+    @Test(groups = { TestGroup.ACS_60n, TestGroup.ASS_MASTER, TestGroup.SHARDING })
     public void getShardInfoWithAdminAuthority() throws JsonProcessingException
     {
         RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI()
@@ -128,231 +128,62 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
         restClient.assertStatusCodeIs(HttpStatus.INTERNAL_SERVER_ERROR);
     }
     
-    @Test(groups = { TestGroup.ACS_60n })
-    public void getShardInfoWithExplicitID() throws JsonProcessingException
+    @Test(groups = { TestGroup.ACS_60n, TestGroup.SHARDING })
+    public void getShardInfoWith2OrMoreShards() throws JsonProcessingException
     {
-        RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI()
-                .getInfo();
+        RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI().getInfo();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         info.assertThat().entriesListIsNotEmpty();
+                
+        // Checks based on 2 default cores: alfresco and archive
         assertEquals(info.getPagination().getTotalItems().intValue(), 2);
-
         List<String> stores = Arrays.asList("workspace://SpacesStore", "archive://SpacesStore");
         List<String> baseUrls = Arrays.asList("/solr/alfresco", "/solr/archive");
-
         List<RestShardInfoModel> entries = info.getEntries();
+        // We could check entries.size() matches pagination count above
         for (RestShardInfoModel shardInfoModel : entries)
         {
             RestShardInfoModel model = shardInfoModel.getModel();
             assertEquals(model.getTemplate(), "rerank");
-            assertEquals(model.getShardMethod(), "EXPLICIT_ID");
             assertEquals(model.getMode(), "MASTER");
             assertTrue(model.getHasContent());
-
             assertTrue(stores.contains(model.getStores()));
-
+            assertTrue(model.getNumberOfShards()>=2);
+            
+            // Sharding Type related checks (an example)
+            List<String> shardingMethods = Arrays.asList("DB_ID", "DB_ID_RANGE", "EXPLICIT_ID", "ACL_ID", "MOD_ACL_ID", "DATE", "PROPERTY");
+            String shardingMethod = model.getShardMethod();
+            assertTrue(shardingMethods.contains(shardingMethod), "Unexpected Sharding Method Found: " + shardingMethod);
+            // Shard Instance related checks: You could iterate through all the instances in a loop
             List<RestShardModel> shards = model.getShards();
-            assertNotNull(shards);
+            assertNotNull(shards.contains(shards), "Unexpected number of shards found:" + shards);
             RestShardModel shard = shards.iterator().next();
             assertNotNull(shard);
             List<RestInstanceModel> instances = shard.getInstances();
-            assertNotNull(instances);
+            assertNotNull(instances.contains(instances), "Unexpected number of instances found:" + instances);
             RestInstanceModel instance = instances.iterator().next();
             assertNotNull(instance);
-
             assertTrue(baseUrls.contains(instance.getBaseUrl()));
             
             assertEquals(instance.getState(), "ACTIVE");
-        }
-    }
-    
-    @Test(groups = { TestGroup.ACS_60n, TestGroup.EXPLICIT_SHARDING })
-    public void getShardInfoWithDBIDRange() throws JsonProcessingException
-    {
-        RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI()
-                .getInfo();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        info.assertThat().entriesListIsNotEmpty();
-        assertEquals(info.getPagination().getTotalItems().intValue(), 2);
-
-        List<String> stores = Arrays.asList("workspace://SpacesStore", "archive://SpacesStore");
-        List<String> baseUrls = Arrays.asList("/solr/alfresco", "/solr/archive");
-
-        List<RestShardInfoModel> entries = info.getEntries();
-        for (RestShardInfoModel shardInfoModel : entries)
-        {
-            RestShardInfoModel model = shardInfoModel.getModel();
-            assertEquals(model.getTemplate(), "rerank");
-            assertEquals(model.getShardMethod(), "DB_ID_RANGE_ID");
-            assertEquals(model.getMode(), "MASTER");
-            assertTrue(model.getHasContent());
-
-            assertTrue(stores.contains(model.getStores()));
-
-            List<RestShardModel> shards = model.getShards();
-            assertNotNull(shards);
-            RestShardModel shard = shards.iterator().next();
-            assertNotNull(shard);
-            List<RestInstanceModel> instances = shard.getInstances();
-            assertNotNull(instances);
-            RestInstanceModel instance = instances.iterator().next();
-            assertNotNull(instance);
-
-            assertTrue(baseUrls.contains(instance.getBaseUrl()));
             
-            assertEquals(instance.getState(), "ACTIVE");
-        }
-    }
-    
-    @Test(groups = { TestGroup.ACS_60n, TestGroup.EXPLICIT_SHARDING })
-    public void getShardInfoWithMODACLID() throws JsonProcessingException
-    {
-        RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI()
-                .getInfo();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        info.assertThat().entriesListIsNotEmpty();
-        assertEquals(info.getPagination().getTotalItems().intValue(), 2);
-
-        List<String> stores = Arrays.asList("workspace://SpacesStore", "archive://SpacesStore");
-        List<String> baseUrls = Arrays.asList("/solr/alfresco", "/solr/archive");
-
-        List<RestShardInfoModel> entries = info.getEntries();
-        for (RestShardInfoModel shardInfoModel : entries)
-        {
-            RestShardInfoModel model = shardInfoModel.getModel();
-            assertEquals(model.getTemplate(), "rerank");
-            assertEquals(model.getShardMethod(), "MOD_ACL_ID");
-            assertEquals(model.getMode(), "MASTER");
-            assertTrue(model.getHasContent());
-
-            assertTrue(stores.contains(model.getStores()));
-
-            List<RestShardModel> shards = model.getShards();
-            assertNotNull(shards);
-            RestShardModel shard = shards.iterator().next();
-            assertNotNull(shard);
-            List<RestInstanceModel> instances = shard.getInstances();
-            assertNotNull(instances);
-            RestInstanceModel instance = instances.iterator().next();
-            assertNotNull(instance);
-
-            assertTrue(baseUrls.contains(instance.getBaseUrl()));
+            // shardparams related checks
+            String shardParams = instance.getShardParams();
+            if(shardingMethod == "EXPLICIT_ID"){
+            	assertNotNull(shardParams, "shard.key=");
+            }
             
-            assertEquals(instance.getState(), "ACTIVE");
-        }
-    }
-    
-    @Test(groups = { TestGroup.ACS_60n, TestGroup.EXPLICIT_SHARDING })
-    public void getShardInfoWithACLID() throws JsonProcessingException
-    {
-        RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI()
-                .getInfo();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        info.assertThat().entriesListIsNotEmpty();
-        assertEquals(info.getPagination().getTotalItems().intValue(), 2);
-
-        List<String> stores = Arrays.asList("workspace://SpacesStore", "archive://SpacesStore");
-        List<String> baseUrls = Arrays.asList("/solr/alfresco", "/solr/archive");
-
-        List<RestShardInfoModel> entries = info.getEntries();
-        for (RestShardInfoModel shardInfoModel : entries)
-        {
-            RestShardInfoModel model = shardInfoModel.getModel();
-            assertEquals(model.getTemplate(), "rerank");
-            assertEquals(model.getShardMethod(), "ACL_ID");
-            assertEquals(model.getMode(), "MASTER");
-            assertTrue(model.getHasContent());
-
-            assertTrue(stores.contains(model.getStores()));
-
-            List<RestShardModel> shards = model.getShards();
-            assertNotNull(shards);
-            RestShardModel shard = shards.iterator().next();
-            assertNotNull(shard);
-            List<RestInstanceModel> instances = shard.getInstances();
-            assertNotNull(instances);
-            RestInstanceModel instance = instances.iterator().next();
-            assertNotNull(instance);
-
-            assertTrue(baseUrls.contains(instance.getBaseUrl()));
+            if(shardingMethod == "DB_ID_RANGE"){
+            	assertNotNull(shardParams, "shard.key=");
+            }
             
-            assertEquals(instance.getState(), "ACTIVE");
-        }
-    }
-    
-    @Test(groups = { TestGroup.ACS_60n, TestGroup.EXPLICIT_SHARDING })
-    public void getShardInfoWithDate() throws JsonProcessingException
-    {
-        RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI()
-                .getInfo();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        info.assertThat().entriesListIsNotEmpty();
-        assertEquals(info.getPagination().getTotalItems().intValue(), 2);
-
-        List<String> stores = Arrays.asList("workspace://SpacesStore", "archive://SpacesStore");
-        List<String> baseUrls = Arrays.asList("/solr/alfresco", "/solr/archive");
-
-        List<RestShardInfoModel> entries = info.getEntries();
-        for (RestShardInfoModel shardInfoModel : entries)
-        {
-            RestShardInfoModel model = shardInfoModel.getModel();
-            assertEquals(model.getTemplate(), "rerank");
-            assertEquals(model.getShardMethod(), "DATE");
-            assertEquals(model.getMode(), "MASTER");
-            assertTrue(model.getHasContent());
-
-            assertTrue(stores.contains(model.getStores()));
-
-            List<RestShardModel> shards = model.getShards();
-            assertNotNull(shards);
-            RestShardModel shard = shards.iterator().next();
-            assertNotNull(shard);
-            List<RestInstanceModel> instances = shard.getInstances();
-            assertNotNull(instances);
-            RestInstanceModel instance = instances.iterator().next();
-            assertNotNull(instance);
-
-            assertTrue(baseUrls.contains(instance.getBaseUrl()));
+            if(shardingMethod == "DATE"){
+            	assertNotNull(shardParams, "shard.key=");
+            }
             
-            assertEquals(instance.getState(), "ACTIVE");
-        }
-    }
-    
-    @Test(groups = { TestGroup.ACS_60n, TestGroup.EXPLICIT_SHARDING })
-    public void getShardInfoWithProperty() throws JsonProcessingException
-    {
-        RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI()
-                .getInfo();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        info.assertThat().entriesListIsNotEmpty();
-        assertEquals(info.getPagination().getTotalItems().intValue(), 2);
-
-        List<String> stores = Arrays.asList("workspace://SpacesStore", "archive://SpacesStore");
-        List<String> baseUrls = Arrays.asList("/solr/alfresco", "/solr/archive");
-
-        List<RestShardInfoModel> entries = info.getEntries();
-        for (RestShardInfoModel shardInfoModel : entries)
-        {
-            RestShardInfoModel model = shardInfoModel.getModel();
-            assertEquals(model.getTemplate(), "rerank");
-            assertEquals(model.getShardMethod(), "PROPERTY");
-            assertEquals(model.getMode(), "MASTER");
-            assertTrue(model.getHasContent());
-
-            assertTrue(stores.contains(model.getStores()));
-
-            List<RestShardModel> shards = model.getShards();
-            assertNotNull(shards);
-            RestShardModel shard = shards.iterator().next();
-            assertNotNull(shard);
-            List<RestInstanceModel> instances = shard.getInstances();
-            assertNotNull(instances);
-            RestInstanceModel instance = instances.iterator().next();
-            assertNotNull(instance);
-
-            assertTrue(baseUrls.contains(instance.getBaseUrl()));
-            
-            assertEquals(instance.getState(), "ACTIVE");
+            if(shardingMethod == "PROPERTY"){
+            	assertNotNull(shardParams, "shard.key=");
+            }
         }
     }
 }
