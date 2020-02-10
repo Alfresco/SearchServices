@@ -174,11 +174,12 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
             }
             
             if(shardingMethod == "DB_ID_RANGE"){
-            	assertNotNull(shardParams, "shard.key=");
+            	assertNotNull(shardParams, "");
             }
             
             if(shardingMethod == "DATE"){
-            	assertNotNull(shardParams, "shard.key=");
+            	assertNotNull(shardParams, "shard.key= "
+            			+ "shard.date.grouping");
             }
             
             if(shardingMethod == "PROPERTY"){
