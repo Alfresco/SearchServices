@@ -368,7 +368,7 @@ public class AlfrescoCoreAdminHandlerIT
 
         invalidNames.forEach(spy::setupNewDefaultCores);
 
-        verify(spy, never()).newCore(any(), anyInt(), any(), any(), anyInt(), anyInt(), anyInt(), any(), any(), any());
+        verify(spy, never()).newCore(any(), anyInt(), any(), any(), anyInt(), anyInt(), anyInt(), any(), any());
 
         reset(spy);
 
@@ -376,16 +376,17 @@ public class AlfrescoCoreAdminHandlerIT
         String commaSeparatedNames = String.join(",", invalidNames);
         spy.setupNewDefaultCores(commaSeparatedNames);
 
-        verify(spy, never()).newCore(any(), anyInt(), any(), any(), anyInt(), anyInt(), anyInt(), any(), any(), any());
+        verify(spy, never()).newCore(any(), anyInt(), any(), any(), anyInt(), anyInt(), anyInt(), any(), any());
     }
 
     @Test
     public void coreNamesAreTrimmed_oneCoreNameAtTime() {
         AlfrescoCoreAdminHandler spy = spy(new AlfrescoCoreAdminHandler() {
             @Override
-            protected void newCore(String coreName, int numShards, StoreRef storeRef, String templateName, int replicationFactor, int nodeInstance, int numNodes, String shardIds, Properties extraProperties, SolrQueryResponse rsp)
+            protected NamedList<Object> newCore(String coreName, int numShards, StoreRef storeRef, String templateName, int replicationFactor, int nodeInstance, int numNodes, String shardIds, Properties extraProperties)
             {
                 // Do nothing here otherwise we cannot spy it
+                return null;
             }
         });
 
@@ -399,18 +400,19 @@ public class AlfrescoCoreAdminHandlerIT
 
         coreNames.forEach(spy::setupNewDefaultCores);
 
-        verify(spy).newCore(eq(ARCHIVE_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(ARCHIVE_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null), any());
-        verify(spy).newCore(eq(ALFRESCO_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(ALFRESCO_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null), any());
-        verify(spy).newCore(eq(VERSION_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(VERSION_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null), any());
+        verify(spy).newCore(eq(ARCHIVE_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(ARCHIVE_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null));
+        verify(spy).newCore(eq(ALFRESCO_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(ALFRESCO_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null));
+        verify(spy).newCore(eq(VERSION_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(VERSION_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null));
     }
 
     @Test
     public void validAndInvalidCoreNames() {
         AlfrescoCoreAdminHandler spy = spy(new AlfrescoCoreAdminHandler() {
             @Override
-            protected void newCore(String coreName, int numShards, StoreRef storeRef, String templateName, int replicationFactor, int nodeInstance, int numNodes, String shardIds, Properties extraProperties, SolrQueryResponse rsp)
+            protected NamedList<Object> newCore(String coreName, int numShards, StoreRef storeRef, String templateName, int replicationFactor, int nodeInstance, int numNodes, String shardIds, Properties extraProperties)
             {
                 // Do nothing here otherwise we cannot spy it
+                return null;
             }
         });
 
@@ -426,8 +428,8 @@ public class AlfrescoCoreAdminHandlerIT
         String commaSeparatedNames = String.join(",", coreNames);
         spy.setupNewDefaultCores(commaSeparatedNames);
 
-        verify(spy).newCore(eq(ARCHIVE_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(ARCHIVE_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null), any());
-        verify(spy).newCore(eq(ALFRESCO_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(ALFRESCO_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null), any());
-        verify(spy).newCore(eq(VERSION_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(VERSION_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null), any());
+        verify(spy).newCore(eq(ARCHIVE_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(ARCHIVE_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null));
+        verify(spy).newCore(eq(ALFRESCO_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(ALFRESCO_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null));
+        verify(spy).newCore(eq(VERSION_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(VERSION_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null));
     }
 }

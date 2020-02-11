@@ -359,9 +359,14 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
 
                     // Index the transaction doc after the node - if this is not found then a reindex will be done.
                     this.infoSrv.indexTransaction(info, false);
+                    log.info("INDEX ACTION - Transaction {} has been indexed", transactionId);
                     requiresCommit = true;
 
                     trackerStats.addTxDocs(nodes.size());
+                }
+                else
+                {
+                    log.info("INDEX ACTION - Transaction {} was not found in database, it has NOT been reindexed", transactionId);
                 }
             }
 
@@ -402,6 +407,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 node.setTxnId(Long.MAX_VALUE);
 
                 this.infoSrv.indexNode(node, false);
+                log.info("INDEX ACTION - Node {} has been reindexed", node.getId());
                 requiresCommit = true;
             }
             checkShutdown();
@@ -452,6 +458,11 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
 
                     // Index the transaction doc after the node - if this is not found then a reindex will be done.
                     this.infoSrv.indexTransaction(info, true);
+                    log.info("REINDEX ACTION - Transaction {} has been reindexed", transactionId);
+                }
+                else
+                {
+                    log.info("REINDEX ACTION - Transaction {} was not found in database, it has NOT been reindexed", transactionId);
                 }
             }
 
@@ -494,6 +505,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 node.setTxnId(Long.MAX_VALUE);
 
                 this.infoSrv.indexNode(node, true);
+                log.info("REINDEX ACTION - Node {} has been reindexed", node.getId());
                 requiresCommit = true;
             }
             checkShutdown();
@@ -515,6 +527,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
             if (query != null)
             {
                 this.infoSrv.reindexNodeByQuery(query);
+                log.info("REINDEX ACTION - Nodes from query {} have been reindexed", query);
                 requiresCommit = true;
             }
             checkShutdown();
@@ -539,6 +552,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 // make sure it is cleaned out so we do not miss deletes
                 this.infoSrv.deleteByTransactionId(transactionId);
                 requiresCommit = true;
+                log.info("PURGE ACTION - Purged transactionId {}", transactionId);
             }
             checkShutdown();
         }
@@ -559,6 +573,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
             {
                 // make sure it is cleaned out so we do not miss deletes
                 this.infoSrv.deleteByNodeId(nodeId);
+                log.info("PURGE ACTION - Purged nodeId {}", nodeId);
             }
             checkShutdown();
         }
