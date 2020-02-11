@@ -1241,8 +1241,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
         else
         {
-            NamedList<Object> report = new SimpleOrderedMap<>();
-            addAlertMessage(report);
+            addAlertMessage(response);
         }
         return response;
     }
@@ -1335,8 +1334,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
         else
         {
-            NamedList<Object> report = new SimpleOrderedMap<>();
-            addAlertMessage(report);
+            addAlertMessage(response);
         }
         return response;
     }
