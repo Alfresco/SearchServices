@@ -219,7 +219,7 @@ public class AlfrescoSolrUtils
         nodeMetaData.setAncestors(ancestors);
         Map<QName, PropertyValue> props = new HashMap<>();
         props.put(ContentModel.PROP_IS_INDEXED, new StringPropertyValue("true"));
-        props.put(ContentModel.PROP_CONTENT, new ContentPropertyValue(Locale.US, 0l, "UTF-8", "text/plain", null));
+        props.put(ContentModel.PROP_CONTENT, new ContentPropertyValue(Locale.US, 0L, "UTF-8", "text/plain", null));
         nodeMetaData.setProperties(props);
         //If create createError is true then we leave out the nodeRef which will cause an error
         if(!createError) {

@@ -70,7 +70,7 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
 
         List<Map<String, String>> data = asList(
                 of(NAME_METADATA_ATTRIBUTE, "some very long name",
-                        DESCRIPTION_METADATA_ATTRIBUTE, "mydesc",
+                        DESCRIPTION_METADATA_ATTRIBUTE, "is this a long description? No, I do not think is so long",
                         TITLE_METADATA_ATTRIBUTE, "title1 is very long"),
                 of(NAME_METADATA_ATTRIBUTE, long_text,
                         TITLE_METADATA_ATTRIBUTE, "title2"),
@@ -180,7 +180,7 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
         SolrServletRequest req = areq(params("q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
                 HighlightParams.Q, "long",
-                HighlightParams.FIELDS, "content,name,title",
+                HighlightParams.FIELDS, "content,name,title,description",
                 HighlightParams.SNIPPETS, "4",
                 HighlightParams.FRAGSIZE, "40"),
                 "{" +
@@ -190,12 +190,14 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
 
         assertQ(req,
                 "*[count(//lst[@name='highlighting']/lst)=2]",
-                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='some very <em>long</em> name']",
-                "//lst[@name='highlighting']/lst[1]/arr[@name='title']/str[.='title1 is very <em>long</em>']",
-                "//lst[@name='highlighting']/lst[2]/arr[@name='name']/str[.='this is some <em>long</em> text.  It has the']",
-                "//lst[@name='highlighting']/lst[2]/arr[@name='name']/str[.=' word <em>long</em> in many places.  In fact, it has']",
-                "//lst[@name='highlighting']/lst[2]/arr[@name='name']/str[.=' <em>long</em> on some different fragments.  Let us']",
-                "//lst[@name='highlighting']/lst[2]/arr[@name='name']/str[.=' see what happens to <em>long</em> in this case.']");
+                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='this is some <em>long</em> text.  It has the']",
+                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.=' word <em>long</em> in many places.  In fact, it has']",
+                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.=' <em>long</em> on some different fragments.  Let us']",
+                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.=' see what happens to <em>long</em> in this case.']",
+                "//lst[@name='highlighting']/lst[2]/arr[@name='name']/str[.='some very <em>long</em> name']",
+                "//lst[@name='highlighting']/lst[2]/arr[@name='description']/str[.='is this a <em>long</em> description? No, I do']",
+                "//lst[@name='highlighting']/lst[2]/arr[@name='description']/str[.=' not think is so <em>long</em>']",
+                "//lst[@name='highlighting']/lst[2]/arr[@name='title']/str[.='title1 is very <em>long</em>']");
     }
 
     @Test
@@ -246,8 +248,8 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
         assertQ(req,
                 "*[count(//lst[@name='highlighting']/lst)=2]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=2]",
-                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='some very {long} name']",
-                "//lst[@name='highlighting']/lst[2]/arr[@name='name']/str[.='this is some {long}']");
+                "//lst[@name='highlighting']/lst[2]/arr[@name='name']/str[.='some very {long} name']",
+                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='this is some {long}']");
     }
 
     @Test
@@ -288,13 +290,13 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
         assertQ(req,
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=2]",
                 "*[count(//lst[@name='highlighting']/lst/str[@name='DBID'])=2]",
-                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='some very [long] name']",
-                "//lst[@name='highlighting']/lst[1]/arr[@name='title']/str[.='title1 is very (long)']",
-                "//lst[@name='highlighting']/lst[2]/arr[@name='name']/str[.='this is some [long] text.  It has the word [long] in many places.  In fact, it has [long] on some']");
+                "//lst[@name='highlighting']/lst[2]/arr[@name='name']/str[.='some very [long] name']",
+                "//lst[@name='highlighting']/lst[2]/arr[@name='title']/str[.='title1 is very (long)']",
+                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='this is some [long] text.  It has the word [long] in many places.  In fact, it has [long] on some']");
     }
 
     @Test
-    public void highlightingRequiredFieldsTest()
+    public void highlightingRequiredFields()
     {
         SolrServletRequest req = areq(params("q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
@@ -307,7 +309,7 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
         assertQ(req,
                 "*[count(//lst[@name='highlighting']/lst)=2]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='title'])=1]",
-                "//lst[@name='highlighting']/lst[1]/arr[@name='title']/str[.='title1 is very {long}']");
+                "//lst[@name='highlighting']/lst[2]/arr[@name='title']/str[.='title1 is very {long}']");
 
         req = areq(params("q", "name:long OR title:long", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
@@ -322,7 +324,7 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
                 "*[count(//lst[@name='highlighting']/lst)=2]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='title'])=1]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=0]",
-                "//lst[@name='highlighting']/lst[1]/arr[@name='title']/str[.='title1 is very {long}']");
+                "//lst[@name='highlighting']/lst[2]/arr[@name='title']/str[.='title1 is very {long}']");
     }
 
     @Test
@@ -330,7 +332,7 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
     {
         SolrServletRequest req = areq(params("q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
-                HighlightParams.Q, "long",
+                HighlightParams.Q, "world",
                 HighlightParams.FIELDS, "content,name,title",
                 HighlightParams.SIMPLE_PRE, "<al>",
                 HighlightParams.SIMPLE_POST, "<fresco>",
@@ -340,12 +342,11 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
 
         assertQ(req,
                 "*[count(//lst[@name='highlighting']/lst)=2]",
-                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='some very <al>long<fresco> name']",
-                "//lst[@name='highlighting']/lst[1]/arr[@name='title']/str[.='title1 is very <al>long<fresco>']",
-                "//lst[@name='highlighting']/lst[2]/arr[@name='name']/str[.='this is some <al>long<fresco> text.  It has the']",
-                "//lst[@name='highlighting']/lst[2]/arr[@name='name']/str[.=' word <al>long<fresco> in many places.  In fact, it has']",
-                "//lst[@name='highlighting']/lst[2]/arr[@name='name']/str[.=' <al>long<fresco> on some different fragments.  Let us']",
-                "//lst[@name='highlighting']/lst[2]/arr[@name='name']/str[.=' see what happens to <al>long<fresco> in this case.']");
+                "//lst[@name='highlighting']/lst[2]/arr[@name='name']/str[.='some very <al>long<fresco> name']",
+                "//lst[@name='highlighting']/lst[2]/arr[@name='title']/str[.='title1 is very <al>long<fresco>']",
+                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='this is some <al>long<fresco> text']",
+                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='.  It has the word <al>long<fresco> in many places.  In fact, it has <al>long<fresco>']",
+                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.=' on some different fragments.  Let us see what happens to <al>long<fresco> in this case.']");
     }
 
     @Test
@@ -373,7 +374,6 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
     {
         SolrServletRequest req = areq(params("q", "name:plural", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
-                //HighlightParams.Q, "lon*",
                 HighlightParams.FIELDS, NAME_METADATA_ATTRIBUTE,
                 HighlightParams.HIGHLIGHT_MULTI_TERM, "false",
                 HighlightParams.SIMPLE_PRE, "{",

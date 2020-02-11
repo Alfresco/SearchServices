@@ -776,29 +776,34 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
     }
 
+    // TODO: make it better
     private void addHighlightSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
     {
-        FieldInstance field = new FieldInstance("text@s_stored@" + propertyDefinition.getName(), false, false);
-        indexedField.getFields().add(field);
-        /*
-        if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE)
-                || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
+        QName propertyDataTypeQName = propertyDefinition.getDataType().getName();
+        StringBuilder builder =
+                new StringBuilder()
+                    .append(propertyDataTypeQName.getLocalName())
+                    .append("@");
+
+        if(propertyDataTypeQName.equals(DataTypeDefinition.MLTEXT))
         {
-            if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
-            {
-                indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
-                indexedField.addField(getFieldForText(true, true, false, propertyDefinition), false, false);
-            }
-            else
-            {
-                indexedField.addField(getFieldForText(true, true, false, propertyDefinition), false, false);
-            }
+            builder.append('m');
+        }
+        else  if(propertyDataTypeQName.equals(DataTypeDefinition.CONTENT))
+        {
+            builder.append('s');
         }
         else
         {
-            indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
+            builder.append(propertyDefinition.isMultiValued() ? "m" : "s");
         }
-         */
+
+        builder.append("_stored_lt@").append(propertyDefinition.getName().toString());
+
+        System.out.println(propertyDefinition.getName() + " has been mapped to " + builder);
+
+        FieldInstance field = new FieldInstance(builder.toString(), true, false);
+        indexedField.getFields().add(field);
     }
 
     /*

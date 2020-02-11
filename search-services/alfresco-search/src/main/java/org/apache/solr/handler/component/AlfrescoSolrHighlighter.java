@@ -241,6 +241,7 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 		// Additional mappings coming from this 2nd round
 		Map<String, String> additionalMappings = new HashMap<>();
 
+		/*
 		identifiers.keySet()
 				.forEach(id -> {
 					final NamedList<Object> docHighlighting = (NamedList<Object>) highlightingResponse.get(id);
@@ -257,7 +258,8 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 
 		mappings.putAll(additionalMappings);
 		withDebug(mappings);
-
+*/
+/*
 		// We are going to re-call the highlight for those documents/fields which didnt' produce any result in the
 		// previous step. In order to do that we need
 		// - a (Solr) field name: the second-level choice coming from Alfresco Data Model
@@ -295,6 +297,8 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 					.filter(notNullAndNotEmpty)
 					.collect(toList());
 
+
+
 		// Combine (actually reduce) the highlight response coming from the first try, with each
 		// partial highlight response coming from subsequent calls
 		NamedList<Object> responseBeforeRenamingFields = partialHighlightingResponses.stream()
@@ -315,9 +319,10 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 				});
 				return accumulator;
 			});
+*/
 
-
-		// Final step: under each document section, highlight snippets are associated with Solr field names,
+		NamedList<Object> responseBeforeRenamingFields = highlightingResponse;
+        // Final step: under each document section, highlight snippets are associated with Solr field names,
 		// so we need to replace them with fields actually requested
 		// In addition, beside the snippets we want to have the document DBID as well.
 		NamedList<Object> response = new SimpleOrderedMap<>();
