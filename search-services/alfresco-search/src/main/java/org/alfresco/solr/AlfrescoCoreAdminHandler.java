@@ -267,6 +267,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             LOGGER.error("Failed to create default alfresco cores (workspace/archive stores)", exception);
             wrapper.response.add(ACTION_STATUS_LABEL, ACTION_STATUS_ERROR);
             wrapper.response.add(ACTION_ERROR_MESSAGE_LABEL, exception.getMessage());
+            return wrapper.response;
         }
         
         wrapper.response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SUCCESS);
@@ -352,12 +353,14 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         {
             response.add(ACTION_STATUS_LABEL, ACTION_STATUS_ERROR);
             response.add(ACTION_ERROR_MESSAGE_LABEL, "ClassNotFoundException: org.apache.log4j.PropertyConfigurator");
+            return response;
         }
         catch (Exception e)
         {
             LOGGER.info("Failed to load " + resource, e);
             response.add(ACTION_STATUS_LABEL, ACTION_STATUS_ERROR);
             response.add(ACTION_ERROR_MESSAGE_LABEL, e.getMessage());
+            return response;
         }
 
         return response;
@@ -669,6 +672,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 }
                 else
                 {
+                    response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SUCCESS);
                     return response;
                 }
                 
@@ -823,7 +827,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             LOGGER.error("Failed to update Shared properties ", e);
             response.add(ACTION_STATUS_LABEL, ACTION_STATUS_ERROR);
             response.add(ACTION_ERROR_MESSAGE_LABEL, "Shared properties couldn't be reloaded for some core. Check the log to find out the reason.");
-
+            return response;
         }
         
         return response;
