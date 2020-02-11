@@ -61,6 +61,7 @@ import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
+import org.apache.solr.common.util.SimpleOrderedMap;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
@@ -386,7 +387,7 @@ public class AlfrescoCoreAdminHandlerIT
             protected NamedList<Object> newCore(String coreName, int numShards, StoreRef storeRef, String templateName, int replicationFactor, int nodeInstance, int numNodes, String shardIds, Properties extraProperties)
             {
                 // Do nothing here otherwise we cannot spy it
-                return null;
+                return new SimpleOrderedMap<>();
             }
         });
 
@@ -412,7 +413,7 @@ public class AlfrescoCoreAdminHandlerIT
             protected NamedList<Object> newCore(String coreName, int numShards, StoreRef storeRef, String templateName, int replicationFactor, int nodeInstance, int numNodes, String shardIds, Properties extraProperties)
             {
                 // Do nothing here otherwise we cannot spy it
-                return null;
+                return new SimpleOrderedMap<>();
             }
         });
 

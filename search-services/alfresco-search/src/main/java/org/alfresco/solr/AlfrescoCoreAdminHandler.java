@@ -654,15 +654,14 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     coreName = coreBase + shard;
                     File newCore = new File(baseDirectory, coreName);
                     
-                    response = createAndRegisterNewCore(extraProperties, storeRef, template, coreName,
-                            newCore, numShards, shard, templateName);
-                    if (response.size() > 1)
+                    response.addAll(createAndRegisterNewCore(extraProperties, storeRef, template, coreName,
+                            newCore, numShards, shard, templateName));
+                    if (Objects.equals(response.get(ACTION_STATUS_LABEL), ACTION_STATUS_ERROR))
                     {
                         coresNotCreated.add(coreName);
                     }
                 }
                 
-                response = new SimpleOrderedMap<>();
                 if (coresNotCreated.size() > 0)
                 {
                     response.add(ACTION_STATUS_LABEL, ACTION_STATUS_ERROR);
