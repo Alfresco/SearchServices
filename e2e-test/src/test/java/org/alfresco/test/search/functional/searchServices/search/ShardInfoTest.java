@@ -21,8 +21,11 @@ import static org.testng.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.Sets;
 
 import org.alfresco.rest.search.RestInstanceModel;
 import org.alfresco.rest.search.RestShardInfoModel;
@@ -127,6 +130,11 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
         restClient.authenticateUser(dataUser.createRandomTestUser()).withShardInfoAPI().getInfo();
         restClient.assertStatusCodeIs(HttpStatus.INTERNAL_SERVER_ERROR);
     }
+    /**
+     * This is a test to check that sharding is correctly working on bamboo and locally. 
+     * Include test group 'sharding' on bamboo to enable this test to run
+     * @throws JsonProcessingException
+     */
     
     @Test(groups = { TestGroup.ACS_60n, TestGroup.SHARDING })
     public void getShardInfoWith2OrMoreShards() throws JsonProcessingException
@@ -135,32 +143,32 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         info.assertThat().entriesListIsNotEmpty();
                 
-        // Checks based on 2 default cores: alfresco and archive
         assertEquals(info.getPagination().getTotalItems().intValue(), 2);
-        List<String> stores = Arrays.asList("workspace://SpacesStore", "archive://SpacesStore");
+        Set<String> stores = Sets.newHashSet("workspace://SpacesStore", "archive://SpacesStore");
         List<String> baseUrls = Arrays.asList("/solr/alfresco", "/solr/archive");
         List<RestShardInfoModel> entries = info.getEntries();
-        // We could check entries.size() matches pagination count above
+        
+        Set<String> actualStores = entries.stream().map(shardInfoModel -> shardInfoModel.getModel().getStores()).collect(Collectors.toSet());
+        assertEquals(actualStores, stores);
+
         for (RestShardInfoModel shardInfoModel : entries)
         {
             RestShardInfoModel model = shardInfoModel.getModel();
             assertEquals(model.getTemplate(), "rerank");
             assertEquals(model.getMode(), "MASTER");
             assertTrue(model.getHasContent());
-            assertTrue(stores.contains(model.getStores()));
             assertTrue(model.getNumberOfShards()>=2);
             
-            // Sharding Type related checks (an example)
             List<String> shardingMethods = Arrays.asList("DB_ID", "DB_ID_RANGE", "EXPLICIT_ID", "ACL_ID", "MOD_ACL_ID", "DATE", "PROPERTY");
             String shardingMethod = model.getShardMethod();
             assertTrue(shardingMethods.contains(shardingMethod), "Unexpected Sharding Method Found: " + shardingMethod);
-            // Shard Instance related checks: You could iterate through all the instances in a loop
+            
             List<RestShardModel> shards = model.getShards();
-            assertNotNull(shards.contains(shards), "Unexpected number of shards found:" + shards);
+            assertNotNull(shards, "Unexpected number of shards found:" + shards);
             RestShardModel shard = shards.iterator().next();
             assertNotNull(shard);
             List<RestInstanceModel> instances = shard.getInstances();
-            assertNotNull(instances.contains(instances), "Unexpected number of instances found:" + instances);
+            assertNotNull(instances, "Unexpected number of instances found:" + instances);
             RestInstanceModel instance = instances.iterator().next();
             assertNotNull(instance);
             assertTrue(baseUrls.contains(instance.getBaseUrl()));
@@ -171,15 +179,28 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
             String shardParams = instance.getShardParams();            
             switch (shardingMethod)
             {
-                case "DB_ID_RANGE":
-                	assertTrue(shardParams.contains("shard.key="));   
+	            case "MOD_ACL_ID":
+	            	assertTrue(shardingMethod == "MOD_ACL_ID", "Sharding Method is not MOD_ACL_ID"); 
+	            	break;
+	            case "ACL_ID":
+	            	assertTrue(shardingMethod == "ACL_ID", "Sharding Method is not ACL_ID"); 
+	            	break;
+	            case "DB_ID":
+	            	assertTrue(shardingMethod == "DB_ID", "Sharding Method is not DB_ID"); 
+	            	break;
+	            case "DB_IN_RANGE":
+                	assertTrue(shardingMethod == "DB_ID_RANGE", "Sharding Method is not DB_ID_RANGE"); 
+                	break;
+	            case "DATE":
+                	assertTrue(shardParams.contains("shard.key="), "Unexpected shard params defined for DATE");
+                	assertTrue(shardParams.contains("shard.grouping="), "Unexpected shard grouping defined for DATE");
+                	break;
                 case "PROPERTY":
-                	assertTrue(shardParams.contains("shard.key="));   
+                	assertTrue(shardParams.contains("shard.key="), "Unexpected shard params defined for PROPERTY"); 
+                	break;
                 case "EXPLICIT_ID":
-                	assertTrue(shardParams.contains("shard.key="));   
-                case "DATE":
-                	assertTrue(shardParams.contains("shard.key="));               
-                break;
+                	assertTrue(shardParams.contains("shard.key="), "Unexpected shard params defined for EXPLICIT_ID");  
+                	break;
                 default:
                     throw new AssertionError("Not as expected: " + shardParams.toString());
             }
