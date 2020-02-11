@@ -881,14 +881,16 @@ public class AlfrescoSolrUtils
         TimeUnit.SECONDS.sleep(1);
         if(shards > 1 )
         {
-            NamedList vals = response.getValues();
-            List<String> coreNames = vals.getAll("core");
+            NamedList action = (NamedList) response.getValues().get("action");
+            List<String> coreNames = action.getAll("core");
             assertEquals(shards,coreNames.size());
             testingCore = getCore(coreContainer, coreNames.get(0));
         }
         else
         {
-            assertEquals(coreName, response.getValues().get("core"));
+            
+            NamedList action = (NamedList) response.getValues().get("action");
+            assertEquals(coreName, action.get("core"));
             //Get a reference to the new core
             testingCore = getCore(coreContainer, coreName);
         }
