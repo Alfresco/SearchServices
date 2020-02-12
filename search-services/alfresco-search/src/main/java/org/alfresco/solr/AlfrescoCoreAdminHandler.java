@@ -984,17 +984,21 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * - core, The name of the SOLR Core or "null" to get the report for every core
      * @return Response including the action result:
      * - report: An Object with the report details
+     * - error: When mandatory parameters are not set, an error node is returned
      *
      * @throws JSONException
      */
     private NamedList<Object> actionNODEREPORTS(SolrParams params) throws JSONException
     {
-        Long dbid =
-                ofNullable(params.get(ARG_NODEID))
-                        .map(Long::valueOf)
-                        .orElseThrow(() -> new AlfrescoRuntimeException("No dbid parameter set."));
-
+        
         NamedList<Object> report = new SimpleOrderedMap<>();
+
+        Long nodeid = ofNullable(params.get(ARG_NODEID)).map(Long::valueOf).orElse(null);
+        if (nodeid == null)
+        {
+            report.add(ACTION_STATUS_ERROR, "No " + ARG_NODEID +" parameter set.");
+            return report;
+        }
 
         String requestedCoreName = coreName(params);
 
@@ -1006,7 +1010,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 .forEach(coreNameAndPublisher ->
                         report.add(
                                 coreNameAndPublisher.getFirst(),
-                                buildNodeReport(coreNameAndPublisher.getSecond(), dbid)));
+                                buildNodeReport(coreNameAndPublisher.getSecond(), nodeid)));
         return report;
     }
 
@@ -1020,17 +1024,20 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * - core, The name of the SOLR Core or "null" to get the report for every core
      * @return Response including the action result:
      * - report: an Object with the details of the report
-     *
+     * - error: When mandatory parameters are not set, an error node is returned
+     * 
      * @throws JSONException
      */
     private NamedList<Object> actionACLREPORT(SolrParams params) throws JSONException
     {
-        Long aclid =
-                ofNullable(params.get(ARG_ACLID))
-                        .map(Long::valueOf)
-                        .orElseThrow(() -> new AlfrescoRuntimeException("No " + ARG_ACLID + " parameter set."));
-
         NamedList<Object> report = new SimpleOrderedMap<>();
+
+        Long aclid = ofNullable(params.get(ARG_ACLID)).map(Long::valueOf).orElse(null);
+        if (aclid == null)
+        {
+            report.add(ACTION_STATUS_ERROR, "No " + ARG_ACLID + " parameter set.");
+            return report;
+        }
 
         String requestedCoreName = coreName(params);
 
@@ -1062,32 +1069,43 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * - core, The name of the SOLR Core or "null" to get the report for every core
      * @return Response including the action result:
      * - report: an Object with the details of the report
+     * - error: When mandatory parameters are not set, an error node is returned
      *
      * @throws JSONException
      */
     private NamedList<Object> actionTXREPORT(SolrParams params) throws JSONException
     {
-        String coreName =
-                ofNullable(coreName(params))
-                    .orElseThrow(() -> new AlfrescoRuntimeException("No " + CoreAdminParams.CORE + " parameter set."));
-
         NamedList<Object> report = new SimpleOrderedMap<>();
-
-        if (isMasterOrStandalone(coreName))
+        
+        Long txid = ofNullable(params.get(ARG_TXID)).map(Long::valueOf).orElse(null);
+        if (txid == null)
         {
-            MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-            Long txid =
-                    ofNullable(params.get(ARG_TXID))
-                            .map(Long::valueOf)
-                            .orElseThrow(() -> new AlfrescoRuntimeException("No " + ARG_TXID + " parameter set."));
-
-            report.add(coreName, buildTxReport(trackerRegistry, informationServers.get(coreName), coreName, tracker, txid));
+            report.add(ACTION_STATUS_ERROR, "No " + ARG_TXID + " parameter set.");
+            return report;
         }
-        else
+
+        String requestedCoreName = coreName(params);
+
+        coreNames().stream()
+                .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
+                .map(coreName -> new Pair<>(coreName, trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class)))
+                .filter(coreNameAndMetadataTracker -> coreNameAndMetadataTracker.getSecond() != null)
+                .forEach(coreNameAndMetadataTracker ->
+                        report.add(
+                                coreNameAndMetadataTracker.getFirst(),
+                                buildTxReport(
+                                        trackerRegistry,
+                                        informationServers.get(coreNameAndMetadataTracker.getFirst()),
+                                        coreNameAndMetadataTracker.getFirst(),
+                                        coreNameAndMetadataTracker.getSecond(),
+                                        txid)));
+
+        if (report.size() == 0)
         {
             addAlertMessage(report);
         }
         return report;
+        
     }
 
     /**
@@ -1100,17 +1118,20 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * - acltxid, mandatory, the number of the ACL TX Id to build the report
      * @return Response including the action result:
      * - report: an Object with the details of the report
+     * - error: When mandatory parameters are not set, an error node is returned
      * 
      * @throws JSONException
      */
     private NamedList<Object> actionACLTXREPORT(SolrParams params) throws JSONException
     {
-        Long acltxid =
-                ofNullable(params.get(ARG_ACLTXID))
-                        .map(Long::valueOf)
-                        .orElseThrow(() -> new AlfrescoRuntimeException("No " + ARG_ACLTXID + " parameter set."));
-
         NamedList<Object> report = new SimpleOrderedMap<>();
+        
+        Long acltxid = ofNullable(params.get(ARG_ACLTXID)).map(Long::valueOf).orElse(null);
+        if (acltxid == null)
+        {
+            report.add(ACTION_STATUS_ERROR, "No " + ARG_ACLTXID + " parameter set.");
+            return report;
+        }
 
         String requestedCoreName = coreName(params);
 
@@ -1145,17 +1166,21 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * - core, The name of the SOLR Core
      * @return Response including the action result:
      * - report: An Object with the report details
+     * - error: When mandatory parameters are not set, an error node is returned
      * 
      * @throws IOException
      */
     private NamedList<Object> rangeCheck(SolrParams params) throws IOException
     {
-        String coreName =
-                ofNullable(coreName(params))
-                        .orElseThrow(() -> new AlfrescoRuntimeException("No " + CoreAdminParams.CORE + " parameter set."));
-
         NamedList<Object> response = new SimpleOrderedMap<>();
         
+        String coreName = ofNullable(coreName(params)).orElse(null);
+        if (coreName == null)
+        {
+            response.add(ACTION_STATUS_ERROR, "No " + CoreAdminParams.CORE + " parameter set.");
+            return response;
+        }
+
         if (isMasterOrStandalone(coreName))
         {
             InformationServer informationServer = informationServers.get(coreName);
@@ -1235,7 +1260,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             else
             {
                 response.add("expand", -1);
-                response.add("exception", "ERROR: Wrong document router type:"+docRouter.getClass().getSimpleName());
+                response.add("exception", "ERROR: Wrong document router type:" + docRouter.getClass().getSimpleName());
             }
         }
         else
@@ -1257,16 +1282,20 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * @return Response including the action result:
      * - expand: The number of the new End Range limit or -1 if the action failed
      * - exception: Error message if expand is -1
+     * - error: When mandatory parameters are not set, an error node is returned
      * 
      * @throws IOException
      */
     private synchronized NamedList<Object> expand(SolrParams params) throws IOException
     {
-        String coreName =
-                ofNullable(coreName(params))
-                        .orElseThrow(() -> new AlfrescoRuntimeException("No " + CoreAdminParams.CORE + " parameter set."));
-
         NamedList<Object> response = new SimpleOrderedMap<>();
+        
+        String coreName = ofNullable(coreName(params)).orElse(null);
+        if (coreName == null)
+        {
+            response.add(ACTION_STATUS_ERROR, "No " + CoreAdminParams.CORE + " parameter set.");
+            return response;
+        }
         
         if (isMasterOrStandalone(coreName))
         {
