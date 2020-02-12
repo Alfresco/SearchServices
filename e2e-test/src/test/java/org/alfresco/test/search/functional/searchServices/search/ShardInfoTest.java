@@ -189,7 +189,7 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
 	            case "DB_ID":
 	            	assertTrue(shardingMethod == "DB_ID", "Sharding Method is not DB_ID"); 
 	            	break;
-	            case "DB_IN_RANGE":
+	            case "DB_ID_RANGE":
                 	assertTrue(shardingMethod == "DB_ID_RANGE", "Sharding Method is not DB_ID_RANGE"); 
                 	break;
 	            case "DATE":
