@@ -142,13 +142,8 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
         RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI().getInfo();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         info.assertThat().entriesListIsNotEmpty();
-                        
-        if(info.getPagination().getTotalItems().intValue() == 2){
-        	assertEquals(info.getPagination().getTotalItems().intValue(), 2);
-        }
-        else{
-        	System.out.println("Pagination is: " + info.getPagination().getTotalItems().intValue() + " not expected value of 2");
-        }
+        
+        assertEquals(info.getPagination().getTotalItems().intValue(), 2, "Pagination is: " + info.getPagination().getTotalItems().intValue() + " not expected value of 2");
      
         Set<String> stores = Sets.newHashSet("workspace://SpacesStore", "archive://SpacesStore");
         List<String> baseUrls = Arrays.asList("/solr/alfresco", "/solr/archive");
