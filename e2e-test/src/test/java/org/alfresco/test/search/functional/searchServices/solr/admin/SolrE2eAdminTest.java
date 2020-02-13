@@ -36,7 +36,6 @@ import org.testng.annotations.Test;
 public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
 {
     
-    
     // SOLR default response status codes (returned in responseHeader.status)
     private static final String SOLR_RESPONSE_STATUS_OK = "0";
     
@@ -44,7 +43,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
     private static final String ACTION_RESPONSE_REPORT = "report";
     
     // Default Alfresco SOLR Core Names
-    List<String> defaultCoreNames = new ArrayList<>(List.of("alfresco", "archive"));
+    private static final List<String> DEFAULT_CORE_NAMES = new ArrayList<>(List.of("alfresco", "archive"));
 
     /**
      * Node Report for every core.
@@ -62,8 +61,9 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         String report = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT).toString();
         Assert.assertNotNull(report);
         
-        defaultCoreNames.forEach(core -> {
-            Assert.assertNotNull(response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT + "." + core));
+        DEFAULT_CORE_NAMES.forEach(core -> {
+            String reportNodeid = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT + "." + core + ".'Node DBID'").toString();
+            Assert.assertEquals(nodeid, reportNodeid);
         });
     }
     
@@ -76,7 +76,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
     {
         final String nodeid = "200";
         
-        defaultCoreNames.forEach(core -> {
+        DEFAULT_CORE_NAMES.forEach(core -> {
             
             try
             {
@@ -86,8 +86,8 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
                 String status = response.getResponse().body().jsonPath().get("responseHeader.status").toString();             
                 Assert.assertEquals(status, SOLR_RESPONSE_STATUS_OK);
                 
-                String report = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT + "." + core).toString();
-                Assert.assertNotNull(report);
+                String reportNodeid = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT + "." + core + ".'Node DBID'").toString();
+                Assert.assertEquals(nodeid, reportNodeid);
                 
             }
             catch (Exception e)
@@ -129,8 +129,10 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         String status = response.getResponse().body().jsonPath().get("responseHeader.status").toString();             
         Assert.assertEquals(status, SOLR_RESPONSE_STATUS_OK);
 
-        String report = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT).toString();
-        Assert.assertNotNull(report);
+        DEFAULT_CORE_NAMES.forEach(core -> {
+            String reportAclid = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT + "." + core + ".'Acl Id'").toString();
+            Assert.assertEquals(aclid, reportAclid);
+        });
     }
     
     /**
@@ -141,7 +143,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
     public void testAclReportCore() throws Exception
     {
         final String aclid = "1";
-        defaultCoreNames.forEach(core -> {
+        DEFAULT_CORE_NAMES.forEach(core -> {
             
             try
             {
@@ -150,8 +152,8 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
                 String status = response.getResponse().body().jsonPath().get("responseHeader.status").toString();             
                 Assert.assertEquals(status, SOLR_RESPONSE_STATUS_OK);
         
-                String report = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT + "." + core).toString();
-                Assert.assertNotNull(report);
+                String reportAclid = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT + "." + core + ".'Acl Id'").toString();
+                Assert.assertEquals(aclid, reportAclid);
             }
             catch (Exception e)
             {
@@ -159,7 +161,6 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
             }
             
         });
-        
     }
     
     /**
@@ -190,8 +191,10 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         String status = response.getResponse().body().jsonPath().get("responseHeader.status").toString();             
         Assert.assertEquals(status, SOLR_RESPONSE_STATUS_OK);
 
-        String report = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT).toString();
-        Assert.assertNotNull(report);
+        DEFAULT_CORE_NAMES.forEach(core -> {
+            String reportTxid = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT + "." + core + ".TXID").toString();
+            Assert.assertEquals(txid, reportTxid);
+        });
     }
     
     /**
@@ -202,7 +205,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
     public void testTxReportCore() throws Exception
     {
         final String txid = "1";
-        defaultCoreNames.forEach(core -> {
+        DEFAULT_CORE_NAMES.forEach(core -> {
             
             try
             {
@@ -212,8 +215,8 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
                 String status = response.getResponse().body().jsonPath().get("responseHeader.status").toString();             
                 Assert.assertEquals(status, SOLR_RESPONSE_STATUS_OK);
         
-                String report = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT + "." + core).toString();
-                Assert.assertNotNull(report);
+                String reportTxid = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT + "." + core + ".TXID").toString();
+                Assert.assertEquals(txid, reportTxid);
             }
             catch (Exception e)
             {
@@ -253,8 +256,10 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         String status = response.getResponse().body().jsonPath().get("responseHeader.status").toString();             
         Assert.assertEquals(status, SOLR_RESPONSE_STATUS_OK);
 
-        String report = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT).toString();
-        Assert.assertNotNull(report);
+        DEFAULT_CORE_NAMES.forEach(core -> {
+            String reportAcltxidCount = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT + "." + core + ".aclTxDbAclCount").toString();
+            Assert.assertEquals("2", reportAcltxidCount);
+        });
     }
     
     /**
@@ -265,7 +270,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
     public void testAclTxReportCore() throws Exception
     {
         final String acltxid = "1";
-        defaultCoreNames.forEach(core -> {
+        DEFAULT_CORE_NAMES.forEach(core -> {
             
             try
             {
@@ -274,8 +279,8 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
                 String status = response.getResponse().body().jsonPath().get("responseHeader.status").toString();             
                 Assert.assertEquals(status, SOLR_RESPONSE_STATUS_OK);
         
-                String report = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT + "." + core).toString();
-                Assert.assertNotNull(report);
+                String reportAcltxidCount = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT + "." + core + ".aclTxDbAclCount").toString();
+                Assert.assertEquals("2", reportAcltxidCount);
             }
             catch (Exception e)
             {
@@ -283,7 +288,6 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
             }
             
         });
-        
     }
     
     /**
@@ -312,8 +316,10 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         String status = response.getResponse().body().jsonPath().get("responseHeader.status").toString();             
         Assert.assertEquals(status, SOLR_RESPONSE_STATUS_OK);
 
-        String report = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT).toString();
-        Assert.assertNotNull(report);
+        DEFAULT_CORE_NAMES.forEach(core -> {
+            Integer reportTxCount = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT + "." + core + ".'DB transaction count'");
+            Assert.assertTrue(reportTxCount > 0);
+        });
     }
     
     /**
@@ -323,7 +329,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
     @Test(priority = 14)
     public void testReportCore() throws Exception
     {
-        defaultCoreNames.forEach(core -> {
+        DEFAULT_CORE_NAMES.forEach(core -> {
             
             try
             {
@@ -332,8 +338,8 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
                 String status = response.getResponse().body().jsonPath().get("responseHeader.status").toString();             
                 Assert.assertEquals(status, SOLR_RESPONSE_STATUS_OK);
         
-                String report = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT + "." + core).toString();
-                Assert.assertNotNull(report);
+                Integer reportTxCount = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT + "." + core + ".'DB transaction count'");
+                Assert.assertTrue(reportTxCount > 0);
             }
             catch (Exception e)
             {
@@ -359,8 +365,10 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         String status = response.getResponse().body().jsonPath().get("responseHeader.status").toString();             
         Assert.assertEquals(status, SOLR_RESPONSE_STATUS_OK);
 
-        String report = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT).toString();
-        Assert.assertNotNull(report);
+        DEFAULT_CORE_NAMES.forEach(core -> {
+            Integer reportTxCount = response.getResponse().body().jsonPath().get(ACTION_RESPONSE_REPORT + "." + core + ".'DB transaction count'");
+            Assert.assertTrue(reportTxCount == 0);
+        });
     }
     
     /**
@@ -375,8 +383,10 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         String status = response.getResponse().body().jsonPath().get("responseHeader.status").toString();             
         Assert.assertEquals(status, SOLR_RESPONSE_STATUS_OK);
         
-        String report = response.getResponse().body().jsonPath().get("Summary").toString();
-        Assert.assertNotNull(report);
+        DEFAULT_CORE_NAMES.forEach(core -> {
+            Integer reportTxCount = response.getResponse().body().jsonPath().get("Summary." + core + ".'Alfresco Transactions in Index'");
+            Assert.assertTrue(reportTxCount > 0);
+        });
     }
     
     /**
@@ -386,7 +396,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
     @Test(priority = 17)
     public void testSummaryCore() throws Exception
     {
-        defaultCoreNames.forEach(core -> {
+        DEFAULT_CORE_NAMES.forEach(core -> {
             
             try
             {
@@ -395,8 +405,8 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
                 String status = response.getResponse().body().jsonPath().get("responseHeader.status").toString();             
                 Assert.assertEquals(status, SOLR_RESPONSE_STATUS_OK);
                 
-                String report = response.getResponse().body().jsonPath().get("Summary." + core).toString();
-                Assert.assertNotNull(report);
+                Integer reportTxCount = response.getResponse().body().jsonPath().get("Summary." + core + ".'Alfresco Transactions in Index'");
+                Assert.assertTrue(reportTxCount > 0);
             }
             catch (Exception e)
             {
@@ -429,7 +439,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
     @Test(priority = 19)
     public void testCheckCore() throws Exception
     {
-        defaultCoreNames.forEach(core -> {
+        DEFAULT_CORE_NAMES.forEach(core -> {
             
             try
             {
@@ -554,7 +564,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
     {
         final String txid = "1";
         
-        defaultCoreNames.forEach(core -> {
+        DEFAULT_CORE_NAMES.forEach(core -> {
             
             try
             {
@@ -602,7 +612,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         String status = response.getResponse().body().jsonPath().get("responseHeader.status").toString();             
         Assert.assertEquals(status, SOLR_RESPONSE_STATUS_OK);
         
-        defaultCoreNames.forEach(core -> {
+        DEFAULT_CORE_NAMES.forEach(core -> {
             Assert.assertNotNull(response.getResponse().body().jsonPath().get("action." + core +".txToReindex"));
             Assert.assertNotNull(response.getResponse().body().jsonPath().get("action." + core + ".aclChangeSetToReindex"));
         });
@@ -618,7 +628,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
     @Test(priority = 28)
     public void testFixCore() throws Exception
     {
-        defaultCoreNames.forEach(core -> {
+        DEFAULT_CORE_NAMES.forEach(core -> {
             
             try
             {
@@ -668,7 +678,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
     {
         String txid = "1";
         
-        defaultCoreNames.forEach(core -> {
+        DEFAULT_CORE_NAMES.forEach(core -> {
             
             try
             {
@@ -703,7 +713,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         String actionStatus = response.getResponse().body().jsonPath().get("action.status").toString();
         Assert.assertEquals(actionStatus, "scheduled");
         
-        defaultCoreNames.forEach(core -> {
+        DEFAULT_CORE_NAMES.forEach(core -> {
             Assert.assertNotNull(response.getResponse().body().jsonPath().get("action." + core));
             Assert.assertNotNull(response.getResponse().body().jsonPath().get("action." + core));
         });
@@ -716,7 +726,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
     @Test(priority = 32)
     public void testRetryCore() throws Exception
     {
-        defaultCoreNames.forEach(core -> {
+        DEFAULT_CORE_NAMES.forEach(core -> {
             
             try
             {
@@ -766,7 +776,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
     {
         final String txid = "1";
         
-        defaultCoreNames.forEach(core -> {
+        DEFAULT_CORE_NAMES.forEach(core -> {
             
             try
             {
@@ -803,7 +813,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
     }
     
     /**
-     * This test will fail as specified resource to reload doesn't exist.
+     * This REST API call will fail as the specified resource to reload doesn't exist.
      * @throws Exception
      */
     @Test(priority = 36)
@@ -837,6 +847,9 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         
         String actionStatus = response.getResponse().body().jsonPath().get("action.status").toString();
         Assert.assertEquals(actionStatus, "success");
+        
+        String actionCore = response.getResponse().body().jsonPath().get("action.core").toString();
+        Assert.assertEquals(core, actionCore);
     }
 
     /**
@@ -931,6 +944,9 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
 
         String actionStatus = response.getResponse().body().jsonPath().get("action.status").toString();
         Assert.assertEquals(actionStatus, "success");
+        
+        String actionCore = response.getResponse().body().jsonPath().get("action.core").toString();
+        Assert.assertEquals(core, actionCore);        
     }
     
     /**
