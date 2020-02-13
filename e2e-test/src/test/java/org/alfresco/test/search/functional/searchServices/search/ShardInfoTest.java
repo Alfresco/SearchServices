@@ -20,6 +20,7 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -155,56 +156,58 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
         for (RestShardInfoModel shardInfoModel : entries)
         {
             RestShardInfoModel model = shardInfoModel.getModel();
-            assertEquals(model.getTemplate(), "rerank");
-            assertEquals(model.getMode(), "MASTER");
-            assertTrue(model.getHasContent());
-            assertTrue(model.getNumberOfShards()>=2);
+            assertEquals(model.getTemplate(), "rerank", "Template is not rerank, template found: "+ model.getTemplate());
+            assertEquals(model.getMode(), "MASTER", "Mode is not MASTER, mode found: "+ model.getMode());
+            assertTrue(model.getHasContent(), "There is no content on the shards");
+            assertTrue(model.getNumberOfShards()>=2, "Number of shards is not equal to or greater than 2");
             
             List<String> shardingMethods = Arrays.asList("DB_ID", "DB_ID_RANGE", "EXPLICIT_ID", "ACL_ID", "MOD_ACL_ID", "DATE", "PROPERTY");
             String shardingMethod = model.getShardMethod();
             assertTrue(shardingMethods.contains(shardingMethod), "Unexpected Sharding Method Found: " + shardingMethod);
             
             List<RestShardModel> shards = model.getShards();
-            assertNotNull(shards, "Unexpected number of shards found:" + shards);
-            RestShardModel shard = shards.iterator().next();
-            assertNotNull(shard);
-            List<RestInstanceModel> instances = shard.getInstances();
-            assertNotNull(instances, "Unexpected number of instances found:" + instances);
-            RestInstanceModel instance = instances.iterator().next();
-            assertNotNull(instance);
-            assertTrue(baseUrls.contains(instance.getBaseUrl()));
-            
-            assertEquals(instance.getState(), "ACTIVE");
-            
-            // shardparams related checks
-            String shardParams = instance.getShardParams();            
-            switch (shardingMethod)
+            assertNotNull(shards);         
+            for (RestShardModel shardInstance : shards)
             {
-	            case "MOD_ACL_ID":
-	            	assertTrue(shardingMethod == "MOD_ACL_ID", "Sharding Method is not MOD_ACL_ID"); 
-	            	break;
-	            case "ACL_ID":
-	            	assertTrue(shardingMethod == "ACL_ID", "Sharding Method is not ACL_ID"); 
-	            	break;
-	            case "DB_ID":
-	            	assertTrue(shardingMethod == "DB_ID", "Sharding Method is not DB_ID"); 
-	            	break;
-	            case "DB_ID_RANGE":
-                	assertTrue(shardingMethod == "DB_ID_RANGE", "Sharding Method is not DB_ID_RANGE"); 
-                	break;
-	            case "DATE":
-                	assertTrue(shardParams.contains("shard.key="), "Unexpected shard params defined for DATE");
-                	assertTrue(shardParams.contains("shard.grouping="), "Unexpected shard grouping defined for DATE");
-                	break;
-                case "PROPERTY":
-                	assertTrue(shardParams.contains("shard.key="), "Unexpected shard params defined for PROPERTY"); 
-                	break;
-                case "EXPLICIT_ID":
-                	assertTrue(shardParams.contains("shard.key="), "Unexpected shard params defined for EXPLICIT_ID");  
-                	break;
-                default:
-                    throw new AssertionError("Not as expected: " + shardParams.toString());
-            }
+                List<RestInstanceModel> instanceList = shardInstance.getInstances();
+                for (RestInstanceModel instanceX : instanceList)
+                {
+                    assertTrue(baseUrls.contains(instanceX.getBaseUrl()));
+                    assertEquals(instanceX.getState(), "ACTIVE", "Shard state is not ACTIVE, shard state is: " + instanceX.getState());
+                    assertNotNull(instanceX.getPort(), "There is not port found for the instance");
+                    assertEquals(instanceX.getMode(), "MASTER", "Mode is not MASTER, mode found: "+ instanceX.getMode());
+                    assertTrue(instanceX.getTransactionsRemaining() >= 0, "Transactions remaining is not more than 0, transactions remaining: " + instanceX.getTransactionsRemaining());
+                    String shardParams = (instanceX).getShardParams();            
+                    switch (shardingMethod)            
+                    {
+        	            case "MOD_ACL_ID":
+        	            	assertEquals(shardingMethod = "MOD_ACL_ID", "MOD_ACL_ID", "Sharding Method is not MOD_ACL_ID"); 
+        	            	break;
+        	            case "ACL_ID":
+        	            	assertEquals(shardingMethod = "ACL_ID", "ACL_ID", "Sharding Method is not ACL_ID"); 
+        	            	break;
+        	            case "DB_ID":
+        	            	assertEquals(shardingMethod = "DB_ID", "DB_ID", "Sharding Method is not DB_ID"); 
+        	            	break;
+        	            case "DB_ID_RANGE":
+                        	assertEquals(shardingMethod = "DB_ID_RANGE", "DB_ID_RANGE", "Sharding Method is not DB_ID_RANGE"); 
+                        	//assertEquals(shardParams.contains("shard.range="), "Unexpected shard params defined for DB_ID_RANGE");
+                        	break;
+        	            case "DATE":
+                        	assertTrue(shardParams.contains("shard.key="), "Unexpected shard params defined for DATE");
+                        	assertTrue(shardParams.contains("shard.grouping="), "Unexpected shard grouping defined for DATE");
+                        	break;
+                        case "PROPERTY":
+                        	assertTrue(shardParams.contains("shard.key="), "Unexpected shard params defined for PROPERTY"); 
+                        	break;
+                        case "EXPLICIT_ID":
+                        	assertTrue(shardParams.contains("shard.key="), "Unexpected shard params defined for EXPLICIT_ID");  
+                        	break;
+                        default:
+                            throw new AssertionError("Not as expected: " + shardParams.toString());
+                    }                    
+                }
+            }           
         }
     }
 }
