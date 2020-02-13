@@ -290,23 +290,6 @@ public class AlfrescoCoreAdminHandlerIT
         when(params.get(CoreAdminParams.ACTION)).thenReturn(TXREPORT);
         when(params.get(CoreAdminParams.CORE)).thenReturn(CORE_NAME);
         when(params.get(ARG_TXID)).thenReturn(TX_ID);
-        // Set up the mock ACL tracker.
-        when(trackerRegistry.getTrackerForCore(CORE_NAME, AclTracker.class)).thenReturn(aclTracker);
-        when(aclTracker.checkIndex(Long.valueOf(TX_ID), 0L, null, null)).thenReturn(indexHealthReport);
-        when(indexHealthReport.getDuplicatedAclTxInIndex()).thenReturn(iOpenBitSet);
-        when(indexHealthReport.getAclTxInIndexButNotInDb()).thenReturn(iOpenBitSet);
-        when(indexHealthReport.getMissingAclTxFromIndex()).thenReturn(iOpenBitSet);
-        when(aclTracker.getTrackerState()).thenReturn(trackerState);
-        // Set up the mock metadata tracker.
-        when(trackerRegistry.getTrackerForCore(CORE_NAME, MetadataTracker.class)).thenReturn(metadataTracker);
-        when(metadataTracker.checkIndex(Long.valueOf(TX_ID), 0L, null, null)).thenReturn(metaReport);
-        when(metaReport.getDuplicatedTxInIndex()).thenReturn(iOpenBitSet);
-        when(metaReport.getTxInIndexButNotInDb()).thenReturn(iOpenBitSet);
-        when(metaReport.getMissingTxFromIndex()).thenReturn(iOpenBitSet);
-        when(metaReport.getDuplicatedLeafInIndex()).thenReturn(iOpenBitSet);
-        when(metaReport.getDuplicatedErrorInIndex()).thenReturn(iOpenBitSet);
-        when(metaReport.getDuplicatedUnindexedInIndex()).thenReturn(iOpenBitSet);
-        when(metadataTracker.getTrackerState()).thenReturn(trackerState);
 
         // Call the method under test.
         alfrescoCoreAdminHandler.handleCustomAction(req, rsp);
