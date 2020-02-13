@@ -993,13 +993,13 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         
         NamedList<Object> report = new SimpleOrderedMap<>();
 
-        Long nodeid = ofNullable(params.get(ARG_NODEID)).map(Long::valueOf).orElse(null);
-        if (nodeid == null)
+        if (params.get(ARG_NODEID) == null)
         {
             report.add(ACTION_STATUS_ERROR, "No " + ARG_NODEID +" parameter set.");
             return report;
         }
-
+        
+        Long nodeid = Long.valueOf(params.get(ARG_NODEID));
         String requestedCoreName = coreName(params);
 
         coreNames().stream()
@@ -1032,13 +1032,13 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     {
         NamedList<Object> report = new SimpleOrderedMap<>();
 
-        Long aclid = ofNullable(params.get(ARG_ACLID)).map(Long::valueOf).orElse(null);
-        if (aclid == null)
+        if (params.get(ARG_ACLID) == null)
         {
             report.add(ACTION_STATUS_ERROR, "No " + ARG_ACLID + " parameter set.");
             return report;
         }
 
+        Long aclid = Long.valueOf(params.get(ARG_ACLID));
         String requestedCoreName = coreName(params);
 
         coreNames().stream()
@@ -1077,13 +1077,13 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     {
         NamedList<Object> report = new SimpleOrderedMap<>();
         
-        Long txid = ofNullable(params.get(ARG_TXID)).map(Long::valueOf).orElse(null);
-        if (txid == null)
+        if (params.get(ARG_TXID) == null)
         {
             report.add(ACTION_STATUS_ERROR, "No " + ARG_TXID + " parameter set.");
             return report;
         }
 
+        Long txid = Long.valueOf(params.get(ARG_TXID));
         String requestedCoreName = coreName(params);
 
         coreNames().stream()
@@ -1126,13 +1126,13 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     {
         NamedList<Object> report = new SimpleOrderedMap<>();
         
-        Long acltxid = ofNullable(params.get(ARG_ACLTXID)).map(Long::valueOf).orElse(null);
-        if (acltxid == null)
+        if (params.get(ARG_ACLTXID) == null)
         {
             report.add(ACTION_STATUS_ERROR, "No " + ARG_ACLTXID + " parameter set.");
             return report;
         }
 
+        Long acltxid = Long.valueOf(params.get(ARG_ACLTXID));
         String requestedCoreName = coreName(params);
 
         coreNames().stream()
@@ -1174,7 +1174,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     {
         NamedList<Object> response = new SimpleOrderedMap<>();
         
-        String coreName = ofNullable(coreName(params)).orElse(null);
+        String coreName = coreName(params);
         if (coreName == null)
         {
             response.add(ACTION_STATUS_ERROR, "No " + CoreAdminParams.CORE + " parameter set.");
@@ -1290,7 +1290,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     {
         NamedList<Object> response = new SimpleOrderedMap<>();
         
-        String coreName = ofNullable(coreName(params)).orElse(null);
+        String coreName = coreName(params);
         if (coreName == null)
         {
             response.add(ACTION_STATUS_ERROR, "No " + CoreAdminParams.CORE + " parameter set.");
