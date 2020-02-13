@@ -315,24 +315,27 @@ public class AlfrescoCoreAdminHandlerIT
         verify(rsp).add(eq("report"), any(NamedList.class));
     }
 
-    /** Check that when the transaction id is missing we get an exception. */
-    @Test(expected = SolrException.class)
+    /** Check that when the transaction id is missing we get an error message. */
+    @Test
     public void handleCustomActionTXReportMissingTXId()
     {
         when(params.get(CoreAdminParams.ACTION)).thenReturn(TXREPORT);
         alfrescoCoreAdminHandler.handleCustomAction(req, rsp);
 
-        verify(rsp, never()).add(anyString(), any());
+        verify(rsp).add(eq("report"), any(NamedList.class));
     }
 
-    /** Check that when the core name is missing we get an exception. */
-    @Test(expected = SolrException.class)
+    /** Check that when the core name is missing we get a report for every core. */
+    @Test
     public void handleCustomActionTXReportMissingCoreName()
     {
         when(params.get(CoreAdminParams.ACTION)).thenReturn(TXREPORT);
         when(params.get(CoreAdminParams.CORE)).thenReturn(null);
 
         alfrescoCoreAdminHandler.handleCustomAction(req, rsp);
+        
+        // Check that a report was generated (don't look at the contents of the report though).
+        verify(rsp).add(eq("report"), any(NamedList.class));
     }
 
     /** Check that when an unknown action is provided we don't generate a report. */
