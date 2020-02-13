@@ -181,16 +181,16 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
                     switch (shardingMethod)            
                     {
         	            case "MOD_ACL_ID":
-        	            	assertEquals(shardingMethod = "MOD_ACL_ID", "MOD_ACL_ID", "Sharding Method is not MOD_ACL_ID"); 
+        	            	//No additional checks required
         	            	break;
         	            case "ACL_ID":
-        	            	assertEquals(shardingMethod = "ACL_ID", "ACL_ID", "Sharding Method is not ACL_ID"); 
+        	            	//No additional checks required
         	            	break;
         	            case "DB_ID":
-        	            	assertEquals(shardingMethod = "DB_ID", "DB_ID", "Sharding Method is not DB_ID"); 
+        	            	//No additional checks required
         	            	break;
         	            case "DB_ID_RANGE":
-                        	assertEquals(shardingMethod = "DB_ID_RANGE", "DB_ID_RANGE", "Sharding Method is not DB_ID_RANGE"); 
+        	            	//To be commented out once the shard.range is visible on the sharding screen and if wanted
                         	//assertEquals(shardParams.contains("shard.range="), "Unexpected shard params defined for DB_ID_RANGE");
                         	break;
         	            case "DATE":
