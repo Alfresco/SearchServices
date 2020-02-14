@@ -7,6 +7,7 @@ import org.alfresco.utility.data.provider.XMLTestDataProvider;
 import org.alfresco.utility.model.QueryModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -51,6 +52,8 @@ public class SolrSearchByPathTests extends AbstractCmisE2ETest
     @XMLDataConfig(file = "src/test/resources/testdata/search-by-path.xml")
     public void executeSearchByPathQueries(QueryModel query)
     {
-        cmisApi.withQuery(query.getValue()).assertResultsCount().equals(query.getResults());
+        cmisApi.authenticateUser(testUser);
+        Assert.assertTrue(waitForIndexing(query.getValue(), query.getResults()), String.format("Result count not as expected for query: %s", query.getValue()));
+
     }
 }

@@ -120,7 +120,7 @@ public class MetadataTrackerTest
         this.metadataTracker.doTrack();
 
         InOrder inOrder = inOrder(srv);
-        inOrder.verify(srv).indexNodes(nodes, true, false);
+        inOrder.verify(srv).indexNodes(nodes, true);
         inOrder.verify(srv).indexTransaction(tx, true);
         inOrder.verify(srv).commit();
     }

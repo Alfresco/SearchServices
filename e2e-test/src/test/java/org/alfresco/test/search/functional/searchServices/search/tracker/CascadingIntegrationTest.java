@@ -31,7 +31,7 @@ import static org.testng.Assert.assertTrue;
  * @author Alessandro Benedetti
  * @author Meenal Bhave
  */
-public class CascadingTrackerIntegrationTest extends AbstractE2EFunctionalTest
+public class CascadingIntegrationTest extends AbstractE2EFunctionalTest
 {
     @Autowired
     protected DataContent dataContent;

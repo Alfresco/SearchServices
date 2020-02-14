@@ -56,7 +56,7 @@ module.exports = class extends Generator {
         type: 'confirm',
         name: 'protectSolr',
         message: 'Would you like to protect the access to SOLR REST API?',
-        default: 'true'
+        default: true
       },
       {
         whenFunction: response => response.httpMode == 'http',
@@ -68,6 +68,13 @@ module.exports = class extends Generator {
           { name: "Yes - two nodes in a master-slave configuration", value: "master-slave" },
           { name: "Yes - two nodes in a master-master configuration", value: "master-master" }
         ]
+      },
+      {
+        whenFunction: response => response.acsVersion == '6.2',
+        type: 'confirm',
+        name: 'gzip',
+        message: 'Would you like to compress Get Content responses?',
+        default: false
       },
       // Enterprise only options
       {
@@ -208,7 +215,8 @@ module.exports = class extends Generator {
         searchPath: searchBasePath,
         zeppelin: (this.props.zeppelin ? "true" : "false"),
         sharding: (this.props.sharding ? "true" : "false"),
-        shardingMethod: (this.props.shardingMethod)
+        shardingMethod: (this.props.shardingMethod),
+        gzip: (this.props.gzip ? "true" : "false")
       }
     );
 
@@ -258,6 +266,16 @@ module.exports = class extends Generator {
         this.destinationPath('share/model/share-config-custom-dev.xml')
       )
     }
+
+    // Empty addons directories.
+    ['alfresco', 'share'].forEach(container => {
+      ['jars', 'amps'].forEach(addonType => {
+        this.fs.copy(
+          this.templatePath('empty/empty'),
+          this.destinationPath(container + '/modules/' + addonType + '/empty')
+        );
+      });
+    });
 
     // Copy Docker Image for Search applying configuration
     this.fs.copyTpl(
