@@ -172,7 +172,7 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
                 List<RestInstanceModel> instanceList = shardInstance.getInstances();
                 for (RestInstanceModel instanceX : instanceList)
                 {
-                    assertTrue(baseUrls.contains(instanceX.getBaseUrl()), "The baseUrl is not present");
+                    assertTrue(baseUrls.contains(instanceX.getBaseUrl()), "The baseUrl is not present, baseUrl found is: " + instanceX.getBaseUrl());
                     assertEquals(instanceX.getState(), "ACTIVE", "Shard state is not ACTIVE, shard state is: " + instanceX.getState());
                     assertNotNull(instanceX.getPort(), "There is not port found for the instance");
                     assertEquals(instanceX.getMode(), "MASTER", "Mode is not MASTER, mode found: "+ instanceX.getMode());
@@ -187,7 +187,7 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
         	            case "DB_ID":
         	            	break;
         	            case "DB_ID_RANGE":
-        	            	//https://issues.alfresco.com/jira/browse/SEARCH-2110 (once done can be umcommented)
+        	            	// TODO: Uncomment the following assert when fixed: https://issues.alfresco.com/jira/browse/SEARCH-2110
                         	//assertEquals(shardParams.contains("shard.range="), "Unexpected shard params defined for DB_ID_RANGE");
                         	break;
         	            case "DATE":
