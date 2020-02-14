@@ -44,7 +44,7 @@ import org.springframework.http.HttpStatus;
 public class ShardInfoTest extends AbstractE2EFunctionalTest
 {
     /* The test that will be excluded when running master slave setup, excluding the ASS_MASTER test group. */
-    @Test(groups = { TestGroup.ACS_60n, TestGroup.ASS_MASTER, TestGroup.EXPLICIT_SHARDING })
+    @Test(groups = { TestGroup.ACS_60n, TestGroup.ASS_MASTER })
     public void getShardInfoWithAdminAuthority() throws JsonProcessingException
     {
         RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI()
@@ -151,7 +151,7 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
         List<RestShardInfoModel> entries = info.getEntries();
         
         Set<String> actualStores = entries.stream().map(shardInfoModel -> shardInfoModel.getModel().getStores()).collect(Collectors.toSet());
-        assertEquals(actualStores, stores);
+        assertEquals(actualStores, stores, "The number of stores do not match the expected number of stores");
 
         for (RestShardInfoModel shardInfoModel : entries)
         {
@@ -166,13 +166,13 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
             assertTrue(shardingMethods.contains(shardingMethod), "Unexpected Sharding Method Found: " + shardingMethod);
             
             List<RestShardModel> shards = model.getShards();
-            assertNotNull(shards);         
+            assertNotNull(shards, "There are no shards present");         
             for (RestShardModel shardInstance : shards)
             {
                 List<RestInstanceModel> instanceList = shardInstance.getInstances();
                 for (RestInstanceModel instanceX : instanceList)
                 {
-                    assertTrue(baseUrls.contains(instanceX.getBaseUrl()));
+                    assertTrue(baseUrls.contains(instanceX.getBaseUrl()), "The baseUrl is not present");
                     assertEquals(instanceX.getState(), "ACTIVE", "Shard state is not ACTIVE, shard state is: " + instanceX.getState());
                     assertNotNull(instanceX.getPort(), "There is not port found for the instance");
                     assertEquals(instanceX.getMode(), "MASTER", "Mode is not MASTER, mode found: "+ instanceX.getMode());
@@ -181,16 +181,13 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
                     switch (shardingMethod)            
                     {
         	            case "MOD_ACL_ID":
-        	            	//No additional checks required
         	            	break;
         	            case "ACL_ID":
-        	            	//No additional checks required
         	            	break;
         	            case "DB_ID":
-        	            	//No additional checks required
         	            	break;
         	            case "DB_ID_RANGE":
-        	            	//To be commented out once the shard.range is visible on the sharding screen and if wanted
+        	            	//https://issues.alfresco.com/jira/browse/SEARCH-2110 (once done can be umcommented)
                         	//assertEquals(shardParams.contains("shard.range="), "Unexpected shard params defined for DB_ID_RANGE");
                         	break;
         	            case "DATE":
