@@ -97,6 +97,7 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.util.Version;
+import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.core.CoreDescriptorDecorator;
 import org.apache.solr.core.SolrResourceLoader;
 import org.apache.solr.request.SolrQueryRequest;
@@ -947,6 +948,90 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
     }
 
+
+    public String getStoredTextField(QName propertyQName)
+    {
+        PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("text@" + (propertyDefinition.isMultiValued()? "m" : "s") + "_stored_");
+
+        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE ||
+            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH)? "t" : "_");
+
+        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE ||
+            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH ||
+            isIdentifierTextProperty(propertyDefinition.getName()))? "s" : "_");
+
+        sb.append((crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) ||
+            crossLocaleSearchProperties.contains(propertyDefinition.getName())) ? "c" : "_");
+
+        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE ||
+            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH ||
+            isIdentifierTextProperty(propertyDefinition.getName()))? "s" : "_");
+
+        sb.append("@");
+        sb.append(propertyDefinition.getName().toString());
+
+        return sb.toString();
+
+    }
+
+    public String getStoredMLTextField(QName propertyQName)
+    {
+        PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("mltext@m_stored_");
+
+        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE ||
+            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH)? "t" : "_");
+
+        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE ||
+            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH ||
+            isIdentifierTextProperty(propertyDefinition.getName()))? "s" : "_");
+
+        sb.append((crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) ||
+            crossLocaleSearchProperties.contains(propertyDefinition.getName())) ? "c" : "_");
+
+        sb.append("_");
+
+        sb.append("@");
+        sb.append(propertyDefinition.getName().toString());
+
+        return sb.toString();
+
+    }
+
+
+    public String getStoredContentField(QName propertyQName)
+    {
+        PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("content@s_stored_");
+
+        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE ||
+            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH)? "t" : "_");
+
+        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE ||
+            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH ||
+            isIdentifierTextProperty(propertyDefinition.getName()))? "s" : "_");
+
+        sb.append((crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) ||
+            crossLocaleSearchProperties.contains(propertyDefinition.getName())) ? "c" : "_");
+
+        sb.append("_");
+
+        sb.append("@");
+        sb.append(propertyDefinition.getName().toString());
+
+        return sb.toString();
+
+    }
+
+
+
     /**
      * Get all the field names into which we must copy the source data
      *
@@ -987,7 +1072,6 @@ public class AlfrescoSolrDataModel implements QueryConstants
             {
                 indexedField.addField(getFieldForText(true, false, false, propertyDefinition), true, false);
                 indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
-
             }
 
             if(dataTypeDefinition.getName().equals(DataTypeDefinition.TEXT))
@@ -1506,6 +1590,64 @@ public class AlfrescoSolrDataModel implements QueryConstants
     public String  mapProperty(String  potentialProperty,  FieldUse fieldUse, SolrQueryRequest req)
     {
         return mapProperty(potentialProperty, fieldUse, req, 0);
+    }
+
+    /**
+     * TODO refactor this method
+     *
+     * return the stored field associated to potentialProperty parameter
+     */
+    public String mapStoredProperty(String potentialProperty, FieldUse fieldUse, SolrQueryRequest req)
+    {
+        if(potentialProperty.equals("asc") || potentialProperty.equals("desc") || potentialProperty.equals("_docid_"))
+        {
+            return potentialProperty;
+        }
+
+        if(potentialProperty.equalsIgnoreCase("score") || potentialProperty.equalsIgnoreCase("SEARCH_SCORE"))
+        {
+            return "score";
+        }
+
+        AlfrescoFunctionEvaluationContext functionContext =
+            new AlfrescoSolr4FunctionEvaluationContext(
+                getNamespaceDAO(),
+                getDictionaryService(CMISStrictDictionaryService.DEFAULT),
+                NamespaceService.CONTENT_MODEL_1_0_URI,
+                req.getSchema());
+
+
+        Pair<String, String> fieldNameAndEnding = QueryParserUtils.extractFieldNameAndEnding(potentialProperty);
+        String luceneField =  functionContext.getLuceneFieldName(fieldNameAndEnding.getFirst());
+
+        PropertyDefinition propertyDef = getPropertyDefinition(fieldNameAndEnding.getFirst());
+        //Retry scan using luceneField.
+        if(propertyDef == null)
+        {
+            if(luceneField.contains("@"))
+            {
+                int index = luceneField.lastIndexOf("@");
+                propertyDef = getPropertyDefinition(luceneField.substring(index +1));
+            }
+        }
+
+
+        if (propertyDef.getName().equals(DataTypeDefinition.TEXT))
+        {
+            return getStoredTextField(propertyDef.getName());
+        }
+        else if (propertyDef.getName().equals(DataTypeDefinition.MLTEXT))
+        {
+            return getStoredMLTextField(propertyDef.getName());
+        }
+        else if (propertyDef.getName().equals(DataTypeDefinition.CONTENT))
+        {
+            return getStoredContentField(propertyDef.getName());
+        }
+        else
+        {
+            return mapProperty(potentialProperty, fieldUse, req, 0);
+        }
     }
 
     public String  mapProperty(String  potentialProperty,  FieldUse fieldUse, SolrQueryRequest req, int position)

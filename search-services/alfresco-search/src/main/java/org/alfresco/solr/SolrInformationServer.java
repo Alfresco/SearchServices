@@ -2204,7 +2204,7 @@ public class SolrInformationServer implements InformationServer
         if (fields.size() > 1) {
 
             // TODO: this should be got from AlfrescoSolrDataModel
-            String storedFieldName = "mltext@m_stored_lt@" + propertyQName;
+            String storedFieldName = dataModel.getStoredMLTextField(propertyQName);
 
             valueHolder.accept(storedFieldName, getLocalisedValues(value));
 
@@ -2233,9 +2233,11 @@ public class SolrInformationServer implements InformationServer
         if (fields.size() > 1) {
 
             // TODO: this should be got from AlfrescoSolrDataModel
-            String storedFieldName = "text@s_stored_lt@" + propertyQName;
+            String storedFieldName = dataModel.getStoredTextField(propertyQName);
 
-            valueHolder.accept(storedFieldName, getLocalisedValue((StringPropertyValue) value, locale));
+
+            //TODO add field for mltext sort
+            valueHolder.accept(storedFieldName, getLocalisedValue(value, locale));
 
             /* the schema have been changed so all the stored field above is copied on every text@...@ fields
                 The only exception is the text@sd___@ which has docvalues enabled. We can't copy the stored field
@@ -2245,12 +2247,12 @@ public class SolrInformationServer implements InformationServer
             dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
                     .stream()
                     .filter(field -> field.getField().startsWith("text@sd___@"))
-                    .forEach(field -> addStringProperty(valueHolder, field, (StringPropertyValue) value, locale));
+                    .forEach(field -> addStringProperty(valueHolder, field, value, locale));
         } else {
 
 // OLD CODE: this relates to primitive/non-text fields/properties (like LID, APATH or boolean@...)
             dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
-                    .forEach(field -> addStringProperty(valueHolder, field, (StringPropertyValue) value, locale));
+                    .forEach(field -> addStringProperty(valueHolder, field, value, locale));
         }
     }
 
@@ -2657,7 +2659,7 @@ public class SolrInformationServer implements InformationServer
         this.getTrackerStats().addDocTransformationTime(System.nanoTime() - start);
 
         // TODO: The field name should be retrieved from AlfrescoSolrDataModel
-        String storedField = "content@s_stored_lt@" + propertyQName;
+        String storedField = dataModel.getStoredContentField(propertyQName);
 
         doc.setField(storedField, "\u0000" + locale + "\u0000" + textContent);
 

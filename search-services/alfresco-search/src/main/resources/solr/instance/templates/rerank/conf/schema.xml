@@ -1030,8 +1030,6 @@
     <dynamicField name="noderef@md@*" type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
 
     <!-- GX -->
-    <dynamicField name="text@s_stored_lt@*" type="alfrescoFieldType" indexed="false" stored="true" />
-
     <dynamicField name="text@s____@*" type="text-identifier" />
     <dynamicField name="text@s__l_@*" type="alfrescoFieldType" omitNorms="true" stored="false"/>
     <dynamicField name="text@s__lt@*" type="alfrescoFieldType" omitNorms="false" stored="false"/>
@@ -1041,17 +1039,6 @@
 
     <!-- END -->
 
-    <copyField source="text@s_stored_lt@*" dest="text@s____@*" />
-    <copyField source="text@s_stored_lt@*" dest="text@s__l_@*" />
-    <copyField source="text@s_stored_lt@*" dest="text@s__lt@*" />
-    <copyField source="text@s_stored_lt@*" dest="text@s___t@*" />
-    <copyField source="text@s_stored_lt@*" dest="text@s__sort@*" />
-    <!--
-    <copyField source="text@s_stored@*" dest="text@sd___@*" />
-    -->
-    <copyField source="text@s_stored_lt@*" dest="suggest_*" />
-
-
     <dynamicField name="text@m____@*" type="identifiers" />
     <dynamicField name="text@m__l_@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" />
     <dynamicField name="text@m__lt@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" />
@@ -1059,18 +1046,11 @@
 
     <dynamicField name="text@md___@*" type="identifiers" stored="true" docValues="true" />
 
-    <dynamicField name="mltext@m_stored_lt@*" type="alfrescoFieldType" indexed="false" stored="true" multiValued="true"/>
-
     <dynamicField name="mltext@m____@*" type="identifiers"  stored="false"/>
     <dynamicField name="mltext@m__l_@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" stored="false"/>
     <dynamicField name="mltext@m__lt@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" stored="false"/>
     <dynamicField name="mltext@m___t@*" type="text___" multiValued="true" stored="false" />
 
-    <copyField source="mltext@m_stored_lt@*" dest="mltext@m____@*" />
-    <copyField source="mltext@m_stored_lt@*" dest="mltext@m__l_@*" />
-    <copyField source="mltext@m_stored_lt@*" dest="mltext@m__lt@*" />
-    <copyField source="mltext@m_stored_lt@*" dest="mltext@m___t@*" />
-    <copyField source="mltext@m_stored_lt@*" dest="suggest_*" />
 
     <!-- this cannot be copied so it must be sent by the client-->
     <!-- TODO: cehck if this field can be docvalues -->
@@ -1089,16 +1069,10 @@
     <dynamicField name="content@s__tr_time@*" type="long" />
     <dynamicField name="content@s__tr_status@*" type="lowercase_id" />
 
-    <dynamicField name="content@s_stored_lt@*" type="alfrescoFieldType" indexed="false" stored="true"/>
     <dynamicField name="content@s____@*" type="identifier" stored="false"/>
     <dynamicField name="content@s__l_@*" type="alfrescoFieldType" omitNorms="true" stored="false"/>
     <dynamicField name="content@s__lt@*" type="alfrescoFieldType" omitNorms="false" stored="false"/>
     <dynamicField name="content@s___t@*" type="text___" stored="false"/>
-
-    <copyField source="content@s_stored_lt@*" dest="content@s____@*" />
-    <copyField source="content@s_stored_lt@*" dest="content@s__l_@*" />
-    <copyField source="content@s_stored_lt@*" dest="content@s__lt@*" />
-    <copyField source="content@s_stored_lt@*" dest="content@s___t@*" />
 
     <!-- "m" FIELDS are never used at the moment -->
     <dynamicField name="content@m__size@*"             type="longs" stored="true" docValues="true" />
@@ -1123,6 +1097,12 @@
     <dynamicField name="suggest_*" type="ignored" multiValued="true"/>
 
     <copyField source="suggest_*" dest="suggest" />
+
   </fields>
+
+  <xi:include href="generated_copy_fields.xml" xmlns:xi="http://www.w3.org/2001/XInclude">
+    <xi:fallback/>
+  </xi:include>
+
   <uniqueKey>id</uniqueKey>
 </schema>

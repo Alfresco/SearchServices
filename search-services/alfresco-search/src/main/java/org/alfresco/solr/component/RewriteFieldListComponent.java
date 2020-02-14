@@ -84,12 +84,15 @@ public class RewriteFieldListComponent extends SearchComponent {
             }
             else
             {
+
+
+
                 List<AlfrescoSolrDataModel.FieldUse> fieldUsed = List.of(FTS, FACET, ID, SORT);
                 fieldListSet.addAll(solrReturnFields.getLuceneFieldNames().stream()
                         .flatMap(field ->
                                 fieldUsed.stream()
                                         .map( fieldUse ->  AlfrescoSolrDataModel.getInstance()
-                                                .mapProperty(field, fieldUse, req)))
+                                                .mapStoredProperty(field, fieldUse, req)))
                         .filter(schemaFieldName -> schemaFieldName != null)
                         .map(schemaFieldName -> schemaFieldName.chars()
                                 .mapToObj(c -> (char) c)
