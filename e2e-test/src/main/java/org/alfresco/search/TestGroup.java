@@ -30,6 +30,9 @@ public class TestGroup
     public static final String ASS_MASTER_SLAVE = "ASS_Master_Slave"; // Alfresco Search Services using master slave configurations
     public static final String ASS_MASTER ="ASS_Master"; // Alfresco search services using master/stand alone mode
     public static final String EXPLICIT_SHARDING ="Explicit_Sharding"; // Alfresco search services using sharded environment and explicit routing
+
+    public static final String SHARDING ="Sharding"; // Alfresco search services using sharded environment
+
     public static final String ASS_SHARDING = "ASS_Sharding"; // Alfresco Search Services using Sharding
     public static final String ASS_SHARDING_DB_ID_RANGE = "ASS_Sharding_DB_ID_RANGE"; // Alfresco Search Services using Sharding with DB_ID_RANGE
 
