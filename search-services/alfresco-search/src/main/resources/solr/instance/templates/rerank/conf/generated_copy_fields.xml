@@ -1,41 +1,34 @@
 <fields>
-<dynamicField name="text@s_stored_t___@*" type="alfrescoFieldType" indexed="false" stored="true" />
-<copyField source="text@s_stored_t___@*" dest="text@s__lt@*" />
-
-<dynamicField name="text@s_stored____s@*" type="alfrescoFieldType" indexed="false" stored="true" />
-
 <dynamicField name="text@s_stored__s__@*" type="alfrescoFieldType" indexed="false" stored="true" />
 <copyField source="text@s_stored__s__@*" dest="text@s__l_@*" />
 
 <dynamicField name="text@s_stored___c_@*" type="alfrescoFieldType" indexed="false" stored="true" />
 
-<dynamicField name="text@s_stored_t__s@*" type="alfrescoFieldType" indexed="false" stored="true" />
-<copyField source="text@s_stored_t__s@*" dest="text@s__lt@*" />
+<dynamicField name="text@s_stored_t___@*" type="alfrescoFieldType" indexed="false" stored="true" />
+<copyField source="text@s_stored_t___@*" dest="text@s__lt@*" />
 
-<dynamicField name="text@s_stored_ts__@*" type="alfrescoFieldType" indexed="false" stored="true" />
-<copyField source="text@s_stored_ts__@*" dest="text@s__lt@*" />
-<copyField source="text@s_stored_ts__@*" dest="text@s__l_@*" />
-
-<dynamicField name="text@s_stored_t_c_@*" type="alfrescoFieldType" indexed="false" stored="true" />
-<copyField source="text@s_stored_t_c_@*" dest="text@s__lt@*" />
-<copyField source="text@s_stored_t_c_@*" dest="text@s___t@*" />
-
-<dynamicField name="text@s_stored__s_s@*" type="alfrescoFieldType" indexed="false" stored="true" />
-<copyField source="text@s_stored__s_s@*" dest="text@s__l_@*" />
-
-<dynamicField name="text@s_stored___cs@*" type="alfrescoFieldType" indexed="false" stored="true" />
+<dynamicField name="text@s_stored____s@*" type="alfrescoFieldType" indexed="false" stored="true" />
 
 <dynamicField name="text@s_stored__sc_@*" type="alfrescoFieldType" indexed="false" stored="true" />
 <copyField source="text@s_stored__sc_@*" dest="text@s__l_@*" />
 <copyField source="text@s_stored__sc_@*" dest="text@s____@*" />
 
-<dynamicField name="text@s_stored_ts_s@*" type="alfrescoFieldType" indexed="false" stored="true" />
-<copyField source="text@s_stored_ts_s@*" dest="text@s__lt@*" />
-<copyField source="text@s_stored_ts_s@*" dest="text@s__l_@*" />
+<dynamicField name="text@s_stored_ts__@*" type="alfrescoFieldType" indexed="false" stored="true" />
+<copyField source="text@s_stored_ts__@*" dest="text@s__lt@*" />
+<copyField source="text@s_stored_ts__@*" dest="text@s__l_@*" />
 
-<dynamicField name="text@s_stored_t_cs@*" type="alfrescoFieldType" indexed="false" stored="true" />
-<copyField source="text@s_stored_t_cs@*" dest="text@s__lt@*" />
-<copyField source="text@s_stored_t_cs@*" dest="text@s___t@*" />
+<dynamicField name="text@s_stored__s_s@*" type="alfrescoFieldType" indexed="false" stored="true" />
+<copyField source="text@s_stored__s_s@*" dest="text@s__l_@*" />
+<copyField source="text@s_stored__s_s@*" dest="text@s__sort@*" />
+
+<dynamicField name="text@s_stored_t_c_@*" type="alfrescoFieldType" indexed="false" stored="true" />
+<copyField source="text@s_stored_t_c_@*" dest="text@s__lt@*" />
+<copyField source="text@s_stored_t_c_@*" dest="text@s___t@*" />
+
+<dynamicField name="text@s_stored___cs@*" type="alfrescoFieldType" indexed="false" stored="true" />
+
+<dynamicField name="text@s_stored_t__s@*" type="alfrescoFieldType" indexed="false" stored="true" />
+<copyField source="text@s_stored_t__s@*" dest="text@s__lt@*" />
 
 <dynamicField name="text@s_stored_tsc_@*" type="alfrescoFieldType" indexed="false" stored="true" />
 <copyField source="text@s_stored_tsc_@*" dest="text@s__lt@*" />
@@ -45,22 +38,37 @@
 
 <dynamicField name="text@s_stored__scs@*" type="alfrescoFieldType" indexed="false" stored="true" />
 <copyField source="text@s_stored__scs@*" dest="text@s__l_@*" />
+<copyField source="text@s_stored__scs@*" dest="text@s__sort@*" />
 <copyField source="text@s_stored__scs@*" dest="text@s____@*" />
+
+<dynamicField name="text@s_stored_ts_s@*" type="alfrescoFieldType" indexed="false" stored="true" />
+<copyField source="text@s_stored_ts_s@*" dest="text@s__lt@*" />
+<copyField source="text@s_stored_ts_s@*" dest="text@s__l_@*" />
+<copyField source="text@s_stored_ts_s@*" dest="text@s__sort@*" />
+
+<dynamicField name="text@s_stored_t_cs@*" type="alfrescoFieldType" indexed="false" stored="true" />
+<copyField source="text@s_stored_t_cs@*" dest="text@s__lt@*" />
+<copyField source="text@s_stored_t_cs@*" dest="text@s___t@*" />
 
 <dynamicField name="text@s_stored_tscs@*" type="alfrescoFieldType" indexed="false" stored="true" />
 <copyField source="text@s_stored_tscs@*" dest="text@s__lt@*" />
 <copyField source="text@s_stored_tscs@*" dest="text@s___t@*" />
 <copyField source="text@s_stored_tscs@*" dest="text@s__l_@*" />
+<copyField source="text@s_stored_tscs@*" dest="text@s__sort@*" />
 <copyField source="text@s_stored_tscs@*" dest="text@s____@*" />
 
-
-<dynamicField name="mltext@m_stored_t___@*" type="alfrescoFieldType" indexed="false" stored="true" multiValued="true" />
-<copyField source="mltext@m_stored_t___@*" dest="mltext@m__lt@*" />
 
 <dynamicField name="mltext@m_stored__s__@*" type="alfrescoFieldType" indexed="false" stored="true" multiValued="true" />
 <copyField source="mltext@m_stored__s__@*" dest="mltext@m__l_@*" />
 
 <dynamicField name="mltext@m_stored___c_@*" type="alfrescoFieldType" indexed="false" stored="true" multiValued="true" />
+
+<dynamicField name="mltext@m_stored_t___@*" type="alfrescoFieldType" indexed="false" stored="true" multiValued="true" />
+<copyField source="mltext@m_stored_t___@*" dest="mltext@m__lt@*" />
+
+<dynamicField name="mltext@m_stored__sc_@*" type="alfrescoFieldType" indexed="false" stored="true" multiValued="true" />
+<copyField source="mltext@m_stored__sc_@*" dest="mltext@m__l_@*" />
+<copyField source="mltext@m_stored__sc_@*" dest="mltext@m____@*" />
 
 <dynamicField name="mltext@m_stored_ts__@*" type="alfrescoFieldType" indexed="false" stored="true" multiValued="true" />
 <copyField source="mltext@m_stored_ts__@*" dest="mltext@m__lt@*" />
@@ -70,10 +78,6 @@
 <copyField source="mltext@m_stored_t_c_@*" dest="mltext@m__lt@*" />
 <copyField source="mltext@m_stored_t_c_@*" dest="mltext@m___t@*" />
 
-<dynamicField name="mltext@m_stored__sc_@*" type="alfrescoFieldType" indexed="false" stored="true" multiValued="true" />
-<copyField source="mltext@m_stored__sc_@*" dest="mltext@m__l_@*" />
-<copyField source="mltext@m_stored__sc_@*" dest="mltext@m____@*" />
-
 <dynamicField name="mltext@m_stored_tsc_@*" type="alfrescoFieldType" indexed="false" stored="true" multiValued="true" />
 <copyField source="mltext@m_stored_tsc_@*" dest="mltext@m__lt@*" />
 <copyField source="mltext@m_stored_tsc_@*" dest="mltext@m___t@*" />
@@ -81,13 +85,17 @@
 <copyField source="mltext@m_stored_tsc_@*" dest="mltext@m____@*" />
 
 
-<dynamicField name="content@s_stored_t___@*" type="alfrescoFieldType" indexed="false" stored="true" />
-<copyField source="content@s_stored_t___@*" dest="content@s__lt@*" />
-
 <dynamicField name="content@s_stored__s__@*" type="alfrescoFieldType" indexed="false" stored="true" />
 <copyField source="content@s_stored__s__@*" dest="content@s__l_@*" />
 
 <dynamicField name="content@s_stored___c_@*" type="alfrescoFieldType" indexed="false" stored="true" />
+
+<dynamicField name="content@s_stored_t___@*" type="alfrescoFieldType" indexed="false" stored="true" />
+<copyField source="content@s_stored_t___@*" dest="content@s__lt@*" />
+
+<dynamicField name="content@s_stored__sc_@*" type="alfrescoFieldType" indexed="false" stored="true" />
+<copyField source="content@s_stored__sc_@*" dest="content@s__l_@*" />
+<copyField source="content@s_stored__sc_@*" dest="content@s____@*" />
 
 <dynamicField name="content@s_stored_ts__@*" type="alfrescoFieldType" indexed="false" stored="true" />
 <copyField source="content@s_stored_ts__@*" dest="content@s__lt@*" />
@@ -97,10 +105,6 @@
 <copyField source="content@s_stored_t_c_@*" dest="content@s__lt@*" />
 <copyField source="content@s_stored_t_c_@*" dest="content@s___t@*" />
 
-<dynamicField name="content@s_stored__sc_@*" type="alfrescoFieldType" indexed="false" stored="true" />
-<copyField source="content@s_stored__sc_@*" dest="content@s__l_@*" />
-<copyField source="content@s_stored__sc_@*" dest="content@s____@*" />
-
 <dynamicField name="content@s_stored_tsc_@*" type="alfrescoFieldType" indexed="false" stored="true" />
 <copyField source="content@s_stored_tsc_@*" dest="content@s__lt@*" />
 <copyField source="content@s_stored_tsc_@*" dest="content@s___t@*" />
@@ -108,13 +112,17 @@
 <copyField source="content@s_stored_tsc_@*" dest="content@s____@*" />
 
 
-<dynamicField name="text@m_stored_t___@*" type="alfrescoFieldType" indexed="false" stored="true" multiValued="true" />
-<copyField source="text@m_stored_t___@*" dest="text@m__lt@*" />
-
 <dynamicField name="text@m_stored__s__@*" type="alfrescoFieldType" indexed="false" stored="true" multiValued="true" />
 <copyField source="text@m_stored__s__@*" dest="text@m__l_@*" />
 
 <dynamicField name="text@m_stored___c_@*" type="alfrescoFieldType" indexed="false" stored="true" multiValued="true" />
+
+<dynamicField name="text@m_stored_t___@*" type="alfrescoFieldType" indexed="false" stored="true" multiValued="true" />
+<copyField source="text@m_stored_t___@*" dest="text@m__lt@*" />
+
+<dynamicField name="text@m_stored__sc_@*" type="alfrescoFieldType" indexed="false" stored="true" multiValued="true" />
+<copyField source="text@m_stored__sc_@*" dest="text@m__l_@*" />
+<copyField source="text@m_stored__sc_@*" dest="text@m____@*" />
 
 <dynamicField name="text@m_stored_ts__@*" type="alfrescoFieldType" indexed="false" stored="true" multiValued="true" />
 <copyField source="text@m_stored_ts__@*" dest="text@m__lt@*" />
@@ -123,10 +131,6 @@
 <dynamicField name="text@m_stored_t_c_@*" type="alfrescoFieldType" indexed="false" stored="true" multiValued="true" />
 <copyField source="text@m_stored_t_c_@*" dest="text@m__lt@*" />
 <copyField source="text@m_stored_t_c_@*" dest="text@m___t@*" />
-
-<dynamicField name="text@m_stored__sc_@*" type="alfrescoFieldType" indexed="false" stored="true" multiValued="true" />
-<copyField source="text@m_stored__sc_@*" dest="text@m__l_@*" />
-<copyField source="text@m_stored__sc_@*" dest="text@m____@*" />
 
 <dynamicField name="text@m_stored_tsc_@*" type="alfrescoFieldType" indexed="false" stored="true" multiValued="true" />
 <copyField source="text@m_stored_tsc_@*" dest="text@m__lt@*" />

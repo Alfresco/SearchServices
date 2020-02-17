@@ -10,11 +10,12 @@ output_file = "generated_copy_fields.xml"
 def find_subsets(s, n):
     return [set(i) for x in range(1, n+1) for i in itertools.combinations(s, x) ] 
 
+
 def get_copy_field_xml(source, destination):
     return '<copyField source="' + source + '" dest="' + destination+ '" />'
 
-def get_dynamic_field_xml(field, field_type):
 
+def get_dynamic_field_xml(field, field_type):
     postfix = ""
     if field_type in ("text", "content"):
         postfix = '" type="alfrescoFieldType" indexed="false" stored="true" />'
@@ -22,6 +23,7 @@ def get_dynamic_field_xml(field, field_type):
         postfix = '" type="alfrescoFieldType" indexed="false" stored="true" multiValued="true" />'
 
     return '<dynamicField name="'+ field + postfix
+
 
 def get_field_prefix(field_type):
     if field_type == "text":
@@ -48,25 +50,33 @@ def generate_fields(field_type, tokenized, string, cross_locale, sortable):
 
     if string:
         generated_fields.append(get_copy_field_xml(field, create_non_tokenized(prefix)))
+        if sortable:
+            generated_fields.append(get_copy_field_xml(field, create_sortable(prefix)))
         if cross_locale:
             generated_fields.append(get_copy_field_xml(field, create_non_tokenized_cross_locale(prefix)))
 
     return generated_fields
 
+
 def create_tokenized(prefix):
     return prefix + "_lt" + "@*"
+
 
 def create_tokenized_cross_locale(prefix):
     return prefix + "__t" + "@*"
 
+
 def create_non_tokenized(prefix):
     return prefix + "_l_" + "@*"
+
 
 def create_non_tokenized_cross_locale(prefix):
     return prefix + "___" + "@*"
 
+
 def create_sortable(prefix):
     return prefix + "_sort" + "@*"
+
 
 def generate_text(file):
     
@@ -78,12 +88,14 @@ def generate_text(file):
             file.write("\n")
         file.write("\n")
 
+
 def main():
     file = open(output_file, "w")
     file.write('<fields>\n')
     generate_text(file)
     file.write('</fields>')
     file.close()
+
 
 main()
     

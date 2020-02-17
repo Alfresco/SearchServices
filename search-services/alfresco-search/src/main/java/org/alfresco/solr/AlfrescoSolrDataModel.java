@@ -968,7 +968,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
         sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE ||
             propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH ||
-            isIdentifierTextProperty(propertyDefinition.getName()))? "s" : "_");
+            isIdentifierTextProperty(propertyDefinition.getName())) && !propertyDefinition.isMultiValued()? "s" : "_");
 
         sb.append("@");
         sb.append(propertyDefinition.getName().toString());
