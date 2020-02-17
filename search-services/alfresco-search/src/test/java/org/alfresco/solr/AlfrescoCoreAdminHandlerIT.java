@@ -61,6 +61,7 @@ import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
+import org.apache.solr.common.util.SimpleOrderedMap;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
@@ -289,23 +290,6 @@ public class AlfrescoCoreAdminHandlerIT
         when(params.get(CoreAdminParams.ACTION)).thenReturn(TXREPORT);
         when(params.get(CoreAdminParams.CORE)).thenReturn(CORE_NAME);
         when(params.get(ARG_TXID)).thenReturn(TX_ID);
-        // Set up the mock ACL tracker.
-        when(trackerRegistry.getTrackerForCore(CORE_NAME, AclTracker.class)).thenReturn(aclTracker);
-        when(aclTracker.checkIndex(Long.valueOf(TX_ID), 0L, null, null)).thenReturn(indexHealthReport);
-        when(indexHealthReport.getDuplicatedAclTxInIndex()).thenReturn(iOpenBitSet);
-        when(indexHealthReport.getAclTxInIndexButNotInDb()).thenReturn(iOpenBitSet);
-        when(indexHealthReport.getMissingAclTxFromIndex()).thenReturn(iOpenBitSet);
-        when(aclTracker.getTrackerState()).thenReturn(trackerState);
-        // Set up the mock metadata tracker.
-        when(trackerRegistry.getTrackerForCore(CORE_NAME, MetadataTracker.class)).thenReturn(metadataTracker);
-        when(metadataTracker.checkIndex(Long.valueOf(TX_ID), 0L, null, null)).thenReturn(metaReport);
-        when(metaReport.getDuplicatedTxInIndex()).thenReturn(iOpenBitSet);
-        when(metaReport.getTxInIndexButNotInDb()).thenReturn(iOpenBitSet);
-        when(metaReport.getMissingTxFromIndex()).thenReturn(iOpenBitSet);
-        when(metaReport.getDuplicatedLeafInIndex()).thenReturn(iOpenBitSet);
-        when(metaReport.getDuplicatedErrorInIndex()).thenReturn(iOpenBitSet);
-        when(metaReport.getDuplicatedUnindexedInIndex()).thenReturn(iOpenBitSet);
-        when(metadataTracker.getTrackerState()).thenReturn(trackerState);
 
         // Call the method under test.
         alfrescoCoreAdminHandler.handleCustomAction(req, rsp);
@@ -314,24 +298,27 @@ public class AlfrescoCoreAdminHandlerIT
         verify(rsp).add(eq("report"), any(NamedList.class));
     }
 
-    /** Check that when the transaction id is missing we get an exception. */
-    @Test(expected = SolrException.class)
+    /** Check that when the transaction id is missing we get an error message. */
+    @Test
     public void handleCustomActionTXReportMissingTXId()
     {
         when(params.get(CoreAdminParams.ACTION)).thenReturn(TXREPORT);
         alfrescoCoreAdminHandler.handleCustomAction(req, rsp);
 
-        verify(rsp, never()).add(anyString(), any());
+        verify(rsp).add(eq("report"), any(NamedList.class));
     }
 
-    /** Check that when the core name is missing we get an exception. */
-    @Test(expected = SolrException.class)
+    /** Check that when the core name is missing we get a report for every core. */
+    @Test
     public void handleCustomActionTXReportMissingCoreName()
     {
         when(params.get(CoreAdminParams.ACTION)).thenReturn(TXREPORT);
         when(params.get(CoreAdminParams.CORE)).thenReturn(null);
 
         alfrescoCoreAdminHandler.handleCustomAction(req, rsp);
+        
+        // Check that a report was generated (don't look at the contents of the report though).
+        verify(rsp).add(eq("report"), any(NamedList.class));
     }
 
     /** Check that when an unknown action is provided we don't generate a report. */
@@ -368,7 +355,7 @@ public class AlfrescoCoreAdminHandlerIT
 
         invalidNames.forEach(spy::setupNewDefaultCores);
 
-        verify(spy, never()).newCore(any(), anyInt(), any(), any(), anyInt(), anyInt(), anyInt(), any(), any(), any());
+        verify(spy, never()).newCore(any(), anyInt(), any(), any(), anyInt(), anyInt(), anyInt(), any(), any());
 
         reset(spy);
 
@@ -376,16 +363,17 @@ public class AlfrescoCoreAdminHandlerIT
         String commaSeparatedNames = String.join(",", invalidNames);
         spy.setupNewDefaultCores(commaSeparatedNames);
 
-        verify(spy, never()).newCore(any(), anyInt(), any(), any(), anyInt(), anyInt(), anyInt(), any(), any(), any());
+        verify(spy, never()).newCore(any(), anyInt(), any(), any(), anyInt(), anyInt(), anyInt(), any(), any());
     }
 
     @Test
     public void coreNamesAreTrimmed_oneCoreNameAtTime() {
         AlfrescoCoreAdminHandler spy = spy(new AlfrescoCoreAdminHandler() {
             @Override
-            protected void newCore(String coreName, int numShards, StoreRef storeRef, String templateName, int replicationFactor, int nodeInstance, int numNodes, String shardIds, Properties extraProperties, SolrQueryResponse rsp)
+            protected NamedList<Object> newCore(String coreName, int numShards, StoreRef storeRef, String templateName, int replicationFactor, int nodeInstance, int numNodes, String shardIds, Properties extraProperties)
             {
                 // Do nothing here otherwise we cannot spy it
+                return new SimpleOrderedMap<>();
             }
         });
 
@@ -399,18 +387,19 @@ public class AlfrescoCoreAdminHandlerIT
 
         coreNames.forEach(spy::setupNewDefaultCores);
 
-        verify(spy).newCore(eq(ARCHIVE_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(ARCHIVE_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null), any());
-        verify(spy).newCore(eq(ALFRESCO_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(ALFRESCO_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null), any());
-        verify(spy).newCore(eq(VERSION_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(VERSION_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null), any());
+        verify(spy).newCore(eq(ARCHIVE_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(ARCHIVE_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null));
+        verify(spy).newCore(eq(ALFRESCO_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(ALFRESCO_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null));
+        verify(spy).newCore(eq(VERSION_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(VERSION_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null));
     }
 
     @Test
     public void validAndInvalidCoreNames() {
         AlfrescoCoreAdminHandler spy = spy(new AlfrescoCoreAdminHandler() {
             @Override
-            protected void newCore(String coreName, int numShards, StoreRef storeRef, String templateName, int replicationFactor, int nodeInstance, int numNodes, String shardIds, Properties extraProperties, SolrQueryResponse rsp)
+            protected NamedList<Object> newCore(String coreName, int numShards, StoreRef storeRef, String templateName, int replicationFactor, int nodeInstance, int numNodes, String shardIds, Properties extraProperties)
             {
                 // Do nothing here otherwise we cannot spy it
+                return new SimpleOrderedMap<>();
             }
         });
 
@@ -426,8 +415,8 @@ public class AlfrescoCoreAdminHandlerIT
         String commaSeparatedNames = String.join(",", coreNames);
         spy.setupNewDefaultCores(commaSeparatedNames);
 
-        verify(spy).newCore(eq(ARCHIVE_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(ARCHIVE_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null), any());
-        verify(spy).newCore(eq(ALFRESCO_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(ALFRESCO_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null), any());
-        verify(spy).newCore(eq(VERSION_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(VERSION_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null), any());
+        verify(spy).newCore(eq(ARCHIVE_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(ARCHIVE_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null));
+        verify(spy).newCore(eq(ALFRESCO_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(ALFRESCO_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null));
+        verify(spy).newCore(eq(VERSION_CORE_NAME), eq(1), eq(STORE_REF_MAP.get(VERSION_CORE_NAME)), anyString(), eq(1), eq(1), eq(1), eq(null), eq(null));
     }
 }

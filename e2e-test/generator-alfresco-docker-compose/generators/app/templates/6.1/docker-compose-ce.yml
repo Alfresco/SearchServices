@@ -23,7 +23,7 @@ services:
                 -Dsolr.host=<%=searchSolrHost%>
                 -Dsolr.port.ssl=8983
                 -Dsolr.secureComms=<%=secureComms%>
-                -Dsolr.base.url=/solr
+                -Dsolr.baseUrl=/solr
                 -Dindex.subsystem.name=solr6
                 -Dshare.host=localhost
                 -Dalfresco.port=8080

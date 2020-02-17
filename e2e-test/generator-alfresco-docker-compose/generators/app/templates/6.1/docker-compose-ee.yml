@@ -22,7 +22,7 @@ services:
                 -Dsolr.host=<%=searchSolrHost%>
                 -Dsolr.port.ssl=8983
                 -Dsolr.secureComms=<%=secureComms%>
-                -Dsolr.base.url=/solr <% if (sharding == 'true') { %>
+                -Dsolr.baseUrl=/solr <% if (sharding == 'true') { %>
                 -Dsolr.useDynamicShardRegistration=true <% } %>
                 -Dindex.subsystem.name=solr6
                 -Dalfresco-pdf-renderer.url=http://alfresco-pdf-renderer:8090/
