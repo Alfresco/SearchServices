@@ -121,7 +121,7 @@ public class AlfrescoCollatableTextFieldTypeTest
     public void testCompareBottom_encodedTerm()
     {
         // Set up the document to have an encoded value for the field.
-        when(mockDocTerms.get(DOC)).thenReturn(new BytesRef("\u0000Value\u0000Ignored"));
+        when(mockDocTerms.get(DOC)).thenReturn(new BytesRef("\u0000Ignored\u0000Value"));
         when(mockDocsWithField.get(DOC)).thenReturn(false);
 
         // Call the method under test.
