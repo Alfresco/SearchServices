@@ -255,7 +255,30 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         
         if (!state.isCheckedFirstTransactionTime())
         {
-            firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
+            
+            // On Shards configured with DB_ID_RANGE, the first indexed transaction can be
+            // different from the first transaction in the repository as some transactions
+            // are skipped if they are not related with the range of the Shard.
+            // Getting the minCommitTime for the Shard is enough in order to check
+            // that the first transaction is present.
+            long minCommitTime = 0l;
+            if (docRouter instanceof DBIDRangeRouter && txIntervalCommitTimeServiceAvailable)
+            {
+                try
+                {
+                    DBIDRangeRouter dbIdRangeRouter = (DBIDRangeRouter) docRouter;
+                    Pair<Long, Long> commitTimes = client.getTxIntervalCommitTime(coreName,
+                            dbIdRangeRouter.getStartRange(), dbIdRangeRouter.getEndRange());
+                    minCommitTime = commitTimes.getFirst();
+                }
+                catch (NoSuchMethodException e)
+                {
+                    log.warn("txIntervalCommitTimeServiceAvailable is not available. If you are using DB_ID_RANGE shard method, "
+                            + "upgrade your ACS Repository version in order to use this feature: {} ", e.getMessage());
+                }
+            }
+            
+            firstTransactions = client.getTransactions(minCommitTime, 0L, null, Long.MAX_VALUE, 1);
             if (!firstTransactions.getTransactions().isEmpty())
             {
                 Transaction firstTransaction = firstTransactions.getTransactions().get(0);
