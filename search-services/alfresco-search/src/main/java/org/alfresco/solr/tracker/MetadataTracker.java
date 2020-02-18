@@ -140,7 +140,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
             catch (NoSuchMethodException e)
             {
                 log.warn("txIntervalCommitTimeServiceAvailable is not available. If you are using DB_ID_RANGE shard method, "
-                        + "upgrade your ACS Repository version in order to use this feature: {} ", e.getMessage());
+                        + "upgrade your ACS Repository version in order to use the skip transactions feature: {} ", e.getMessage());
             }
             catch (Exception e)
             {
@@ -274,7 +274,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 catch (NoSuchMethodException e)
                 {
                     log.warn("txIntervalCommitTimeServiceAvailable is not available. If you are using DB_ID_RANGE shard method, "
-                            + "upgrade your ACS Repository version in order to use this feature: {} ", e.getMessage());
+                            + "upgrade your ACS Repository version in order to use the skip transactions feature: {} ", e.getMessage());
                 }
             }
             
