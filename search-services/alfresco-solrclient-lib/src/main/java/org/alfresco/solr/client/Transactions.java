@@ -39,7 +39,7 @@ public class Transactions
     
     private Long maxTxnId;
     
-    Transactions(List<Transaction> transactions, Long maxTxnCommitTime, Long maxTxnId)
+    public Transactions(List<Transaction> transactions, Long maxTxnCommitTime, Long maxTxnId)
     {
         this.transactions = transactions;
         this.maxTxnCommitTime = maxTxnCommitTime;

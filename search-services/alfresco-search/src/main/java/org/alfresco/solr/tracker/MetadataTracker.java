@@ -20,6 +20,7 @@ package org.alfresco.solr.tracker;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -32,7 +33,6 @@ import org.alfresco.repo.index.shard.ShardState;
 import org.alfresco.solr.BoundedDeque;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.NodeReport;
-import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.TrackerState;
 import org.alfresco.solr.adapters.IOpenBitSet;
 import org.alfresco.solr.client.GetNodesParameters;
@@ -716,6 +716,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 // When using DB_ID_RANGE, fromCommitTime cannot be before the commit time of the first transaction
                 // for the DB_ID_RANGE to be indexed and commit time of the last transaction cannot be lower than fromCommitTime. 
                 // When there isn't nodes in that range, -1 is returned as commit times
+                boolean shardOutOfRange = false;
                 if (docRouter instanceof DBIDRangeRouter && txIntervalCommitTimeServiceAvailable)
                 {
                     
@@ -728,23 +729,24 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                     // Node Range it's not still available in repository
                     if (shardMinCommitTime == -1)
                     {
-                        log.debug("#### [DB_ID_RANGE] No nodes in range [" + dbIdRangeRouter.getStartRange() + "-"
-                                + dbIdRangeRouter.getEndRange() + "] "
-                                + "exist in the repository. Skipping metadata tracking.");
-                        return;
+                        log.debug(
+                                "#### [DB_ID_RANGE] No nodes in range [{}-{}] "
+                                        + "exist in the repository. Indexing only latest transaction.",
+                                dbIdRangeRouter.getStartRange(), dbIdRangeRouter.getEndRange());
+                        shardOutOfRange = true;
                     }
                     if (fromCommitTime > shardMaxCommitTime)
                     {
-                        log.debug("#### [DB_ID_RANGE] Last commit time is greater that max commit time in in range ["
-                                + dbIdRangeRouter.getStartRange() + "-" + dbIdRangeRouter.getEndRange() + "]. "
-                                + "Skipping metadata tracking.");
-                        return;
+                        log.debug("#### [DB_ID_RANGE] Last commit time is greater that max commit time in in range [{}-{}]. "
+                                        + "Indexing only latest transaction.",
+                                dbIdRangeRouter.getStartRange(), dbIdRangeRouter.getEndRange());
+                        shardOutOfRange = true;
                     }
                     // Initial commit time for Node Range is greater than calculated from commit time
                     if (fromCommitTime < shardMinCommitTime)
                     {
-                        log.debug("#### [DB_ID_RANGE] SKIPPING TRANSACTIONS FROM " + fromCommitTime + " TO "
-                                + shardMinCommitTime);
+                        log.debug("#### [DB_ID_RANGE] Skipping transactions from {} to {}", 
+                                fromCommitTime, shardMinCommitTime);
                         fromCommitTime = shardMinCommitTime;
                     }
                 }
@@ -752,6 +754,21 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 log.debug("#### Get txn from commit time: " + fromCommitTime);
                 transactions = getSomeTransactions(txnsFound, fromCommitTime, TIME_STEP_1_HR_IN_MS, 2000,
                                                    state.getTimeToStopIndexing());
+                
+                
+                // When transactions are out of Shard range, only the latest transaction needs to be indexed
+                // in order to preserve the state up-to-date of the MetadataTracker
+                if (shardOutOfRange)
+                {
+                    Transaction latestTransaction = new Transaction();
+                    latestTransaction.setCommitTimeMs(transactions.getMaxTxnCommitTime());
+                    latestTransaction.setId(transactions.getMaxTxnId());
+                    transactions = new Transactions(
+                            Arrays.asList(latestTransaction),
+                            transactions.getMaxTxnCommitTime(), 
+                            transactions.getMaxTxnId());
+                    log.debug("#### [DB_ID_RANGE] Latest transaction to be indexed {}", latestTransaction);
+                }
 
                 setLastTxCommitTimeAndTxIdInTrackerState(transactions, state);
 
