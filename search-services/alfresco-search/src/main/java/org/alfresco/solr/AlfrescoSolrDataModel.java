@@ -1631,6 +1631,9 @@ public class AlfrescoSolrDataModel implements QueryConstants
             }
         }
 
+        if (propertyDef == null || propertyDef.getName() == null){
+            return mapNonPropertyFields(luceneField);
+        }
 
         if (propertyDef.getName().equals(DataTypeDefinition.TEXT))
         {
