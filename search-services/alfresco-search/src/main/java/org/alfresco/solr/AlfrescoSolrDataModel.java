@@ -970,6 +970,8 @@ public class AlfrescoSolrDataModel implements QueryConstants
             propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH ||
             isIdentifierTextProperty(propertyDefinition.getName())) && !propertyDefinition.isMultiValued()? "s" : "_");
 
+        sb.append(isSuggestable(propertyQName)? "s": "_");
+
         sb.append("@");
         sb.append(propertyDefinition.getName().toString());
 
@@ -996,6 +998,8 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
         sb.append("_");
 
+        sb.append(isSuggestable(propertyQName)? "s": "_");
+
         sb.append("@");
         sb.append(propertyDefinition.getName().toString());
 
@@ -1021,7 +1025,9 @@ public class AlfrescoSolrDataModel implements QueryConstants
         sb.append((crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) ||
             crossLocaleSearchProperties.contains(propertyDefinition.getName())) ? "c" : "_");
 
+
         sb.append("_");
+        sb.append(isSuggestable(propertyQName)? "s": "_");
 
         sb.append("@");
         sb.append(propertyDefinition.getName().toString());

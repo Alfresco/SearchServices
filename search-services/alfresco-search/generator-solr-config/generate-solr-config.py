@@ -3,6 +3,7 @@ import itertools
 tokenized = "tokenized"
 string = "string"
 sortable = "sortable"
+suggestable = "suggestable"
 cross_locale = "cross-locale"
 output_file = "generated_copy_fields.xml"
 
@@ -36,10 +37,10 @@ def get_field_prefix(field_type):
         return "text@m_"
     
 
-def generate_fields(field_type, tokenized, string, cross_locale, sortable):
+def generate_fields(field_type, tokenized, string, cross_locale, sortable, suggestable):
 
     prefix = get_field_prefix(field_type)
-    field = prefix + "stored_" + ("t" if tokenized else "_") + ("s" if string else "_")  + ("c" if cross_locale else "_") + ("s" if sortable else "_" ) + "@*"
+    field = prefix + "stored_" + ("t" if tokenized else "_") + ("s" if string else "_")  + ("c" if cross_locale else "_") + ("s" if sortable else "_" ) + ("s" if suggestable else "_") + "@*"
     generated_fields = []
     generated_fields.append(get_dynamic_field_xml(field, field_type))
 
@@ -54,6 +55,9 @@ def generate_fields(field_type, tokenized, string, cross_locale, sortable):
             generated_fields.append(get_copy_field_xml(field, create_sortable(prefix)))
         if cross_locale:
             generated_fields.append(get_copy_field_xml(field, create_non_tokenized_cross_locale(prefix)))
+
+    if suggestable:
+        generated_fields.append(get_copy_field_xml(field, "suggest"))
 
     return generated_fields
 
@@ -81,9 +85,9 @@ def create_sortable(prefix):
 def generate_text(file):
     
     for t in ("text", "mltext", "content", "multivalue-text"):
-        s = {tokenized, string, cross_locale, sortable} if t == "text" else {tokenized, string, cross_locale} 
-        for s in find_subsets(s, 4):
-            generated = generate_fields(t, tokenized in s, string in s, cross_locale in s, sortable in s)
+        s = {tokenized, string, cross_locale, sortable, suggestable} if t == "text" else {tokenized, string, cross_locale, suggestable}
+        for s in find_subsets(s, 5):
+            generated = generate_fields(t, tokenized in s, string in s, cross_locale in s, sortable in s, suggestable in s)
             file.writelines(["%s\n" % item  for item in generated])
             file.write("\n")
         file.write("\n")
