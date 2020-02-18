@@ -36,6 +36,7 @@
     <fieldType name="identifiers" class="solr.StrField" indexed="true" stored="true" multiValued="true" positionIncrementGap="100" />
     <fieldType name="text-identifier" class="solr.TextField" positionIncrementGap="100" indexed="true" stored="false">
       <analyzer>
+        <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="\x{0000}.*\x{0000}" replacement=""/>
         <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(#0;.*#0;)" replacement=""/>
         <tokenizer class="solr.KeywordTokenizerFactory"/>
       </analyzer>
@@ -98,6 +99,7 @@
 
     <fieldType name="text_shingle" class="solr.TextField" positionIncrementGap="100">
       <analyzer type="index">
+        <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="\x{0000}.*\x{0000}" replacement=""/>
         <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(#0;.*#0;)" replacement=""/>
         <tokenizer class="solr.ICUTokenizerFactory"/>
         <filter class="solr.ICUNormalizer2FilterFactory" name="nfkc_cf" mode="compose" />
@@ -138,6 +140,7 @@
 
     <fieldType name="text___" class="solr.TextField" positionIncrementGap="100" indexed="true" stored="true">
       <analyzer>
+        <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="\x{0000}.*\x{0000}" replacement=""/>
         <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(#0;.*#0;)" replacement=""/>
         <tokenizer class="solr.ICUTokenizerFactory"/>
         <!-- <tokenizer class="org.apache.solr.analysis.WhitespaceTokenizerFactory" /> -->
@@ -1030,7 +1033,7 @@
     <dynamicField name="noderef@md@*" type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
 
     <!-- GX -->
-    <dynamicField name="text@s____@*" type="text-identifier" />
+    <dynamicField name="text@s____@*" type="text-identifier" stored="false" />
     <dynamicField name="text@s__l_@*" type="alfrescoFieldType" omitNorms="true" stored="false"/>
     <dynamicField name="text@s__lt@*" type="alfrescoFieldType" omitNorms="false" stored="false"/>
     <dynamicField name="text@s___t@*" type="text___" stored="false"/>
