@@ -34,7 +34,7 @@ services:
 
 # Insight Engine or Search Services
   search:
-    image: quay.io/alfresco/search-services:test
+    image: quay.io/alfresco/search-services:${SEARCH_TAG}
     environment:
       #Solr needs to know how to register itself with Alfresco
       - REPLICATION_TYPE=master
