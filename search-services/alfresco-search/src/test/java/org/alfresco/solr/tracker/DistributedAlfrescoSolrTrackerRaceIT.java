@@ -84,7 +84,8 @@ public class DistributedAlfrescoSolrTrackerRaceIT extends AbstractAlfrescoDistri
         AclReaders aclReaders = getAclReaders(aclChangeSet, acl, singletonList("joel"), singletonList("phil"), null);
         AclReaders aclReaders2 = getAclReaders(aclChangeSet, acl2, singletonList("jim"), singletonList("phil"), null);
 
-        Transaction txn = getTransaction(0, 2);
+        // Transaction between [1-2000] is required, when greater value checking the core will fail
+        Transaction txn = getTransaction(0, 2, 1);
         long txnCommitTimeMs = txn.getCommitTimeMs();
 
         // Subtract from the commit time to go beyond hole retention

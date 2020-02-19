@@ -118,6 +118,9 @@ public class AlfrescoSolrUtils
 
     /**
      * Get transaction.
+     * When getting an unique transaction for a test, don't use this constructors.
+     * As this produces a number that can be out of the range [1-2000], that is
+     * the one checked by the SOLR Core to find the initial transaction is right.
      * @param deletes
      * @param updates
      * @return {@link Transaction}
@@ -127,10 +130,7 @@ public class AlfrescoSolrUtils
         long txnCommitTime = System.currentTimeMillis();
         Transaction transaction = new Transaction();
         transaction.setCommitTimeMs(txnCommitTime);
-        // A safer number for a transaction Id should be in [1-2000] range, 
-        // so this is the range accepted for the starting transaction number
-        // on a SOLR Core
-        transaction.setId(RANDOMIZER.nextInt(2000) + 1);
+        transaction.setId(generateId());
         transaction.setDeletes(deletes);
         transaction.setUpdates(updates);
         return transaction;
