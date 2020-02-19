@@ -19,9 +19,9 @@ def get_copy_field_xml(source, destination):
 def get_dynamic_field_xml(field, field_type):
     postfix = ""
     if field_type in ("text", "content"):
-        postfix = '" type="alfrescoFieldType" indexed="false" stored="true" />'
+        postfix = '" type="localePrefixedField" indexed="false" stored="true" />'
     else:
-        postfix = '" type="alfrescoFieldType" indexed="false" stored="true" multiValued="true" />'
+        postfix = '" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />'
 
     return '<dynamicField name="'+ field + postfix
 

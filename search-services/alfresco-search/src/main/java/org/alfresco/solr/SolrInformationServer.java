@@ -2203,7 +2203,6 @@ public class SolrInformationServer implements InformationServer
         // Boolean properties (like isIndexed) are caught in this loop because they are classified as StringPropertyValue
         if (fields.size() > 1) {
 
-            // TODO: this should be got from AlfrescoSolrDataModel
             String storedFieldName = dataModel.getStoredMLTextField(propertyQName);
 
             valueHolder.accept(storedFieldName, getLocalisedValues(value));
@@ -3876,7 +3875,7 @@ public class SolrInformationServer implements InformationServer
                         .map(value -> DefaultTypeConverter.INSTANCE.convert(Locale.class, value))
                         .orElse(I18NUtil.getLocale());
 
-        return "\u0000" + locale.getLanguage().toString() + "\u0000" + property.getValue();
+        return "\u0000" + locale.getLanguage() + "\u0000" + property.getValue();
     }
 
     private static void addStringProperty(BiConsumer<String, Object> consumer, FieldInstance field, StringPropertyValue property, PropertyValue localeProperty)

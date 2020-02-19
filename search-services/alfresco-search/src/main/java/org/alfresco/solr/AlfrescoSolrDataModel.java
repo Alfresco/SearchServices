@@ -780,28 +780,25 @@ public class AlfrescoSolrDataModel implements QueryConstants
     // TODO: make it better
     private void addHighlightSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
     {
+
+        QName propertyName = propertyDefinition.getName();
         QName propertyDataTypeQName = propertyDefinition.getDataType().getName();
-        StringBuilder builder =
-                new StringBuilder()
-                    .append(propertyDataTypeQName.getLocalName())
-                    .append("@");
+        String fieldName;
 
         if(propertyDataTypeQName.equals(DataTypeDefinition.MLTEXT))
         {
-            builder.append('m');
+            fieldName = getStoredMLTextField(propertyName);
         }
-        else  if(propertyDataTypeQName.equals(DataTypeDefinition.CONTENT))
+        else if(propertyDataTypeQName.equals(DataTypeDefinition.CONTENT))
         {
-            builder.append('s');
+            fieldName = getStoredContentField(propertyName);
         }
         else
         {
-            builder.append(propertyDefinition.isMultiValued() ? "m" : "s");
+            fieldName = getStoredTextField(propertyName);
         }
 
-        builder.append("_stored_lt@").append(propertyDefinition.getName().toString());
-
-        FieldInstance field = new FieldInstance(builder.toString(), true, false);
+        FieldInstance field = new FieldInstance(fieldName, false, false);
         indexedField.getFields().add(field);
     }
 
