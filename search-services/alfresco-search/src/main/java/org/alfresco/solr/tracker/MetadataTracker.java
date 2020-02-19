@@ -243,7 +243,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
             state.setCheckedFirstTransactionTime(true);
             log.info("No transactions found - no verification required");
 
-            firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
+            firstTransactions = client.getTransactions(null, 0L, null, 2000l, 1);
             if (!firstTransactions.getTransactions().isEmpty())
             {
                 Transaction firstTransaction = firstTransactions.getTransactions().get(0);
@@ -278,7 +278,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 }
             }
             
-            firstTransactions = client.getTransactions(minCommitTime, 0L, null, Long.MAX_VALUE, 1);
+            firstTransactions = client.getTransactions(minCommitTime, 0L, null, 2000l, 1);
             if (!firstTransactions.getTransactions().isEmpty())
             {
                 Transaction firstTransaction = firstTransactions.getTransactions().get(0);
@@ -311,7 +311,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         {
             if (firstTransactions == null)
             {
-                firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
+                firstTransactions = client.getTransactions(null, 0L, null, 2000l, 1);
             }
             
             setLastTxCommitTimeAndTxIdInTrackerState(firstTransactions, state);
@@ -1147,7 +1147,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     {
         // DB TX Count
         long firstTransactionCommitTime = 0;
-        Transactions firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
+        Transactions firstTransactions = client.getTransactions(null, 0L, null, 2000l, 1);
         if(firstTransactions.getTransactions().size() > 0)
         {
             Transaction firstTransaction = firstTransactions.getTransactions().get(0);
