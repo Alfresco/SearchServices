@@ -65,7 +65,9 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     private ConcurrentLinkedQueue<Long> nodesToIndex = new ConcurrentLinkedQueue<>();
     private ConcurrentLinkedQueue<Long> nodesToPurge = new ConcurrentLinkedQueue<>();
     private ConcurrentLinkedQueue<String> queriesToReindex = new ConcurrentLinkedQueue<>();
-    
+
+    private final boolean isRunningInProduction = !Boolean.parseBoolean(System.getProperty("alfresco.test", "false"));
+
     /**
      * Check if nextTxCommitTimeService is available in the repository.
      * This service is used to find the next available transaction commit time from a given time,
@@ -114,7 +116,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         
         // In order to apply performance optimizations, checking the availability of Repo Web Scripts is required.
         // As these services are available from ACS 6.2
-        if (checkRepoServicesAvailability)
+        if (checkRepoServicesAvailability && isRunningInProduction)
         {
             // Try invoking getNextTxCommitTime service
             try

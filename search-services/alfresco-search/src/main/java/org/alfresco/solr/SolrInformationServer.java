@@ -3876,7 +3876,7 @@ public class SolrInformationServer implements InformationServer
                         .map(value -> DefaultTypeConverter.INSTANCE.convert(Locale.class, value))
                         .orElse(I18NUtil.getLocale());
 
-        return "\u0000" + locale.toString() + "\u0000" + property.getValue();
+        return "\u0000" + locale.getLanguage().toString() + "\u0000" + property.getValue();
     }
 
     private static void addStringProperty(BiConsumer<String, Object> consumer, FieldInstance field, StringPropertyValue property, PropertyValue localeProperty)
