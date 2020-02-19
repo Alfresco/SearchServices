@@ -54,7 +54,7 @@ services:
       - 5432:5432
 
   search:
-    image: quay.io/alfresco/insight-engine:${SEARCH_TAG}
+    image: quay.io/alfresco/search-services:${SEARCH_TAG}
     environment:
       #Replication properties
       # - REPLICATION_TYPE=master
