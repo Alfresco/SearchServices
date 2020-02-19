@@ -2235,7 +2235,7 @@ public class SolrInformationServer implements InformationServer
             // TODO: this should be got from AlfrescoSolrDataModel
             String storedFieldName = "text@s_stored_lt@" + propertyQName;
 
-            valueHolder.accept(storedFieldName, getLocalisedValue((StringPropertyValue) value, locale));
+            valueHolder.accept(storedFieldName, getLocalisedValue(value, locale));
 
             /* the schema have been changed so all the stored field above is copied on every text@...@ fields
                 The only exception is the text@sd___@ which has docvalues enabled. We can't copy the stored field
@@ -3874,7 +3874,7 @@ public class SolrInformationServer implements InformationServer
                         .map(value -> DefaultTypeConverter.INSTANCE.convert(Locale.class, value))
                         .orElse(I18NUtil.getLocale());
 
-        return "\u0000" + locale.toString() + "\u0000" + property.getValue();
+        return "\u0000" + locale.getLanguage().toString() + "\u0000" + property.getValue();
     }
 
     private static void addStringProperty(BiConsumer<String, Object> consumer, FieldInstance field, StringPropertyValue property, PropertyValue localeProperty)

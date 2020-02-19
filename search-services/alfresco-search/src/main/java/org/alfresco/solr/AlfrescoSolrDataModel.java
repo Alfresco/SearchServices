@@ -800,8 +800,6 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
         builder.append("_stored_lt@").append(propertyDefinition.getName().toString());
 
-        System.out.println(propertyDefinition.getName() + " has been mapped to " + builder);
-
         FieldInstance field = new FieldInstance(builder.toString(), true, false);
         indexedField.getFields().add(field);
     }
