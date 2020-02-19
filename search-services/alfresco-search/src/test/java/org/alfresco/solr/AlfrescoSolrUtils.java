@@ -127,7 +127,10 @@ public class AlfrescoSolrUtils
         long txnCommitTime = System.currentTimeMillis();
         Transaction transaction = new Transaction();
         transaction.setCommitTimeMs(txnCommitTime);
-        transaction.setId(generateId());
+        // A safer number for a transaction Id should be in [1-2000] range, 
+        // so this is the range accepted for the starting transaction number
+        // on a SOLR Core
+        transaction.setId(RANDOMIZER.nextInt(2000) + 1);
         transaction.setDeletes(deletes);
         transaction.setUpdates(updates);
         return transaction;
