@@ -32,6 +32,8 @@ import org.apache.lucene.index.Terms;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.QueryScorer;
+import org.apache.lucene.search.highlight.WeightedSpanTerm;
+import org.apache.lucene.search.highlight.WeightedSpanTermExtractor;
 import org.apache.solr.common.params.HighlightParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
@@ -188,7 +190,29 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 			schemaFieldName = null;
 		}
 
-		QueryScorer scorer = new QueryScorer(query,request.getParams().getFieldBool(requestFieldname, HighlightParams.FIELD_MATCH, false) ? schemaFieldName : null);
+		QueryScorer scorer = new QueryScorer(query,request.getParams().getFieldBool(requestFieldname, HighlightParams.FIELD_MATCH, false) ? schemaFieldName : null)
+		{
+			@Override
+			protected WeightedSpanTermExtractor newTermExtractor(String defaultField)
+			{
+				return new WeightedSpanTermExtractor(defaultField)
+				{
+					@Override
+					protected void extractWeightedTerms(Map<String, WeightedSpanTerm> terms, Query query, float boost) throws IOException {
+						super.extractWeightedTerms(terms, query, boost);
+
+						List<WeightedSpanTerm> termsWithoutLocale =
+								terms.values()
+										.stream()
+										.peek(term -> term.setTerm(term.getTerm().replace("{en}", "")))
+										.collect(toList());
+
+						terms.clear();
+						termsWithoutLocale.forEach(term -> terms.put(term.getTerm(), term));
+					}
+				};
+			}
+		};
 		scorer.setExpandMultiTermQuery(request.getParams().getBool(HighlightParams.HIGHLIGHT_MULTI_TERM, true));
 
 		boolean defaultPayloads = true;// overwritten below

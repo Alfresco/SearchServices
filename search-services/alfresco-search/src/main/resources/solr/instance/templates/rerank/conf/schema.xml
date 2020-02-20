@@ -1093,15 +1093,12 @@
     <dynamicField name="category@md@*" type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
     <dynamicField name="noderef@md@*" type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
 
-    <!-- GX -->
     <dynamicField name="text@s____@*" type="text-identifier" stored="false" />
     <dynamicField name="text@s__l_@*" type="alfrescoFieldType" omitNorms="true" stored="false"/>
     <dynamicField name="text@s__lt@*" type="alfrescoFieldType" omitNorms="false" stored="false"/>
     <dynamicField name="text@s___t@*" type="text___" stored="false"/>
     <dynamicField name="text@s__sort@*" type="alfrescoCollatableTextFieldType" stored="false"/>
     <dynamicField name="text@sd___@*" type="identifier" docValues="true" stored="false"/>
-
-    <!-- END -->
 
     <dynamicField name="text@m____@*" type="text-identifiers" />
     <dynamicField name="text@m__l_@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" />
@@ -1114,7 +1111,6 @@
     <dynamicField name="mltext@m__l_@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" stored="false"/>
     <dynamicField name="mltext@m__lt@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" stored="false"/>
     <dynamicField name="mltext@m___t@*" type="text___" multiValued="true" stored="false" />
-
 
     <dynamicField name="mltext@m__sort@*" type="alfrescoCollatableMLTextFieldType" />
 

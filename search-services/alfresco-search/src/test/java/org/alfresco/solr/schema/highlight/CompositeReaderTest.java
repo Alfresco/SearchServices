@@ -64,8 +64,6 @@ public class CompositeReaderTest
     {
         List<String> chunks =
                 asList("This is the",
-
-
                         " whole string content ",
                         " we are expecting as final result.");
 

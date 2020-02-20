@@ -97,7 +97,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -119,6 +118,7 @@ import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -2184,72 +2184,35 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    static String propertyToString(Object id, String type, QName propertyName, PropertyValue value, FieldInstance field)
-    {
-        return "***** " + propertyName + "******\n" +
-                "ID: " + id + "\n" +
-                "TYPE: " + type + "\n" +
-                "VALUE: " + value + "\n" +
-                "FIELD: Name = " + field.getField() + ", Localised = " + field.localised + ", Sort = " + field.sort;
-    }
-
     static void mltextProperty(QName propertyQName, MLTextPropertyValue value, final BiConsumer<String, Object> valueHolder)
     {
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
         List<FieldInstance> fields = dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields();
 
-        // TODO: is there a better way to determine if the field is a mltext or not
-        // (for example) a boolean or a primitive (the default model always associates 1 field to such types)
-        // Boolean properties (like isIndexed) are caught in this loop because they are classified as StringPropertyValue
-        if (fields.size() > 1) {
+        String storedFieldName = dataModel.getStoredMLTextField(propertyQName);
 
-            String storedFieldName = dataModel.getStoredMLTextField(propertyQName);
-
-            valueHolder.accept(storedFieldName, getLocalisedValues(value));
-
-            // mltext Sort fields concatenate multiple values (1 locale - 1 value) in a single string
-            // we cannot do that using copyfield or update request processor so the only possible approach
-            // is to send the sort field separately (like we do for doc values "text" fields)
-            fields.stream()
-                    .filter(FieldInstance::isSort)
-                    .forEach(field -> addMLTextProperty(valueHolder, field, value));
-
-        } else {
-            // Theoretically we should never be in this branch (primitive types are not mltext)
-            dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
-                    .forEach(field -> addMLTextProperty(valueHolder, field, value));
-        }
+        valueHolder.accept(storedFieldName, getLocalisedValues(value));
+        fields.stream()
+            .filter(FieldInstance::isSort)
+            .forEach(field -> addMLTextProperty(valueHolder, field, value));
     }
 
     static void stringProperty(QName propertyQName, StringPropertyValue value, PropertyValue locale, final BiConsumer<String, Object> valueHolder)
     {
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
-        List<FieldInstance> fields = dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields();
+        PropertyDefinition definition = dataModel.getPropertyDefinition(propertyQName);
 
-        // TODO: is there a better way to determine if the field is a text/mltext/content or not
-        // (for example) a boolean or a primitive (the default model always associates 1 field to such types)
-        // Boolean properties (like isIndexed) are caught in this loop because they are classified as StringPropertyValue
-        if (fields.size() > 1) {
-
-            // TODO: this should be got from AlfrescoSolrDataModel
+        if (dataModel.isTextField(definition))
+        {
             String storedFieldName = dataModel.getStoredTextField(propertyQName);
-
-
-            //TODO add field for mltext sort
             valueHolder.accept(storedFieldName, getLocalisedValue(value, locale));
-
-            /* the schema have been changed so all the stored field above is copied on every text@...@ fields
-                The only exception is the text@sd___@ which has docvalues enabled. We can't copy the stored field
-                there because the locale prefix cannot be removed (as it happens with the other non-localised text@ fields)
-             */
 
             dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
                     .stream()
-                    .filter(field -> field.getField().startsWith("text@sd___@") || field.getField().startsWith("text@m__sort@"))
+                    .filter(field -> field.getField().startsWith("text@sd___@") || field.getField().startsWith("text@m__sort"))
                     .forEach(field -> addStringProperty(valueHolder, field, value, locale));
-        } else {
-
-// OLD CODE: this relates to primitive/non-text fields/properties (like LID, APATH or boolean@...)
+        } else
+        {
             dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
                     .forEach(field -> addStringProperty(valueHolder, field, value, locale));
         }
@@ -2657,14 +2620,18 @@ public class SolrInformationServer implements InformationServer
 
         this.getTrackerStats().addDocTransformationTime(System.nanoTime() - start);
 
-        // TODO: The field name should be retrieved from AlfrescoSolrDataModel
         String storedField = dataModel.getStoredContentField(propertyQName);
-
-        doc.setField(storedField, "\u0000" + locale + "\u0000" + textContent);
+        doc.setField(storedField, "\u0000" + languageFrom(locale) + "\u0000" + textContent);
 
         dataModel.getIndexedFieldNamesForProperty(propertyQName)
                 .getFields()
                 .forEach(field -> addFieldIfNotSet(doc, field.getField()));
+    }
+
+    private String languageFrom(String locale)
+    {
+        int indexOfSeparator = locale.indexOf("_");
+        return indexOfSeparator == -1 ? locale : locale.substring(0, indexOfSeparator);
     }
 
     private static List<String> getLocalisedValues(MLTextPropertyValue mlTextPropertyValue)
@@ -2683,9 +2650,7 @@ public class SolrInformationServer implements InformationServer
                 continue;
             }
 
-            StringBuilder builder = new StringBuilder(propValue.length() + 16);
-            builder.append("\u0000").append(locale.toString()).append("\u0000").append(propValue);
-            values.add(builder.toString());
+            values.add("\u0000" + locale.getLanguage() + "\u0000" + propValue);
         }
         return values;
     }

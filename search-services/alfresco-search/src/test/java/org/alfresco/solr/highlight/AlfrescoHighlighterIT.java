@@ -179,8 +179,6 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
     @Test
     public void highlightingPhraseQueriesTest()
     {
-        LOGGER.info("######### Testing PHRASE QUERIES ###########");
-
         //Phrase hightling is on by default
         SolrServletRequest req = areq(params( "q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",

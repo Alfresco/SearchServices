@@ -1124,7 +1124,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         return identifierProperties.contains(propertyQName);
     }
 
-    private boolean isTextField(PropertyDefinition propertyDefinition)
+    public boolean isTextField(PropertyDefinition propertyDefinition)
     {
         QName propertyDataTypeQName = propertyDefinition.getDataType().getName();
         if(propertyDataTypeQName.equals(DataTypeDefinition.MLTEXT))
