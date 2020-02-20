@@ -449,6 +449,9 @@ This will start up Alfresco, Postgres, Share and SearchServices. You can access 
  * Solr: http://localhost:8083/solr
  * Solr-slave: http://localhost:8084/solr
 
+Note: Once deployed and all services up and running, goto <http://localhost:8081/alfresco/s/enterprise/admin/admin-searchservice?m=admin-console.success>. Scroll down and click save button.
+This is the bug which currently working on [SEARCH-2085](https://issues.alfresco.com/jira/browse/SEARCH-2085)
+
 If you start version 5.x instead you can also access the API Explorer:
 
  * API Explorer: http://localhost:8084/api-explorer
