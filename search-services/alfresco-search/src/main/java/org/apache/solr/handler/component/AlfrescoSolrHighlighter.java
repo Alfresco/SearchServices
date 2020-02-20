@@ -190,7 +190,19 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 			schemaFieldName = null;
 		}
 
-		QueryScorer scorer = new QueryScorer(query,request.getParams().getFieldBool(requestFieldname, HighlightParams.FIELD_MATCH, false) ? schemaFieldName : null)
+		// The query scorer purpose is to give a score to the text fragments by the number of unique query terms found.
+		//
+		// Fields that use the Alfresco MLAnalyser have a locale marker at the beginning of each token. For example,
+		// the text "My name is Gazza" becomes (locale = en):
+		//
+		// {en}my {en}name {en}is {en}gazza
+		//
+		// while this is not an issue for searching, those tokens never find a match during the highlighting because
+		// my != {en}my
+		//
+		// The purpose of this custom query scorer is to replace the collected weighted terms with their corresponding
+		// un-localised version.
+ 		QueryScorer scorer = new QueryScorer(query,request.getParams().getFieldBool(requestFieldname, HighlightParams.FIELD_MATCH, false) ? schemaFieldName : null)
 		{
 			@Override
 			protected WeightedSpanTermExtractor newTermExtractor(String defaultField)
@@ -198,19 +210,42 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 				return new WeightedSpanTermExtractor(defaultField)
 				{
 					@Override
-					protected void extractWeightedTerms(Map<String, WeightedSpanTerm> terms, Query query, float boost) throws IOException {
+					protected void extractWeightedTerms(Map<String, WeightedSpanTerm> terms, Query query, float boost) throws IOException
+					{
 						super.extractWeightedTerms(terms, query, boost);
-
 						List<WeightedSpanTerm> termsWithoutLocale =
 								terms.values()
 										.stream()
-										.peek(term -> term.setTerm(term.getTerm().replace("{en}", "")))
+										.peek(term -> term.setTerm(withoutLocalePrefixMarker(term.getTerm())))
 										.collect(toList());
 
 						terms.clear();
 						termsWithoutLocale.forEach(term -> terms.put(term.getTerm(), term));
 					}
 				};
+			}
+
+			/**
+			 * Removes the locale marker from the given text.
+			 *
+			 * @param text the input text.
+			 * @return the text without the beginning locale marker, or the same text is the marker cannot be found.
+			 */
+			private String withoutLocalePrefixMarker(String text)
+			{
+				if (text == null) return null;
+
+				int startIndexOfMarker = text.indexOf("{");
+				if (startIndexOfMarker == 0)
+				{
+					int endIndexOfMarker = text.indexOf("}");
+					if (endIndexOfMarker != -1 && text.length() > (endIndexOfMarker + 1))
+					{
+						return text.substring(endIndexOfMarker + 1);
+					}
+				}
+
+				return text;
 			}
 		};
 		scorer.setExpandMultiTermQuery(request.getParams().getBool(HighlightParams.HIGHLIGHT_MULTI_TERM, true));
