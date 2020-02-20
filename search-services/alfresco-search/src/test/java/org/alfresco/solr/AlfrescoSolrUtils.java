@@ -614,7 +614,10 @@ public class AlfrescoSolrUtils
             final boolean isContentIndexedForNode = true;
             final boolean transformContentFlag = true;
             SolrInformationServer.populateProperties(properties, isContentIndexedForNode, doc, transformContentFlag);
-            addContentToDoc(doc, content);
+            if (content != null)
+            {
+                addContentToDoc(doc, content);
+            }
         }
         
         doc.addField(FIELD_TYPE, String.valueOf(type));
@@ -632,7 +635,6 @@ public class AlfrescoSolrUtils
     }
     private static void addContentToDoc(SolrInputDocument doc, Map<QName, String> content)
     {
-
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
         Locale locale = I18NUtil.getLocale();
         content.forEach((propertyQName, textContent) -> {

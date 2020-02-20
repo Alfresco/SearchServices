@@ -35,22 +35,6 @@
     <fieldType name="identifier" class="solr.StrField" indexed="true" stored="true" sortMissingLast="true" />
     <fieldType name="identifiers" class="solr.StrField" indexed="true" stored="true" multiValued="true" positionIncrementGap="100" />
 
-    <fieldType name="text-identifier" class="solr.TextField" positionIncrementGap="100" indexed="true" stored="false">
-      <analyzer>
-        <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="\x{0000}.*\x{0000}" replacement=""/>
-        <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(#0;.*#0;)" replacement=""/>
-        <tokenizer class="solr.KeywordTokenizerFactory"/>
-      </analyzer>
-    </fieldType>
-
-    <fieldType name="text-identifiers" class="solr.TextField" positionIncrementGap="100" indexed="true" stored="false" multiValued="true">
-      <analyzer>
-        <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="\x{0000}.*\x{0000}" replacement=""/>
-        <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(#0;.*#0;)" replacement=""/>
-        <tokenizer class="solr.KeywordTokenizerFactory"/>
-      </analyzer>
-    </fieldType>
-
     <fieldType name="lowercase_id" class="solr.TextField" indexed="true" stored="true" sortMissingLast="true" omitNorms="true" positionIncrementGap="100">
       <analyzer>
         <tokenizer class="solr.KeywordTokenizerFactory"/>
@@ -92,6 +76,7 @@
       <fieldType name="localePrefixedField" class="org.alfresco.solr.schema.highlight.LanguagePrefixedTextField" indexed="false" stored="true"/>
 
       <fieldType name="alfrescoFieldType" class="org.alfresco.solr.AlfrescoFieldType" indexed="true" stored="true"/>
+      <fieldType name="StripLocaleStrField" class="org.alfresco.solr.StripLocaleStrField" indexed="true" stored="false"/>
       <fieldType name="alfrescoCollatableMLTextFieldType" class="org.alfresco.solr.AlfrescoCollatableMLTextFieldType" omitNorms="true" sortMissingLast="true" indexed="true" stored="true"/>
       <fieldType name="alfrescoCollatableTextFieldType" class="org.alfresco.solr.AlfrescoCollatableTextFieldType" omitNorms="true" sortMissingLast="true" indexed="true" stored="true"/>
 
@@ -1094,7 +1079,7 @@
     <dynamicField name="noderef@md@*" type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
 
     <!-- GX -->
-    <dynamicField name="text@s____@*" type="text-identifier" stored="false" />
+    <dynamicField name="text@s____@*" type="StripLocaleStrField" stored="false" />
     <dynamicField name="text@s__l_@*" type="alfrescoFieldType" omitNorms="true" stored="false"/>
     <dynamicField name="text@s__lt@*" type="alfrescoFieldType" omitNorms="false" stored="false"/>
     <dynamicField name="text@s___t@*" type="text___" stored="false"/>
@@ -1103,14 +1088,14 @@
 
     <!-- END -->
 
-    <dynamicField name="text@m____@*" type="text-identifiers" />
+    <dynamicField name="text@m____@*" type="StripLocaleStrField" multiValued="true" />
     <dynamicField name="text@m__l_@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" />
     <dynamicField name="text@m__lt@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" />
     <dynamicField name="text@m___t@*" type="text___" multiValued="true" />
 
     <dynamicField name="text@md___@*" type="identifiers" stored="true" docValues="true" />
 
-    <dynamicField name="mltext@m____@*" type="text-identifiers"  stored="false"/>
+    <dynamicField name="mltext@m____@*" type="StripLocaleStrField" multiValued="true" stored="false"/>
     <dynamicField name="mltext@m__l_@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" stored="false"/>
     <dynamicField name="mltext@m__lt@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" stored="false"/>
     <dynamicField name="mltext@m___t@*" type="text___" multiValued="true" stored="false" />
