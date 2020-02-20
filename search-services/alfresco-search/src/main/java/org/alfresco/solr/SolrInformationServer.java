@@ -2622,10 +2622,6 @@ public class SolrInformationServer implements InformationServer
 
         String storedField = dataModel.getStoredContentField(propertyQName);
         doc.setField(storedField, "\u0000" + languageFrom(locale) + "\u0000" + textContent);
-
-        dataModel.getIndexedFieldNamesForProperty(propertyQName)
-                .getFields()
-                .forEach(field -> addFieldIfNotSet(doc, field.getField()));
     }
 
     private String languageFrom(String locale)

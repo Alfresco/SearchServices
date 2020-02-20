@@ -76,6 +76,7 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AbstractAlfrescoSolrIT.SolrServletRequest;
 import org.alfresco.solr.client.Acl;
@@ -105,6 +106,8 @@ import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.update.AddUpdateCommand;
 import org.apache.solr.update.CommitUpdateCommand;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 /**
  * Alfresco Solr Test Utility class which provide helper methods.
  *
@@ -611,7 +614,10 @@ public class AlfrescoSolrUtils
             final boolean isContentIndexedForNode = true;
             final boolean transformContentFlag = true;
             SolrInformationServer.populateProperties(properties, isContentIndexedForNode, doc, transformContentFlag);
-            addContentToDoc(doc, content);
+            if (content != null)
+            {
+                addContentToDoc(doc, content);
+            }
         }
         
         doc.addField(FIELD_TYPE, String.valueOf(type));
@@ -627,21 +633,18 @@ public class AlfrescoSolrUtils
 
         return doc;
     }
-    private static void addContentToDoc(SolrInputDocument cachedDoc, Map<QName, String> content)
+    private static void addContentToDoc(SolrInputDocument doc, Map<QName, String> content)
     {
-        Collection<String> fieldNames = cachedDoc.deepCopy().getFieldNames();
-        for (String fieldName : fieldNames)
-        {
-            if (fieldName.startsWith(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX))
-              {
-                  String locale = String.valueOf(cachedDoc.getFieldValue(fieldName));
-                  String qNamePart = fieldName.substring(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX.length());
-                  QName propertyQName = QName.createQName(qNamePart);
-                  addContentPropertyToDoc(cachedDoc, propertyQName, locale, content);
-              }
-              // Could update multi content but it is broken ....
-          }
-      }
+        AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
+        Locale locale = I18NUtil.getLocale();
+        content.forEach((propertyQName, textContent) -> {
+            String storedField = dataModel.getStoredContentField(propertyQName);
+            doc.setField(storedField, "\u0000" + locale.toString() + "\u0000" + textContent);
+        });
+
+    }
+
+
       private static void addContentPropertyToDoc(SolrInputDocument cachedDoc,
               QName propertyQName,
               String locale,
