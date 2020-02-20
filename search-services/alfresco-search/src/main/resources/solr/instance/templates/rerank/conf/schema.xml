@@ -1085,7 +1085,7 @@
     <dynamicField name="text@s__sort@*" type="alfrescoCollatableTextFieldType" stored="false"/>
     <dynamicField name="text@sd___@*" type="identifier" docValues="true" stored="false"/>
 
-    <dynamicField name="text@m____@*" type="StripLocaleStrField" />
+    <dynamicField name="text@m____@*" type="StripLocaleStrField" multiValued="true" stored="false" />
     <dynamicField name="text@m__l_@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" />
     <dynamicField name="text@m__lt@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" />
     <dynamicField name="text@m___t@*" type="text___" multiValued="true" />
