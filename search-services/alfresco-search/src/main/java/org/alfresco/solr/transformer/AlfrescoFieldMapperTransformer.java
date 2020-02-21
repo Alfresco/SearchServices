@@ -41,22 +41,10 @@ import static java.util.Optional.of;
  */
 public class AlfrescoFieldMapperTransformer extends DocTransformer
 {
-    protected final static Logger log = LoggerFactory.getLogger(AlfrescoFieldMapperTransformer.class);
+    protected final static Logger LOGGER = LoggerFactory.getLogger(AlfrescoFieldMapperTransformer.class);
 
     private ResultContext context;
     private SolrReturnFields solrReturnFields;
-
-    @Override
-    public String getName()
-    {
-        return "fmap";
-    }
-
-
-    public void setContext( ResultContext context ) 
-    {
-        this.context = context;
-    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -77,17 +65,16 @@ public class AlfrescoFieldMapperTransformer extends DocTransformer
                    doc.removeFields(fieldName);
                    if (schemaField.multiValued())
                    {
-                       Object collectionValue = ((Collection<Object>) value).stream()
-                               .map(elem -> getFieldValue(schemaField, elem))
-                               .collect(Collectors.toSet());
+                       Object collectionValue =
+                               ((Collection<Object>) value).stream()
+                                    .map(elem -> getFieldValue(schemaField, elem))
+                                    .collect(Collectors.toSet());
                        doc.setField(alfrescoFieldName, collectionValue);
                    }
                    else
                    {
-                       doc.setField(transformToUnderscoreNotation(alfrescoFieldName),
-                               getFieldValue(schemaField, value));
+                       doc.setField(transformToUnderscoreNotation(alfrescoFieldName), getFieldValue(schemaField, value));
                    }
-
                }
                else
                {
@@ -98,31 +85,47 @@ public class AlfrescoFieldMapperTransformer extends DocTransformer
         }
     }
 
+    @Override
+    public String getName()
+    {
+        return "fmap";
+    }
+
+    @Override
+    public void setContext( ResultContext context )
+    {
+        this.context = context;
+    }
+
     private boolean isRequestedField(String fieldName)
     {
         return solrReturnFields.wantsField(transformToUnderscoreNotation(fieldName));
     }
 
-    private static String transformToUnderscoreNotation(String value)
+    private String transformToUnderscoreNotation(String value)
     {
-        return value.contains(":") ? value.replace(":", "_") : value;
+        return value.replace(":", "_");
     }
 
     private String removeLocale(String value)
     {
         int start = value.lastIndexOf('\u0000');
-        if(start == -1){
+        if(start == -1)
+        {
             return value;
-        } else {
+        }
+        else
+        {
             return value.substring(start + 1);
         }
     }
 
-    private Object getFieldValue(SchemaField schemaField, Object value){
+    private Object getFieldValue(SchemaField schemaField, Object value)
+    {
         if (value instanceof IndexableField)
         {
             Object indexedValue = DocsStreamer.getValue(schemaField, (IndexableField) value);
-            return indexedValue instanceof String? removeLocale((String) indexedValue) : indexedValue;
+            return indexedValue instanceof String ? removeLocale((String) indexedValue) : indexedValue;
         }
 
         return value;
