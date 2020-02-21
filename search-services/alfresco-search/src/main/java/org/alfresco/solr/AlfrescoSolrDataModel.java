@@ -97,7 +97,6 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.util.Version;
-import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.core.CoreDescriptorDecorator;
 import org.apache.solr.core.SolrResourceLoader;
 import org.apache.solr.request.SolrQueryRequest;
@@ -155,7 +154,6 @@ public class AlfrescoSolrDataModel implements QueryConstants
     }
 
     public static final String CONTENT_S_LOCALE_PREFIX = "content@s__locale@";
-    public static final String CONTENT_M_LOCALE_PREFIX = "content@m__locale@";
     static final String SHARED_PROPERTIES = "shared.properties";
 
     protected final static Logger log = LoggerFactory.getLogger(AlfrescoSolrDataModel.class);
@@ -1126,16 +1124,16 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     public boolean isTextField(PropertyDefinition propertyDefinition)
     {
-        QName propertyDataTypeQName = propertyDefinition.getDataType().getName();
-        if(propertyDataTypeQName.equals(DataTypeDefinition.MLTEXT))
-        {
-            return true;
-        }
-        else if(propertyDataTypeQName.equals(DataTypeDefinition.CONTENT))
-        {
-            return true;
-        }
-        else return propertyDataTypeQName.equals(DataTypeDefinition.TEXT);
+        return ofNullable(propertyDefinition)
+                .map(PropertyDefinition::getDataType)
+                .map(DataTypeDefinition::getName)
+                .map(name ->
+                        name.equals(DataTypeDefinition.MLTEXT)
+                        ||
+                        name.equals(DataTypeDefinition.CONTENT)
+                        ||
+                        name.equals(DataTypeDefinition.TEXT))
+                .orElse(false);
     }
 
     private boolean isSuggestable(QName propertyQName)
@@ -1550,7 +1548,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         Constraint constraint = FTSQueryParser.buildFTS(searchParameters.getQuery(), factory, functionContext, null, null, mode,
                 searchParameters.getDefaultFTSOperator() == org.alfresco.service.cmr.search.SearchParameters.Operator.OR ? Connective.OR : Connective.AND,
                 searchParameters.getQueryTemplates(), searchParameters.getDefaultFieldName(), rerankPhase);
-        org.alfresco.repo.search.impl.querymodel.Query queryModelQuery = factory.createQuery(null, null, constraint, new ArrayList<Ordering>());
+        org.alfresco.repo.search.impl.querymodel.Query queryModelQuery = factory.createQuery(null, null, constraint, new ArrayList<>());
 
         @SuppressWarnings("unchecked")
         LuceneQueryBuilder<Query, Sort, ParseException> builder = (LuceneQueryBuilder<Query, Sort, ParseException>) queryModelQuery;
