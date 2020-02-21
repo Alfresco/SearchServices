@@ -25,6 +25,7 @@ import org.alfresco.solr.AbstractAlfrescoDistributedIT;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.AclChangeSet;
 import org.alfresco.solr.client.AclReaders;
+import org.alfresco.solr.client.MLTextPropertyValue;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.StringPropertyValue;
@@ -45,6 +46,8 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import static java.util.Collections.singletonList;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
@@ -258,7 +261,7 @@ public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistribute
             Node node = getNode(bigTxn, acl, Node.SolrApiNodeStatus.UPDATED);
             nodes.add(node);
             NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, acl, "mike", null, false);
-            nodeMetaData.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title"+(i+1)));
+            nodeMetaData.getProperties().put(ContentModel.PROP_TITLE, new MLTextPropertyValue(Map.of(Locale.getDefault(),"title"+(i+1))));
             nodeMetaData.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("name"+(i+1)));
             nodeMetaData.getProperties().put(ContentModel.PROP_CREATED,
                     new StringPropertyValue(DefaultTypeConverter.INSTANCE.convert(String.class, now)));
