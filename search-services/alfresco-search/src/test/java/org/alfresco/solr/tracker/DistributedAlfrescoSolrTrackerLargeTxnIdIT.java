@@ -65,7 +65,7 @@ public class DistributedAlfrescoSolrTrackerLargeTxnIdIT extends AbstractAlfresco
         Properties properties = new Properties();
         // Set a wider range for Initial Transaction Id
         properties.put("solr.initial.transaction.range", "0-" + Long.MAX_VALUE);
-        initSolrServers(2, "DistributedAlfrescoSolrTrackerRaceTest", properties);
+        initSolrServers(2, "DistributedAlfrescoSolrTrackerLargeTxnTest", properties);
     }
 
     @AfterClass
