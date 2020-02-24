@@ -2297,17 +2297,16 @@ public class SolrInformationServer implements InformationServer
 
     private void deleteErrorNode(UpdateRequestProcessor processor, SolrQueryRequest request, Node node) throws IOException
     {
-        String errorDocId = PREFIX_ERROR + node.getId();
+        DeleteUpdateCommand delErrorDocCmd = new DeleteUpdateCommand(request);
+        delErrorDocCmd.setId(FIELD_SOLR4_ID + ":" + PREFIX_ERROR + node.getId());
+        processor.processDelete(delErrorDocCmd);
+    }
 
-        // Try finding the node before performing removal operation
-        DocSet docSet = request.getSearcher().getDocSet(new TermQuery(new Term(FIELD_SOLR4_ID, errorDocId)));
-
-        if (docSet.size() > 0)
-        {
-            DeleteUpdateCommand delErrorDocCmd = new DeleteUpdateCommand(request);
-            delErrorDocCmd.setId(errorDocId);
-            processor.processDelete(delErrorDocCmd);
-        }
+    private void deleteNode(UpdateRequestProcessor processor, SolrQueryRequest request, long dbid) throws IOException
+    {
+        DeleteUpdateCommand delDocCmd = new DeleteUpdateCommand(request);
+        delDocCmd.setQuery(FIELD_DBID + ":" + dbid);
+        processor.processDelete(delDocCmd);
     }
 
     private void deleteNode(UpdateRequestProcessor processor, SolrQueryRequest request, Node node) throws IOException
@@ -2315,24 +2314,9 @@ public class SolrInformationServer implements InformationServer
         LOGGER.debug("Node {} is being deleted", node.getId());
 
         deleteErrorNode(processor, request, node);
-        // MNT-13767 fix, remove by node DBID.
         deleteNode(processor, request, node.getId());
 
         LOGGER.debug("Node {} deletion correctly sent", node.getId());
-    }
-
-    private void deleteNode(UpdateRequestProcessor processor, SolrQueryRequest request, long dbid) throws IOException
-    {
-
-        // Try finding the node before performing removal operation
-        DocSet docSet = request.getSearcher().getDocSet(LongPoint.newExactQuery(FIELD_DBID, dbid));
-
-        if (docSet.size() > 0)
-        {
-            DeleteUpdateCommand delDocCmd = new DeleteUpdateCommand(request);
-            delDocCmd.setQuery(FIELD_DBID + ":" + dbid);
-            processor.processDelete(delDocCmd);
-        }
     }
 
     private boolean isContentIndexedForNode(Map<QName, PropertyValue> properties)
