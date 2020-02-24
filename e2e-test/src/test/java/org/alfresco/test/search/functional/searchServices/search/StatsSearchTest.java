@@ -322,7 +322,7 @@ public class StatsSearchTest extends AbstractSearchServicesE2ETest
         response.getContext().assertThat().field("facets").isNotEmpty();
         RestGenericFacetResponseModel facetResponseModel = response.getContext().getFacets().get(0);
         facetResponseModel.assertThat().field("type").is("stats");
-        facetResponseModel.assertThat().field("label").is(label);
+        facetResponseModel.assertThat().field("label").contains(label);
         RestGenericBucketModel bucket = facetResponseModel.getBuckets().get(0);
         List<RestGenericMetricModel> metrics = bucket.getMetrics();
         assertEquals(metrics.size(),metricsCount);
