@@ -774,7 +774,6 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
     }
 
-    // TODO: make it better
     private void addHighlightSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
     {
 
@@ -999,7 +998,6 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     }
 
-
     public String getStoredContentField(QName propertyQName)
     {
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
@@ -1027,7 +1025,6 @@ public class AlfrescoSolrDataModel implements QueryConstants
         return sb.toString();
 
     }
-
 
 
     /**
