@@ -18,6 +18,8 @@
  */
 package org.alfresco.solr.tracker;
 
+import static org.alfresco.repo.index.shard.ShardMethodEnum.DB_ID_RANGE;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -132,19 +134,22 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
             }
     
             // Try invoking txIntervalCommitTime service
-            try
+            if (shardMethod.equals(DB_ID_RANGE))
             {
-                client.getTxIntervalCommitTime(coreName, 0l, 0l);
-                txIntervalCommitTimeServiceAvailable = true;
-            }
-            catch (NoSuchMethodException e)
-            {
-                log.warn("txIntervalCommitTimeServiceAvailable is not available. If you are using DB_ID_RANGE shard method, "
-                        + "upgrade your ACS Repository version in order to use this feature: {} ", e.getMessage());
-            }
-            catch (Exception e)
-            {
-                log.error("Checking txIntervalCommitTimeServiceAvailable failed.", e);
+                try
+                {
+                    client.getTxIntervalCommitTime(coreName, 0l, 0l);
+                    txIntervalCommitTimeServiceAvailable = true;
+                }
+                catch (NoSuchMethodException e)
+                {
+                    log.warn("txIntervalCommitTimeServiceAvailable is not available. Upgrade your ACS Repository version " +
+                            "to use this feature with DB_ID_RANGE sharding: {} ", e.getMessage());
+                }
+                catch (Exception e)
+                {
+                    log.error("Checking txIntervalCommitTimeServiceAvailable failed.", e);
+                }
             }
         }
     
