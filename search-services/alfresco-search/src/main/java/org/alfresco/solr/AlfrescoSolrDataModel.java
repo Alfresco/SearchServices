@@ -63,7 +63,6 @@ import org.alfresco.repo.search.impl.parsers.AlfrescoFunctionEvaluationContext;
 import org.alfresco.repo.search.impl.parsers.FTSParser;
 import org.alfresco.repo.search.impl.parsers.FTSQueryParser;
 import org.alfresco.repo.search.impl.querymodel.Constraint;
-import org.alfresco.repo.search.impl.querymodel.Ordering;
 import org.alfresco.repo.search.impl.querymodel.QueryModelFactory;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions.Connective;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilder;
@@ -1592,11 +1591,10 @@ public class AlfrescoSolrDataModel implements QueryConstants
     }
 
     /**
-     * TODO refactor this method
      *
      * return the stored field associated to potentialProperty parameter
      */
-    public String mapStoredProperty(String potentialProperty, FieldUse fieldUse, SolrQueryRequest req)
+    public String mapStoredProperty(String potentialProperty, SolrQueryRequest req)
     {
         if(potentialProperty.equals("asc") || potentialProperty.equals("desc") || potentialProperty.equals("_docid_"))
         {
@@ -1648,7 +1646,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
         else
         {
-            return mapProperty(potentialProperty, fieldUse, req, 0);
+            return mapAlfrescoField(FieldUse.FTS, 0, fieldNameAndEnding, luceneField, propertyDef);
         }
     }
 
@@ -1689,6 +1687,12 @@ public class AlfrescoSolrDataModel implements QueryConstants
                 propertyDef = getPropertyDefinition(luceneField.substring(index +1));
             }
         }
+        String solrSortField;
+        solrSortField = mapAlfrescoField(fieldUse, position, fieldNameAndEnding, luceneField, propertyDef);
+        return solrSortField;
+    }
+
+    private String mapAlfrescoField(FieldUse fieldUse, int position, Pair<String, String> fieldNameAndEnding, String luceneField, PropertyDefinition propertyDef) {
         String solrSortField;
         if(propertyDef != null)
         {
