@@ -118,6 +118,9 @@ public class AlfrescoSolrUtils
 
     /**
      * Get transaction.
+     * When getting an unique transaction for a test, don't use this constructors.
+     * As this produces a number that can be out of the range [1-2000], that is
+     * the one checked by the SOLR Core to find the initial transaction is right.
      * @param deletes
      * @param updates
      * @return {@link Transaction}

@@ -65,27 +65,33 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     private ConcurrentLinkedQueue<Long> nodesToIndex = new ConcurrentLinkedQueue<>();
     private ConcurrentLinkedQueue<Long> nodesToPurge = new ConcurrentLinkedQueue<>();
     private ConcurrentLinkedQueue<String> queriesToReindex = new ConcurrentLinkedQueue<>();
-    
+
     /**
      * Check if nextTxCommitTimeService is available in the repository.
      * This service is used to find the next available transaction commit time from a given time,
-     * so periods of time where no document updating is happening can be skipped while getting 
+     * so periods of time where no document updating is happening can be skipped while getting
      * pending transactions list.
-     * 
+     *
      * {@link org.alfresco.solr.client.SOLRAPIClient#GET_NEXT_TX_COMMIT_TIME}
      */
     private boolean nextTxCommitTimeServiceAvailable = false;
-    
+
     /**
      * Check if txInteravlCommitTimeService is available in the repository.
      * This service returns the minimum and the maximum commit time for transactions in a node id range,
-     * so method sharding DB_ID_RANGE can skip transactions not relevant for the DB ID range. 
-     * 
+     * so method sharding DB_ID_RANGE can skip transactions not relevant for the DB ID range.
+     *
      * {@link org.alfresco.solr.client.SOLRAPIClient#GET_TX_INTERVAL_COMMIT_TIME}
      */
     private boolean txIntervalCommitTimeServiceAvailable = false;
     /** Whether the cascade tracking is enabled. */
     private boolean cascadeTrackerEnabled = true;
+
+    /**
+     * Transaction Id range to get the first transaction in database.
+     * 0-2000 by default.
+     */
+    private Pair<Long, Long> minTxnIdRange;
 
     public MetadataTracker(final boolean isMaster, Properties p, SOLRAPIClient client, String coreName,
             InformationServer informationServer)
@@ -111,6 +117,8 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
         cascadeTrackerEnabled = informationServer.cascadeTrackingEnabled();
+        String[] minTxninitialRangeString = p.getProperty("solr.initial.transaction.range", "0-2000").split("-");
+        minTxnIdRange = new Pair<Long, Long>(Long.valueOf(minTxninitialRangeString[0]), Long.valueOf(minTxninitialRangeString[1]));
         
         // In order to apply performance optimizations, checking the availability of Repo Web Scripts is required.
         // As these services are available from ACS 6.2
@@ -237,13 +245,13 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     private void checkRepoAndIndexConsistency(TrackerState state) throws AuthenticationException, IOException, JSONException
     {
         Transactions firstTransactions = null;
-        if (state.getLastGoodTxCommitTimeInIndex() == 0) 
+        if (state.getLastGoodTxCommitTimeInIndex() == 0)
         {
             state.setCheckedLastTransactionTime(true);
             state.setCheckedFirstTransactionTime(true);
             log.info("No transactions found - no verification required");
 
-            firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
+            firstTransactions = client.getTransactions(null, minTxnIdRange.getFirst(), null, minTxnIdRange.getSecond(), 1);
             if (!firstTransactions.getTransactions().isEmpty())
             {
                 Transaction firstTransaction = firstTransactions.getTransactions().get(0);
@@ -252,22 +260,22 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 setLastTxCommitTimeAndTxIdInTrackerState(firstTransactions, state);
             }
         }
-        
+
         if (!state.isCheckedFirstTransactionTime())
         {
-            firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
+            firstTransactions = client.getTransactions(0l, minTxnIdRange.getFirst(), null, minTxnIdRange.getSecond(), 1);
             if (!firstTransactions.getTransactions().isEmpty())
             {
                 Transaction firstTransaction = firstTransactions.getTransactions().get(0);
                 long firstTxId = firstTransaction.getId();
                 long firstTransactionCommitTime = firstTransaction.getCommitTimeMs();
                 int setSize = this.infoSrv.getTxDocsSize(""+firstTxId, ""+firstTransactionCommitTime);
-                
+
                 if (setSize == 0)
                 {
                     log.error("First transaction was not found with the correct timestamp.");
-                    log.error("SOLR has successfully connected to your repository  however the SOLR indexes and repository database do not match."); 
-                    log.error("If this is a new or rebuilt database your SOLR indexes also need to be re-built to match the database."); 
+                    log.error("SOLR has successfully connected to your repository  however the SOLR indexes and repository database do not match.");
+                    log.error("If this is a new or rebuilt database your SOLR indexes also need to be re-built to match the database.");
                     log.error("You can also check your SOLR connection details in solrcore.properties.");
                     throw new AlfrescoRuntimeException("Initial transaction not found with correct timestamp");
                 }
@@ -288,9 +296,9 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         {
             if (firstTransactions == null)
             {
-                firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
+                firstTransactions = client.getTransactions(null, minTxnIdRange.getFirst(), null, minTxnIdRange.getSecond(), 1);
             }
-            
+
             setLastTxCommitTimeAndTxIdInTrackerState(firstTransactions, state);
             Long maxTxnCommitTimeInRepo = firstTransactions.getMaxTxnCommitTime();
             Long maxTxnIdInRepo = firstTransactions.getMaxTxnId();
@@ -1107,7 +1115,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     {
         // DB TX Count
         long firstTransactionCommitTime = 0;
-        Transactions firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
+        Transactions firstTransactions = client.getTransactions(null, minTxnIdRange.getFirst(), null, minTxnIdRange.getSecond(), 1);
         if(firstTransactions.getTransactions().size() > 0)
         {
             Transaction firstTransaction = firstTransactions.getTransactions().get(0);
