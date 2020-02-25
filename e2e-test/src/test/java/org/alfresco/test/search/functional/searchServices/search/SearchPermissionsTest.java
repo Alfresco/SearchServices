@@ -22,7 +22,6 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 import org.alfresco.dataprep.SiteService.Visibility;
-import org.alfresco.rest.requests.Site;
 import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.alfresco.utility.constants.UserRole;

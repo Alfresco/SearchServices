@@ -2249,15 +2249,11 @@ public class SolrInformationServer implements InformationServer
 
         String errorDocId = PREFIX_ERROR + node.getId();
 
-        // Try finding the node before performing removal operation
-        DocSet docSet = request.getSearcher().getDocSet(new TermQuery(new Term(FIELD_SOLR4_ID, errorDocId)));
-
-        if (docSet.size() > 0)
-        {
-            DeleteUpdateCommand delErrorDocCmd = new DeleteUpdateCommand(request);
-            delErrorDocCmd.setId(errorDocId);
-            processor.processDelete(delErrorDocCmd);
-        }
+        // SEARCH-2096: Try finding the node before performing removal operation fails on some race conditions
+        // This is why the approach was removed before identifying these conditions
+        DeleteUpdateCommand delErrorDocCmd = new DeleteUpdateCommand(request);
+        delErrorDocCmd.setId(errorDocId);
+        processor.processDelete(delErrorDocCmd);
 
     }
 
@@ -2273,15 +2269,11 @@ public class SolrInformationServer implements InformationServer
     private void deleteNode(UpdateRequestProcessor processor, SolrQueryRequest request, long dbid) throws IOException
     {
 
-        // Try finding the node before performing removal operation
-        DocSet docSet = request.getSearcher().getDocSet(LongPoint.newExactQuery(FIELD_DBID, dbid));
-
-        if (docSet.size() > 0)
-        {
-            DeleteUpdateCommand delDocCmd = new DeleteUpdateCommand(request);
-            delDocCmd.setQuery(FIELD_DBID + ":" + dbid);
-            processor.processDelete(delDocCmd);
-        }
+        // SEARCH-2096: Try finding the node before performing removal operation fails on some race conditions
+        // This is why the approach was removed before identifying these conditions
+        DeleteUpdateCommand delDocCmd = new DeleteUpdateCommand(request);
+        delDocCmd.setQuery(FIELD_DBID + ":" + dbid);
+        processor.processDelete(delDocCmd);
 
     }
 
