@@ -151,7 +151,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.LeafReaderContext;
@@ -194,7 +193,6 @@ import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.DelegatingCollector;
 import org.apache.solr.search.DocIterator;
 import org.apache.solr.search.DocList;
-import org.apache.solr.search.DocSet;
 import org.apache.solr.search.QueryWrapperFilter;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.update.AddUpdateCommand;
@@ -2248,12 +2246,13 @@ public class SolrInformationServer implements InformationServer
     {
 
         String errorDocId = PREFIX_ERROR + node.getId();
-
-        // SEARCH-2096: Try finding the node before performing removal operation fails on some race conditions
-        // This is why the approach was removed before identifying these conditions
-        DeleteUpdateCommand delErrorDocCmd = new DeleteUpdateCommand(request);
-        delErrorDocCmd.setId(errorDocId);
-        processor.processDelete(delErrorDocCmd);
+        // Remove document only when it exists
+        if (getDocListSize(FIELD_SOLR4_ID + ":" + errorDocId) > 0)
+        {
+            DeleteUpdateCommand delErrorDocCmd = new DeleteUpdateCommand(request);
+            delErrorDocCmd.setId(errorDocId);
+            processor.processDelete(delErrorDocCmd);
+        }
 
     }
 
@@ -2268,13 +2267,13 @@ public class SolrInformationServer implements InformationServer
 
     private void deleteNode(UpdateRequestProcessor processor, SolrQueryRequest request, long dbid) throws IOException
     {
-
-        // SEARCH-2096: Try finding the node before performing removal operation fails on some race conditions
-        // This is why the approach was removed before identifying these conditions
-        DeleteUpdateCommand delDocCmd = new DeleteUpdateCommand(request);
-        delDocCmd.setQuery(FIELD_DBID + ":" + dbid);
-        processor.processDelete(delDocCmd);
-
+        // Remove document only when it exists
+        if (getDocListSize(FIELD_DBID + ":" + dbid) > 0)
+        {
+            DeleteUpdateCommand delDocCmd = new DeleteUpdateCommand(request);
+            delDocCmd.setQuery(FIELD_DBID + ":" + dbid);
+            processor.processDelete(delDocCmd);
+        }
     }
 
     private boolean isContentIndexedForNode(Map<QName, PropertyValue> properties)
