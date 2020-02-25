@@ -2209,7 +2209,7 @@ public class SolrInformationServer implements InformationServer
 
             dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
                     .stream()
-                    .filter(field -> field.getField().startsWith("text@sd___@") || field.getField().startsWith("text@m__sort"))
+                    .filter(field -> field.getField().startsWith("text@sd___@"))
                     .forEach(field -> addStringProperty(valueHolder, field, value, locale));
         } else
         {
