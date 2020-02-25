@@ -291,30 +291,35 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 }
             }
             
-            firstTransactions = client.getTransactions(minCommitTime, minTxnIdRange.getFirst(), null, minTxnIdRange.getSecond(), 1);
-            if (!firstTransactions.getTransactions().isEmpty())
-            {
-                Transaction firstTransaction = firstTransactions.getTransactions().get(0);
-                long firstTxId = firstTransaction.getId();
-                long firstTransactionCommitTime = firstTransaction.getCommitTimeMs();
-                int setSize = this.infoSrv.getTxDocsSize(""+firstTxId, ""+firstTransactionCommitTime);
-                
-                if (setSize == 0)
+            // When a Shard with DB_ID_RANGE method is empty, minCommitTime is -1.
+            // No firstTransaction checking is required for this case.
+            if (minCommitTime != -1l) {
+            
+                firstTransactions = client.getTransactions(minCommitTime, 0L, null, 2000l, 1);
+                if (!firstTransactions.getTransactions().isEmpty())
                 {
-                    log.error("First transaction was not found with the correct timestamp.");
-                    log.error("SOLR has successfully connected to your repository  however the SOLR indexes and repository database do not match."); 
-                    log.error("If this is a new or rebuilt database your SOLR indexes also need to be re-built to match the database."); 
-                    log.error("You can also check your SOLR connection details in solrcore.properties.");
-                    throw new AlfrescoRuntimeException("Initial transaction not found with correct timestamp");
-                }
-                else if (setSize == 1)
-                {
-                    state.setCheckedFirstTransactionTime(true);
-                    log.info("Verified first transaction and timestamp in index");
-                }
-                else
-                {
-                    log.warn("Duplicate initial transaction found with correct timestamp");
+                    Transaction firstTransaction = firstTransactions.getTransactions().get(0);
+                    long firstTxId = firstTransaction.getId();
+                    long firstTransactionCommitTime = firstTransaction.getCommitTimeMs();
+                    int setSize = this.infoSrv.getTxDocsSize(""+firstTxId, ""+firstTransactionCommitTime);
+                    
+                    if (setSize == 0)
+                    {
+                        log.error("First transaction was not found with the correct timestamp.");
+                        log.error("SOLR has successfully connected to your repository  however the SOLR indexes and repository database do not match."); 
+                        log.error("If this is a new or rebuilt database your SOLR indexes also need to be re-built to match the database."); 
+                        log.error("You can also check your SOLR connection details in solrcore.properties.");
+                        throw new AlfrescoRuntimeException("Initial transaction not found with correct timestamp");
+                    }
+                    else if (setSize == 1)
+                    {
+                        state.setCheckedFirstTransactionTime(true);
+                        log.info("Verified first transaction and timestamp in index");
+                    }
+                    else
+                    {
+                        log.warn("Duplicate initial transaction found with correct timestamp");
+                    }
                 }
             }
         }
