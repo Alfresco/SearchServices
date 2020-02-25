@@ -18,29 +18,28 @@
  */
 package org.alfresco.solr.tracker;
 
+import static java.util.stream.IntStream.range;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+
+import java.util.Properties;
+import java.util.Random;
+
 import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.Node;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.Properties;
-import java.util.Random;
-
-import static java.util.stream.IntStream.range;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
+import org.mockito.MockitoAnnotations;
 
 /**
  * {@link DBIDRangeRouter} test case.
  *
  * @author agazzarini
  */
-@RunWith(MockitoJUnitRunner.class)
 public class DBIDRangeRouterTest
 {
     private final Random randomizer = new Random();
@@ -55,6 +54,7 @@ public class DBIDRangeRouterTest
     @Before
     public void setUp()
     {
+        MockitoAnnotations.initMocks(this);
         Properties properties = new Properties();
         properties.put("shard.range", "200-20000");
         router = DocRouterFactory.getRouter(properties, ShardMethodEnum.DB_ID_RANGE);

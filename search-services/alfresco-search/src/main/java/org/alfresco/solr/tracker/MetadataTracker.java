@@ -18,6 +18,8 @@
  */
 package org.alfresco.solr.tracker;
 
+import static org.alfresco.repo.index.shard.ShardMethodEnum.DB_ID_RANGE;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,6 +88,12 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     private boolean txIntervalCommitTimeServiceAvailable = false;
     /** Whether the cascade tracking is enabled. */
     private boolean cascadeTrackerEnabled = true;
+    
+    /**
+     * Transaction Id range to get the first transaction in database. 
+     * 0-2000 by default.
+     */
+    private Pair<Long, Long> minTxnIdRange;
 
     public MetadataTracker(final boolean isMaster, Properties p, SOLRAPIClient client, String coreName,
             InformationServer informationServer)
@@ -111,6 +119,8 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
         cascadeTrackerEnabled = informationServer.cascadeTrackingEnabled();
+        String[] minTxninitialRangeString = p.getProperty("solr.initial.transaction.range", "0-2000").split("-");
+        minTxnIdRange = new Pair<Long, Long>(Long.valueOf(minTxninitialRangeString[0]), Long.valueOf(minTxninitialRangeString[1]));
         
         // In order to apply performance optimizations, checking the availability of Repo Web Scripts is required.
         // As these services are available from ACS 6.2
@@ -132,19 +142,22 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
             }
     
             // Try invoking txIntervalCommitTime service
-            try
+            if (shardMethod.equals(DB_ID_RANGE))
             {
-                client.getTxIntervalCommitTime(coreName, 0l, 0l);
-                txIntervalCommitTimeServiceAvailable = true;
-            }
-            catch (NoSuchMethodException e)
-            {
-                log.warn("txIntervalCommitTimeServiceAvailable is not available. If you are using DB_ID_RANGE shard method, "
-                        + "upgrade your ACS Repository version in order to use the skip transactions feature: {} ", e.getMessage());
-            }
-            catch (Exception e)
-            {
-                log.error("Checking txIntervalCommitTimeServiceAvailable failed.", e);
+                try
+                {
+                    client.getTxIntervalCommitTime(coreName, 0l, 0l);
+                    txIntervalCommitTimeServiceAvailable = true;
+                }
+                catch (NoSuchMethodException e)
+                {
+                    log.warn("txIntervalCommitTimeServiceAvailable is not available. Upgrade your ACS Repository version " +
+                            "to use this feature with DB_ID_RANGE sharding: {} ", e.getMessage());
+                }
+                catch (Exception e)
+                {
+                    log.error("Checking txIntervalCommitTimeServiceAvailable failed.", e);
+                }
             }
         }
     
@@ -243,7 +256,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
             state.setCheckedFirstTransactionTime(true);
             log.info("No transactions found - no verification required");
 
-            firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
+            firstTransactions = client.getTransactions(null, minTxnIdRange.getFirst(), null, minTxnIdRange.getSecond(), 1);
             if (!firstTransactions.getTransactions().isEmpty())
             {
                 Transaction firstTransaction = firstTransactions.getTransactions().get(0);
@@ -316,7 +329,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         {
             if (firstTransactions == null)
             {
-                firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
+                firstTransactions = client.getTransactions(null, minTxnIdRange.getFirst(), null, minTxnIdRange.getSecond(), 1);
             }
             
             setLastTxCommitTimeAndTxIdInTrackerState(firstTransactions, state);
@@ -1152,7 +1165,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     {
         // DB TX Count
         long firstTransactionCommitTime = 0;
-        Transactions firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
+        Transactions firstTransactions = client.getTransactions(null, 0L, null, 2000l, 1);
         if(firstTransactions.getTransactions().size() > 0)
         {
             Transaction firstTransaction = firstTransactions.getTransactions().get(0);
