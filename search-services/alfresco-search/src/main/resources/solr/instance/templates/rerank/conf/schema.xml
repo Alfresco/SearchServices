@@ -31,7 +31,7 @@
     <!-- Ignored fields -->
     <fieldType name="ignored" class="solr.StrField" indexed="false" stored="false"/>
 
-    <!-- Strings -->
+    <!-- String/Strings -->
     <fieldType name="identifier" class="solr.StrField" indexed="true" stored="true" sortMissingLast="true" />
     <fieldType name="identifiers" class="solr.StrField" indexed="true" stored="true" multiValued="true" positionIncrementGap="100" />
 
@@ -73,12 +73,39 @@
       </analyzer>
     </fieldType>
 
-      <fieldType name="localePrefixedField" class="org.alfresco.solr.schema.highlight.LanguagePrefixedTextField" indexed="false" stored="true"/>
+    <!--
+      A customised TextField type which is able to determine at runtime the actual analyzer to be used.
+      This is currently needed for stored field used in highlighting. The highlight process respects the field
+      language specific text analysis in order to generate the correct snippets.
+    -->
+    <fieldType name="localePrefixedField" class="org.alfresco.solr.schema.highlight.LanguagePrefixedTextField" indexed="false" stored="true"/>
 
-      <fieldType name="alfrescoFieldType" class="org.alfresco.solr.AlfrescoFieldType" indexed="true" stored="true"/>
-      <fieldType name="StripLocaleStrField" class="org.alfresco.solr.StripLocaleStrField" indexed="true" stored="false"/>
-      <fieldType name="alfrescoCollatableMLTextFieldType" class="org.alfresco.solr.AlfrescoCollatableMLTextFieldType" omitNorms="true" sortMissingLast="true" indexed="true" stored="true"/>
-      <fieldType name="alfrescoCollatableTextFieldType" class="org.alfresco.solr.AlfrescoCollatableTextFieldType" omitNorms="true" sortMissingLast="true" indexed="true" stored="true"/>
+    <!--
+      The core field type used in SearchServices for marking multi-language searchable fields.
+    -->
+    <fieldType name="alfrescoFieldType" class="org.alfresco.solr.AlfrescoFieldType" indexed="true" stored="true"/>
+
+    <!--
+      A custom indexed StrField which removes the language prefix marker set on SearchServices side at index time.
+      When a partial or full document (i.e. insert or update) is created from a Node coming from ACS, the stored fields (i.e.
+      fields whose content needs to be verbatim retained) are prefixed with the language marker
+
+      \u0000 + language code + \u0000
+
+      then the copyField directive is used to copy that value to searchable (i.e indexed) fields.
+      While some field types like the alfrescoFieldType above use and require that prefix, some others don't, so
+      we need to make sure the prefix won't be indexed at all.
+    -->
+    <fieldType name="stripLocaleStrField" class="org.alfresco.solr.StripLocaleStrField" indexed="true" stored="false"/>
+
+    <!--
+      Field types used in SearchServices for denoting sortable fields. Specifically:
+
+      - alfrescoCollatableMLTextFieldType: for multi-language, multiValued sortable field types
+      - alfrescoCollatableTextFieldType: for multi-language, single valued sortable field types
+    -->
+    <fieldType name="alfrescoCollatableMLTextFieldType" class="org.alfresco.solr.AlfrescoCollatableMLTextFieldType" omitNorms="true" sortMissingLast="true" indexed="true" stored="true"/>
+    <fieldType name="alfrescoCollatableTextFieldType" class="org.alfresco.solr.AlfrescoCollatableTextFieldType" omitNorms="true" sortMissingLast="true" indexed="true" stored="true"/>
 
     <fieldType name="path" class="solr.TextField" indexed="true" stored="true" omitNorms="true">
       <analyzer class="org.alfresco.repo.search.impl.lucene.analysis.PathAnalyzer" />
@@ -130,10 +157,6 @@
       </analyzer>
     </fieldType>
 
-
-    <!-- Cross-locale -->
-    <!-- Include word splitting -->
-
     <fieldType name="text___" class="solr.TextField" positionIncrementGap="100" indexed="true" stored="true">
       <analyzer>
         <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="\x{0000}.*\x{0000}" replacement=""/>
@@ -154,43 +177,66 @@
       </analyzer>
     </fieldType>
 
-      <!-- English -->
-      <fieldType name="highlighted_text_en" class="solr.TextField">
-        <analyzer>
-          <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(#0;.*#0;)" replacement=""/>
-          <tokenizer class="solr.StandardTokenizerFactory"/>
-          <filter class="org.apache.solr.analysis.WordDelimiterFilterFactory"
-                  generateWordParts="1"
-                  generateNumberParts="1"
-                  catenateWords="1"
-                  catenateNumbers="1"
-                  catenateAll="1"
-                  splitOnCaseChange="1"
-                  splitOnNumerics="1"
-                  preserveOriginal="1"
-                  stemEnglishPossessive="1"/>
-          <filter class="solr.ICUFoldingFilterFactory"/>
-          <filter class="solr.EnglishPossessiveFilterFactory"/>
-          <filter class="solr.KeywordRepeatFilterFactory" />
-          <filter class="solr.PorterStemFilterFactory"/>
-        </analyzer>
-      </fieldType>
+    <!-- English -->
+    <!--
+      Textfield used for highlighting english text.
+      The field type assigned to sorted fields (see the localePrefixedField above) determines at runtime the analyzer
+      used for generating highlighting snippets. The analyzer is retrieved from a field type identified in the following
+      way:
 
-      <fieldType name="text_en" class="solr.TextField" positionIncrementGap="100">
-        <analyzer type="index">
-          <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(#0;.*#0;)" replacement=""/>
-          <tokenizer class="solr.StandardTokenizerFactory"/>
-          <!-- in this example, we will only use synonyms at query time
-          <filter class="solr.SynonymFilterFactory" synonyms="index_synonyms.txt" ignoreCase="true" expand="false"/>
-          -->
-          <filter class="solr.ICUFoldingFilterFactory"/>
-	      <filter class="solr.EnglishPossessiveFilterFactory"/>
-          <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
-          <!-- Optionally you may want to use this less aggressive stemmer instead of PorterStemFilterFactory:
-              <filter class="solr.EnglishMinimalStemFilterFactory"/>
-          -->
-          <filter class="solr.PorterStemFilterFactory"/>
-          <filter class="solr.CommonGramsFilterFactory" words="lang/stopwords_en.txt" ignoreCase="true"/>
+      starting from a given locale language (e.g. en), it first tries to find a field called
+
+      highlighted_text_ + locale language (highlighted_text_en in this case)
+
+      if there's no such field, the it tries to find a field called
+
+      text_ + locale language
+
+      if there's no such field it uses the "text___" cross-language field type.
+
+      In the current schema version the "highlighted_text" field type is configured only for the english language, whose
+      locale-specific field type (text_en) contains a filter (CommonGramsFilterFactory) which causes weird behaviours when
+      used in a highlighting context.
+    -->
+    <fieldType name="highlighted_text_en" class="solr.TextField">
+      <analyzer>
+        <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(#0;.*#0;)" replacement=""/>
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="org.apache.solr.analysis.WordDelimiterFilterFactory"
+                generateWordParts="1"
+                generateNumberParts="1"
+                catenateWords="1"
+                catenateNumbers="1"
+                catenateAll="1"
+                splitOnCaseChange="1"
+                splitOnNumerics="1"
+                preserveOriginal="1"
+                stemEnglishPossessive="1"/>
+        <filter class="solr.ICUFoldingFilterFactory"/>
+        <filter class="solr.EnglishPossessiveFilterFactory"/>
+        <filter class="solr.KeywordRepeatFilterFactory" />
+        <filter class="solr.PorterStemFilterFactory"/>
+      </analyzer>
+    </fieldType>
+
+    <!--
+      English text
+    -->
+    <fieldType name="text_en" class="solr.TextField" positionIncrementGap="100">
+      <analyzer type="index">
+        <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(#0;.*#0;)" replacement=""/>
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <!-- in this example, we will only use synonyms at query time
+        <filter class="solr.SynonymFilterFactory" synonyms="index_synonyms.txt" ignoreCase="true" expand="false"/>
+        -->
+        <filter class="solr.ICUFoldingFilterFactory"/>
+        <filter class="solr.EnglishPossessiveFilterFactory"/>
+        <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
+        <!-- Optionally you may want to use this less aggressive stemmer instead of PorterStemFilterFactory:
+            <filter class="solr.EnglishMinimalStemFilterFactory"/>
+        -->
+        <filter class="solr.PorterStemFilterFactory"/>
+        <filter class="solr.CommonGramsFilterFactory" words="lang/stopwords_en.txt" ignoreCase="true"/>
       </analyzer>
       <analyzer type="query">
         <tokenizer class="solr.StandardTokenizerFactory"/>
@@ -1078,21 +1124,21 @@
     <dynamicField name="category@md@*" type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
     <dynamicField name="noderef@md@*" type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
 
-    <dynamicField name="text@s____@*" type="StripLocaleStrField" stored="false" />
+    <dynamicField name="text@s____@*" type="stripLocaleStrField" stored="false" />
     <dynamicField name="text@s__l_@*" type="alfrescoFieldType" omitNorms="true" stored="false"/>
     <dynamicField name="text@s__lt@*" type="alfrescoFieldType" omitNorms="false" stored="false"/>
     <dynamicField name="text@s___t@*" type="text___" stored="false"/>
     <dynamicField name="text@s__sort@*" type="alfrescoCollatableTextFieldType" stored="false"/>
     <dynamicField name="text@sd___@*" type="identifier" docValues="true" stored="false"/>
 
-    <dynamicField name="text@m____@*" type="StripLocaleStrField" multiValued="true" stored="false" />
+    <dynamicField name="text@m____@*" type="stripLocaleStrField" multiValued="true" stored="false" />
     <dynamicField name="text@m__l_@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" />
     <dynamicField name="text@m__lt@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" />
     <dynamicField name="text@m___t@*" type="text___" multiValued="true" />
 
-    <dynamicField name="text@md___@*" type="identifiers" stored="true" docValues="true" />
+    <dynamicField name="text@md___@*" type="identifiers" stored="false" docValues="true" />
 
-    <dynamicField name="mltext@m____@*" type="StripLocaleStrField" multiValued="true" stored="false"/>
+    <dynamicField name="mltext@m____@*" type="stripLocaleStrField" multiValued="true" stored="false"/>
     <dynamicField name="mltext@m__l_@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" stored="false"/>
     <dynamicField name="mltext@m__lt@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" stored="false"/>
     <dynamicField name="mltext@m___t@*" type="text___" multiValued="true" stored="false" />
@@ -1131,14 +1177,8 @@
     <!-- END "m" FIELDS section -->
 
     <!-- Suggestion -->
-    <!-- Understand better this field(s) -->
     <field name="suggest" type="text_shingle" indexed="true" omitNorms="true" omitPositions="true" stored="false" multiValued="true" />
-    <dynamicField name="suggest_*" type="ignored" multiValued="true"/>
-
-    <copyField source="suggest_*" dest="suggest" />
-
   </fields>
-
   <xi:include href="generated_copy_fields.xml" xmlns:xi="http://www.w3.org/2001/XInclude">
     <xi:fallback/>
   </xi:include>

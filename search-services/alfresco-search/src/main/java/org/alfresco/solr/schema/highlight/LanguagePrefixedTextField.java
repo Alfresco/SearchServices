@@ -38,7 +38,7 @@ import java.util.Map;
  * Both of them have no specific logic: they exist only because the components involved in the analysis chain don't have
  * access to the {@link IndexSchema} instance (e.g. a {@link org.apache.lucene.analysis.Tokenizer} is a schema concept,
  * while {@link IndexSchema} belongs to Solr classes).
- * On top of that, the purpose of this class is to associate to this field type the index and query time custom analyzer.
+ * On top of that, the purpose of this class is to associate to this field type the index and query time analyzer.
  *
  * @see LanguagePrefixedTokenStream
  * @see LanguagePrefixedTextAnalyzer

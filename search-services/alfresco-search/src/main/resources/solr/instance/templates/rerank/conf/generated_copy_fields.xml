@@ -1,326 +1,322 @@
 <fields>
-<dynamicField name="text@s_stored_____s@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored_____s@*" dest="suggest" />
+    <dynamicField name="text@s_stored_____s@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored_____s@*" dest="suggest" />
 
-<dynamicField name="text@s_stored_t____@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored_t____@*" dest="text@s__lt@*" />
-
-<dynamicField name="text@s_stored____s_@*" type="localePrefixedField" indexed="false" stored="true" />
+    <dynamicField name="text@s_stored_t____@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored_t____@*" dest="text@s__lt@*" />
+
+    <dynamicField name="text@s_stored____s_@*" type="localePrefixedField" indexed="false" stored="true" />
 
-<dynamicField name="text@s_stored___c__@*" type="localePrefixedField" indexed="false" stored="true" />
-
-<dynamicField name="text@s_stored__s___@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored__s___@*" dest="text@s__l_@*" />
-
-<dynamicField name="text@s_stored_t___s@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored_t___s@*" dest="text@s__lt@*" />
-<copyField source="text@s_stored_t___s@*" dest="suggest" />
-
-<dynamicField name="text@s_stored____ss@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored____ss@*" dest="suggest" />
-
-<dynamicField name="text@s_stored___c_s@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored___c_s@*" dest="suggest" />
-
-<dynamicField name="text@s_stored__s__s@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored__s__s@*" dest="text@s__l_@*" />
-<copyField source="text@s_stored__s__s@*" dest="suggest" />
-
-<dynamicField name="text@s_stored_t__s_@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored_t__s_@*" dest="text@s__lt@*" />
-
-<dynamicField name="text@s_stored_t_c__@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored_t_c__@*" dest="text@s__lt@*" />
-<copyField source="text@s_stored_t_c__@*" dest="text@s___t@*" />
-
-<dynamicField name="text@s_stored_ts___@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored_ts___@*" dest="text@s__lt@*" />
-<copyField source="text@s_stored_ts___@*" dest="text@s__l_@*" />
-
-<dynamicField name="text@s_stored___cs_@*" type="localePrefixedField" indexed="false" stored="true" />
-
-<dynamicField name="text@s_stored__s_s_@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored__s_s_@*" dest="text@s__l_@*" />
-<copyField source="text@s_stored__s_s_@*" dest="text@s__sort@*" />
-
-<dynamicField name="text@s_stored__sc__@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored__sc__@*" dest="text@s__l_@*" />
-<copyField source="text@s_stored__sc__@*" dest="text@s____@*" />
-
-<dynamicField name="text@s_stored_t__ss@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored_t__ss@*" dest="text@s__lt@*" />
-<copyField source="text@s_stored_t__ss@*" dest="suggest" />
-
-<dynamicField name="text@s_stored_t_c_s@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored_t_c_s@*" dest="text@s__lt@*" />
-<copyField source="text@s_stored_t_c_s@*" dest="text@s___t@*" />
-<copyField source="text@s_stored_t_c_s@*" dest="suggest" />
-
-<dynamicField name="text@s_stored_ts__s@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored_ts__s@*" dest="text@s__lt@*" />
-<copyField source="text@s_stored_ts__s@*" dest="text@s__l_@*" />
-<copyField source="text@s_stored_ts__s@*" dest="suggest" />
-
-<dynamicField name="text@s_stored___css@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored___css@*" dest="suggest" />
-
-<dynamicField name="text@s_stored__s_ss@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored__s_ss@*" dest="text@s__l_@*" />
-<copyField source="text@s_stored__s_ss@*" dest="text@s__sort@*" />
-<copyField source="text@s_stored__s_ss@*" dest="suggest" />
-
-<dynamicField name="text@s_stored__sc_s@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored__sc_s@*" dest="text@s__l_@*" />
-<copyField source="text@s_stored__sc_s@*" dest="text@s____@*" />
-<copyField source="text@s_stored__sc_s@*" dest="suggest" />
-
-<dynamicField name="text@s_stored_t_cs_@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored_t_cs_@*" dest="text@s__lt@*" />
-<copyField source="text@s_stored_t_cs_@*" dest="text@s___t@*" />
-
-<dynamicField name="text@s_stored_ts_s_@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored_ts_s_@*" dest="text@s__lt@*" />
-<copyField source="text@s_stored_ts_s_@*" dest="text@s__l_@*" />
-<copyField source="text@s_stored_ts_s_@*" dest="text@s__sort@*" />
-
-<dynamicField name="text@s_stored_tsc__@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored_tsc__@*" dest="text@s__lt@*" />
-<copyField source="text@s_stored_tsc__@*" dest="text@s___t@*" />
-<copyField source="text@s_stored_tsc__@*" dest="text@s__l_@*" />
-<copyField source="text@s_stored_tsc__@*" dest="text@s____@*" />
-
-<dynamicField name="text@s_stored__scs_@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored__scs_@*" dest="text@s__l_@*" />
-<copyField source="text@s_stored__scs_@*" dest="text@s__sort@*" />
-<copyField source="text@s_stored__scs_@*" dest="text@s____@*" />
-
-<dynamicField name="text@s_stored_t_css@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored_t_css@*" dest="text@s__lt@*" />
-<copyField source="text@s_stored_t_css@*" dest="text@s___t@*" />
-<copyField source="text@s_stored_t_css@*" dest="suggest" />
-
-<dynamicField name="text@s_stored_ts_ss@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored_ts_ss@*" dest="text@s__lt@*" />
-<copyField source="text@s_stored_ts_ss@*" dest="text@s__l_@*" />
-<copyField source="text@s_stored_ts_ss@*" dest="text@s__sort@*" />
-<copyField source="text@s_stored_ts_ss@*" dest="suggest" />
-
-<dynamicField name="text@s_stored_tsc_s@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored_tsc_s@*" dest="text@s__lt@*" />
-<copyField source="text@s_stored_tsc_s@*" dest="text@s___t@*" />
-<copyField source="text@s_stored_tsc_s@*" dest="text@s__l_@*" />
-<copyField source="text@s_stored_tsc_s@*" dest="text@s____@*" />
-<copyField source="text@s_stored_tsc_s@*" dest="suggest" />
-
-<dynamicField name="text@s_stored__scss@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored__scss@*" dest="text@s__l_@*" />
-<copyField source="text@s_stored__scss@*" dest="text@s__sort@*" />
-<copyField source="text@s_stored__scss@*" dest="text@s____@*" />
-<copyField source="text@s_stored__scss@*" dest="suggest" />
-
-<dynamicField name="text@s_stored_tscs_@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored_tscs_@*" dest="text@s__lt@*" />
-<copyField source="text@s_stored_tscs_@*" dest="text@s___t@*" />
-<copyField source="text@s_stored_tscs_@*" dest="text@s__l_@*" />
-<copyField source="text@s_stored_tscs_@*" dest="text@s__sort@*" />
-<copyField source="text@s_stored_tscs_@*" dest="text@s____@*" />
-
-<dynamicField name="text@s_stored_tscss@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="text@s_stored_tscss@*" dest="text@s__lt@*" />
-<copyField source="text@s_stored_tscss@*" dest="text@s___t@*" />
-<copyField source="text@s_stored_tscss@*" dest="text@s__l_@*" />
-<copyField source="text@s_stored_tscss@*" dest="text@s__sort@*" />
-<copyField source="text@s_stored_tscss@*" dest="text@s____@*" />
-<copyField source="text@s_stored_tscss@*" dest="suggest" />
-
-
-<dynamicField name="mltext@m_stored__s___@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="mltext@m_stored__s___@*" dest="mltext@m__l_@*" />
-
-<dynamicField name="mltext@m_stored___c__@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-
-<dynamicField name="mltext@m_stored_____s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="mltext@m_stored_____s@*" dest="suggest" />
-
-<dynamicField name="mltext@m_stored_t____@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="mltext@m_stored_t____@*" dest="mltext@m__lt@*" />
-
-<dynamicField name="mltext@m_stored__sc__@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="mltext@m_stored__sc__@*" dest="mltext@m__l_@*" />
-<copyField source="mltext@m_stored__sc__@*" dest="mltext@m____@*" />
-
-<dynamicField name="mltext@m_stored__s__s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="mltext@m_stored__s__s@*" dest="mltext@m__l_@*" />
-<copyField source="mltext@m_stored__s__s@*" dest="suggest" />
-
-<dynamicField name="mltext@m_stored_ts___@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="mltext@m_stored_ts___@*" dest="mltext@m__lt@*" />
-<copyField source="mltext@m_stored_ts___@*" dest="mltext@m__l_@*" />
-
-<dynamicField name="mltext@m_stored___c_s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="mltext@m_stored___c_s@*" dest="suggest" />
-
-<dynamicField name="mltext@m_stored_t_c__@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="mltext@m_stored_t_c__@*" dest="mltext@m__lt@*" />
-<copyField source="mltext@m_stored_t_c__@*" dest="mltext@m___t@*" />
-
-<dynamicField name="mltext@m_stored_t___s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="mltext@m_stored_t___s@*" dest="mltext@m__lt@*" />
-<copyField source="mltext@m_stored_t___s@*" dest="suggest" />
-
-<dynamicField name="mltext@m_stored__sc_s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="mltext@m_stored__sc_s@*" dest="mltext@m__l_@*" />
-<copyField source="mltext@m_stored__sc_s@*" dest="mltext@m____@*" />
-<copyField source="mltext@m_stored__sc_s@*" dest="suggest" />
-
-<dynamicField name="mltext@m_stored_tsc__@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="mltext@m_stored_tsc__@*" dest="mltext@m__lt@*" />
-<copyField source="mltext@m_stored_tsc__@*" dest="mltext@m___t@*" />
-<copyField source="mltext@m_stored_tsc__@*" dest="mltext@m__l_@*" />
-<copyField source="mltext@m_stored_tsc__@*" dest="mltext@m____@*" />
-
-<dynamicField name="mltext@m_stored_ts__s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="mltext@m_stored_ts__s@*" dest="mltext@m__lt@*" />
-<copyField source="mltext@m_stored_ts__s@*" dest="mltext@m__l_@*" />
-<copyField source="mltext@m_stored_ts__s@*" dest="suggest" />
-
-<dynamicField name="mltext@m_stored_t_c_s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="mltext@m_stored_t_c_s@*" dest="mltext@m__lt@*" />
-<copyField source="mltext@m_stored_t_c_s@*" dest="mltext@m___t@*" />
-<copyField source="mltext@m_stored_t_c_s@*" dest="suggest" />
-
-<dynamicField name="mltext@m_stored_tsc_s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="mltext@m_stored_tsc_s@*" dest="mltext@m__lt@*" />
-<copyField source="mltext@m_stored_tsc_s@*" dest="mltext@m___t@*" />
-<copyField source="mltext@m_stored_tsc_s@*" dest="mltext@m__l_@*" />
-<copyField source="mltext@m_stored_tsc_s@*" dest="mltext@m____@*" />
-<copyField source="mltext@m_stored_tsc_s@*" dest="suggest" />
-
-
-<dynamicField name="content@s_stored__s___@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="content@s_stored__s___@*" dest="content@s__l_@*" />
-
-<dynamicField name="content@s_stored___c__@*" type="localePrefixedField" indexed="false" stored="true" />
-
-<dynamicField name="content@s_stored_____s@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="content@s_stored_____s@*" dest="suggest" />
-
-<dynamicField name="content@s_stored_t____@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="content@s_stored_t____@*" dest="content@s__lt@*" />
-
-<dynamicField name="content@s_stored__sc__@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="content@s_stored__sc__@*" dest="content@s__l_@*" />
-<copyField source="content@s_stored__sc__@*" dest="content@s____@*" />
-
-<dynamicField name="content@s_stored__s__s@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="content@s_stored__s__s@*" dest="content@s__l_@*" />
-<copyField source="content@s_stored__s__s@*" dest="suggest" />
-
-<dynamicField name="content@s_stored_ts___@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="content@s_stored_ts___@*" dest="content@s__lt@*" />
-<copyField source="content@s_stored_ts___@*" dest="content@s__l_@*" />
-
-<dynamicField name="content@s_stored___c_s@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="content@s_stored___c_s@*" dest="suggest" />
-
-<dynamicField name="content@s_stored_t_c__@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="content@s_stored_t_c__@*" dest="content@s__lt@*" />
-<copyField source="content@s_stored_t_c__@*" dest="content@s___t@*" />
-
-<dynamicField name="content@s_stored_t___s@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="content@s_stored_t___s@*" dest="content@s__lt@*" />
-<copyField source="content@s_stored_t___s@*" dest="suggest" />
-
-<dynamicField name="content@s_stored__sc_s@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="content@s_stored__sc_s@*" dest="content@s__l_@*" />
-<copyField source="content@s_stored__sc_s@*" dest="content@s____@*" />
-<copyField source="content@s_stored__sc_s@*" dest="suggest" />
-
-<dynamicField name="content@s_stored_tsc__@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="content@s_stored_tsc__@*" dest="content@s__lt@*" />
-<copyField source="content@s_stored_tsc__@*" dest="content@s___t@*" />
-<copyField source="content@s_stored_tsc__@*" dest="content@s__l_@*" />
-<copyField source="content@s_stored_tsc__@*" dest="content@s____@*" />
-
-<dynamicField name="content@s_stored_ts__s@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="content@s_stored_ts__s@*" dest="content@s__lt@*" />
-<copyField source="content@s_stored_ts__s@*" dest="content@s__l_@*" />
-<copyField source="content@s_stored_ts__s@*" dest="suggest" />
-
-<dynamicField name="content@s_stored_t_c_s@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="content@s_stored_t_c_s@*" dest="content@s__lt@*" />
-<copyField source="content@s_stored_t_c_s@*" dest="content@s___t@*" />
-<copyField source="content@s_stored_t_c_s@*" dest="suggest" />
-
-<dynamicField name="content@s_stored_tsc_s@*" type="localePrefixedField" indexed="false" stored="true" />
-<copyField source="content@s_stored_tsc_s@*" dest="content@s__lt@*" />
-<copyField source="content@s_stored_tsc_s@*" dest="content@s___t@*" />
-<copyField source="content@s_stored_tsc_s@*" dest="content@s__l_@*" />
-<copyField source="content@s_stored_tsc_s@*" dest="content@s____@*" />
-<copyField source="content@s_stored_tsc_s@*" dest="suggest" />
-
-
-<dynamicField name="text@m_stored__s___@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="text@m_stored__s___@*" dest="text@m__l_@*" />
-
-<dynamicField name="text@m_stored___c__@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-
-<dynamicField name="text@m_stored_____s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="text@m_stored_____s@*" dest="suggest" />
-
-<dynamicField name="text@m_stored_t____@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="text@m_stored_t____@*" dest="text@m__lt@*" />
-
-<dynamicField name="text@m_stored__sc__@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="text@m_stored__sc__@*" dest="text@m__l_@*" />
-<copyField source="text@m_stored__sc__@*" dest="text@m____@*" />
-
-<dynamicField name="text@m_stored__s__s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="text@m_stored__s__s@*" dest="text@m__l_@*" />
-<copyField source="text@m_stored__s__s@*" dest="suggest" />
-
-<dynamicField name="text@m_stored_ts___@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="text@m_stored_ts___@*" dest="text@m__lt@*" />
-<copyField source="text@m_stored_ts___@*" dest="text@m__l_@*" />
-
-<dynamicField name="text@m_stored___c_s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="text@m_stored___c_s@*" dest="suggest" />
-
-<dynamicField name="text@m_stored_t_c__@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="text@m_stored_t_c__@*" dest="text@m__lt@*" />
-<copyField source="text@m_stored_t_c__@*" dest="text@m___t@*" />
-
-<dynamicField name="text@m_stored_t___s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="text@m_stored_t___s@*" dest="text@m__lt@*" />
-<copyField source="text@m_stored_t___s@*" dest="suggest" />
-
-<dynamicField name="text@m_stored__sc_s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="text@m_stored__sc_s@*" dest="text@m__l_@*" />
-<copyField source="text@m_stored__sc_s@*" dest="text@m____@*" />
-<copyField source="text@m_stored__sc_s@*" dest="suggest" />
-
-<dynamicField name="text@m_stored_tsc__@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="text@m_stored_tsc__@*" dest="text@m__lt@*" />
-<copyField source="text@m_stored_tsc__@*" dest="text@m___t@*" />
-<copyField source="text@m_stored_tsc__@*" dest="text@m__l_@*" />
-<copyField source="text@m_stored_tsc__@*" dest="text@m____@*" />
-
-<dynamicField name="text@m_stored_ts__s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="text@m_stored_ts__s@*" dest="text@m__lt@*" />
-<copyField source="text@m_stored_ts__s@*" dest="text@m__l_@*" />
-<copyField source="text@m_stored_ts__s@*" dest="suggest" />
-
-<dynamicField name="text@m_stored_t_c_s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="text@m_stored_t_c_s@*" dest="text@m__lt@*" />
-<copyField source="text@m_stored_t_c_s@*" dest="text@m___t@*" />
-<copyField source="text@m_stored_t_c_s@*" dest="suggest" />
-
-<dynamicField name="text@m_stored_tsc_s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
-<copyField source="text@m_stored_tsc_s@*" dest="text@m__lt@*" />
-<copyField source="text@m_stored_tsc_s@*" dest="text@m___t@*" />
-<copyField source="text@m_stored_tsc_s@*" dest="text@m__l_@*" />
-<copyField source="text@m_stored_tsc_s@*" dest="text@m____@*" />
-<copyField source="text@m_stored_tsc_s@*" dest="suggest" />
-
-
+    <dynamicField name="text@s_stored___c__@*" type="localePrefixedField" indexed="false" stored="true" />
+
+    <dynamicField name="text@s_stored__s___@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored__s___@*" dest="text@s__l_@*" />
+
+    <dynamicField name="text@s_stored_t___s@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored_t___s@*" dest="text@s__lt@*" />
+    <copyField source="text@s_stored_t___s@*" dest="suggest" />
+
+    <dynamicField name="text@s_stored____ss@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored____ss@*" dest="suggest" />
+
+    <dynamicField name="text@s_stored___c_s@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored___c_s@*" dest="suggest" />
+
+    <dynamicField name="text@s_stored__s__s@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored__s__s@*" dest="text@s__l_@*" />
+    <copyField source="text@s_stored__s__s@*" dest="suggest" />
+
+    <dynamicField name="text@s_stored_t__s_@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored_t__s_@*" dest="text@s__lt@*" />
+
+    <dynamicField name="text@s_stored_t_c__@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored_t_c__@*" dest="text@s__lt@*" />
+    <copyField source="text@s_stored_t_c__@*" dest="text@s___t@*" />
+
+    <dynamicField name="text@s_stored_ts___@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored_ts___@*" dest="text@s__lt@*" />
+    <copyField source="text@s_stored_ts___@*" dest="text@s__l_@*" />
+
+    <dynamicField name="text@s_stored___cs_@*" type="localePrefixedField" indexed="false" stored="true" />
+
+    <dynamicField name="text@s_stored__s_s_@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored__s_s_@*" dest="text@s__l_@*" />
+    <copyField source="text@s_stored__s_s_@*" dest="text@s__sort@*" />
+
+    <dynamicField name="text@s_stored__sc__@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored__sc__@*" dest="text@s__l_@*" />
+    <copyField source="text@s_stored__sc__@*" dest="text@s____@*" />
+
+    <dynamicField name="text@s_stored_t__ss@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored_t__ss@*" dest="text@s__lt@*" />
+    <copyField source="text@s_stored_t__ss@*" dest="suggest" />
+
+    <dynamicField name="text@s_stored_t_c_s@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored_t_c_s@*" dest="text@s__lt@*" />
+    <copyField source="text@s_stored_t_c_s@*" dest="text@s___t@*" />
+    <copyField source="text@s_stored_t_c_s@*" dest="suggest" />
+
+    <dynamicField name="text@s_stored_ts__s@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored_ts__s@*" dest="text@s__lt@*" />
+    <copyField source="text@s_stored_ts__s@*" dest="text@s__l_@*" />
+    <copyField source="text@s_stored_ts__s@*" dest="suggest" />
+
+    <dynamicField name="text@s_stored___css@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored___css@*" dest="suggest" />
+
+    <dynamicField name="text@s_stored__s_ss@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored__s_ss@*" dest="text@s__l_@*" />
+    <copyField source="text@s_stored__s_ss@*" dest="text@s__sort@*" />
+    <copyField source="text@s_stored__s_ss@*" dest="suggest" />
+
+    <dynamicField name="text@s_stored__sc_s@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored__sc_s@*" dest="text@s__l_@*" />
+    <copyField source="text@s_stored__sc_s@*" dest="text@s____@*" />
+    <copyField source="text@s_stored__sc_s@*" dest="suggest" />
+
+    <dynamicField name="text@s_stored_t_cs_@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored_t_cs_@*" dest="text@s__lt@*" />
+    <copyField source="text@s_stored_t_cs_@*" dest="text@s___t@*" />
+
+    <dynamicField name="text@s_stored_ts_s_@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored_ts_s_@*" dest="text@s__lt@*" />
+    <copyField source="text@s_stored_ts_s_@*" dest="text@s__l_@*" />
+    <copyField source="text@s_stored_ts_s_@*" dest="text@s__sort@*" />
+
+    <dynamicField name="text@s_stored_tsc__@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored_tsc__@*" dest="text@s__lt@*" />
+    <copyField source="text@s_stored_tsc__@*" dest="text@s___t@*" />
+    <copyField source="text@s_stored_tsc__@*" dest="text@s__l_@*" />
+    <copyField source="text@s_stored_tsc__@*" dest="text@s____@*" />
+
+    <dynamicField name="text@s_stored__scs_@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored__scs_@*" dest="text@s__l_@*" />
+    <copyField source="text@s_stored__scs_@*" dest="text@s__sort@*" />
+    <copyField source="text@s_stored__scs_@*" dest="text@s____@*" />
+
+    <dynamicField name="text@s_stored_t_css@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored_t_css@*" dest="text@s__lt@*" />
+    <copyField source="text@s_stored_t_css@*" dest="text@s___t@*" />
+    <copyField source="text@s_stored_t_css@*" dest="suggest" />
+
+    <dynamicField name="text@s_stored_ts_ss@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored_ts_ss@*" dest="text@s__lt@*" />
+    <copyField source="text@s_stored_ts_ss@*" dest="text@s__l_@*" />
+    <copyField source="text@s_stored_ts_ss@*" dest="text@s__sort@*" />
+    <copyField source="text@s_stored_ts_ss@*" dest="suggest" />
+
+    <dynamicField name="text@s_stored_tsc_s@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored_tsc_s@*" dest="text@s__lt@*" />
+    <copyField source="text@s_stored_tsc_s@*" dest="text@s___t@*" />
+    <copyField source="text@s_stored_tsc_s@*" dest="text@s__l_@*" />
+    <copyField source="text@s_stored_tsc_s@*" dest="text@s____@*" />
+    <copyField source="text@s_stored_tsc_s@*" dest="suggest" />
+
+    <dynamicField name="text@s_stored__scss@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored__scss@*" dest="text@s__l_@*" />
+    <copyField source="text@s_stored__scss@*" dest="text@s__sort@*" />
+    <copyField source="text@s_stored__scss@*" dest="text@s____@*" />
+    <copyField source="text@s_stored__scss@*" dest="suggest" />
+
+    <dynamicField name="text@s_stored_tscs_@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored_tscs_@*" dest="text@s__lt@*" />
+    <copyField source="text@s_stored_tscs_@*" dest="text@s___t@*" />
+    <copyField source="text@s_stored_tscs_@*" dest="text@s__l_@*" />
+    <copyField source="text@s_stored_tscs_@*" dest="text@s__sort@*" />
+    <copyField source="text@s_stored_tscs_@*" dest="text@s____@*" />
+
+    <dynamicField name="text@s_stored_tscss@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="text@s_stored_tscss@*" dest="text@s__lt@*" />
+    <copyField source="text@s_stored_tscss@*" dest="text@s___t@*" />
+    <copyField source="text@s_stored_tscss@*" dest="text@s__l_@*" />
+    <copyField source="text@s_stored_tscss@*" dest="text@s__sort@*" />
+    <copyField source="text@s_stored_tscss@*" dest="text@s____@*" />
+    <copyField source="text@s_stored_tscss@*" dest="suggest" />
+
+
+    <dynamicField name="mltext@m_stored__s___@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="mltext@m_stored__s___@*" dest="mltext@m__l_@*" />
+
+    <dynamicField name="mltext@m_stored___c__@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+
+    <dynamicField name="mltext@m_stored_____s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="mltext@m_stored_____s@*" dest="suggest" />
+
+    <dynamicField name="mltext@m_stored_t____@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="mltext@m_stored_t____@*" dest="mltext@m__lt@*" />
+
+    <dynamicField name="mltext@m_stored__sc__@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="mltext@m_stored__sc__@*" dest="mltext@m__l_@*" />
+    <copyField source="mltext@m_stored__sc__@*" dest="mltext@m____@*" />
+
+    <dynamicField name="mltext@m_stored__s__s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="mltext@m_stored__s__s@*" dest="mltext@m__l_@*" />
+    <copyField source="mltext@m_stored__s__s@*" dest="suggest" />
+
+    <dynamicField name="mltext@m_stored_ts___@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="mltext@m_stored_ts___@*" dest="mltext@m__lt@*" />
+    <copyField source="mltext@m_stored_ts___@*" dest="mltext@m__l_@*" />
+
+    <dynamicField name="mltext@m_stored___c_s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="mltext@m_stored___c_s@*" dest="suggest" />
+
+    <dynamicField name="mltext@m_stored_t_c__@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="mltext@m_stored_t_c__@*" dest="mltext@m__lt@*" />
+    <copyField source="mltext@m_stored_t_c__@*" dest="mltext@m___t@*" />
+
+    <dynamicField name="mltext@m_stored_t___s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="mltext@m_stored_t___s@*" dest="mltext@m__lt@*" />
+    <copyField source="mltext@m_stored_t___s@*" dest="suggest" />
+
+    <dynamicField name="mltext@m_stored__sc_s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="mltext@m_stored__sc_s@*" dest="mltext@m__l_@*" />
+    <copyField source="mltext@m_stored__sc_s@*" dest="mltext@m____@*" />
+    <copyField source="mltext@m_stored__sc_s@*" dest="suggest" />
+
+    <dynamicField name="mltext@m_stored_tsc__@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="mltext@m_stored_tsc__@*" dest="mltext@m__lt@*" />
+    <copyField source="mltext@m_stored_tsc__@*" dest="mltext@m___t@*" />
+    <copyField source="mltext@m_stored_tsc__@*" dest="mltext@m__l_@*" />
+    <copyField source="mltext@m_stored_tsc__@*" dest="mltext@m____@*" />
+
+    <dynamicField name="mltext@m_stored_ts__s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="mltext@m_stored_ts__s@*" dest="mltext@m__lt@*" />
+    <copyField source="mltext@m_stored_ts__s@*" dest="mltext@m__l_@*" />
+    <copyField source="mltext@m_stored_ts__s@*" dest="suggest" />
+
+    <dynamicField name="mltext@m_stored_t_c_s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="mltext@m_stored_t_c_s@*" dest="mltext@m__lt@*" />
+    <copyField source="mltext@m_stored_t_c_s@*" dest="mltext@m___t@*" />
+    <copyField source="mltext@m_stored_t_c_s@*" dest="suggest" />
+
+    <dynamicField name="mltext@m_stored_tsc_s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="mltext@m_stored_tsc_s@*" dest="mltext@m__lt@*" />
+    <copyField source="mltext@m_stored_tsc_s@*" dest="mltext@m___t@*" />
+    <copyField source="mltext@m_stored_tsc_s@*" dest="mltext@m__l_@*" />
+    <copyField source="mltext@m_stored_tsc_s@*" dest="mltext@m____@*" />
+    <copyField source="mltext@m_stored_tsc_s@*" dest="suggest" />
+
+    <dynamicField name="content@s_stored__s___@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="content@s_stored__s___@*" dest="content@s__l_@*" />
+
+    <dynamicField name="content@s_stored___c__@*" type="localePrefixedField" indexed="false" stored="true" />
+
+    <dynamicField name="content@s_stored_____s@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="content@s_stored_____s@*" dest="suggest" />
+
+    <dynamicField name="content@s_stored_t____@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="content@s_stored_t____@*" dest="content@s__lt@*" />
+
+    <dynamicField name="content@s_stored__sc__@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="content@s_stored__sc__@*" dest="content@s__l_@*" />
+    <copyField source="content@s_stored__sc__@*" dest="content@s____@*" />
+
+    <dynamicField name="content@s_stored__s__s@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="content@s_stored__s__s@*" dest="content@s__l_@*" />
+    <copyField source="content@s_stored__s__s@*" dest="suggest" />
+
+    <dynamicField name="content@s_stored_ts___@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="content@s_stored_ts___@*" dest="content@s__lt@*" />
+    <copyField source="content@s_stored_ts___@*" dest="content@s__l_@*" />
+
+    <dynamicField name="content@s_stored___c_s@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="content@s_stored___c_s@*" dest="suggest" />
+
+    <dynamicField name="content@s_stored_t_c__@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="content@s_stored_t_c__@*" dest="content@s__lt@*" />
+    <copyField source="content@s_stored_t_c__@*" dest="content@s___t@*" />
+
+    <dynamicField name="content@s_stored_t___s@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="content@s_stored_t___s@*" dest="content@s__lt@*" />
+    <copyField source="content@s_stored_t___s@*" dest="suggest" />
+
+    <dynamicField name="content@s_stored__sc_s@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="content@s_stored__sc_s@*" dest="content@s__l_@*" />
+    <copyField source="content@s_stored__sc_s@*" dest="content@s____@*" />
+    <copyField source="content@s_stored__sc_s@*" dest="suggest" />
+
+    <dynamicField name="content@s_stored_tsc__@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="content@s_stored_tsc__@*" dest="content@s__lt@*" />
+    <copyField source="content@s_stored_tsc__@*" dest="content@s___t@*" />
+    <copyField source="content@s_stored_tsc__@*" dest="content@s__l_@*" />
+    <copyField source="content@s_stored_tsc__@*" dest="content@s____@*" />
+
+    <dynamicField name="content@s_stored_ts__s@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="content@s_stored_ts__s@*" dest="content@s__lt@*" />
+    <copyField source="content@s_stored_ts__s@*" dest="content@s__l_@*" />
+    <copyField source="content@s_stored_ts__s@*" dest="suggest" />
+
+    <dynamicField name="content@s_stored_t_c_s@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="content@s_stored_t_c_s@*" dest="content@s__lt@*" />
+    <copyField source="content@s_stored_t_c_s@*" dest="content@s___t@*" />
+    <copyField source="content@s_stored_t_c_s@*" dest="suggest" />
+
+    <dynamicField name="content@s_stored_tsc_s@*" type="localePrefixedField" indexed="false" stored="true" />
+    <copyField source="content@s_stored_tsc_s@*" dest="content@s__lt@*" />
+    <copyField source="content@s_stored_tsc_s@*" dest="content@s___t@*" />
+    <copyField source="content@s_stored_tsc_s@*" dest="content@s__l_@*" />
+    <copyField source="content@s_stored_tsc_s@*" dest="content@s____@*" />
+    <copyField source="content@s_stored_tsc_s@*" dest="suggest" />
+
+    <dynamicField name="text@m_stored__s___@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="text@m_stored__s___@*" dest="text@m__l_@*" />
+
+    <dynamicField name="text@m_stored___c__@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+
+    <dynamicField name="text@m_stored_____s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="text@m_stored_____s@*" dest="suggest" />
+
+    <dynamicField name="text@m_stored_t____@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="text@m_stored_t____@*" dest="text@m__lt@*" />
+
+    <dynamicField name="text@m_stored__sc__@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="text@m_stored__sc__@*" dest="text@m__l_@*" />
+    <copyField source="text@m_stored__sc__@*" dest="text@m____@*" />
+
+    <dynamicField name="text@m_stored__s__s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="text@m_stored__s__s@*" dest="text@m__l_@*" />
+    <copyField source="text@m_stored__s__s@*" dest="suggest" />
+
+    <dynamicField name="text@m_stored_ts___@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="text@m_stored_ts___@*" dest="text@m__lt@*" />
+    <copyField source="text@m_stored_ts___@*" dest="text@m__l_@*" />
+
+    <dynamicField name="text@m_stored___c_s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="text@m_stored___c_s@*" dest="suggest" />
+
+    <dynamicField name="text@m_stored_t_c__@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="text@m_stored_t_c__@*" dest="text@m__lt@*" />
+    <copyField source="text@m_stored_t_c__@*" dest="text@m___t@*" />
+
+    <dynamicField name="text@m_stored_t___s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="text@m_stored_t___s@*" dest="text@m__lt@*" />
+    <copyField source="text@m_stored_t___s@*" dest="suggest" />
+
+    <dynamicField name="text@m_stored__sc_s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="text@m_stored__sc_s@*" dest="text@m__l_@*" />
+    <copyField source="text@m_stored__sc_s@*" dest="text@m____@*" />
+    <copyField source="text@m_stored__sc_s@*" dest="suggest" />
+
+    <dynamicField name="text@m_stored_tsc__@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="text@m_stored_tsc__@*" dest="text@m__lt@*" />
+    <copyField source="text@m_stored_tsc__@*" dest="text@m___t@*" />
+    <copyField source="text@m_stored_tsc__@*" dest="text@m__l_@*" />
+    <copyField source="text@m_stored_tsc__@*" dest="text@m____@*" />
+
+    <dynamicField name="text@m_stored_ts__s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="text@m_stored_ts__s@*" dest="text@m__lt@*" />
+    <copyField source="text@m_stored_ts__s@*" dest="text@m__l_@*" />
+    <copyField source="text@m_stored_ts__s@*" dest="suggest" />
+
+    <dynamicField name="text@m_stored_t_c_s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="text@m_stored_t_c_s@*" dest="text@m__lt@*" />
+    <copyField source="text@m_stored_t_c_s@*" dest="text@m___t@*" />
+    <copyField source="text@m_stored_t_c_s@*" dest="suggest" />
+
+    <dynamicField name="text@m_stored_tsc_s@*" type="localePrefixedField" indexed="false" stored="true" multiValued="true" />
+    <copyField source="text@m_stored_tsc_s@*" dest="text@m__lt@*" />
+    <copyField source="text@m_stored_tsc_s@*" dest="text@m___t@*" />
+    <copyField source="text@m_stored_tsc_s@*" dest="text@m__l_@*" />
+    <copyField source="text@m_stored_tsc_s@*" dest="text@m____@*" />
+    <copyField source="text@m_stored_tsc_s@*" dest="suggest" />
 </fields>
