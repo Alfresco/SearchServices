@@ -81,7 +81,7 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
             assertTrue(baseUrls.contains(instance.getBaseUrl()));
 
             // TODO: Ideally Solr Host and Port should be Parameterised
-            assertNotNull(instance.getHost());
+            assertNotNull(instance.getHost(), "The solr host is not present");
             assertEquals(instance.getPort().intValue(), 8983);
             assertEquals(instance.getState(), "ACTIVE");
             assertEquals(instance.getMode(), "MASTER");
