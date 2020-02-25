@@ -151,7 +151,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.LeafReaderContext;
@@ -194,7 +193,6 @@ import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.DelegatingCollector;
 import org.apache.solr.search.DocIterator;
 import org.apache.solr.search.DocList;
-import org.apache.solr.search.DocSet;
 import org.apache.solr.search.QueryWrapperFilter;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.update.AddUpdateCommand;
@@ -2251,11 +2249,8 @@ public class SolrInformationServer implements InformationServer
     {
 
         String errorDocId = PREFIX_ERROR + node.getId();
-
-        // Try finding the node before performing removal operation
-        DocSet docSet = request.getSearcher().getDocSet(new TermQuery(new Term(FIELD_SOLR4_ID, errorDocId)));
-
-        if (docSet.size() > 0)
+        // Remove document only when it exists
+        if (getDocListSize(FIELD_SOLR4_ID + ":" + errorDocId) > 0)
         {
             DeleteUpdateCommand delErrorDocCmd = new DeleteUpdateCommand(request);
             delErrorDocCmd.setId(errorDocId);
@@ -2275,17 +2270,13 @@ public class SolrInformationServer implements InformationServer
 
     private void deleteNode(UpdateRequestProcessor processor, SolrQueryRequest request, long dbid) throws IOException
     {
-
-        // Try finding the node before performing removal operation
-        DocSet docSet = request.getSearcher().getDocSet(LongPoint.newExactQuery(FIELD_DBID, dbid));
-
-        if (docSet.size() > 0)
+        // Remove document only when it exists
+        if (getDocListSize(FIELD_DBID + ":" + dbid) > 0)
         {
             DeleteUpdateCommand delDocCmd = new DeleteUpdateCommand(request);
             delDocCmd.setQuery(FIELD_DBID + ":" + dbid);
             processor.processDelete(delDocCmd);
         }
-
     }
 
     private boolean isContentIndexedForNode(Map<QName, PropertyValue> properties)
