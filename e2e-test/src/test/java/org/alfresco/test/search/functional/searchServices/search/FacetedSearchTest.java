@@ -125,13 +125,8 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
         
         SearchResponse response = query(query);
         
-        waitForContentIndexing(file4.getContent(), true);
-        
         response.assertThat().entriesListIsNotEmpty();
         response.getContext().assertThat().field("facetQueries").isNotEmpty();
-        Assert.assertTrue(waitForContentIndexing("small", true));
-        Assert.assertTrue(waitForContentIndexing("medium", true));
-        Assert.assertTrue(waitForContentIndexing("large", true));
         
         FacetFieldBucket facet = response.getContext().getFacetQueries().get(0);
         facet.assertThat().field("label").contains("small").and().field("count").isGreaterThan(0);
