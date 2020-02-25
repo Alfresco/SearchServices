@@ -83,7 +83,7 @@
     <!--
       The core field type used in SearchServices for marking multi-language searchable fields.
     -->
-    <fieldType name="alfrescoFieldType" class="org.alfresco.solr.AlfrescoFieldType" indexed="true" stored="true"/>
+    <fieldType name="alfrescoFieldType" class="org.alfresco.solr.AlfrescoFieldType" indexed="true" stored="false"/>
 
     <!--
       A custom indexed StrField which removes the language prefix marker set on SearchServices side at index time.
@@ -157,7 +157,7 @@
       </analyzer>
     </fieldType>
 
-    <fieldType name="text___" class="solr.TextField" positionIncrementGap="100" indexed="true" stored="true">
+    <fieldType name="text___" class="solr.TextField" positionIncrementGap="100" indexed="true" stored="false">
       <analyzer>
         <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="\x{0000}.*\x{0000}" replacement=""/>
         <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="(#0;.*#0;)" replacement=""/>
@@ -1114,34 +1114,34 @@
     <dynamicField name="period@m_@*" type="oldStandardAnalysis" multiValued="true" />
 
     <!-- Multi + doc values value wildcard matches -->
-    <dynamicField name="int@md@*" type="ints" stored="true" docValues="true" />
-    <dynamicField name="long@md@*" type="longs" stored="true" docValues="true" />
-    <dynamicField name="float@md@*" type="floats" stored="true" docValues="true" />
-    <dynamicField name="double@md@*" type="doubles" stored="true" docValues="true" />
-    <dynamicField name="date@md@*" type="dates" stored="true" docValues="true" />
+    <dynamicField name="int@md@*" type="ints" docValues="true" />
+    <dynamicField name="long@md@*" type="longs" docValues="true" />
+    <dynamicField name="float@md@*" type="floats" docValues="true" />
+    <dynamicField name="double@md@*" type="doubles" docValues="true" />
+    <dynamicField name="date@md@*" type="dates" docValues="true" />
     <dynamicField name="datetime@md@*" type="dates" stored="true" docValues="true" />
-    <dynamicField name="boolean@md@*" type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
-    <dynamicField name="category@md@*" type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
-    <dynamicField name="noderef@md@*" type="identifiers" stored="true" docValues="true" sortMissingLast="true"/>
+    <dynamicField name="boolean@md@*" type="identifiers" docValues="true" sortMissingLast="true"/>
+    <dynamicField name="category@md@*" type="identifiers" docValues="true" sortMissingLast="true"/>
+    <dynamicField name="noderef@md@*" type="identifiers" docValues="true" sortMissingLast="true"/>
 
-    <dynamicField name="text@s____@*" type="stripLocaleStrField" stored="false" />
-    <dynamicField name="text@s__l_@*" type="alfrescoFieldType" omitNorms="true" stored="false"/>
-    <dynamicField name="text@s__lt@*" type="alfrescoFieldType" omitNorms="false" stored="false"/>
-    <dynamicField name="text@s___t@*" type="text___" stored="false"/>
+    <dynamicField name="text@s____@*" type="stripLocaleStrField"/>
+    <dynamicField name="text@s__l_@*" type="alfrescoFieldType" omitNorms="true"/>
+    <dynamicField name="text@s__lt@*" type="alfrescoFieldType" omitNorms="false"/>
+    <dynamicField name="text@s___t@*" type="text___" />
     <dynamicField name="text@s__sort@*" type="alfrescoCollatableTextFieldType" stored="false"/>
     <dynamicField name="text@sd___@*" type="identifier" docValues="true" stored="false"/>
 
-    <dynamicField name="text@m____@*" type="stripLocaleStrField" multiValued="true" stored="false" />
+    <dynamicField name="text@m____@*" type="stripLocaleStrField" multiValued="true" />
     <dynamicField name="text@m__l_@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" />
     <dynamicField name="text@m__lt@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" />
-    <dynamicField name="text@m___t@*" type="text___" multiValued="true" />
+    <dynamicField name="text@m___t@*" type="text___" multiValued="true"/>
 
     <dynamicField name="text@md___@*" type="identifiers" stored="false" docValues="true" />
 
-    <dynamicField name="mltext@m____@*" type="stripLocaleStrField" multiValued="true" stored="false"/>
-    <dynamicField name="mltext@m__l_@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" stored="false"/>
-    <dynamicField name="mltext@m__lt@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" stored="false"/>
-    <dynamicField name="mltext@m___t@*" type="text___" multiValued="true" stored="false" />
+    <dynamicField name="mltext@m____@*" type="stripLocaleStrField" multiValued="true"/>
+    <dynamicField name="mltext@m__l_@*" type="alfrescoFieldType" omitNorms="true" multiValued="true"/>
+    <dynamicField name="mltext@m__lt@*" type="alfrescoFieldType" omitNorms="true" multiValued="true"/>
+    <dynamicField name="mltext@m___t@*" type="text___" multiValued="true" />
 
     <dynamicField name="mltext@m__sort@*" type="alfrescoCollatableMLTextFieldType" />
 
@@ -1154,30 +1154,32 @@
     <dynamicField name="content@s__tr_time@*" type="long" />
     <dynamicField name="content@s__tr_status@*" type="lowercase_id" />
 
-    <dynamicField name="content@s____@*" type="identifier" stored="false"/>
-    <dynamicField name="content@s__l_@*" type="alfrescoFieldType" omitNorms="true" stored="false"/>
-    <dynamicField name="content@s__lt@*" type="alfrescoFieldType" omitNorms="false" stored="false"/>
-    <dynamicField name="content@s___t@*" type="text___" stored="false"/>
+    <dynamicField name="content@s____@*" type="stripLocaleStrField"/>
+    <dynamicField name="content@s__l_@*" type="alfrescoFieldType" omitNorms="true"/>
+    <dynamicField name="content@s__lt@*" type="alfrescoFieldType" omitNorms="false"/>
+    <dynamicField name="content@s___t@*" type="text___"/>
 
     <!-- "m" FIELDS are never used at the moment -->
-    <dynamicField name="content@m__size@*"             type="longs" stored="true" docValues="true" />
-    <dynamicField name="content@m__locale@*"           type="identifiers" stored="true" docValues="true" />
-    <dynamicField name="content@m__mimetype@*"         type="identifiers" stored="true" docValues="true" />
-    <dynamicField name="content@m__encoding@*"         type="identifiers" stored="true" docValues="true" />
-    <dynamicField name="content@m__docid@*"            type="longs" stored="true" docValues="true" />
-    <dynamicField name="content@m__tr_ex@*"            type="text___" multiValued="true" />
-    <dynamicField name="content@m__tr_time@*"          type="longs" />
-    <dynamicField name="content@m__tr_status@*"        type="lowercase_id" multiValued="true" />
+    <dynamicField name="content@m__size@*" type="longs" docValues="true" />
+    <dynamicField name="content@m__locale@*" type="identifiers" docValues="true" />
+    <dynamicField name="content@m__mimetype@*" type="identifiers" docValues="true" />
+    <dynamicField name="content@m__encoding@*" type="identifiers" docValues="true" />
+    <dynamicField name="content@m__docid@*" type="longs" docValues="true" />
+    <dynamicField name="content@m__tr_ex@*" type="text___" multiValued="true" />
+    <dynamicField name="content@m__tr_time@*" type="longs" />
+    <dynamicField name="content@m__tr_status@*" type="lowercase_id" multiValued="true" />
 
-    <dynamicField name="content@m____@*"          type="identifiers" termPositions="false" />
-    <dynamicField name="content@m__l_@*"          type="alfrescoFieldType" omitNorms="true" multiValued="true" termPositions="false" />
-    <dynamicField name="content@m__lt@*"          type="alfrescoFieldType" omitNorms="true" multiValued="true" />
-    <dynamicField name="content@m___t@*"          type="text___" multiValued="true" />
+    <dynamicField name="content@m____@*" type="identifiers" termPositions="false" />
+    <dynamicField name="content@m__l_@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" termPositions="false" />
+    <dynamicField name="content@m__lt@*" type="alfrescoFieldType" omitNorms="true" multiValued="true" />
+    <dynamicField name="content@m___t@*" type="text___" multiValued="true" />
 
     <!-- END "m" FIELDS section -->
 
     <!-- Suggestion -->
+    <dynamicField name="suggest_*" type="ignored" multiValued="true"/>
     <field name="suggest" type="text_shingle" indexed="true" omitNorms="true" omitPositions="true" stored="false" multiValued="true" />
+    <copyField source="suggest_*" dest="suggest" />
   </fields>
   <xi:include href="generated_copy_fields.xml" xmlns:xi="http://www.w3.org/2001/XInclude">
     <xi:fallback/>
