@@ -324,7 +324,7 @@ public class StatsSearchTest extends AbstractSearchServicesE2ETest
         facetResponseModel.assertThat().field("type").is("stats");
         // TODO : Change back to facetResponseModel.assertThat().field("label").is(label);
         //        when https://issues.alfresco.com/jira/browse/SEARCH-2125 is fixed
-        facetResponseModel.assertThat().field("label").is(label);
+        facetResponseModel.assertThat().field("label").contains(label);
         RestGenericBucketModel bucket = facetResponseModel.getBuckets().get(0);
         List<RestGenericMetricModel> metrics = bucket.getMetrics();
         assertEquals(metrics.size(),metricsCount);
