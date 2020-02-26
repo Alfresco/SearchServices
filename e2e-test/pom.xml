@@ -1,10 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <modelVersion>4.0.0</modelVersion>
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-search-and-insight-parent</artifactId>
-      <version>1.4.2-SNAPSHOT</version>
+      <version>1.4.2-RC1</version>
    </parent>
    <groupId>search-analytics-e2e-test</groupId>
    <artifactId>search-analytics-e2e-test</artifactId>
@@ -16,8 +15,8 @@
       <tas.utility.version>3.0.19</tas.utility.version>
       <rm.version>3.3.0.1</rm.version>
       <suiteXmlFile>src/test/resources/SearchSuite.xml</suiteXmlFile>
-      <test.exclude></test.exclude>
-      <test.include></test.include>
+      <test.exclude />
+      <test.include />
       <jackson.databind.version>2.7.7</jackson.databind.version>
    </properties>
    <build>
