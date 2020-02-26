@@ -1254,7 +1254,7 @@ public class SOLRAPIClient
     }
     
     /**
-     * Returns the minimum and the maximum commit time for transactions in a node id range.
+     * Returns the next commit time from a given commit time.
      * 
      * @param coreName alfresco, archive
      * @param fromCommitTime initial transaction commit time
