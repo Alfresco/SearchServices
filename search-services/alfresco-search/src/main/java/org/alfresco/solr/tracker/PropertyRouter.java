@@ -26,10 +26,12 @@ import org.apache.solr.common.util.Hash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static java.util.Collections.emptyMap;
 
 /**
  * Routes based on a text property field.
@@ -126,12 +128,13 @@ public class PropertyRouter implements DocRouter
     }
     
     @Override
-    public Map<String, String> getProperties(QName shardProperty)
+    public Map<String, String> getProperties(Optional<QName> shardProperty)
     {
-        return (shardProperty == null ? 
-                Collections.emptyMap() : 
-                Map.of(DocRouterFactory.SHARD_KEY_KEY, shardProperty.getPrefixString(),
-                       DocRouterFactory.SHARD_REGEX_KEY, propertyRegEx));
+        return shardProperty
+                .map(QName::getPrefixString)
+                .map(prefix -> Map.of(
+                        DocRouterFactory.SHARD_KEY_KEY, prefix,
+                        DocRouterFactory.SHARD_REGEX_KEY, propertyRegEx))
+                .orElse(emptyMap());
     }
-    
 }
