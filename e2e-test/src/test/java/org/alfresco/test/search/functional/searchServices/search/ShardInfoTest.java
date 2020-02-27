@@ -189,8 +189,7 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
         	            case "DB_ID":
         	            	break;
         	            case "DB_ID_RANGE":
-        	            	// TODO: Uncomment the following assert when fixed: https://issues.alfresco.com/jira/browse/SEARCH-2110
-                        	//assertEquals(shardParams.contains("shard.range="), "Unexpected shard params defined for DB_ID_RANGE");
+                        	assertTrue(shardParams.contains("shard.range="), "Unexpected shard params defined for DB_ID_RANGE");
                         	break;
         	            case "DATE":
                         	assertTrue(shardParams.contains("shard.key="), "Unexpected shard params defined for DATE");
