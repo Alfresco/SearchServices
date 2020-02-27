@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.AlfrescoSolrDataModel;
+import org.alfresco.solr.BoundedDeque;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.NodeReport;
 import org.alfresco.solr.TrackerState;
@@ -52,8 +53,8 @@ import java.util.Properties;
 
 /**
  * Superclass for all components which are able to inform Alfresco about the hosting node state.
- * This has been introduced in SEARCH-1752 for splitting the dual responsibility of the {@link MetadataTracker}.
- * As consequence of that, this class contains all the members needed for obtaining a valid
+ * This has been introduced in SEARCH-1752 for splitting the dual responsibility of the {@link org.alfresco.solr.tracker.MetadataTracker}.
+ * As consequence of that, this class contains only the members needed for obtaining a valid
  * {@link org.alfresco.repo.index.shard.ShardState} that can be periodically communicated to Alfresco.
  *
  * @author Andrea Gazzarini
@@ -176,15 +177,15 @@ public abstract class CoreStatePublisher extends AbstractTracker
      * The {@link ShardState} is primarily used in two places:
      *
      * <ul>
-     *     <li>Transaction tracking: (see {@link MetadataTracker#trackTransactions()}): for pulling/tracking transactions from Alfresco</li>
+     *     <li>Transaction tracking: (see {@link MetadataTracker#getSomeTransactions(BoundedDeque, Long, long, int, long}): for pulling/tracking transactions from Alfresco</li>
      *     <li>
-     *         DynamicSharding: when the {@link MetadataTracker} is running on a slave instance it doesn't actually act
-     *         as a tracker, it calls Alfresco to register the state of the node (the shard) without pulling any transactions.
-     *         As consequence of that, Alfresco will be aware about the shard which will be included in subsequent queries.
+     *         DynamicSharding: the {@link MetadataTracker} is not running on a slave instances; in those cases a special
+     *         "tracker" ({@link SlaveCoreStatePublisher}) will be in charge to send the correspondin shard state to Alfresco.
      *     </li>
      * </ul>
      *
      * @return the {@link ShardState} instance which stores the current state of the hosting shard.
+     * @see SlaveCoreStatePublisher
      */
     ShardState getShardState()
     {
@@ -198,10 +199,11 @@ public abstract class CoreStatePublisher extends AbstractTracker
 
         HashMap<String, String> propertyBag = new HashMap<>();
         propertyBag.put("coreName", coreName);
+
         HashMap<String, String> extendedPropertyBag = new HashMap<>(propertyBag);
         updateShardProperty();
 
-        shardProperty.ifPresent(p -> extendedPropertyBag.putAll(docRouter.getProperties(p)));
+        extendedPropertyBag.putAll(docRouter.getProperties(shardProperty));
 
         return ShardStateBuilder.shardState()
                 .withMaster(isMaster)
