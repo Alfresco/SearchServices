@@ -114,9 +114,9 @@ public class CascadeTracker extends AbstractTracker implements Tracker
         }
         
         @Override
-        protected void onFail()
+        protected void onFail(Throwable failCausedBy) 
         {
-        	setRollback(true);
+        	setRollback(true, failCausedBy);
         }
     }
 
