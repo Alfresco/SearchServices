@@ -197,6 +197,7 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
                         	break;
                         case "PROPERTY":
                         	assertTrue(shardParams.contains("shard.key="), "Unexpected shard params defined for PROPERTY"); 
+                        	assertTrue(shardParams.contains("shard.regex="), "Unexpected shard regex defined for PROPERTY");
                         	break;
                         case "EXPLICIT_ID":
                         	assertTrue(shardParams.contains("shard.key="), "Unexpected shard params defined for EXPLICIT_ID");  
