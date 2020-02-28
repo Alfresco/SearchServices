@@ -58,7 +58,9 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
             RestShardInfoModel model = shardInfoModel.getModel();
             assertEquals(model.getTemplate(), "rerank");
             assertEquals(model.getMode(), "MASTER");
-            assertEquals(model.getShardMethod(), "DB_ID");
+            List<String> shardingMethods = Arrays.asList("DB_ID", "DB_ID_RANGE", "EXPLICIT_ID", "ACL_ID", "MOD_ACL_ID", "DATE", "PROPERTY");
+            String shardingMethod = model.getShardMethod();
+            assertTrue(shardingMethods.contains(shardingMethod), "Unexpected Sharding Method Found: " + shardingMethod);
             assertTrue(model.getHasContent());
 
             assertTrue(stores.contains(model.getStores()));
@@ -75,7 +77,7 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
             assertTrue(baseUrls.contains(instance.getBaseUrl()));
 
             // TODO: Ideally Solr Host and Port should be Parameterised
-            assertEquals(instance.getHost(), "search");
+            assertNotNull(instance.getHost(), "The solr host is not present");
             assertEquals(instance.getPort().intValue(), 8983);
             assertEquals(instance.getState(), "ACTIVE");
             assertEquals(instance.getMode(), "MASTER");
