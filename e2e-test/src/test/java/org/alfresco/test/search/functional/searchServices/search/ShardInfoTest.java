@@ -203,7 +203,7 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
                         	assertTrue(shardParams.contains("shard.key="), "Shard Parameters Not as expected for the Shard Method: EXPLICIT_ID");  
                         	break;
                         default:
-                            throw new AssertionError("Not as expected: " + shardParams.toString());
+                            throw new AssertionError("Shard Parameters Not as expected for the Shard Method: " + model.getShardMethod() + ": " + shardParams.toString());
                     }                    
                 }
             }           
