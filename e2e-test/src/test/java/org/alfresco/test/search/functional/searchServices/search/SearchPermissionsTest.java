@@ -113,6 +113,14 @@ public class SearchPermissionsTest extends AbstractE2EFunctionalTest
     @Test(priority = 1)
     public void searchResultsRespectInheritedPermissions()
     {
+        /**
+         * Private Site Folder Structure available for this test
+         * |- permGrandParent
+         *    |-- permChild1
+         *    |------ permFile1 (inheritance disabled, deny permission to testUser1)
+         *    |-- permChild2
+         *    |------ permFile2 (inheritance disabled, allow permission to testUser2)
+         */
         // Search as testUser: expect all: 5 results: When user is a Site Manager
         SearchResponse response = queryAsUser(testUser, "cm:name:perm*");
         int resultCount = response.getPagination().getCount();
@@ -138,7 +146,7 @@ public class SearchPermissionsTest extends AbstractE2EFunctionalTest
     public void searchResultsRespectInheritedPermissionsDisabled() throws Exception
     {
         // Create folder
-        FolderModel folder3 = dataContent.usingUser(testUser).usingSite(testSite).usingResource(parentFolder).createFolderCmisApi("permChild32");
+        FolderModel folder3 = dataContent.usingUser(testUser).usingSite(testSite).usingResource(parentFolder).createFolderCmisApi("permChild3");
 
         // Turn off inherited permissions for folder3
         JsonObject userPermission = Json.createObjectBuilder().add("permissions", Json.createObjectBuilder().add("isInheritanceEnabled", false)).build();
@@ -148,10 +156,20 @@ public class SearchPermissionsTest extends AbstractE2EFunctionalTest
         // Wait for indexing
         waitForIndexing(folder3.getName(), true);
 
-        // Search as testUser: expect all: 5 results: When user is a Site Manager
+        /**
+         * Private Site Folder Structure available now for this test
+         * |- permGrandParent
+         *    |-- permChild1
+         *    |------ permFile1 (inheritance disabled, deny permission to testUser1)
+         *    |-- permChild2
+         *    |------ permFile2 (inheritance disabled, allow permission to testUser2)
+         *    |-- permChild3 (inheritance disabled)
+         */
+
+        // Search as testUser: expect all: 6 results: When user is a Site Manager
         SearchResponse response = queryAsUser(testUser, "cm:name:perm*");
         int resultCount = response.getPagination().getCount();
-        Assert.assertTrue(resultCount == 6, "Unexpected Result count for testUser: Expected 5, received: " + resultCount);
+        Assert.assertTrue(resultCount == 6, "Unexpected Result count for testUser: Expected 6, received: " + resultCount);
 
         // Search as testUser1: expect 3 results: when user is a site member but without permission to a content
         response = queryAsUser(testUser1, "cm:name:perm*");
