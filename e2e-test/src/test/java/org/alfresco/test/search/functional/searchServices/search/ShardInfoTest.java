@@ -189,18 +189,18 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
         	            case "DB_ID":
         	            	break;
         	            case "DB_ID_RANGE":
-                        	assertTrue(shardParams.contains("shard.range="), "Unexpected shard params defined for DB_ID_RANGE");
+                        	assertTrue(shardParams.contains("shard.range="), "Shard Parameters Not as expected for the Shard Method: DB_ID_RANGE");
                         	break;
         	            case "DATE":
-                        	assertTrue(shardParams.contains("shard.key="), "Unexpected shard params defined for DATE");
-                        	assertTrue(shardParams.contains("shard.grouping="), "Unexpected shard grouping defined for DATE");
+                        	assertTrue(shardParams.contains("shard.key="), "Shard Parameters Not as expected for the Shard Method: DATE");
+                        	assertTrue(shardParams.contains("shard.date.grouping="), "Shard Parameters Not as expected for the Shard Method: DATE");
                         	break;
                         case "PROPERTY":
-                        	assertTrue(shardParams.contains("shard.key="), "Unexpected shard params defined for PROPERTY"); 
-                        	assertTrue(shardParams.contains("shard.regex="), "Unexpected shard regex defined for PROPERTY");
+                        	assertTrue(shardParams.contains("shard.key="), "Shard Parameters Not as expected for the Shard Method: PROPERTY"); 
+                        	assertTrue(shardParams.contains("shard.regex="), "Shard Parameters Not as expected for the Shard Method: PROPERTY");
                         	break;
                         case "EXPLICIT_ID":
-                        	assertTrue(shardParams.contains("shard.key="), "Unexpected shard params defined for EXPLICIT_ID");  
+                        	assertTrue(shardParams.contains("shard.key="), "Shard Parameters Not as expected for the Shard Method: EXPLICIT_ID");  
                         	break;
                         default:
                             throw new AssertionError("Not as expected: " + shardParams.toString());
