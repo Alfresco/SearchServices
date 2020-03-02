@@ -113,32 +113,40 @@ public class SearchPermissionsTest extends AbstractE2EFunctionalTest
     @Test(priority = 1)
     public void searchResultsRespectInheritedPermissions()
     {
+        /**
+         * Private Site Folder Structure available for this test
+         * |- permGrandParent
+         *    |-- permChild1
+         *    |------ permFile1 (inheritance disabled, deny permission to testUser1)
+         *    |-- permChild2
+         *    |------ permFile2 (inheritance disabled, allow permission to testUser2)
+         */
         // Search as testUser: expect all: 5 results: When user is a Site Manager
         SearchResponse response = queryAsUser(testUser, "cm:name:perm*");
         int resultCount = response.getPagination().getCount();
-        Assert.assertTrue(resultCount == 5, "Unexpected Result count for testUser: Expected 5, received: " + resultCount);
+        Assert.assertEquals(resultCount, 5, "Unexpected Result count for testUser: Expected 5, received: " + resultCount);
 
         // Search as testUser1: expect 3 results: when user is a site member but without permission to a content
         response = queryAsUser(testUser1, "cm:name:perm*");
         resultCount = response.getPagination().getCount();
-        Assert.assertTrue(resultCount == 3, "Unexpected Result count for testUser1: Expected 3, received: " + resultCount);
+        Assert.assertEquals(resultCount, 3, "Unexpected Result count for testUser1: Expected 3, received: " + resultCount);
 
         // Search as testUser2: expect 1 result: When user isn't a site member but has granular permissions to a content
         response = queryAsUser(testUser2, "cm:name:perm*");
         resultCount = response.getPagination().getCount();
-        Assert.assertTrue(resultCount == 1, "Unexpected Result count for testUser2: Expected 1, received: " + resultCount);
+        Assert.assertEquals(resultCount, 1, "Unexpected Result count for testUser2: Expected 1, received: " + resultCount);
 
         // Search as testUser3: expect none: 0 results: When user isn't a site member / does not have granular permissions to the content
         response = queryAsUser(testUser3, "cm:name:perm*");
         resultCount = response.getPagination().getCount();
-        Assert.assertTrue(resultCount == 0, "Unexpected Result count for testUser3: Expected 0, received: " + resultCount);
+        Assert.assertEquals(resultCount, 0, "Unexpected Result count for testUser3: Expected 0, received: " + resultCount);
     }
 
     @Test(priority = 2)
     public void searchResultsRespectInheritedPermissionsDisabled() throws Exception
     {
         // Create folder
-        FolderModel folder3 = dataContent.usingUser(testUser).usingSite(testSite).usingResource(parentFolder).createFolderCmisApi("permChild32");
+        FolderModel folder3 = dataContent.usingUser(testUser).usingSite(testSite).usingResource(parentFolder).createFolderCmisApi("permChild3");
 
         // Turn off inherited permissions for folder3
         JsonObject userPermission = Json.createObjectBuilder().add("permissions", Json.createObjectBuilder().add("isInheritanceEnabled", false)).build();
@@ -148,25 +156,35 @@ public class SearchPermissionsTest extends AbstractE2EFunctionalTest
         // Wait for indexing
         waitForIndexing(folder3.getName(), true);
 
-        // Search as testUser: expect all: 5 results: When user is a Site Manager
+        /**
+         * Private Site Folder Structure available now for this test
+         * |- permGrandParent
+         *    |-- permChild1
+         *    |------ permFile1 (inheritance disabled, deny permission to testUser1)
+         *    |-- permChild2
+         *    |------ permFile2 (inheritance disabled, allow permission to testUser2)
+         *    |-- permChild3 (inheritance disabled)
+         */
+
+        // Search as testUser: expect all: 6 results: When user is a Site Manager
         SearchResponse response = queryAsUser(testUser, "cm:name:perm*");
         int resultCount = response.getPagination().getCount();
-        Assert.assertTrue(resultCount == 6, "Unexpected Result count for testUser: Expected 5, received: " + resultCount);
+        Assert.assertEquals(resultCount, 6, "Unexpected Result count for testUser: Expected 6, received: " + resultCount);
 
         // Search as testUser1: expect 3 results: when user is a site member but without permission to a content
         response = queryAsUser(testUser1, "cm:name:perm*");
         resultCount = response.getPagination().getCount();
-        Assert.assertTrue(resultCount == 3, "Unexpected Result count for testUser1: Expected 3, received: " + resultCount);
+        Assert.assertEquals(resultCount, 3, "Unexpected Result count for testUser1: Expected 3, received: " + resultCount);
 
         // Search as testUser2: expect 1 result: When user isn't a site member but has granular permissions to a content
         response = queryAsUser(testUser2, "cm:name:perm*");
         resultCount = response.getPagination().getCount();
-        Assert.assertTrue(resultCount == 1, "Unexpected Result count for testUser2: Expected 1, received: " + resultCount);
+        Assert.assertEquals(resultCount, 1, "Unexpected Result count for testUser2: Expected 1, received: " + resultCount);
 
         // Search as testUser3: expect none: 0 results: When user isn't a site member / does not have granular permissions to the content
         response = queryAsUser(testUser3, "cm:name:perm*");
         resultCount = response.getPagination().getCount();
-        Assert.assertTrue(resultCount == 0, "Unexpected Result count for testUser3: Expected 0, received: " + resultCount);
+        Assert.assertEquals(resultCount, 0, "Unexpected Result count for testUser3: Expected 0, received: " + resultCount);
     }
 
     @Test(priority = 3)
@@ -199,6 +217,6 @@ public class SearchPermissionsTest extends AbstractE2EFunctionalTest
         // Query
         SearchResponse response = queryAsUser(testUser, folderName);
         int resultCount = response.getPagination().getCount();
-        Assert.assertTrue(resultCount == 1, "Unexpected Result count for testUser: Expected 1, received: " + resultCount);
+        Assert.assertEquals(resultCount, 1, "Unexpected Result count for testUser: Expected 1, received: " + resultCount);
     }
 }
