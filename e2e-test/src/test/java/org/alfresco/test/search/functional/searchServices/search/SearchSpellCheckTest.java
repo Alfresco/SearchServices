@@ -316,6 +316,9 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
         Assert.assertTrue(isContentInSearchResponse(response, file.getName()), "Expected file not returned in the search results: " + file.getName());
         Assert.assertTrue(isContentInSearchResponse(response, file2.getName()), "Expected file not returned in the search results: " + file.getName());
         testSearchSpellcheckResponse(response, "searchInsteadFor", "eklipse");
+        
+        // TODO: Add 2 Solr Queries, one for each shard to check the suggestions on each shard
+        restClient.authenticateUser(testUser).withParams("spellcheck.q=eclipses&spellcheck=on").withSolrAPI().getSelectQuery();
 
         // Incorrect spelling with no field for file2
         response = SearchSpellcheckQuery(testUser, "eclipses", "eclipses");
