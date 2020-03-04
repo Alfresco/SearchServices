@@ -62,7 +62,9 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
             RestShardInfoModel model = shardInfoModel.getModel();
             assertEquals(model.getTemplate(), "rerank");
             assertEquals(model.getMode(), "MASTER");
-            assertEquals(model.getShardMethod(), "DB_ID");
+            List<String> shardingMethods = Arrays.asList("DB_ID", "DB_ID_RANGE", "EXPLICIT_ID", "ACL_ID", "MOD_ACL_ID", "DATE", "PROPERTY");
+            String shardingMethod = model.getShardMethod();
+            assertTrue(shardingMethods.contains(shardingMethod), "Unexpected Sharding Method Found: " + shardingMethod);
             assertTrue(model.getHasContent());
 
             assertTrue(stores.contains(model.getStores()));
@@ -79,7 +81,7 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
             assertTrue(baseUrls.contains(instance.getBaseUrl()));
 
             // TODO: Ideally Solr Host and Port should be Parameterised
-            assertEquals(instance.getHost(), "search");
+            assertNotNull(instance.getHost(), "The solr host is not present");
             assertEquals(instance.getPort().intValue(), 8983);
             assertEquals(instance.getState(), "ACTIVE");
             assertEquals(instance.getMode(), "MASTER");
@@ -187,21 +189,21 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
         	            case "DB_ID":
         	            	break;
         	            case "DB_ID_RANGE":
-        	            	// TODO: Uncomment the following assert when fixed: https://issues.alfresco.com/jira/browse/SEARCH-2110
-                        	//assertEquals(shardParams.contains("shard.range="), "Unexpected shard params defined for DB_ID_RANGE");
+                        	assertTrue(shardParams.contains("shard.range="), "Shard Parameters Not as expected for the Shard Method: DB_ID_RANGE");
                         	break;
         	            case "DATE":
-                        	assertTrue(shardParams.contains("shard.key="), "Unexpected shard params defined for DATE");
-                        	assertTrue(shardParams.contains("shard.grouping="), "Unexpected shard grouping defined for DATE");
+                        	assertTrue(shardParams.contains("shard.key="), "Shard Parameters Not as expected for the Shard Method: DATE");
+                        	assertTrue(shardParams.contains("shard.date.grouping="), "Shard Parameters Not as expected for the Shard Method: DATE");
                         	break;
                         case "PROPERTY":
-                        	assertTrue(shardParams.contains("shard.key="), "Unexpected shard params defined for PROPERTY"); 
+                        	assertTrue(shardParams.contains("shard.key="), "Shard Parameters Not as expected for the Shard Method: PROPERTY"); 
+                        	assertTrue(shardParams.contains("shard.regex="), "Shard Parameters Not as expected for the Shard Method: PROPERTY");
                         	break;
                         case "EXPLICIT_ID":
-                        	assertTrue(shardParams.contains("shard.key="), "Unexpected shard params defined for EXPLICIT_ID");  
+                        	assertTrue(shardParams.contains("shard.key="), "Shard Parameters Not as expected for the Shard Method: EXPLICIT_ID");  
                         	break;
                         default:
-                            throw new AssertionError("Not as expected: " + shardParams.toString());
+                            throw new AssertionError("Shard Method Not expected: " + model.getShardMethod());
                     }                    
                 }
             }           
