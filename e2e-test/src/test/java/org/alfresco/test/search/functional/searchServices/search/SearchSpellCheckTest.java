@@ -472,7 +472,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
         testSearchSpellcheckResponse(response, "searchInsteadFor", "spacecar");
 
         // correct spelling no field
-        response = SearchSpellcheckQuery(testUser2, "spacebar", "spacebar");
+        response = SearchSpellcheckQuery(testUser2, "spacebur", "spacebur");
 
         // Matching Result, Spellcheck = searchInsteadFor: spacecar
         Assert.assertFalse(isContentInSearchResponse(response, file1.getName()), "Expected file not returned in the search results: " + file1.getName());
