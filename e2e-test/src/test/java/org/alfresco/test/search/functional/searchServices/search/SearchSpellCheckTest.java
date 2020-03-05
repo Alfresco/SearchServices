@@ -318,7 +318,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
         testSearchSpellcheckResponse(response, "searchInsteadFor", "eklipse");
 
         // Incorrect spelling with no field for file2
-        response = SearchSpellcheckQuery(testUser, "eclipses", "eclipses");
+        response = SearchSpellcheckQuery(testUser, "eclipsess", "eclipsess");
 
         // Matching Result, Spellcheck = searchInsteadFor: eklipses
         Assert.assertTrue(isContentInSearchResponse(response, file2.getName()), "Expected file not returned in the search results: " + file.getName());
