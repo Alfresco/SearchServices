@@ -465,7 +465,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 
         // Checks for User 2
         // Incorrect spelling for files created no field
-        response = SearchSpellcheckQuery(testUser2, "spaceber", "spaceber");
+        response = SearchSpellcheckQuery(testUser2, "spacefur", "spacefur");
 
         // Matching Result, Spellcheck = searchInsteadFor: spacecar
         Assert.assertTrue(isContentInSearchResponse(response, file2.getName()), "Expected file not returned in the search results: " + file2.getName());
