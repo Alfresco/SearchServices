@@ -318,7 +318,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
         testSearchSpellcheckResponse(response, "searchInsteadFor", "eklipse");
         
         // Add Solr Query, to check the suggestions on each shard
-        restClient.authenticateUser(testUser).withParams("spellcheck.q=eclipses&spellcheck=on").withSolrAPI().getSelectQuery();
+        restClient.authenticateUser(testUser).withParams("spellcheck.q=eclipsess&spellcheck=on").withSolrAPI().getSelectQuery();
 
         // Incorrect spelling with no field for file2
         response = SearchSpellcheckQuery(testUser, "eclipsess", "eclipsess");
@@ -467,7 +467,7 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
         testSearchSpellcheckResponse(response, null, null);
 
         // Add Solr Query, to check the suggestions on the shard
-        restClient.authenticateUser(testUser).withParams("spellcheck.q=spaceber&spellcheck=on").withSolrAPI().getSelectQuery();
+        restClient.authenticateUser(testUser).withParams("spellcheck.q=spacebur&spellcheck=on").withSolrAPI().getSelectQuery();
  
         // Checks for User 2
         // Incorrect spelling for files created no field
