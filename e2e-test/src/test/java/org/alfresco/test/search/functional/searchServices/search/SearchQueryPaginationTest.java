@@ -59,13 +59,6 @@ public class SearchQueryPaginationTest extends AbstractCmisE2ETest
         Integer totalDocuments = response.getPagination().getTotalItems();
         Assert.assertFalse(response.getPagination().isHasMoreItems(), "Incorrect: hasMoreItems");
 
-        // Set skipCount = totalDocuments/2, maxItems = 1000
-        response = performSearch(testUser, query, SearchLanguage.CMIS, setPaging(totalDocuments/2, 1000));
-
-        // Check getTotalItems is the same, hasMoreItems = False
-        Assert.assertEquals(response.getPagination().getTotalItems(), totalDocuments, "Total Document Count doesn't match");
-        Assert.assertFalse(response.getPagination().isHasMoreItems(), "Incorrect: hasMoreItems");
-
         // Set skipCount = totalDocument, maxItems = 1000
         response = performSearch(testUser, query, SearchLanguage.CMIS, setPaging(totalDocuments, 1000));
 
@@ -80,8 +73,8 @@ public class SearchQueryPaginationTest extends AbstractCmisE2ETest
         Assert.assertEquals(response.getPagination().getTotalItems(), totalDocuments, "Total Document Count doesn't match");
         Assert.assertTrue(response.getPagination().isHasMoreItems(), "Incorrect: hasMoreItems");
 
-        // Set skipCount = totalDocuments/2-1, maxItems = totalDocuments/2
-        response = performSearch(testUser, query, SearchLanguage.CMIS, setPaging(totalDocuments/2-1, totalDocuments/2));
+        // Set skipCount = 1, maxItems = totalDocuments-2
+        response = performSearch(testUser, query, SearchLanguage.CMIS, setPaging(1, totalDocuments-2));
 
         // Check getTotalItems is the same, hasMoreItems = True
         Assert.assertEquals(response.getPagination().getTotalItems(), totalDocuments, "Total Document Count doesn't match");
