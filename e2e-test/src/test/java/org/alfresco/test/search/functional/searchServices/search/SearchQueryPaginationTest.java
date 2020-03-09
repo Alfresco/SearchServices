@@ -14,7 +14,6 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.testrail.annotation.TestRail;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
