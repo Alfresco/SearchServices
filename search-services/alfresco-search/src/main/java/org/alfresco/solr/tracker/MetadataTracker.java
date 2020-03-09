@@ -1039,9 +1039,9 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         }
         
         @Override
-        protected void onFail()
+        protected void onFail(Throwable failCausedBy)
         {
-        	setRollback(true);
+        	setRollback(true, failCausedBy);
         }
         
         private List<Node> filterNodes(List<Node> nodes)
