@@ -3090,7 +3090,8 @@ public class SolrInformationServer implements InformationServer
         {
             if (!activeTrackerThreads.contains(Thread.currentThread().getId()))
             {
-                throw new TrackerStateException("The trackers work was rolled back by another tracker error");
+                throw new TrackerStateException(
+                        "The trackers work was rolled back by another tracker error. The original cause has been dumped previously in the log.");
             }
         }
         finally

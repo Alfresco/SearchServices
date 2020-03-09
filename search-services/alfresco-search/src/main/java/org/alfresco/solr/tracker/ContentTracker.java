@@ -155,9 +155,10 @@ public class ContentTracker extends AbstractTracker implements Tracker
         }
         
         @Override
-        protected void onFail()
+        protected void onFail(Throwable failCausedBy)
         {
-        	// Will redo if not persisted
+            // This will be redone in future tracking operations
+            log.warn("Content tracker failed due to {}", failCausedBy.getMessage(), failCausedBy);
         }
     }
 }
