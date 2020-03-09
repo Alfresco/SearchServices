@@ -61,6 +61,12 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerIT extends AbstractAlf
     public static void initData() throws Throwable
     {
         initSolrServers(2, getSimpleClassName(), getShardMethod());
+
+        // In this test we don't load any data so the test methods starts immediately after the BeforeClass.
+        // The sleep below is required because in order to allow a proper and complete core load. Without sleeping a bit,
+        // the test method would execute when trackers are not yet registered. If the tracker registry is empty then the
+        // instance is supposed to be a slave, and slaves don't provide the "rangeCheck" endpoint tested by this test case.
+        Thread.sleep(10000);
     }
 
     @AfterClass
