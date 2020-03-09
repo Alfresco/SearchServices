@@ -239,7 +239,7 @@ public class QParserPluginIT extends AbstractQParserPluginIT implements QueryCon
         assertAQuery("TEXT:\"cabbage\"", 15, null, new String[]{ "@" + ORDER_TEXT }, null);
         assertAQuery("TEXT:\"aeidnouy\"", 1);
 
-        // Depends on the configuration
+        // Depends on the configuration (see SEARCH-1472)
         assertAQuery("TEXT:\"the\"", 1);
         assertAQuery("TEXT:\"and\"", 1);
         assertAQuery("TEXT:\"the lazy dog\"", 1);
@@ -248,7 +248,7 @@ public class QParserPluginIT extends AbstractQParserPluginIT implements QueryCon
         assertAQuery("TEXT:\"over the lazy\"", 1);
 
         //With no shared.properties this falls back to 5.0 cross locale support
-        assertAQuery("TEXT:\"over a lazy\"", 1);
+        assertAQuery("TEXT:\"over a lazy\"", 0);
 
         String contentFieldName = escape(PROP_CONTENT);
         assertAQuery("@" + contentFieldName + ":\"fox\"", 1);
