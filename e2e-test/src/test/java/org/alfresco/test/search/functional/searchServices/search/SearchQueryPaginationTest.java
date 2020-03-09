@@ -8,11 +8,13 @@
 package org.alfresco.test.search.functional.searchServices.search;
 
 import org.alfresco.rest.search.SearchResponse;
+import org.alfresco.search.TestGroup;
 import org.alfresco.test.search.functional.searchServices.cmis.AbstractCmisE2ETest;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.testrail.annotation.TestRail;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -46,7 +48,7 @@ public class SearchQueryPaginationTest extends AbstractCmisE2ETest
         waitForMetadataIndexing(testFile.getName(), true);
     }
     
-    @Test(priority = 1)
+    @Test(priority = 1, groups = { TestGroup.ACS_62n})
     public void testCmisSearchWithPagination()
     {
        // Search for the cmis documents using cmis query
@@ -121,7 +123,7 @@ public class SearchQueryPaginationTest extends AbstractCmisE2ETest
         Assert.assertTrue(response.isEmpty(), "Empty Response, Error is expected when skipCount < 0");
     }
 
-    @Test(priority = 2)
+    @Test(priority = 2, groups = { TestGroup.ACS_62n})
     public void testPagination()
     {
        // Search for the files under the testFolder using cmis query
