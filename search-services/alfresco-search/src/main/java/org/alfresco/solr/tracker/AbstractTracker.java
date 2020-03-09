@@ -180,7 +180,7 @@ public abstract class AbstractTracker implements Tracker
                 assert(assertTrackerStateRemainsNull());
             }
 
-            LOGGER.info("[CORE {}] ... Running {}", coreName, this.getClass().getSimpleName());
+            LOGGER.info("[CORE {}] Running {}", coreName, this.getClass().getSimpleName());
             
             if(this.state == null)
             {
@@ -211,15 +211,10 @@ public abstract class AbstractTracker implements Tracker
                 setRollback(true, t);
                 if (t instanceof SocketTimeoutException || t instanceof ConnectException)
                 {
+                    LOGGER.warn("[CORE {}] Tracking communication timed out for {}", coreName, getClass().getSimpleName());
                     if (LOGGER.isDebugEnabled())
                     {
-                        // DEBUG, so give the whole stack trace
-                        LOGGER.warn("[CORE {}] Tracking communication timed out for {}", coreName, getClass().getSimpleName(), t);
-                    }
-                    else
-                    {
-                        // We don't need the stack trace.  It timed out.
-                        LOGGER.warn("[CORE {}] Tracking communication timed out for {}", coreName, getClass().getSimpleName());
+                        LOGGER.debug("[CORE {}] Stack trace", coreName, t);
                     }
                 }
                 else
