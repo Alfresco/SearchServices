@@ -18,12 +18,14 @@
  */
 package org.alfresco.solr.tracker;
 
-import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.Node;
+
+import static java.util.Collections.emptyMap;
 
 /**
  * Routes a document only if the shardInstance matches the provided shardId.
@@ -78,11 +80,11 @@ public class ExplicitShardIdWithDynamicPropertyRouter extends ComposableDocRoute
     }
     
     @Override
-    public Map<String, String> getProperties(QName shardProperty)
+    public Map<String, String> getProperties(Optional<QName> shardProperty)
     {
-        return (shardProperty == null ? 
-                Collections.emptyMap() : 
-                Map.of(DocRouterFactory.SHARD_KEY_KEY, shardProperty.getPrefixString()));
+        return shardProperty
+                .map(QName::getPrefixString)
+                .map(prefix -> Map.of(DocRouterFactory.SHARD_KEY_KEY, prefix))
+                .orElse(emptyMap());
     }
-
 }

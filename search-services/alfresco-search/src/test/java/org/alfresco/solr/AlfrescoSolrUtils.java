@@ -122,6 +122,12 @@ public class AlfrescoSolrUtils
 
     /**
      * Get transaction.
+     * When getting an unique transaction for a test, don't use this constructors.
+     * As this produces a number that can be out of the range [1-2000], that is
+     * the one checked by the SOLR Core to find the initial transaction is right.
+     * @param deletes
+     * @param updates
+     * @return {@link Transaction}
      */
     public static Transaction getTransaction(int deletes, int updates)
     {
@@ -880,14 +886,16 @@ public class AlfrescoSolrUtils
         TimeUnit.SECONDS.sleep(1);
         if(shards > 1 )
         {
-            NamedList vals = response.getValues();
-            List<String> coreNames = vals.getAll("core");
+            NamedList action = (NamedList) response.getValues().get("action");
+            List<String> coreNames = action.getAll("core");
             assertEquals(shards,coreNames.size());
             testingCore = getCore(coreContainer, coreNames.get(0));
         }
         else
         {
-            assertEquals(coreName, response.getValues().get("core"));
+
+            NamedList action = (NamedList) response.getValues().get("action");
+            assertEquals(coreName, action.get("core"));
             //Get a reference to the new core
             testingCore = getCore(coreContainer, coreName);
         }

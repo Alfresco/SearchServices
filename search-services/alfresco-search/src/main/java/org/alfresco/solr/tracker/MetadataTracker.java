@@ -18,8 +18,11 @@
  */
 package org.alfresco.solr.tracker;
 
+import static org.alfresco.repo.index.shard.ShardMethodEnum.DB_ID_RANGE;
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -32,7 +35,6 @@ import org.alfresco.repo.index.shard.ShardState;
 import org.alfresco.solr.BoundedDeque;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.NodeReport;
-import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.TrackerState;
 import org.alfresco.solr.adapters.IOpenBitSet;
 import org.alfresco.solr.client.GetNodesParameters;
@@ -88,6 +90,12 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     private boolean txIntervalCommitTimeServiceAvailable = false;
     /** Whether the cascade tracking is enabled. */
     private boolean cascadeTrackerEnabled = true;
+    
+    /**
+     * Transaction Id range to get the first transaction in database. 
+     * 0-2000 by default.
+     */
+    private Pair<Long, Long> minTxnIdRange;
 
     public MetadataTracker(final boolean isMaster, Properties p, SOLRAPIClient client, String coreName,
             InformationServer informationServer)
@@ -113,6 +121,8 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
         cascadeTrackerEnabled = informationServer.cascadeTrackingEnabled();
+        String[] minTxninitialRangeString = p.getProperty("solr.initial.transaction.range", "0-2000").split("-");
+        minTxnIdRange = new Pair<Long, Long>(Long.valueOf(minTxninitialRangeString[0]), Long.valueOf(minTxninitialRangeString[1]));
         
         // In order to apply performance optimizations, checking the availability of Repo Web Scripts is required.
         // As these services are available from ACS 6.2
@@ -134,19 +144,22 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
             }
     
             // Try invoking txIntervalCommitTime service
-            try
+            if (shardMethod.equals(DB_ID_RANGE))
             {
-                client.getTxIntervalCommitTime(coreName, 0l, 0l);
-                txIntervalCommitTimeServiceAvailable = true;
-            }
-            catch (NoSuchMethodException e)
-            {
-                log.warn("txIntervalCommitTimeServiceAvailable is not available. If you are using DB_ID_RANGE shard method, "
-                        + "upgrade your ACS Repository version in order to use this feature: {} ", e.getMessage());
-            }
-            catch (Exception e)
-            {
-                log.error("Checking txIntervalCommitTimeServiceAvailable failed.", e);
+                try
+                {
+                    client.getTxIntervalCommitTime(coreName, 0l, 0l);
+                    txIntervalCommitTimeServiceAvailable = true;
+                }
+                catch (NoSuchMethodException e)
+                {
+                    log.warn("txIntervalCommitTimeServiceAvailable is not available. Upgrade your ACS Repository version " +
+                            "to use this feature with DB_ID_RANGE sharding: {} ", e.getMessage());
+                }
+                catch (Exception e)
+                {
+                    log.error("Checking txIntervalCommitTimeServiceAvailable failed.", e);
+                }
             }
         }
     
@@ -245,7 +258,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
             state.setCheckedFirstTransactionTime(true);
             log.info("No transactions found - no verification required");
 
-            firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
+            firstTransactions = client.getTransactions(null, minTxnIdRange.getFirst(), null, minTxnIdRange.getSecond(), 1);
             if (!firstTransactions.getTransactions().isEmpty())
             {
                 Transaction firstTransaction = firstTransactions.getTransactions().get(0);
@@ -257,30 +270,58 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         
         if (!state.isCheckedFirstTransactionTime())
         {
-            firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
-            if (!firstTransactions.getTransactions().isEmpty())
+            
+            // On Shards configured with DB_ID_RANGE, the first indexed transaction can be
+            // different from the first transaction in the repository as some transactions
+            // are skipped if they are not related with the range of the Shard.
+            // Getting the minCommitTime for the Shard is enough in order to check
+            // that the first transaction is present.
+            long minCommitTime = 0l;
+            if (docRouter instanceof DBIDRangeRouter && txIntervalCommitTimeServiceAvailable)
             {
-                Transaction firstTransaction = firstTransactions.getTransactions().get(0);
-                long firstTxId = firstTransaction.getId();
-                long firstTransactionCommitTime = firstTransaction.getCommitTimeMs();
-                int setSize = this.infoSrv.getTxDocsSize(""+firstTxId, ""+firstTransactionCommitTime);
-                
-                if (setSize == 0)
+                try
                 {
-                    log.error("First transaction was not found with the correct timestamp.");
-                    log.error("SOLR has successfully connected to your repository  however the SOLR indexes and repository database do not match."); 
-                    log.error("If this is a new or rebuilt database your SOLR indexes also need to be re-built to match the database."); 
-                    log.error("You can also check your SOLR connection details in solrcore.properties.");
-                    throw new AlfrescoRuntimeException("Initial transaction not found with correct timestamp");
+                    DBIDRangeRouter dbIdRangeRouter = (DBIDRangeRouter) docRouter;
+                    Pair<Long, Long> commitTimes = client.getTxIntervalCommitTime(coreName,
+                            dbIdRangeRouter.getStartRange(), dbIdRangeRouter.getEndRange());
+                    minCommitTime = commitTimes.getFirst();
                 }
-                else if (setSize == 1)
+                catch (NoSuchMethodException e)
                 {
-                    state.setCheckedFirstTransactionTime(true);
-                    log.info("Verified first transaction and timestamp in index");
+                    log.warn("txIntervalCommitTimeServiceAvailable is not available. If you are using DB_ID_RANGE shard method, "
+                            + "upgrade your ACS Repository version in order to use the skip transactions feature: {} ", e.getMessage());
                 }
-                else
+            }
+            
+            // When a Shard with DB_ID_RANGE method is empty, minCommitTime is -1.
+            // No firstTransaction checking is required for this case.
+            if (minCommitTime != -1l) {
+            
+                firstTransactions = client.getTransactions(minCommitTime, 0L, null, 2000l, 1);
+                if (!firstTransactions.getTransactions().isEmpty())
                 {
-                    log.warn("Duplicate initial transaction found with correct timestamp");
+                    Transaction firstTransaction = firstTransactions.getTransactions().get(0);
+                    long firstTxId = firstTransaction.getId();
+                    long firstTransactionCommitTime = firstTransaction.getCommitTimeMs();
+                    int setSize = this.infoSrv.getTxDocsSize(""+firstTxId, ""+firstTransactionCommitTime);
+                    
+                    if (setSize == 0)
+                    {
+                        log.error("First transaction was not found with the correct timestamp.");
+                        log.error("SOLR has successfully connected to your repository  however the SOLR indexes and repository database do not match."); 
+                        log.error("If this is a new or rebuilt database your SOLR indexes also need to be re-built to match the database."); 
+                        log.error("You can also check your SOLR connection details in solrcore.properties.");
+                        throw new AlfrescoRuntimeException("Initial transaction not found with correct timestamp");
+                    }
+                    else if (setSize == 1)
+                    {
+                        state.setCheckedFirstTransactionTime(true);
+                        log.info("Verified first transaction and timestamp in index");
+                    }
+                    else
+                    {
+                        log.warn("Duplicate initial transaction found with correct timestamp");
+                    }
                 }
             }
         }
@@ -290,7 +331,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         {
             if (firstTransactions == null)
             {
-                firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
+                firstTransactions = client.getTransactions(null, minTxnIdRange.getFirst(), null, minTxnIdRange.getSecond(), 1);
             }
             
             setLastTxCommitTimeAndTxIdInTrackerState(firstTransactions, state);
@@ -361,9 +402,14 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
 
                     // Index the transaction doc after the node - if this is not found then a reindex will be done.
                     this.infoSrv.indexTransaction(info, false);
+                    log.info("INDEX ACTION - Transaction {} has been indexed", transactionId);
                     requiresCommit = true;
 
                     trackerStats.addTxDocs(nodes.size());
+                }
+                else
+                {
+                    log.info("INDEX ACTION - Transaction {} was not found in database, it has NOT been reindexed", transactionId);
                 }
             }
 
@@ -404,6 +450,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 node.setTxnId(Long.MAX_VALUE);
 
                 this.infoSrv.indexNode(node, false);
+                log.info("INDEX ACTION - Node {} has been reindexed", node.getId());
                 requiresCommit = true;
             }
             checkShutdown();
@@ -454,6 +501,11 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
 
                     // Index the transaction doc after the node - if this is not found then a reindex will be done.
                     this.infoSrv.indexTransaction(info, true);
+                    log.info("REINDEX ACTION - Transaction {} has been reindexed", transactionId);
+                }
+                else
+                {
+                    log.info("REINDEX ACTION - Transaction {} was not found in database, it has NOT been reindexed", transactionId);
                 }
             }
 
@@ -496,6 +548,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 node.setTxnId(Long.MAX_VALUE);
 
                 this.infoSrv.indexNode(node, true);
+                log.info("REINDEX ACTION - Node {} has been reindexed", node.getId());
                 requiresCommit = true;
             }
             checkShutdown();
@@ -517,6 +570,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
             if (query != null)
             {
                 this.infoSrv.reindexNodeByQuery(query);
+                log.info("REINDEX ACTION - Nodes from query {} have been reindexed", query);
                 requiresCommit = true;
             }
             checkShutdown();
@@ -541,6 +595,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 // make sure it is cleaned out so we do not miss deletes
                 this.infoSrv.deleteByTransactionId(transactionId);
                 requiresCommit = true;
+                log.info("PURGE ACTION - Purged transactionId {}", transactionId);
             }
             checkShutdown();
         }
@@ -561,6 +616,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
             {
                 // make sure it is cleaned out so we do not miss deletes
                 this.infoSrv.deleteByNodeId(nodeId);
+                log.info("PURGE ACTION - Purged nodeId {}", nodeId);
             }
             checkShutdown();
         }
@@ -703,6 +759,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 // When using DB_ID_RANGE, fromCommitTime cannot be before the commit time of the first transaction
                 // for the DB_ID_RANGE to be indexed and commit time of the last transaction cannot be lower than fromCommitTime. 
                 // When there isn't nodes in that range, -1 is returned as commit times
+                boolean shardOutOfRange = false;
                 if (docRouter instanceof DBIDRangeRouter && txIntervalCommitTimeServiceAvailable)
                 {
                     
@@ -715,23 +772,24 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                     // Node Range it's not still available in repository
                     if (shardMinCommitTime == -1)
                     {
-                        log.debug("#### [DB_ID_RANGE] No nodes in range [" + dbIdRangeRouter.getStartRange() + "-"
-                                + dbIdRangeRouter.getEndRange() + "] "
-                                + "exist in the repository. Skipping metadata tracking.");
-                        return;
+                        log.debug(
+                                "#### [DB_ID_RANGE] No nodes in range [{}-{}] "
+                                        + "exist in the repository. Indexing only latest transaction.",
+                                dbIdRangeRouter.getStartRange(), dbIdRangeRouter.getEndRange());
+                        shardOutOfRange = true;
                     }
                     if (fromCommitTime > shardMaxCommitTime)
                     {
-                        log.debug("#### [DB_ID_RANGE] Last commit time is greater that max commit time in in range ["
-                                + dbIdRangeRouter.getStartRange() + "-" + dbIdRangeRouter.getEndRange() + "]. "
-                                + "Skipping metadata tracking.");
-                        return;
+                        log.debug("#### [DB_ID_RANGE] Last commit time is greater that max commit time in in range [{}-{}]. "
+                                        + "Indexing only latest transaction.",
+                                dbIdRangeRouter.getStartRange(), dbIdRangeRouter.getEndRange());
+                        shardOutOfRange = true;
                     }
                     // Initial commit time for Node Range is greater than calculated from commit time
                     if (fromCommitTime < shardMinCommitTime)
                     {
-                        log.debug("#### [DB_ID_RANGE] SKIPPING TRANSACTIONS FROM " + fromCommitTime + " TO "
-                                + shardMinCommitTime);
+                        log.debug("#### [DB_ID_RANGE] Skipping transactions from {} to {}", 
+                                fromCommitTime, shardMinCommitTime);
                         fromCommitTime = shardMinCommitTime;
                     }
                 }
@@ -739,6 +797,21 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 log.debug("#### Get txn from commit time: " + fromCommitTime);
                 transactions = getSomeTransactions(txnsFound, fromCommitTime, TIME_STEP_1_HR_IN_MS, 2000,
                                                    state.getTimeToStopIndexing());
+                
+                
+                // When transactions are out of Shard range, only the latest transaction needs to be indexed
+                // in order to preserve the state up-to-date of the MetadataTracker
+                if (shardOutOfRange)
+                {
+                    Transaction latestTransaction = new Transaction();
+                    latestTransaction.setCommitTimeMs(transactions.getMaxTxnCommitTime());
+                    latestTransaction.setId(transactions.getMaxTxnId());
+                    transactions = new Transactions(
+                            Arrays.asList(latestTransaction),
+                            transactions.getMaxTxnCommitTime(), 
+                            transactions.getMaxTxnId());
+                    log.debug("#### [DB_ID_RANGE] Latest transaction to be indexed {}", latestTransaction);
+                }
 
                 setLastTxCommitTimeAndTxIdInTrackerState(transactions, state);
 
@@ -968,9 +1041,9 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         }
         
         @Override
-        protected void onFail()
+        protected void onFail(Throwable failCausedBy)
         {
-        	setRollback(true);
+        	setRollback(true, failCausedBy);
         }
         
         private List<Node> filterNodes(List<Node> nodes)
@@ -1093,7 +1166,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     {
         // DB TX Count
         long firstTransactionCommitTime = 0;
-        Transactions firstTransactions = client.getTransactions(null, 0L, null, Long.MAX_VALUE, 1);
+        Transactions firstTransactions = client.getTransactions(null, 0L, null, 2000l, 1);
         if(firstTransactions.getTransactions().size() > 0)
         {
             Transaction firstTransaction = firstTransactions.getTransactions().get(0);

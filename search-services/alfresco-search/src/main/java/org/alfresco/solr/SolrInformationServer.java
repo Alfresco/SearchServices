@@ -158,7 +158,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.LeafReaderContext;
@@ -203,7 +202,6 @@ import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.DelegatingCollector;
 import org.apache.solr.search.DocIterator;
 import org.apache.solr.search.DocList;
-import org.apache.solr.search.DocSet;
 import org.apache.solr.search.QueryWrapperFilter;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.update.AddUpdateCommand;
@@ -2097,11 +2095,13 @@ public class SolrInformationServer implements InformationServer
         doc.setField(FIELD_ISNODE, "T");
         doc.setField(FIELD_TENANT, AlfrescoSolrDataModel.getTenantId(metadata.getTenantDomain()));
 
-        updatePathRelatedFields(metadata, doc);
-        updateNamePathRelatedFields(metadata, doc);
-        updateAncestorRelatedFields(metadata, doc);
-
-        doc.setField(FIELD_PARENT_ASSOC_CRC, metadata.getParentAssocsCrc());
+        if (cascadeTrackingEnabled())
+        {
+            updatePathRelatedFields(metadata, doc);
+            updateNamePathRelatedFields(metadata, doc);
+            updateAncestorRelatedFields(metadata, doc);
+            doc.setField(FIELD_PARENT_ASSOC_CRC, metadata.getParentAssocsCrc());
+        }
 
         ofNullable(metadata.getOwner()).ifPresent(owner -> doc.setField(FIELD_OWNER, owner));
 
@@ -2244,7 +2244,7 @@ public class SolrInformationServer implements InformationServer
             QName propertyQName =  property.getKey();
             document.addField(FIELD_PROPERTIES, propertyQName.toString());
             document.addField(FIELD_PROPERTIES, propertyQName.getPrefixString());
-            
+
             PropertyValue value = property.getValue();
             if(value != null)
             {
@@ -3123,7 +3123,8 @@ public class SolrInformationServer implements InformationServer
         {
             if (!activeTrackerThreads.contains(Thread.currentThread().getId()))
             {
-                throw new TrackerStateException("The trackers work was rolled back by another tracker error");
+                throw new TrackerStateException(
+                        "The trackers work was rolled back by another tracker error. The original cause has been dumped previously in the log.");
             }
         }
         finally
@@ -3254,7 +3255,6 @@ public class SolrInformationServer implements InformationServer
         doc.setField(FIELD_ACLID, metadata.getAclId());
         return doc;
     }
-
 
     private void updatePathRelatedFields(NodeMetaData nodeMetaData, SolrInputDocument doc)
     {
@@ -3407,12 +3407,13 @@ public class SolrInformationServer implements InformationServer
                     AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
                     addDocCmd.overwrite = overwrite;
                     addDocCmd.solrDoc = document;
-
-                    updatePathRelatedFields(nodeMetaData, document);
-                    updateNamePathRelatedFields(nodeMetaData, document);
-                    updateAncestorRelatedFields(nodeMetaData, document);
-
-                    processor.processAdd(addDocCmd);
+                    if (cascadeTrackingEnabled())
+                    {
+                        updatePathRelatedFields(nodeMetaData, document);
+                        updateNamePathRelatedFields(nodeMetaData, document);
+                        updateAncestorRelatedFields(nodeMetaData, document);
+                    }
+                        processor.processAdd(addDocCmd);
                 }
             }
         }
@@ -3462,7 +3463,7 @@ public class SolrInformationServer implements InformationServer
                                         SolrQueryRequest request, UpdateRequestProcessor processor, LinkedHashSet<Long> stack)
             throws AuthenticationException, IOException, JSONException
     {
-        // skipDescendantDocsForSpecificAspects is initialised on a synchronised method, so access must be also synchronised 
+        // skipDescendantDocsForSpecificAspects is initialised on a synchronised method, so access must be also synchronised
         synchronized (this)
         {
             if ((skipDescendantDocsForSpecificTypes && typesForSkippingDescendantDocs.contains(parentNodeMetaData.getType())) ||

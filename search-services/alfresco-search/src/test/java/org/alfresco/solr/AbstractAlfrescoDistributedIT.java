@@ -209,6 +209,15 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
         }
     }
 
+    public static void explicitCommitOnAllClients() throws Exception
+    {
+        List<SolrClient> clients = getStandaloneAndShardedClients();
+
+        for (SolrClient client : clients) {
+            client.commit();
+        }
+    }
+
     /**
      * Gets the Default test client.
      */

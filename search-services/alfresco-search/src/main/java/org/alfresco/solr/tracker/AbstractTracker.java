@@ -68,6 +68,10 @@ public abstract class AbstractTracker implements Tracker
     protected boolean transformContent;
     String shardTemplate;
     protected volatile boolean rollback;
+    /**
+     * When rollback is set, original error is also gathered in order to provide detailed logging.
+     */
+    protected Throwable rollbackCausedBy;
     protected final Type type;
 
     /*
@@ -176,13 +180,13 @@ public abstract class AbstractTracker implements Tracker
                 assert(assertTrackerStateRemainsNull());
             }
 
-            LOGGER.info("... Running {} for core [{}]", this.getClass().getSimpleName(), coreName);
+            LOGGER.info("[CORE {}] Running {}", coreName, this.getClass().getSimpleName());
             
             if(this.state == null)
             {
                 this.state = getTrackerState();
 
-                LOGGER.debug("Global Tracker State set to: {}", this.state.toString());
+                LOGGER.debug("[CORE {}] Global Tracker State set to: {}", coreName, this.state.toString());
                 this.state.setRunning(true);
             }
             else
@@ -199,34 +203,29 @@ public abstract class AbstractTracker implements Tracker
             }
             catch(IndexTrackingShutdownException t)
             {
-                setRollback(true);
-                LOGGER.info("Stopping index tracking for {} - {}", getClass().getSimpleName(), coreName);
+                setRollback(true, t);
+                LOGGER.info("[CORE {}] Stopping index tracking for {}", coreName, getClass().getSimpleName());
             }
             catch(Throwable t)
             {
-                setRollback(true);
+                setRollback(true, t);
                 if (t instanceof SocketTimeoutException || t instanceof ConnectException)
                 {
+                    LOGGER.warn("[CORE {}] Tracking communication timed out for {}", coreName, getClass().getSimpleName());
                     if (LOGGER.isDebugEnabled())
                     {
-                        // DEBUG, so give the whole stack trace
-                        LOGGER.warn("Tracking communication timed out for {} - {}", getClass().getSimpleName(), coreName, t);
-                    }
-                    else
-                    {
-                        // We don't need the stack trace.  It timed out.
-                        LOGGER.warn("Tracking communication timed out for for {} - {}", getClass().getSimpleName(), coreName);
+                        LOGGER.debug("[CORE {}] Stack trace", coreName, t);
                     }
                 }
                 else
                 {
-                    LOGGER.error("Tracking failed for for {} - {}", getClass().getSimpleName(), coreName, t);
+                    LOGGER.error("[CORE {}] Tracking failed for {}", coreName, getClass().getSimpleName(), t);
                 }
             }
         }
         catch (InterruptedException e)
         {
-            LOGGER.error("Semaphore interrupted for for {} - {}", getClass().getSimpleName(), coreName, e);
+            LOGGER.error("[CORE {}] Semaphore interrupted for {}", coreName, getClass().getSimpleName(), e);
         }
         finally
         {
@@ -244,10 +243,16 @@ public abstract class AbstractTracker implements Tracker
     {
         return this.rollback;
     }
+    
+    public Throwable getRollbackCausedBy()
+    {
+        return this.rollbackCausedBy;
+    }
 
-    public void setRollback(boolean rollback)
+    public void setRollback(boolean rollback, Throwable rollbackCausedBy)
     {
         this.rollback = rollback;
+        this.rollbackCausedBy = rollbackCausedBy;
     }
 
     private void continueState()

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2020 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -31,6 +31,7 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -47,26 +48,32 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
 import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
 
+import java.util.Properties;
+
 /**
- * @author Joel
- * @author Andrea Gazzarini
+ * Test environment having initial Transaction Id greater than default range 0-2000
+ * @author aborroy
  */
 @SolrTestCaseJ4.SuppressSSL
-public class DistributedAlfrescoSolrTrackerRaceIT extends AbstractAlfrescoDistributedIT
+@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
+public class DistributedAlfrescoSolrTrackerLargeTxnIdIT extends AbstractAlfrescoDistributedIT
 {
 
     @BeforeClass
-    public static void initData() throws Throwable
+    private static void initData() throws Throwable
     {
-        initSolrServers(2, "DistributedAlfrescoSolrTrackerRaceTest", null);
+        Properties properties = new Properties();
+        // Set a wider range for Initial Transaction Id
+        properties.put("solr.initial.transaction.range", "0-" + Long.MAX_VALUE);
+        initSolrServers(2, "DistributedAlfrescoSolrTrackerLargeTxnTest", properties);
     }
 
     @AfterClass
-    public static void destroyData()
+    private static void destroyData()
     {
         dismissSolrServers();
     }
-
+    
     @Test
     public void testTracker() throws Exception
     {
@@ -80,8 +87,8 @@ public class DistributedAlfrescoSolrTrackerRaceIT extends AbstractAlfrescoDistri
         AclReaders aclReaders = getAclReaders(aclChangeSet, acl, singletonList("joel"), singletonList("phil"), null);
         AclReaders aclReaders2 = getAclReaders(aclChangeSet, acl2, singletonList("jim"), singletonList("phil"), null);
 
-        // Transaction between [1-2000] is required, when greater value checking the core will fail
-        Transaction txn = getTransaction(0, 2, 1);
+        // Transaction greater than 2000 is used, to check that "solr.initial.transaction.range" works as expected
+        Transaction txn = getTransaction(0, 2);
         long txnCommitTimeMs = txn.getCommitTimeMs();
 
         // Subtract from the commit time to go beyond hole retention
@@ -110,25 +117,5 @@ public class DistributedAlfrescoSolrTrackerRaceIT extends AbstractAlfrescoDistri
         BooleanQuery waitForQuery = builder.build();
         waitForDocCountAllCores(waitForQuery, 1, 80000);
 
-        // This ACL should have one record in each core with DBID sharding
-        waitForDocCountAllCores(new TermQuery(new Term(QueryConstants.FIELD_READER, "jim")), 1, 80000);
-
-        // We should have 2 document in totals (1 folder and 1 file)
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 2, 100000);
-
-        // There should be 1 with the folder node identifier.
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(folderNode.getId()))), 1, 80000);
-
-        // There should be 1 with the file node identifier.
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(fileNode.getId()))), 1, 80000);
-
-        // and last but not least, the error node shouldn't be in the index.
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(errorNode.getId()))), 0, 80000);
-
-        // This will run the same query on the control client and the cluster and compare the result.
-        query(getDefaultTestClient(),
-                true,
-                "{\"locales\":[\"en\"], \"templates\": [{\"name\":\"t1\", \"template\":\"%cm:content\"}]}",
-                params("q", "t1:world", "qt", "/afts", "shards.qt", "/afts", "start", "0", "rows", "6", "sort", "id asc"));
-    }
+   }
 }

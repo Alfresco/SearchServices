@@ -23,7 +23,7 @@ public class TestGroup
     // Used for TestRail test annotation
     public static final String SEARCH = "search";
     public static final String REST_API = "rest-api";
-  
+
     public static final String PREUPGRADE = "pre-upgrade";
     public static final String POSTUPGRADE = "post-upgrade";
 
@@ -31,8 +31,13 @@ public class TestGroup
     public static final String ASS_MASTER ="ASS_Master"; // Alfresco search services using master/stand alone mode
     public static final String EXPLICIT_SHARDING ="Explicit_Sharding"; // Alfresco search services using sharded environment and explicit routing
 
+    public static final String SHARDING ="Sharding"; // Alfresco search services using sharded environment
+
+    public static final String ASS_SHARDING = "ASS_Sharding"; // Alfresco Search Services using Sharding
+    public static final String ASS_SHARDING_DB_ID_RANGE = "ASS_Sharding_DB_ID_RANGE"; // Alfresco Search Services using Sharding with DB_ID_RANGE
+
     public static final String NOT_INSIGHT_ENGINE = "Not_InsightEngine"; // When Alfresco Insight Engine 1.0 isn't running
-    
+
     public static final String ACS_52n = "ACS_52n"; // Alfresco Content Services 5.2.n
     public static final String ACS_60n = "ACS_60n"; // Alfresco Content Services 6.0 or above
     public static final String ACS_61n = "ACS_61n"; // Alfresco Content Services 6.1 or above

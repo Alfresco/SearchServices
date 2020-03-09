@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
 
 public class AclTracker extends AbstractTracker
 {
-    protected final static Logger log = LoggerFactory.getLogger(AclTracker.class);
+    protected final static Logger LOGGER = LoggerFactory.getLogger(AclTracker.class);
 
     private static final int DEFAULT_CHANGE_SET_ACLS_BATCH_SIZE = 100;
     private static final int DEFAULT_ACL_BATCH_SIZE = 10;
@@ -135,7 +135,14 @@ public class AclTracker extends AbstractTracker
                         indexAcl(readers, false);
                     }
                     this.infoSrv.indexAclTransaction(changeSet, false);
+                    LOGGER.info("[CORE {}] - INDEX ACTION - AclChangeSetId {} has been indexed", coreName, aclChangeSetId);
                     requiresCommit = true;
+                }
+                else
+                {
+                    LOGGER.info(
+                            "[CORE {}] - INDEX ACTION - AclChangeSetId {} was not found in database, it has NOT been reindexed",
+                            coreName, aclChangeSetId);
                 }
             }
             checkShutdown();
@@ -160,6 +167,7 @@ public class AclTracker extends AbstractTracker
                 //AclReaders r = readers.get(0);
                 //System.out.println("############## READERS ID:"+r.getId()+":"+r.getReaders());
                 indexAcl(readers, false);
+                LOGGER.info("[CORE {}] - INDEX ACTION - AclId {} has been indexed", coreName, aclId);
             }
             checkShutdown();
         }
@@ -187,7 +195,14 @@ public class AclTracker extends AbstractTracker
                     }
 
                     this.infoSrv.indexAclTransaction(changeSet, true);
+                    LOGGER.info("[CORE {}] - REINDEX ACTION - AclChangeSetId {} has been reindexed", coreName, aclChangeSetId);
                     requiresCommit = true;
+                }
+                else
+                {
+                    LOGGER.info(
+                            "[CORE {}] - REINDEX ACTION - AclChangeSetId {} was not found in database, it has NOT been reindexed",
+                            coreName, aclChangeSetId);
                 }
             }
             checkShutdown();
@@ -212,6 +227,7 @@ public class AclTracker extends AbstractTracker
                 Acl acl = new Acl(0, aclId);
                 List<AclReaders> readers = client.getAclReaders(Collections.singletonList(acl));
                 indexAcl(readers, true);
+                LOGGER.info("[CORE {}] - REINDEX ACTION - aclId {} has been reindexed", coreName, aclId);
                 requiresCommit = true;
             }
             checkShutdown();
@@ -231,6 +247,7 @@ public class AclTracker extends AbstractTracker
             if (aclChangeSetId != null)
             {
                 this.infoSrv.deleteByAclChangeSetId(aclChangeSetId);
+                LOGGER.info("[CORE {}] - PURGE ACTION - Purged aclChangeSetId {}", coreName, aclChangeSetId);
             }
             checkShutdown();
         }
@@ -245,6 +262,7 @@ public class AclTracker extends AbstractTracker
             if (aclId != null)
             {
                 this.infoSrv.deleteByAclId(aclId);
+                LOGGER.info("[CORE {}] - PURGE ACTION - Purged aclId {}", coreName, aclId);                
             }
             checkShutdown();
         }
@@ -316,7 +334,7 @@ public class AclTracker extends AbstractTracker
         {
             state.setCheckedLastAclTransactionTime(true);
             state.setCheckedFirstAclTransactionTime(true);
-            log.info("No acl transactions found - no verification required");
+            LOGGER.info("[CORE {}] - No acl transactions found - no verification required", coreName);
             
             firstChangeSets = client.getAclChangeSets(null, 0L, null, 2000L, 1);
             if (!firstChangeSets.getAclChangeSets().isEmpty())
@@ -340,20 +358,20 @@ public class AclTracker extends AbstractTracker
                 
                 if (setSize == 0)
                 {
-                    log.error("First acl transaction was not found with the correct timestamp.");
-                    log.error("SOLR has successfully connected to your repository  however the SOLR indexes and repository database do not match."); 
-                    log.error("If this is a new or rebuilt database your SOLR indexes also need to be re-built to match the database."); 
-                    log.error("You can also check your SOLR connection details in solrcore.properties.");
+                    LOGGER.error("[CORE {}] First acl transaction was not found with the correct timestamp.", coreName);
+                    LOGGER.error("SOLR has successfully connected to your repository  however the SOLR indexes and repository database do not match."); 
+                    LOGGER.error("If this is a new or rebuilt database your SOLR indexes also need to be re-built to match the database."); 
+                    LOGGER.error("You can also check your SOLR connection details in solrcore.properties.");
                     throw new AlfrescoRuntimeException("Initial acl transaction not found with correct timestamp");
                 }
                 else if (setSize == 1)
                 {
                     state.setCheckedFirstTransactionTime(true);
-                    log.info("Verified first acl transaction and timestamp in index");
+                    LOGGER.info("[CORE {}] Verified first acl transaction and timestamp in index", coreName);
                 }
                 else
                 {
-                    log.warn("Duplicate initial acl transaction found with correct timestamp");
+                    LOGGER.warn("[CORE {}] Duplicate initial acl transaction found with correct timestamp", coreName);
                 }
             }
         }
@@ -374,19 +392,19 @@ public class AclTracker extends AbstractTracker
                 AclChangeSet maxAclTxInIndex = this.infoSrv.getMaxAclChangeSetIdAndCommitTimeInIndex();
                 if (maxAclTxInIndex.getCommitTimeMs() > maxChangeSetCommitTimeInRepo)
                 {
-                    log.error("Last acl transaction was found in index with timestamp later than that of repository.");
-                    log.error("Max Acl Tx In Index: " + maxAclTxInIndex.getId() + ", In Repo: " + maxChangeSetIdInRepo);
-                    log.error("Max Acl Tx Commit Time In Index: " + maxAclTxInIndex.getCommitTimeMs() + ", In Repo: "
+                    LOGGER.error("[CORE {}] Last acl transaction was found in index with timestamp later than that of repository.", coreName);
+                    LOGGER.error("Max Acl Tx In Index: " + maxAclTxInIndex.getId() + ", In Repo: " + maxChangeSetIdInRepo);
+                    LOGGER.error("Max Acl Tx Commit Time In Index: " + maxAclTxInIndex.getCommitTimeMs() + ", In Repo: "
                             + maxChangeSetCommitTimeInRepo);
-                    log.error("SOLR has successfully connected to your repository  however the SOLR indexes and repository database do not match."); 
-                    log.error("If this is a new or rebuilt database your SOLR indexes also need to be re-built to match the database."); 
-                    log.error("You can also check your SOLR connection details in solrcore.properties.");
+                    LOGGER.error("SOLR has successfully connected to your repository  however the SOLR indexes and repository database do not match."); 
+                    LOGGER.error("If this is a new or rebuilt database your SOLR indexes also need to be re-built to match the database."); 
+                    LOGGER.error("You can also check your SOLR connection details in solrcore.properties.");
                     throw new AlfrescoRuntimeException("Last acl transaction found in index with incorrect timestamp");
                 }
                 else
                 {
                     state.setCheckedLastAclTransactionTime(true);
-                    log.info("Verified last acl transaction timestamp in index less than or equal to that of repository.");
+                    LOGGER.info("[CORE {}] - Verified last acl transaction timestamp in index less than or equal to that of repository.", coreName);
                 }
             }
         }
@@ -416,7 +434,7 @@ public class AclTracker extends AbstractTracker
         AclChangeSets aclChangeSets;
         // step forward in time until we find something or hit the time bound
         // max id unbounded
-        Long startTime = fromCommitTime == null ? Long.valueOf(0L) :fromCommitTime;
+        Long startTime = fromCommitTime == null ? Long.valueOf(0L) : fromCommitTime;
         do
         {
             aclChangeSets = client.getAclChangeSets(startTime, null, startTime + actualTimeStep, null, maxResults);
@@ -645,30 +663,58 @@ public class AclTracker extends AbstractTracker
                 */
 
                 this.state = getTrackerState();
-
+                
                 Long fromCommitTime = getChangeSetFromCommitTime(changeSetsFound, state.getLastGoodChangeSetCommitTimeInIndex());
                 aclChangeSets = getSomeAclChangeSets(changeSetsFound, fromCommitTime, TIME_STEP_1_HR_IN_MS, 2000,
                         state.getTimeToStopIndexing());
-
-
+                
                 setLastChangeSetIdAndCommitTimeInTrackerState(aclChangeSets, state);
 
-                log.info("Scanning Acl change sets ...");
-                if (aclChangeSets.getAclChangeSets().size() > 0) {
-                    log.info(".... from " + aclChangeSets.getAclChangeSets().get(0));
-                    log.info(".... to " + aclChangeSets.getAclChangeSets().get(aclChangeSets.getAclChangeSets().size() - 1));
-                } else {
-                    log.info(".... none found after lastTxCommitTime " + fromCommitTime);
+                if (aclChangeSets.getAclChangeSets().size() > 0) 
+                {
+                    LOGGER.info("{}-[CORE {}] Found {} ACL change sets after lastTxCommitTime {}, ACL Change Sets from {} to {}", 
+                            Thread.currentThread().getId(),
+                            coreName, 
+                            aclChangeSets.getAclChangeSets().size(),
+                            fromCommitTime,
+                            aclChangeSets.getAclChangeSets().get(0),
+                            aclChangeSets.getAclChangeSets().get(aclChangeSets.getAclChangeSets().size() - 1));
+                } 
+                else 
+                {
+                    LOGGER.info("{}-[CORE {}] No ACL change set found after lastTxCommitTime {}",
+                            Thread.currentThread().getId(), coreName, fromCommitTime);
                 }
-
+                
                 ArrayList<AclChangeSet> changeSetBatch = new ArrayList<AclChangeSet>();
-                for (AclChangeSet changeSet : aclChangeSets.getAclChangeSets()) {
+                for (int i = 0; i < aclChangeSets.getAclChangeSets().size(); i++) 
+                {
+                    
+                    AclChangeSet changeSet = aclChangeSets.getAclChangeSets().get(i);
+                    
                     boolean isInIndex = (changeSet.getCommitTimeMs() <= state.getLastIndexedChangeSetCommitTime() &&
                                          infoSrv.aclChangeSetInIndex(changeSet.getId(), true));
-
-                    if (isInIndex) {
+                    
+                    if (isInIndex) 
+                    {
+                        // Logging progress for large ACL Change Set tracking every 100 tracked ACLs
+                        if (LOGGER.isTraceEnabled()) 
+                        {
+                            LOGGER.trace("{}-[CORE {}] Tracking {} of {} ACL Change Sets. Change Set Id was already indexed: {}", 
+                                    Thread.currentThread().getId(), coreName, i + 1, aclChangeSets.getAclChangeSets().size(), changeSet.getId());
+                        }
                         changeSetsFound.add(changeSet);
-                    } else {
+                    } 
+                    else 
+                    {
+                        
+                        // Logging progress for ACL Change Set
+                        if (LOGGER.isTraceEnabled()) 
+                        {
+                            LOGGER.trace("{}-[CORE {}] Tracking {} of {} ACL Change Sets. Current Change Set Id to be indexed: {}", 
+                                    Thread.currentThread().getId(), coreName, i + 1, aclChangeSets.getAclChangeSets().size(), changeSet.getId());
+                        }
+
                         // Make sure we do not go ahead of where we started - we will check the holes here
                         // correctly next time
                         if (changeSet.getCommitTimeMs() > state.getTimeToStopIndexing()) {
@@ -731,10 +777,12 @@ public class AclTracker extends AbstractTracker
             {
                 getWriteLock().release();
             }
+            
         }
         while ((aclChangeSets.getAclChangeSets().size() > 0) && (upToDate == false));
+        
+        LOGGER.info("{}-[CORE {}] Tracked {} ACLs", Thread.currentThread().getId(), coreName, totalAclCount);
 
-        log.info("total number of acls updated: " + totalAclCount);
     }
 
     private void setLastChangeSetIdAndCommitTimeInTrackerState(AclChangeSets aclChangeSets, TrackerState state)
@@ -797,12 +845,19 @@ public class AclTracker extends AbstractTracker
 
         ArrayList<Acl> aclBatch = new ArrayList<Acl>();
         List<Acl> acls = client.getAcls(nonEmptyChangeSets, null, Integer.MAX_VALUE);
+        
+        if (LOGGER.isDebugEnabled())
+        {
+            LOGGER.debug("{}-[CORE {}] Found {} Acls from Acl Change Sets: {}", Thread.currentThread().getId(),
+                    coreName, acls.size(), nonEmptyChangeSets);
+        }
 
         for (Acl acl : acls)
         {
-            if (log.isDebugEnabled())
+            if (LOGGER.isTraceEnabled())
             {
-                log.debug(acl.toString());
+                LOGGER.trace("{}-[CORE {}] Adding ACL {} to scheduled indexing job", Thread.currentThread().getId(),
+                        coreName, acl.toString());
             }
             aclBatch.add(acl);
             if (aclBatch.size() > aclBatchSize)
@@ -845,9 +900,9 @@ public class AclTracker extends AbstractTracker
         }
         
         @Override
-        protected void onFail()
+        protected void onFail(Throwable failCausedBy)
         {
-        	setRollback(true);
+        	setRollback(true, failCausedBy);
         }
         
         private List<Acl> filterAcls(List<Acl> acls)

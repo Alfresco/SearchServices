@@ -22,6 +22,7 @@ import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.core.RestProperties;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestRequestSpellcheckModel;
+import org.alfresco.rest.search.Pagination;
 import org.alfresco.rest.search.RestRequestHighlightModel;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchRequest;
@@ -107,6 +108,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
 
         deployCustomModel("model/music-model.xml");
         deployCustomModel("model/finance-model.xml");
+        deployCustomModel("model/sharding-content-model.xml");
     }
 
     @BeforeClass (alwaysRun = true)
@@ -393,10 +395,15 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         return restClient.authenticateUser(user).withSearchAPI().search(searchRequest);
     }
 
-    protected SearchResponse queryAsUser(UserModel user, RestRequestQueryModel queryModel)
+    protected SearchResponse queryAsUser(UserModel user, RestRequestQueryModel queryModel, Pagination paging)
     {
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.setQuery(queryModel);
+        
+        if (ofNullable(paging).isPresent())
+        {
+            searchRequest.setPaging(paging);
+        }
 
         return restClient.authenticateUser(user).withSearchAPI().search(searchRequest);
     }
@@ -436,7 +443,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
      */
     protected SearchResponse testSearchQuery(String query, Integer expectedCount, SearchLanguage queryLanguage)
     {
-        SearchResponse response = performSearch(testUser, query, queryLanguage);
+        SearchResponse response = performSearch(testUser, query, queryLanguage, getDefaultPagingOptions());
 
         if (ofNullable(expectedCount).isPresent())
         {
@@ -455,7 +462,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
      */
     protected SearchResponse testSearchQueryOrdered(String query, List<String> expectedNames, SearchLanguage queryLanguage)
     {
-        SearchResponse response = performSearch(testUser, query, queryLanguage);
+        SearchResponse response = performSearch(testUser, query, queryLanguage, getDefaultPagingOptions());
 
         List<String> names = response.getEntries().stream().map(s -> s.getModel().getName()).collect(Collectors.toList());
 
@@ -474,7 +481,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
      */
     protected SearchResponse testSearchQueryUnordered(String query, Set<String> expectedNames, SearchLanguage queryLanguage)
     {
-        SearchResponse response = performSearch(testUser, query, queryLanguage);
+        SearchResponse response = performSearch(testUser, query, queryLanguage, getDefaultPagingOptions());
     
         Set<String> names = response.getEntries().stream().map(s -> s.getModel().getName()).collect(Collectors.toSet());
     
@@ -483,7 +490,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         return response;
     }
 
-    private SearchResponse performSearch(UserModel asUser, String query, SearchLanguage queryLanguage)
+    protected SearchResponse performSearch(UserModel asUser, String query, SearchLanguage queryLanguage, Pagination paging)
     {
         RestRequestQueryModel queryModel = new RestRequestQueryModel();
         queryModel.setQuery(query);
@@ -498,9 +505,47 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
             queryModel.setLanguage(queryLanguage.toString());
         }
 
-        SearchResponse response = queryAsUser(asUser, queryModel);
+        SearchResponse response = queryAsUser(asUser, queryModel, paging);
 
         return response;
+    }
+
+    /**
+     * Returns pagination object with alfresco default settings
+     * Sets skipCount = 0, maxItems = 100
+     * 
+     * @return
+     */
+    private Pagination getDefaultPagingOptions()
+    {
+        Pagination paging = new Pagination();
+        paging.setSkipCount(0);
+        paging.setMaxItems(100);
+
+        return paging;
+    }
+
+    /**
+     * Set the pagination options for the API query
+     * @param skipCount Integer
+     * @param maxItems Integer
+     * @return
+     */
+    protected Pagination setPaging(Integer skipCount, Integer maxItems)
+    {
+        Pagination paging = new Pagination();
+        
+        if (ofNullable(skipCount).isPresent())
+        {
+            paging.setSkipCount(skipCount);
+        }
+
+        if (ofNullable(maxItems).isPresent())
+        {
+            paging.setMaxItems(maxItems);
+        }
+        
+        return paging;
     }
 
     /**
