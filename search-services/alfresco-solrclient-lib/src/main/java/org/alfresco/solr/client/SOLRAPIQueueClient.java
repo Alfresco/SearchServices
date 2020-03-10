@@ -26,16 +26,26 @@
 
 package org.alfresco.solr.client;
 
-import java.io.*;
-import java.net.ConnectException;
-import java.util.*;
+import static java.util.Optional.ofNullable;
 
-import org.alfresco.httpclient.AuthenticationException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.ConnectException;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+
 import org.alfresco.httpclient.Response;
 import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.index.shard.ShardState;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.codec.EncoderException;
 import org.apache.commons.httpclient.HttpStatus;
 import org.json.JSONException;
 
@@ -44,17 +54,16 @@ import org.json.JSONException;
 /**
  * A client that reads from an internal queue. This is used for test cases.
  */
-
 public class SOLRAPIQueueClient extends SOLRAPIClient
 {
-    public static List<AclChangeSet> aclChangeSetQueue = Collections.synchronizedList(new ArrayList());
-    public static Map<Long, List<Acl>> aclMap = Collections.synchronizedMap(new HashMap());
-    public static Map<Long, AclReaders> aclReadersMap = Collections.synchronizedMap(new HashMap());
+    public final static List<AclChangeSet> ACL_CHANGE_SET_QUEUE = Collections.synchronizedList(new ArrayList<>());
+    public final static Map<Long, List<Acl>> ACL_MAP = Collections.synchronizedMap(new HashMap<>());
+    public final static Map<Long, AclReaders> ACL_READERS_MAP = Collections.synchronizedMap(new HashMap<>());
 
-    public static List<Transaction> transactionQueue = Collections.synchronizedList(new ArrayList());
-    public static Map<Long, List<Node>> nodeMap = Collections.synchronizedMap(new HashMap());
-    public static Map<Long, NodeMetaData> nodeMetaDataMap = Collections.synchronizedMap(new HashMap());
-    public static Map<Long, String> nodeContentMap =  Collections.synchronizedMap(new HashMap());
+    public final static List<Transaction> TRANSACTION_QUEUE = Collections.synchronizedList(new ArrayList<>());
+    public final static Map<Long, List<Node>> NODE_MAP = Collections.synchronizedMap(new HashMap<>());
+    public final static Map<Long, NodeMetaData> NODE_META_DATA_MAP = Collections.synchronizedMap(new HashMap<>());
+    public final static Map<Long, String> NODE_CONTENT_MAP =  Collections.synchronizedMap(new HashMap<>());
 
     private static boolean throwException;
 
@@ -63,71 +72,42 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
         super(null,null,namespaceDAO);
     }
 
-    public static void setThrowException(boolean _throwException) {
+    public static void setThrowException(boolean _throwException)
+    {
         throwException = _throwException;
     }
 
-    public AclChangeSets getAclChangeSets(Long fromCommitTime, Long minAclChangeSetId, Long toCommitTime, Long maxAclChangeSetId, int maxResults)
-        throws AuthenticationException, IOException, JSONException
+    @Override
+    public AclChangeSets getAclChangeSets(Long fromCommitTime, Long minAclChangeSetId, Long toCommitTime, Long maxAclChangeSetId, int maxResults) throws IOException, JSONException
     {
-        if(throwException) {
+        if(throwException)
+        {
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
         }
 
-        int size = aclChangeSetQueue.size();
-        long maxTime = 0L;
-        long maxId = 0L;
+        final AtomicLong maxTime = new AtomicLong();
+        final AtomicLong maxId = new AtomicLong();
 
-        if(fromCommitTime == null && toCommitTime == null)
+        if (fromCommitTime == null && toCommitTime == null)
         {
-            List<AclChangeSet> aclChangeSetList = new ArrayList();
-            for(int i=0; i<size; i++)
-            {
-                AclChangeSet aclChangeSet = aclChangeSetQueue.get(i);
-                if(aclChangeSet.getId() >= minAclChangeSetId && aclChangeSet.getId() < maxAclChangeSetId)
-                {
-                    aclChangeSetList.add(aclChangeSet);
-                    maxTime = Math.max(aclChangeSet.getCommitTimeMs(), maxTime);
-                    maxId = Math.max(aclChangeSet.getId(), maxId);
-                }
-
-                if(aclChangeSetList.size() == maxResults) {
-                    break;
-                }
-            }
-
-            return new AclChangeSets(aclChangeSetList, maxTime, maxId);
+            return new AclChangeSets(
+                    ACL_CHANGE_SET_QUEUE.stream()
+                        .filter(aclChangeSet -> aclChangeSet.getId() >= minAclChangeSetId && aclChangeSet.getId() < maxAclChangeSetId)
+                        .limit(maxResults)
+                        .peek(aclChangeSet -> {
+                            maxTime.set(Math.max(aclChangeSet.getCommitTimeMs(), maxTime.get()));
+                            maxId.set(Math.max(aclChangeSet.getId(), maxId.get()));})
+                        .collect(Collectors.toList()), maxTime.get(), maxId.get());
         }
 
-        List<AclChangeSet> aclChangeSetList = new ArrayList();
-
-        for(int i=0; i<size; i++)
-        {
-            AclChangeSet aclChangeSet = aclChangeSetQueue.get(i);
-
-            if(aclChangeSet.getCommitTimeMs() < fromCommitTime)
-            {
-                //We have moved beyond this aclChangeSet
-            }
-            else if(aclChangeSet.getCommitTimeMs() > toCommitTime)
-            {
-                //We have not yet reached this alcChangeSet so break out of the loop
-                break;
-            }
-            else
-            {
-                aclChangeSetList.add(aclChangeSet);
-                maxTime = aclChangeSet.getCommitTimeMs();
-                maxId = aclChangeSet.getId();
-
-                if(aclChangeSetList.size() == maxResults)
-                {
-                    break;
-                }
-            }
-        }
-
-        return new AclChangeSets(aclChangeSetList, maxTime, maxId);
+        return new AclChangeSets(
+                ACL_CHANGE_SET_QUEUE.stream()
+                        .filter(aclChangeSet -> aclChangeSet.getCommitTimeMs() >= fromCommitTime && aclChangeSet.getCommitTimeMs() <= toCommitTime)
+                        .limit(maxResults)
+                        .peek(aclChangeSet -> {
+                            maxTime.set(Math.max(aclChangeSet.getCommitTimeMs(), maxTime.get()));
+                            maxId.set(Math.max(aclChangeSet.getId(), maxId.get()));})
+                        .collect(Collectors.toList()), maxTime.get(), maxId.get());
     }
 
     /**
@@ -140,173 +120,123 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
      * @param maxResults                    the maximum number of results to retrieve
      * @return                              the ACLs (includes ChangeSet ID)
      */
-    public List<Acl> getAcls(List<AclChangeSet> aclChangeSets, Long minAclId, int maxResults) throws AuthenticationException, IOException, JSONException
+    public List<Acl> getAcls(List<AclChangeSet> aclChangeSets, Long minAclId, int maxResults) throws IOException, JSONException
     {
         if(throwException) {
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
         }
 
-        List<Acl> allAcls = new ArrayList();
-        for(AclChangeSet aclChangeSet : aclChangeSets)
-        {
-            List aclList = aclMap.get(aclChangeSet.getId());
-            allAcls.addAll(aclList);
-        }
-        return allAcls;
+        return aclChangeSets.stream()
+                    .map(AclChangeSet::getId)
+                    .map(ACL_MAP::get)
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toList());
     }
 
     /**
      * Get the ACL readers for a given list of ACLs
      *
-     * @param acls                          the ACLs
-     * @return                              the readers for the ACLs
+     * @param acls the ACLs
+     * @return the readers for the ACLs
      */
-    public List<AclReaders> getAclReaders(List<Acl> acls) throws AuthenticationException, IOException, JSONException
+    public List<AclReaders> getAclReaders(List<Acl> acls) throws IOException, JSONException
     {
-        if(throwException) {
+        if(throwException)
+        {
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
         }
 
-        List<AclReaders> allAclReaders = new ArrayList();
-        for(Acl acl : acls)
-        {
-            AclReaders aclReaders = aclReadersMap.get(acl.getId());
-            allAclReaders.add(aclReaders);
-        }
-        return allAclReaders;
+        return acls.stream()
+                .map(Acl::getId)
+                .map(ACL_READERS_MAP::get)
+                .collect(Collectors.toList());
     }
 
 
-    public List<AlfrescoModelDiff> getModelsDiff(String coreName, List<AlfrescoModel> currentModels) throws AuthenticationException, IOException, JSONException
+    public List<AlfrescoModelDiff> getModelsDiff(String coreName, List<AlfrescoModel> currentModels) throws IOException, JSONException
     {
-        if(throwException) {
+        if(throwException)
+        {
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
         }
-        return new ArrayList();
+        return Collections.emptyList();
     }
 
 
-    public Transactions getTransactions(Long fromCommitTime, Long minTxnId, Long toCommitTime, Long maxTxnId, int maxResults) throws AuthenticationException, IOException, JSONException
+    public Transactions getTransactions(Long fromCommitTime, Long minTxnId, Long toCommitTime, Long maxTxnId, int maxResults) throws IOException, JSONException
     {
-        if(throwException) {
+        if(throwException)
+        {
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
         }
-        try
-        {
-            return getTransactions(fromCommitTime, minTxnId, toCommitTime, maxTxnId, maxResults, null);
-        }
-        catch(EncoderException e)
-        {
-            throw new IOException(e);
-        }
+
+        return getTransactions(fromCommitTime, minTxnId, toCommitTime, maxTxnId, maxResults, null);
     }
 
-
-
-
-    public Transactions getTransactions(Long fromCommitTime, Long minTxnId, Long toCommitTime, Long maxTxnId, int maxResults, ShardState shardState) throws AuthenticationException, IOException, JSONException, EncoderException
+    public Transactions getTransactions(Long fromCommitTime, Long minTxnId, Long toCommitTime, Long maxTxnId, int maxResults, ShardState shardState) throws IOException, JSONException
     {
-        if(throwException) {
+        if(throwException)
+        {
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
         }
 
-        int size = transactionQueue.size();
+        final AtomicLong maxTime = new AtomicLong();
+        final AtomicLong maxId = new AtomicLong();
 
-        long maxTime = 0L;
-        long maxId = 0L;
-
-        if(fromCommitTime == null && toCommitTime == null)
+        if (fromCommitTime == null && toCommitTime == null)
         {
-            List<Transaction> transactionList = new ArrayList();
-
-            for(int i=0; i<size; i++)
-            {
-                Transaction txn = transactionQueue.get(i);
-                if(txn.getId() >= minTxnId && txn.getId() < maxTxnId)
-                {
-                    transactionList.add(txn);
-                    maxTime = Math.max(txn.getCommitTimeMs(), maxTime);
-                    maxId = Math.max(txn.getId(), maxId);
-                }
-
-                if(transactionList.size() == maxResults) {
-                    break;
-                }
-            }
-
-            return new Transactions(transactionList, maxTime, maxId);
+            return new Transactions(
+                    TRANSACTION_QUEUE.stream()
+                            .filter(txn -> txn.getId() >= minTxnId && txn.getId() < maxTxnId)
+                            .limit(maxResults)
+                            .peek(txn -> {
+                                maxTime.set(Math.max(txn.getCommitTimeMs(), maxTime.get()));
+                                maxId.set(Math.max(txn.getId(), maxId.get()));})
+                            .collect(Collectors.toList()), maxTime.get(), maxId.get());
         }
 
-        List<Transaction> transactionList = new ArrayList();
-
-        for(int i=0; i<size; i++)
-        {
-            Transaction txn = transactionQueue.get(i);
-            if(txn.getCommitTimeMs() < fromCommitTime)
-            {
-                //We have moved beyond this transaction.
-            }
-            else if(txn.getCommitTimeMs() > toCommitTime)
-            {
-                //We have not yet reached this transaction so break out of the loop
-                break;
-            }
-            else
-            {
-                //We have a transaction to work with
-                transactionList.add(txn);
-                maxTime = txn.getCommitTimeMs();
-                maxId = txn.getId();
-
-                if(transactionList.size() == maxResults)
-                {
-                    break;
-                }
-            }
-        }
-
-        return new Transactions(transactionList, maxTime, maxId);
+        return new Transactions(
+                TRANSACTION_QUEUE.stream()
+                        .filter(txn -> txn.getCommitTimeMs() >= fromCommitTime && txn.getCommitTimeMs() <= toCommitTime)
+                        .limit(maxResults)
+                        .peek(txn -> {
+                            maxTime.set(Math.max(txn.getCommitTimeMs(), maxTime.get()));
+                            maxId.set(Math.max(txn.getId(), maxId.get()));})
+                        .collect(Collectors.toList()), maxTime.get(), maxId.get());
     }
 
-    public List<Node> getNodes(GetNodesParameters parameters, int maxResults) throws AuthenticationException, IOException, JSONException
+    public List<Node> getNodes(GetNodesParameters parameters, int maxResults) throws IOException, JSONException
     {
-        if(throwException) {
+        if(throwException)
+        {
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
         }
 
-        List<Long> txnIds = parameters.getTransactionIds();
-        List<Node> allNodes = new ArrayList();
-        for(long txnId : txnIds)
-        {
-            List<Node> nodes = nodeMap.get(txnId);
-            allNodes.addAll(nodes);
-        }
-
-        return allNodes;
+        return parameters.getTransactionIds().stream()
+                    .map(NODE_MAP::get)
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toList());
     }
 
-    public List<NodeMetaData> getNodesMetaData(NodeMetaDataParameters params, int maxResults) throws AuthenticationException, IOException, JSONException
+    public List<NodeMetaData> getNodesMetaData(NodeMetaDataParameters params, int maxResults) throws IOException, JSONException
     {
-        if(throwException) {
+        if(throwException)
+        {
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
         }
 
-        List<NodeMetaData> resultNodeMetaDatas = new ArrayList();
-        List<Long> nodeIds = params.getNodeIds();
-        if(nodeIds != null) {
-            for (long nodeId : nodeIds) {
-                NodeMetaData fullNodeMetadata = nodeMetaDataMap.get(nodeId);
-                NodeMetaData requestedMetadata = this.getOnlyRequestedMetadata(fullNodeMetadata, params);
-                resultNodeMetaDatas.add(requestedMetadata);
-            }
-        } else {
-            Long fromId = params.getFromNodeId();
-            NodeMetaData fullNodeMetadata = nodeMetaDataMap.get(fromId);
-            NodeMetaData requestedMetadata = this.getOnlyRequestedMetadata(fullNodeMetadata, params);
-            resultNodeMetaDatas.add(requestedMetadata);
-        }
-
-        return resultNodeMetaDatas;
+        return ofNullable(params.getNodeIds())
+                .map(identifiers ->
+                        identifiers.stream()
+                            .map(NODE_META_DATA_MAP::get)
+                            .map(metadata -> getOnlyRequestedMetadata(metadata, params))
+                            .collect(Collectors.toList()))
+                .orElseGet(() ->
+                        ofNullable(params.getFromNodeId())
+                                .map(NODE_META_DATA_MAP::get)
+                                .map(metadata -> getOnlyRequestedMetadata(metadata, params))
+                                .map(Collections::singletonList)
+                                .orElseGet(Collections::emptyList));
     }
 
     /**
@@ -326,44 +256,54 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
         {
             paramFiltered.setType(nodeMetaData.getType());
         }
+
         if (params.isIncludeAclId())
         {
             paramFiltered.setAclId(nodeMetaData.getAclId());
         }
+
         if (params.isIncludeAspects())
         {
             paramFiltered.setAspects(nodeMetaData.getAspects());
         }
+
         if (params.isIncludeProperties())
         {
             paramFiltered.setProperties(nodeMetaData.getProperties());
         }
+
         if (params.isIncludeChildAssociations())
         {
             paramFiltered.setChildAssocs(nodeMetaData.getChildAssocs());
         }
+
         if (params.isIncludeParentAssociations())
         {
             paramFiltered.setParentAssocs(nodeMetaData.getParentAssocs());
             paramFiltered.setParentAssocsCrc(nodeMetaData.getParentAssocsCrc());
         }
+
         if (params.isIncludeChildIds())
         {
             paramFiltered.setChildIds(nodeMetaData.getChildIds());
         }
+
         if (params.isIncludePaths())
         {
             paramFiltered.setPaths(nodeMetaData.getPaths());
             paramFiltered.setNamePaths(nodeMetaData.getNamePaths());
         }
+
         if (params.isIncludeOwner())
         {
             paramFiltered.setOwner(nodeMetaData.getOwner());
         }
+
         if (params.isIncludeNodeRef())
         {
             paramFiltered.setNodeRef(nodeMetaData.getNodeRef());
         }
+
         if (params.isIncludeTxnId())
         {
             paramFiltered.setTxnId(nodeMetaData.getTxnId());
@@ -377,55 +317,64 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
         return paramFiltered;
     }
 
-    public GetTextContentResponse getTextContent(Long nodeId, QName propertyQName, Long modifiedSince) throws AuthenticationException, IOException
+    public GetTextContentResponse getTextContent(Long nodeId, QName propertyQName, Long modifiedSince) throws IOException
     {
-        if(throwException) {
+        if(throwException)
+        {
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
         }
 
-        //Just put the nodeId innto the content so we query for this in tests.
-
-        if(nodeContentMap.containsKey(nodeId)) {
-            return new GetTextContentResponse(new DummyResponse(nodeContentMap.get(nodeId)));
+        if(NODE_CONTENT_MAP.containsKey(nodeId))
+        {
+            return new GetTextContentResponse(new DummyResponse(NODE_CONTENT_MAP.get(nodeId)));
         }
 
-        return new GetTextContentResponse(new DummyResponse("Hello world "+nodeId));
+        return new GetTextContentResponse(new DummyResponse("Hello world " + nodeId));
     }
 
-    private class DummyResponse implements Response
+    private static class DummyResponse implements Response
     {
-        private String text;
+        private final String text;
 
         public DummyResponse(String text)
         {
             this.text = text;
         }
 
+        @Override
         public InputStream getContentAsStream()
         {
             return new ByteArrayInputStream(text.getBytes());
         }
 
-        public int getStatus() {
+        @Override
+        public int getStatus()
+        {
             return HttpStatus.SC_OK;
         }
 
+        @Override
         public void release()
         {
 
         }
 
-        public String getHeader(String key) {
+        @Override
+        public String getHeader(String key)
+        {
             return null;
         }
 
-        public String getContentType() {
+        @Override
+        public String getContentType()
+        {
             return "text/html";
         }
     }
 
+    @Override
     public void close()
     {
-
+        // Nothing to be done here
     }
 }

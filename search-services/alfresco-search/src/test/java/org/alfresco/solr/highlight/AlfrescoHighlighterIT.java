@@ -146,13 +146,13 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
     @AfterClass
     public static void clearQueue()
     {
-        SOLRAPIQueueClient.nodeMetaDataMap.clear();
-        SOLRAPIQueueClient.transactionQueue.clear();
-        SOLRAPIQueueClient.aclChangeSetQueue.clear();
-        SOLRAPIQueueClient.aclReadersMap.clear();
-        SOLRAPIQueueClient.aclMap.clear();
-        SOLRAPIQueueClient.nodeMap.clear();
-        SOLRAPIQueueClient.nodeContentMap.clear();
+        SOLRAPIQueueClient.NODE_META_DATA_MAP.clear();
+        SOLRAPIQueueClient.TRANSACTION_QUEUE.clear();
+        SOLRAPIQueueClient.ACL_CHANGE_SET_QUEUE.clear();
+        SOLRAPIQueueClient.ACL_READERS_MAP.clear();
+        SOLRAPIQueueClient.ACL_MAP.clear();
+        SOLRAPIQueueClient.NODE_MAP.clear();
+        SOLRAPIQueueClient.NODE_CONTENT_MAP.clear();
     }
 
     @Test

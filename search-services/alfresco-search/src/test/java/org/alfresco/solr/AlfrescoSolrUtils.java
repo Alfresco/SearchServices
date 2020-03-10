@@ -57,7 +57,6 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -76,7 +75,6 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AbstractAlfrescoSolrIT.SolrServletRequest;
 import org.alfresco.solr.client.Acl;
@@ -90,13 +88,11 @@ import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.client.Transaction;
 import org.alfresco.util.ISO9075;
-import org.apache.lucene.util.BytesRef;
 import org.apache.solr.SolrTestCaseJ4.XmlDoc;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
-import org.apache.solr.common.util.JavaBinCodec;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.common.util.XML;
 import org.apache.solr.core.CoreContainer;
@@ -273,16 +269,16 @@ public class AlfrescoSolrUtils
     public void indexTransaction(Transaction transaction, List<Node> nodes, List<NodeMetaData> nodeMetaDatas)
     {
         //First map the nodes to a transaction.
-        SOLRAPIQueueClient.nodeMap.put(transaction.getId(), nodes);
+        SOLRAPIQueueClient.NODE_MAP.put(transaction.getId(), nodes);
 
         //Next map a node to the NodeMetaData
         for(NodeMetaData nodeMetaData : nodeMetaDatas)
         {
-            SOLRAPIQueueClient.nodeMetaDataMap.put(nodeMetaData.getId(), nodeMetaData);
+            SOLRAPIQueueClient.NODE_META_DATA_MAP.put(nodeMetaData.getId(), nodeMetaData);
         }
 
         //Next add the transaction to the queue
-        SOLRAPIQueueClient.transactionQueue.add(transaction);
+        SOLRAPIQueueClient.TRANSACTION_QUEUE.add(transaction);
     }
     /**
      * 
@@ -387,17 +383,17 @@ public class AlfrescoSolrUtils
     public static void indexAclChangeSet(AclChangeSet aclChangeSet, List<Acl> aclList, List<AclReaders> aclReadersList)
     {
         //First map the nodes to a transaction.
-        SOLRAPIQueueClient.aclMap.put(aclChangeSet.getId(), aclList);
+        SOLRAPIQueueClient.ACL_MAP.put(aclChangeSet.getId(), aclList);
 
         //Next map a node to the NodeMetaData
         for(AclReaders aclReaders : aclReadersList)
         {
-            SOLRAPIQueueClient.aclReadersMap.put(aclReaders.getId(), aclReaders);
+            SOLRAPIQueueClient.ACL_READERS_MAP.put(aclReaders.getId(), aclReaders);
         }
 
         //Next add the transaction to the queue
 
-        SOLRAPIQueueClient.aclChangeSetQueue.add(aclChangeSet);
+        SOLRAPIQueueClient.ACL_CHANGE_SET_QUEUE.add(aclChangeSet);
     }
     /**
      * Generate a collection from input.

@@ -2298,7 +2298,7 @@ public class SolrInformationServer implements InformationServer
     private void deleteErrorNode(UpdateRequestProcessor processor, SolrQueryRequest request, Node node) throws IOException
     {
         DeleteUpdateCommand delErrorDocCmd = new DeleteUpdateCommand(request);
-        delErrorDocCmd.setId(FIELD_SOLR4_ID + ":" + PREFIX_ERROR + node.getId());
+        delErrorDocCmd.setId(PREFIX_ERROR + node.getId());
         processor.processDelete(delErrorDocCmd);
     }
 
