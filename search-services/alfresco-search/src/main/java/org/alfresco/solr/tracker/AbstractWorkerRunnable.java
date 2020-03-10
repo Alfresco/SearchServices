@@ -40,6 +40,7 @@ abstract class AbstractWorkerRunnable implements Runnable
     public void run()
     {
     	boolean failed = true;
+    	Exception failCausedBy = null;
         try
         {
             doWork();
@@ -47,7 +48,8 @@ abstract class AbstractWorkerRunnable implements Runnable
         }
         catch (Exception e)
         {
-        	log.warn("Index tracking batch hit an unrecoverable error ", e);
+            log.warn("Index tracking batch hit an unrecoverable error ", e);
+            failCausedBy = e;
         }
         finally
         {
@@ -55,12 +57,12 @@ abstract class AbstractWorkerRunnable implements Runnable
             queueHandler.removeFromQueueAndProdHead(this);
             if(failed)
             {
-            	onFail();
+            	onFail(failCausedBy);
             }
         }
     }
     
     abstract protected void doWork() throws Exception;
     
-    abstract protected void onFail();
+    abstract protected void onFail(Throwable failCausedBy);
 }

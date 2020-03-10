@@ -195,7 +195,7 @@ public class AlfrescoSolrTrackerRollbackIT extends AbstractAlfrescoSolrIT
         //This will prove the rollback transaction was rolled back
 
         SOLRAPIQueueClient.transactionQueue.remove(rollbackTxn);
-        metadataTracker.setRollback(true);
+        metadataTracker.setRollback(true, new Exception("Forced rollback!"));
 
         commitTracker.getRunLock().release();
 

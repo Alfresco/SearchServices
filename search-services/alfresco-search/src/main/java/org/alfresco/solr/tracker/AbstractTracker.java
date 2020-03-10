@@ -43,9 +43,9 @@ public abstract class AbstractTracker implements Tracker
     public static final long TIME_STEP_1_HR_IN_MS = 60 * 60 * 1000L;
     public static final String SHARD_METHOD_ACLID = "ACL_ID";
     public static final String SHARD_METHOD_DBID = "DB_ID";
-    protected final static Logger log = LoggerFactory.getLogger(AbstractTracker.class);
-    
-    protected Properties props;    
+    protected final static Logger LOGGER = LoggerFactory.getLogger(AbstractTracker.class);
+
+    protected Properties props;
     protected SOLRAPIClient client;
     protected InformationServer infoSrv;
     protected String coreName;
@@ -69,6 +69,10 @@ public abstract class AbstractTracker implements Tracker
     protected boolean transformContent;
     protected String shardTemplate;
     protected volatile boolean rollback;
+    /**
+     * When rollback is set, original error is also gathered in order to provide detailed logging.
+     */
+    protected Throwable rollbackCausedBy;
     protected final Type type;
 
     
@@ -114,11 +118,11 @@ public abstract class AbstractTracker implements Tracker
         alfrescoVersion = p.getProperty("alfresco.version", "5.0.0");
         
         this.type = type;
-        
-        log.info("Solr built for Alfresco version: " + alfrescoVersion);
+
+        LOGGER.info("Solr built for Alfresco version: " + alfrescoVersion);
     }
 
-    
+
     /**
      * Subclasses must implement behaviour that completes the following steps, in order:
      * <ol>
@@ -174,7 +178,7 @@ public abstract class AbstractTracker implements Tracker
     public void track()
     {
         if(runLock.availablePermits() == 0) {
-            log.info("... " + this.getClass().getSimpleName() + " for core [" + coreName + "] is already in use "+ this.getClass());
+            LOGGER.info("... " + this.getClass().getSimpleName() + " for core [" + coreName + "] is already in use "+ this.getClass());
             return;
         }
 
@@ -192,7 +196,7 @@ public abstract class AbstractTracker implements Tracker
                 assert(assertTrackerStateRemainsNull());
             }
 
-            log.info("... Running " + this.getClass().getSimpleName() + " for core [" + coreName + "].");
+            LOGGER.info("[CORE {}] Running {}", coreName, this.getClass().getSimpleName());
 
             if(this.state == null)
             {
@@ -200,6 +204,8 @@ public abstract class AbstractTracker implements Tracker
                 * Set the global state for the tracker here.
                 */
                 this.state = getTrackerState();
+
+                LOGGER.debug("[CORE {}] Global Tracker State set to: {}", coreName, this.state.toString());
                 this.state.setRunning(true);
             }
             else
@@ -216,34 +222,29 @@ public abstract class AbstractTracker implements Tracker
             }
             catch(IndexTrackingShutdownException t)
             {
-                setRollback(true);
-                log.info("Stopping index tracking for " + getClass().getSimpleName() + " - " + coreName);
+                setRollback(true, t);
+                LOGGER.info("[CORE {}] Stopping index tracking for {}", coreName, getClass().getSimpleName());
             }
             catch(Throwable t)
             {
-                setRollback(true);
+                setRollback(true, t);
                 if (t instanceof SocketTimeoutException || t instanceof ConnectException)
                 {
-                    if (log.isDebugEnabled())
+                    LOGGER.warn("[CORE {}] Tracking communication timed out for {}", coreName, getClass().getSimpleName());
+                    if (LOGGER.isDebugEnabled())
                     {
-                        // DEBUG, so give the whole stack trace
-                        log.warn("Tracking communication timed out for " + getClass().getSimpleName() + " - " + coreName, t);
-                    }
-                    else
-                    {
-                        // We don't need the stack trace.  It timed out.
-                        log.warn("Tracking communication timed out for " + getClass().getSimpleName() + " - " + coreName);
+                        LOGGER.debug("[CORE {}] Stack trace", coreName, t);
                     }
                 }
                 else
                 {
-                    log.error("Tracking failed for " + getClass().getSimpleName() + " - " + coreName, t);
+                    LOGGER.error("[CORE {}] Tracking failed for {}", coreName, getClass().getSimpleName(), t);
                 }
             }
         }
         catch (InterruptedException e)
         {
-            log.error("Semaphore interrupted for " + getClass().getSimpleName() + " - " + coreName, e);
+            LOGGER.error("[CORE {}] Semaphore interrupted for {}", coreName, getClass().getSimpleName(), e);
         }
         finally
         {
@@ -261,8 +262,15 @@ public abstract class AbstractTracker implements Tracker
         return this.rollback;
     }
 
-    public void setRollback(boolean rollback) {
+    public Throwable getRollbackCausedBy()
+    {
+        return this.rollbackCausedBy;
+    }
+
+    public void setRollback(boolean rollback, Throwable rollbackCausedBy)
+    {
         this.rollback = rollback;
+        this.rollbackCausedBy = rollbackCausedBy;
     }
 
     private void continueState() {
@@ -333,7 +341,7 @@ public abstract class AbstractTracker implements Tracker
 
     public void shutdown()
     {
-        log.warn("Core "+ coreName+" shutdown called on tracker. " + getClass().getSimpleName() + " " + hashCode());
+        LOGGER.warn("Core "+ coreName+" shutdown called on tracker. " + getClass().getSimpleName() + " " + hashCode());
         setShutdown(true);
         if(this.threadHandler != null)
         {

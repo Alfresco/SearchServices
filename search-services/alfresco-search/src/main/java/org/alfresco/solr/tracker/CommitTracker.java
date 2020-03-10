@@ -184,6 +184,17 @@ public class CommitTracker extends AbstractTracker
             assert(cascadeTracker.getWriteLock().availablePermits() == 0);
 
             infoSrv.rollback();
+
+            // Log reasons why the rollback is performed
+            if (aclTracker.getRollbackCausedBy() != null)
+            {
+                log.warn("Rollback performed due to ACL Tracker error", aclTracker.getRollbackCausedBy());
+            }
+            if (metadataTracker.getRollbackCausedBy() != null)
+            {
+                log.warn("Rollback performed due to Metadata Tracker error", metadataTracker.getRollbackCausedBy());
+            }
+
         }
         catch (Exception e)
         {
@@ -192,19 +203,19 @@ public class CommitTracker extends AbstractTracker
         finally
         {
             //Reset acl Tracker
-            aclTracker.setRollback(false);
+            aclTracker.setRollback(false, null);
             aclTracker.invalidateState();
 
             //Reset metadataTracker
-            metadataTracker.setRollback(false);
+            metadataTracker.setRollback(false, null);
             metadataTracker.invalidateState();
 
             //Reset contentTracker
-            contentTracker.setRollback(false);
+            contentTracker.setRollback(false, null);
             contentTracker.invalidateState();
 
             //Reset cascadeTracker
-            cascadeTracker.setRollback(false);
+            cascadeTracker.setRollback(false, null);
             cascadeTracker.invalidateState();
 
             //Release the locks

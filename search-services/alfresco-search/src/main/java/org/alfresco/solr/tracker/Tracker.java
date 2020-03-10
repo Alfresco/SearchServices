@@ -41,9 +41,11 @@ public interface Tracker
 
     boolean getRollback();
     
+    Throwable getRollbackCausedBy();
+    
     Properties getProps();
     
-    void setRollback(boolean rollback);
+    void setRollback(boolean rollback, Throwable rollbackCausedBy);
 
     void invalidateState();
 

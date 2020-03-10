@@ -921,9 +921,9 @@ public class MetadataTracker extends AbstractTracker implements Tracker
         }
         
         @Override
-        protected void onFail()
+        protected void onFail(Throwable failCausedBy)
         {
-        	setRollback(true);
+        	setRollback(true, failCausedBy);
         }
         
         private List<Node> filterNodes(List<Node> nodes)
