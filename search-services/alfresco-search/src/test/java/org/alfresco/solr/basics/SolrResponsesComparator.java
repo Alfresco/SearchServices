@@ -17,7 +17,7 @@ import java.util.Map;
 
 public class SolrResponsesComparator
 {
-    private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     
     protected int flags;
     
@@ -62,7 +62,7 @@ public class SolrResponsesComparator
         String cmp = compare(a.getResponse(), b.getResponse(), flags, handle);
         if (cmp != null)
         {
-            log.error("Mismatched responses:\n" + a + "\n" + b);
+            LOGGER.error("Mismatched responses:\n" + a + "\n" + b);
             Assert.fail(cmp);
         }
     }

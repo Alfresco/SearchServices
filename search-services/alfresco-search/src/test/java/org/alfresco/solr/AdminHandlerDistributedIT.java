@@ -18,7 +18,6 @@
  */
 package org.alfresco.solr;
 
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.core.CoreContainer;
@@ -27,10 +26,6 @@ import org.apache.solr.response.SolrQueryResponse;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
 import java.util.Properties;
 
 import static org.alfresco.repo.index.shard.ShardMethodEnum.*;
@@ -42,29 +37,28 @@ import static org.alfresco.solr.AlfrescoSolrUtils.*;
  * @author Gethin James
  */
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class AdminHandlerDistributedIT extends AbstractAlfrescoDistributedIT
 {
-    private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    final String JETTY_SERVER_ID = this.getClass().getSimpleName();
+    static String testFolder;
     static final String CORE_NAME = "newcoretesting";
     
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
-        initSolrServers(2, "AdminHandlerDistributedIT", null);
+        testFolder = initSolrServers(2, AdminHandlerDistributedIT.class.getSimpleName(), null);
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }
-    
+
+    @SuppressWarnings("unchecked")
     @Test
     public void newCoreUsingAdminHandler() throws Exception
     {
-        CoreContainer coreContainer = jettyContainers.get(JETTY_SERVER_ID).getCoreContainer();
+        CoreContainer coreContainer = jettyContainers.get(testFolder).getCoreContainer();
 
         //Create the new core
         AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler)  coreContainer.getMultiCoreHandler();
@@ -91,4 +85,3 @@ public class AdminHandlerDistributedIT extends AbstractAlfrescoDistributedIT
         assertEquals(ACL_ID.toString(), props.get("shard.method"));
     }
 }
-

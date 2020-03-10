@@ -52,20 +52,18 @@ import static org.alfresco.solr.AlfrescoSolrUtils.list;
  * @author Elia Porciani
  */
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class ContentPropertyValueTrackerIT extends AbstractAlfrescoDistributedIT
 {
-
     final private String authorField = "text@s__lt@{http://www.alfresco.org/model/content/1.0}author";
 
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
-        initSolrServers(1, "ContentPropertyValueTrackerIT", null);
+        initSolrServers(1, ContentPropertyValueTrackerIT.class.getSimpleName(), null);
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }
@@ -79,7 +77,6 @@ public class ContentPropertyValueTrackerIT extends AbstractAlfrescoDistributedIT
      * not indexed ContentPropertyValue is searched and not found in the cached document.
      *
      * The second ContentPropertyValue must not be indexed.
-     * @throws Exception
      */
     @Test
     public void testDataWithMultipleContentValueIsIndexedAfterUpdateTest() throws Exception

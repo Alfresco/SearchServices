@@ -3,29 +3,26 @@
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
     <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d{ABSOLUTE} %t %-5p %30.30c %x - %m%n" />
+            <param name="ConversionPattern" value="%d{ABSOLUTE} %t %-5p %c{1} - %m%n" />
         </layout>
     </appender>
 
+    <!-- Useful tests categories -->
+    <category name="org.alfresco.solr.AbstractAlfrescoSolrIT">
+        <priority value="WARN"/>
+    </category>
+
     <!-- ##### ALL ALFRESCO MESSAGES ##### -->
     <!--
-        <category name="org.apache.solr">
+        <category name="org.alfresco">
             <priority value="INFO"/>
         </category>
     -->
 
-    <!-- ##### METADATA TRACKER MESSAGES ##### -->
-    <!--
-        <category name="org.alfresco.solr.tracker.MetadataTracker">
+    <!-- ##### SOLR INFORMATION SERVER MESSAGES ##### -->
+        <category name="org.alfresco.solr.SolrInformationServer">
             <priority value="DEBUG"/>
         </category>
-    -->
-    <!-- ##### ALL SOLR MESSAGES ##### -->
-    <!--
-        <category name="org.apache.solr">
-            <priority value="INFO"/>
-        </category>
-    -->
 
     <!-- ##### ONLY SOLR QUERIES ##### -->
     <!--

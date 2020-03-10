@@ -9,6 +9,7 @@ import java.util.Objects;
 import static java.util.Optional.ofNullable;
 
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * A composable {@link DocRouter} which consists of
@@ -47,9 +48,8 @@ public class DocRouterWithFallback implements DocRouter
     }
     
     @Override
-    public Map<String, String> getProperties(QName shardProperty)
+    public Map<String, String> getProperties(Optional<QName> shardProperty)
     {
         return primaryStrategy.getProperties(shardProperty);
     }
-
 }

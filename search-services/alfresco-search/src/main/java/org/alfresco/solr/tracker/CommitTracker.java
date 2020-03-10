@@ -19,7 +19,11 @@
 
 package org.alfresco.solr.tracker;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
+
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -41,7 +45,8 @@ public class CommitTracker extends AbstractTracker
     private MetadataTracker metadataTracker;
     private AclTracker aclTracker;
     private ContentTracker contentTracker;
-    private CascadeTracker cascadeTracker;
+    /** The cascade tracker. Note that this may be empty if cascade tracking is disabled. */
+    private Optional<CascadeTracker> cascadeTracker = empty();
     private AtomicInteger rollbackCount = new AtomicInteger(0);
 
     protected final static Logger log = LoggerFactory.getLogger(CommitTracker.class);
@@ -71,7 +76,7 @@ public class CommitTracker extends AbstractTracker
             } else if(tracker instanceof ContentTracker) {
                 this.contentTracker = (ContentTracker)tracker;
             } else if(tracker instanceof CascadeTracker) {
-                this.cascadeTracker = (CascadeTracker)tracker;
+                this.cascadeTracker = ofNullable((CascadeTracker) tracker);
             }
         }
 
@@ -151,11 +156,8 @@ public class CommitTracker extends AbstractTracker
                 maintenance();
             }
 
-            infoSrv.flushContentStore();
-
             //Do the commit opening the searcher if needed. This will commit all the work done by indexing trackers.
             //This will return immediately and not wait for searchers to warm
-            //System.out.println("################### Commit:"+openSearcherNeeded);
             boolean searcherOpened = infoSrv.commit(openSearcherNeeded);
 
             lastCommit = currentTime;
@@ -170,7 +172,6 @@ public class CommitTracker extends AbstractTracker
 
             //Release the lock on the aclTracker
             aclTracker.getWriteLock().release();
-            //System.out.println("######## Commit Tracker Releasing Write Locks ########");
         }
     }
 
@@ -182,10 +183,24 @@ public class CommitTracker extends AbstractTracker
             contentTracker.getWriteLock().acquire();
             assert(contentTracker.getWriteLock().availablePermits() == 0);
 
-            cascadeTracker.getWriteLock().acquire();
-            assert(cascadeTracker.getWriteLock().availablePermits() == 0);
+            if (cascadeTracker.isPresent())
+            {
+                cascadeTracker.get().getWriteLock().acquire();
+                assert (cascadeTracker.get().getWriteLock().availablePermits() == 0);
+            }
 
             infoSrv.rollback();
+            
+            // Log reasons why the rollback is performed
+            if (aclTracker.getRollbackCausedBy() != null)
+            {
+                log.warn("Rollback performed due to ACL Tracker error", aclTracker.getRollbackCausedBy());                
+            }
+            if (metadataTracker.getRollbackCausedBy() != null)
+            {
+                log.warn("Rollback performed due to Metadata Tracker error", metadataTracker.getRollbackCausedBy());
+            }
+            
         }
         catch (Exception e)
         {
@@ -194,24 +209,24 @@ public class CommitTracker extends AbstractTracker
         finally
         {
             //Reset acl Tracker
-            aclTracker.setRollback(false);
+            aclTracker.setRollback(false, null);
             aclTracker.invalidateState();
 
             //Reset metadataTracker
-            metadataTracker.setRollback(false);
+            metadataTracker.setRollback(false, null);
             metadataTracker.invalidateState();
 
             //Reset contentTracker
-            contentTracker.setRollback(false);
+            contentTracker.setRollback(false, null);
             contentTracker.invalidateState();
 
             //Reset cascadeTracker
-            cascadeTracker.setRollback(false);
-            cascadeTracker.invalidateState();
+            cascadeTracker.ifPresent(c -> c.setRollback(false, null));
+            cascadeTracker.ifPresent(c -> invalidateState());
 
             //Release the locks
             contentTracker.getWriteLock().release();
-            cascadeTracker.getWriteLock().release();
+            cascadeTracker.ifPresent(c -> c.getWriteLock().release());
 
             rollbackCount.incrementAndGet();
         }

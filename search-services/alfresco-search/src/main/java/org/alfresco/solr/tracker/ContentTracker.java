@@ -25,8 +25,8 @@ import java.util.Properties;
 import org.alfresco.solr.AlfrescoSolrDataModel.TenantAclIdDbId;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.client.SOLRAPIClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
 
 /**
  * This tracker queries for docs with unclean content, and then updates them.
@@ -36,8 +36,6 @@ import org.slf4j.LoggerFactory;
  */
 public class ContentTracker extends AbstractTracker implements Tracker
 {
-
-    protected final static Logger log = LoggerFactory.getLogger(ContentTracker.class);
     private int contentReadBatchSize;
     private int contentUpdateBatchSize;
     
@@ -59,37 +57,41 @@ public class ContentTracker extends AbstractTracker implements Tracker
     @Override
     protected void doTrack() throws Exception
     {
-        //System.out.println("############## Content Tracker doTrack()");
-        try {
+        try
+        {
             long startElapsed = System.nanoTime();
 
             checkShutdown();
             final int ROWS = contentReadBatchSize;
             int start = 0;
-            long totalDocs = 0l;
+            long totalDocs = 0L;
             checkShutdown();
-            while (true) {
+            while (true)
+            {
                 try
                 {
 
                     getWriteLock().acquire();
 
-                    List<TenantAclIdDbId> docs = this.infoSrv.getDocsWithUncleanContent(start, ROWS);
-                    //System.out.println("####################### Unclean content: "+docs.size()+" ##############################:"+totalDocs);
-                    if (docs.size() == 0) {
+                    List<TenantAclIdDbId> docs = notNullOrEmpty(infoSrv.getDocsWithUncleanContent(start, ROWS));
+                    if (docs.isEmpty())
+                    {
+                        LOGGER.debug("No unclean document has been detected in the current ContentTracker cycle.");
                         break;
                     }
 
                     int docsUpdatedSinceLastCommit = 0;
-                    for (TenantAclIdDbId doc : docs) {
+                    for (TenantAclIdDbId doc : docs)
+                    {
                         ContentIndexWorkerRunnable ciwr = new ContentIndexWorkerRunnable(super.threadHandler, doc, infoSrv);
                         super.threadHandler.scheduleTask(ciwr);
                         docsUpdatedSinceLastCommit++;
 
-                        if (docsUpdatedSinceLastCommit >= contentUpdateBatchSize) {
+                        if (docsUpdatedSinceLastCommit >= contentUpdateBatchSize)
+                        {
                             super.waitForAsynchronous();
                             checkShutdown();
-                            //this.infoSrv.commit();
+
                             long endElapsed = System.nanoTime();
                             trackerStats.addElapsedContentTime(docsUpdatedSinceLastCommit, endElapsed - startElapsed);
                             startElapsed = endElapsed;
@@ -97,7 +99,8 @@ public class ContentTracker extends AbstractTracker implements Tracker
                         }
                     }
 
-                    if (docsUpdatedSinceLastCommit > 0) {
+                    if (docsUpdatedSinceLastCommit > 0)
+                    {
                         super.waitForAsynchronous();
                         checkShutdown();
                         //this.infoSrv.commit();
@@ -113,7 +116,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
                 }
             }
 
-            log.info("total number of docs with content updated: " + totalDocs);
+            LOGGER.info("Total number of docs with content updated: {}", totalDocs);
         }
         catch(Exception e)
         {
@@ -121,15 +124,18 @@ public class ContentTracker extends AbstractTracker implements Tracker
         }
     }
 
-    public boolean hasMaintenance() {
+    public boolean hasMaintenance()
+    {
         return false;
     }
 
-    public void maintenance() {
-        return;
+    public void maintenance()
+    {
+        // Nothing to be done here
     }
 
-    public void invalidateState() {
+    public void invalidateState()
+    {
         super.invalidateState();
         this.infoSrv.setCleanContentTxnFloor(-1);
     }
@@ -137,12 +143,13 @@ public class ContentTracker extends AbstractTracker implements Tracker
     class ContentIndexWorkerRunnable extends AbstractWorkerRunnable
     {
         InformationServer infoServer;
-        TenantAclIdDbId doc;
+        TenantAclIdDbId docRef;
 
-        ContentIndexWorkerRunnable(QueueHandler queueHandler, TenantAclIdDbId doc, InformationServer infoServer)
+        ContentIndexWorkerRunnable(QueueHandler queueHandler, TenantAclIdDbId docRef, InformationServer infoServer)
         {
             super(queueHandler);
-            this.doc = doc;
+
+            this.docRef = docRef;
             this.infoServer = infoServer;
         }
 
@@ -150,14 +157,15 @@ public class ContentTracker extends AbstractTracker implements Tracker
         protected void doWork() throws Exception
         {
             checkShutdown();
-            //System.out.println("################ Update doc:"+doc.dbId);
-            this.infoServer.updateContentToIndexAndCache(doc.dbId, doc.tenant);
+
+            infoServer.updateContent(docRef);
         }
         
         @Override
-        protected void onFail()
+        protected void onFail(Throwable failCausedBy)
         {
-        	// Will redo if not persisted
+            // This will be redone in future tracking operations
+            log.warn("Content tracker failed due to {}", failCausedBy.getMessage(), failCausedBy);
         }
     }
 }

@@ -35,17 +35,15 @@ import java.util.List;
  */
 public class MultiPropertyValue extends PropertyValue
 {
-    private List<PropertyValue> values;
+    private final List<PropertyValue> values;
 
     public MultiPropertyValue()
     {
-        super();
-        this.values = new ArrayList<PropertyValue>(10);
+        this.values = new ArrayList<>();
     }
     
     public MultiPropertyValue(List<PropertyValue> values)
     {
-        super();
         this.values = values;
     }
 

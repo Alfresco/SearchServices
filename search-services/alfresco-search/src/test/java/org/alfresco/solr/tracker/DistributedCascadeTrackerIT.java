@@ -42,7 +42,6 @@ import org.alfresco.util.Pair;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
 
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.After;
 import org.junit.Before;
@@ -54,7 +53,6 @@ import java.util.Properties;
  * Test cascade tracker in multi sharded environment.
  */
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedCascadeTrackerIT extends AbstractAlfrescoDistributedIT
 {
     private Node parentFolder;
@@ -74,14 +72,14 @@ public class DistributedCascadeTrackerIT extends AbstractAlfrescoDistributedIT
     private final int timeout = 100000;
 
     @Before
-    private void initData() throws Throwable
+    public void initData() throws Throwable
     {
-        initSolrServers(2, getClassName(), getShardMethod());
+        initSolrServers(2, getSimpleClassName(), getShardMethod());
         indexData();
     }
 
     @After
-    private void destroyData()
+    public void destroyData()
     {
         dismissSolrServers();
     }

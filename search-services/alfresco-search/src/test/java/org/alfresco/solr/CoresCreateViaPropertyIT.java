@@ -18,17 +18,13 @@
  */
 package org.alfresco.solr;
 
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
 import java.util.concurrent.TimeUnit;
 
 import static org.alfresco.solr.AlfrescoSolrUtils.getCore;
@@ -39,21 +35,19 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getCore;
  * @author Gethin James
  */
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class CoresCreateViaPropertyIT extends AbstractAlfrescoDistributedIT
 {
-    private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    final static String JETTY_SERVER_ID = "CoresCreateViaPropertyTest";
+    static String testFolder;
 
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
         System.setProperty(AlfrescoCoreAdminHandler.ALFRESCO_DEFAULTS, "alfresco,archive");
-        initSolrServers(0, JETTY_SERVER_ID, null);
+        testFolder = initSolrServers(0, CoresCreateViaPropertyIT.class.getSimpleName(), null);
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
         System.clearProperty(AlfrescoCoreAdminHandler.ALFRESCO_DEFAULTS);
@@ -62,7 +56,7 @@ public class CoresCreateViaPropertyIT extends AbstractAlfrescoDistributedIT
     @Test
     public void newCoreUsingAllDefaults() throws Exception
     {
-        CoreContainer coreContainer = jettyContainers.get(JETTY_SERVER_ID).getCoreContainer();
+        CoreContainer coreContainer = jettyContainers.get(testFolder).getCoreContainer();
 
         //Now create the new core with
         AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler)  coreContainer.getMultiCoreHandler();
@@ -76,8 +70,6 @@ public class CoresCreateViaPropertyIT extends AbstractAlfrescoDistributedIT
 
         assertNotNull(defaultCore);
         assertNotNull(archiveCore);
-
     }
-
 }
 

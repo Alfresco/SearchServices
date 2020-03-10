@@ -18,6 +18,12 @@
  */
 package org.apache.solr.handler.component;
 
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
+import static org.alfresco.solr.AlfrescoSolrDataModel.FieldUse.FACET;
+import static org.alfresco.solr.AlfrescoSolrDataModel.FieldUse.FTS;
+import static org.alfresco.solr.AlfrescoSolrDataModel.FieldUse.ID;
+import static org.alfresco.solr.AlfrescoSolrDataModel.FieldUse.SORT;
 import static org.apache.solr.common.params.CommonParams.PATH;
 
 import java.io.BufferedReader;
@@ -28,9 +34,13 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.query.AbstractQParser;
+import org.apache.cxf.transport.http.auth.HttpAuthHeader;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.ExitableDirectoryReader;
 import org.apache.lucene.index.IndexableField;
@@ -58,6 +68,7 @@ import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.DocIterator;
 import org.apache.solr.search.DocList;
 import org.apache.solr.search.SolrQueryTimeoutImpl;
+import org.apache.solr.search.SolrReturnFields;
 import org.apache.solr.search.facet.FacetModule;
 import org.apache.solr.util.RTimerTree;
 import org.apache.solr.util.SolrPluginUtils;
@@ -287,10 +298,14 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 		return shardHandler;
 	}
 
+
+
+
 	@Override
 	public void handleRequestBody(SolrQueryRequest req, SolrQueryResponse rsp)
 			throws Exception {
 		readJsonIntoContent(req);
+
 
 		List<SearchComponent> components = getComponents();
 		ResponseBuilder rb = new ResponseBuilder(req, rsp, components);

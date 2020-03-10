@@ -22,7 +22,6 @@ package org.alfresco.solr;
 import java.util.Properties;
 
 import org.alfresco.solr.client.SOLRAPIClient;
-import org.alfresco.solr.content.SolrContentStore;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.util.SimpleOrderedMap;
@@ -67,9 +66,6 @@ public class SolrInformationServerTest
     private SOLRAPIClient client;
 
     @Mock
-    private SolrContentStore contentStore;
-
-    @Mock
     private SolrRequestHandler handler;
 
     @Mock
@@ -82,7 +78,7 @@ public class SolrInformationServerTest
     {
         when(core.getResourceLoader()).thenReturn(resourceLoader);
         when(resourceLoader.getCoreProperties()).thenReturn(new Properties());
-        infoServer = new SolrInformationServer(adminHandler, core, client, contentStore)
+        infoServer = new SolrInformationServer(adminHandler, core, client)
         {
             // @Override
             SolrQueryResponse newSolrQueryResponse()
@@ -94,7 +90,6 @@ public class SolrInformationServerTest
         request = infoServer.newSolrQueryRequest();
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testGetStateOk()
     {
@@ -102,7 +97,7 @@ public class SolrInformationServerTest
 
         SolrDocument state = new SolrDocument();
 
-        SimpleOrderedMap responseContent = new SimpleOrderedMap<>();
+        SimpleOrderedMap<SolrDocument> responseContent = new SimpleOrderedMap<>();
         responseContent.add(SolrInformationServer.RESPONSE_DEFAULT_ID, state);
 
         when(response.getValues()).thenReturn(responseContent);
@@ -120,13 +115,12 @@ public class SolrInformationServerTest
     /**
      * GetState returns null in case the given id doesn't correspond to an existing state document.
      */
-    @SuppressWarnings("unchecked")
     @Test
     public void testGetStateWithStateNotFound_returnsNull()
     {
         String id = String.valueOf(System.currentTimeMillis());
 
-        SimpleOrderedMap responseContent = new SimpleOrderedMap<>();
+        SimpleOrderedMap<Object> responseContent = new SimpleOrderedMap<>();
         responseContent.add(SolrInformationServer.RESPONSE_DEFAULT_ID, null);
 
         when(response.getValues()).thenReturn(responseContent);

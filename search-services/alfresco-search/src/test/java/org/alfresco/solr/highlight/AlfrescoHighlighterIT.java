@@ -19,6 +19,12 @@
 
 package org.alfresco.solr.highlight;
 
+import static com.google.common.collect.ImmutableMap.of;
+import static java.util.Arrays.asList;
+
+import static java.util.Collections.singletonList;
+import static org.alfresco.solr.AlfrescoSolrUtils.*;
+
 import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
@@ -32,7 +38,6 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.common.params.HighlightParams;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -43,18 +48,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-import static com.google.common.collect.ImmutableMap.of;
-import static java.util.Arrays.asList;
-
-import static junit.framework.TestCase.assertTrue;
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
-import static org.junit.Assert.assertNotNull;
-
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
 {
-    private static Log logger = LogFactory.getLog(AlfrescoHighlighterIT.class);
-    private static long MAX_WAIT_TIME = 80000;
+    private static final Log LOGGER = LogFactory.getLog(AlfrescoHighlighterIT.class);
 
     @BeforeClass
     public static void beforeClass() throws Exception
@@ -62,7 +58,6 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
         initAlfrescoCore("schema.xml");
         loadData();
     }
-
 
     protected static void loadData() throws Exception
     {
@@ -82,17 +77,16 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
                 of("name", "MixedCabbageString and plurals and discussion",
                         "title", "title2"));
 
-        logger.info("######### Starting Highlight test ###########");
         AclChangeSet aclChangeSet = getAclChangeSet(1);
 
         Acl acl = getAcl(aclChangeSet);
         Acl acl2 = getAcl(aclChangeSet);
-        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, list("joel"), list("phil"), null);
-        AclReaders aclReaders2 = getAclReaders(aclChangeSet, acl2, list("jim"), list("phil"), null);
+        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, singletonList("joel"), singletonList("phil"), null);
+        AclReaders aclReaders2 = getAclReaders(aclChangeSet, acl2, singletonList("jim"), singletonList("phil"), null);
 
         indexAclChangeSet(aclChangeSet,
-                list(acl, acl2),
-                list(aclReaders, aclReaders2));
+                asList(acl, acl2),
+                asList(aclReaders, aclReaders2));
 
 
         //Check for the ACL state stamp.
@@ -100,9 +94,9 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
         builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_SOLR4_ID, "TRACKER!STATE!ACLTX")), BooleanClause.Occur.MUST));
         builder.add(new BooleanClause(LegacyNumericRangeQuery.newLongRange(QueryConstants.FIELD_S_ACLTXID, aclChangeSet.getId(), aclChangeSet.getId() + 1, true, false), BooleanClause.Occur.MUST));
         BooleanQuery waitForQuery = builder.build();
+        long MAX_WAIT_TIME = 80000;
         waitForDocCount(waitForQuery, 1, MAX_WAIT_TIME);
 
-        logger.info("#################### Passed First Test ##############################");
 
         String owner = "mike";
 
@@ -142,37 +136,34 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
             metadataList.add(fileMetaData);
         });
 
-        indexTransaction(foldertxn, list(folderNode), list(folderMetaData));
+        indexTransaction(foldertxn, singletonList(folderNode), singletonList(folderMetaData));
         indexTransaction(txn, nodeList, metadataList);
-        logger.info("######### Waiting for Doc Count ###########");
 
         waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "jim")), 1, MAX_WAIT_TIME);
         waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_OWNER, owner)), 4, MAX_WAIT_TIME);
     }
 
     @AfterClass
-    public static void clearQueue() {
-        SOLRAPIQueueClient.nodeMetaDataMap.clear();
-        SOLRAPIQueueClient.transactionQueue.clear();
-        SOLRAPIQueueClient.aclChangeSetQueue.clear();
-        SOLRAPIQueueClient.aclReadersMap.clear();
-        SOLRAPIQueueClient.aclMap.clear();
-        SOLRAPIQueueClient.nodeMap.clear();
-        SOLRAPIQueueClient.nodeContentMap.clear();
+    public static void clearQueue()
+    {
+        SOLRAPIQueueClient.NODE_META_DATA_MAP.clear();
+        SOLRAPIQueueClient.TRANSACTION_QUEUE.clear();
+        SOLRAPIQueueClient.ACL_CHANGE_SET_QUEUE.clear();
+        SOLRAPIQueueClient.ACL_READERS_MAP.clear();
+        SOLRAPIQueueClient.ACL_MAP.clear();
+        SOLRAPIQueueClient.NODE_MAP.clear();
+        SOLRAPIQueueClient.NODE_CONTENT_MAP.clear();
     }
-
 
     @Test
     public void highlightingSnippetsFragSizeTest()
     {
-
-        logger.info("######### Testing SNIPPETS / FRAGSIZE ###########");
         SolrServletRequest req = areq(params( "q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
                 HighlightParams.Q, "long",
                 HighlightParams.FIELDS, "content,name,title",
-                HighlightParams.SNIPPETS, String.valueOf(4),
-                HighlightParams.FRAGSIZE, String.valueOf(40)),
+                HighlightParams.SNIPPETS, "4",
+                HighlightParams.FRAGSIZE, "40"),
                 "{\"locales\":[\"en\"], \"tenants\": [ \"\" ]}");
 
         assertQ(req,
@@ -188,8 +179,6 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
     @Test
     public void highlightingPhraseQueriesTest()
     {
-        logger.info("######### Testing PHRASE QUERIES ###########");
-
         //Phrase hightling is on by default
         SolrServletRequest req = areq(params( "q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
@@ -223,13 +212,11 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
     @Test
     public void highlightingMaxAnalyzedCharsTest()
     {
-        logger.info("######### maxAnalyzedChars ###########");
-
         SolrServletRequest req = areq(params( "q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
                 HighlightParams.Q, "long",
                 HighlightParams.FIELDS, "name,title",
-                HighlightParams.MAX_CHARS, "18",
+                HighlightParams.MAX_CHARS, "30",
                 HighlightParams.SIMPLE_PRE, "{",
                 HighlightParams.SIMPLE_POST, "}"),
                 "{\"locales\":[\"en\"], \"tenants\": [ \"\" ]}");
@@ -238,14 +225,12 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
                 "*[count(//lst[@name='highlighting']/lst)=2]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=2]",
                 "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='some very {long} name']",
-                "//lst[@name='highlighting']/lst[2]/arr[@name='name']/str[.='this is some {long}']");
+                "//lst[@name='highlighting']/lst[2]/arr[@name='name']/str[.='this is some {long} text']");
     }
 
     @Test
     public void highlightingMergeContinuousFragmentsTest()
     {
-        logger.info("######### MergeContiguous ###########");
-
         SolrServletRequest req = areq(params( "q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
                 HighlightParams.Q, "'some long'",
@@ -266,8 +251,6 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
     @Test
     public void highlightingLocalConfigurationsTest()
     {
-        logger.info("######### testLocal ###########");
-
         SolrServletRequest req = areq(params( "q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
                 HighlightParams.Q, "long",
@@ -290,9 +273,7 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
     @Test
     public void highlightingRequiredFieldsTest()
     {
-        logger.info("######### requireFieldMatch ###########");
-
-        SolrServletRequest req = areq(params( "q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
+       SolrServletRequest req = areq(params( "q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
                 HighlightParams.Q, "long",
                 HighlightParams.FIELDS, "name,title",
@@ -304,7 +285,6 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
                 "*[count(//lst[@name='highlighting']/lst)=2]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='title'])=1]",
                 "//lst[@name='highlighting']/lst[1]/arr[@name='title']/str[.='title1 is very {long}']");
-        //add name
 
         req = areq(params( "q", "name:long OR title:long", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
@@ -320,15 +300,11 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='title'])=1]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=0]",
                 "//lst[@name='highlighting']/lst[1]/arr[@name='title']/str[.='title1 is very {long}']");
-
-
-        logger.info("######### MultiTerm ###########");
     }
 
     @Test
     public void highlightingPrePostTest()
     {
-        logger.info("######### Testing PRE / POST ###########");
         SolrServletRequest req = areq(params( "q", "name:long", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
                 HighlightParams.Q, "long",
@@ -352,11 +328,8 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
     @Test
     public void highlightingCamelCaseTest()
     {
-        logger.info("######### CamelCase ###########");
-
         SolrServletRequest req = areq(params( "q", "name:cabbage", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
-                //HighlightParams.Q, "lon*",
                 HighlightParams.FIELDS, "name",
                 HighlightParams.HIGHLIGHT_MULTI_TERM, "false",
                 HighlightParams.SIMPLE_PRE, "{",
@@ -368,15 +341,12 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
         assertQ(req,
                 "*[count(//lst[@name='highlighting']/lst)=1]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=1]",
-                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='Mixed{Cabbage}String and plurals and discussion']"
-        );
+                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='Mixed{Cabbage}String and plurals and discussion']");
     }
 
     @Test
     public void highlightingPluralsTest()
     {
-        logger.info("######### Plurals ###########");
-
         SolrServletRequest req = areq(params( "q", "name:plural", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
                 //HighlightParams.Q, "lon*",
@@ -391,16 +361,13 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
         assertQ(req,
                 "*[count(//lst[@name='highlighting']/lst)=1]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=1]",
-                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='MixedCabbageString and {plurals} and discussion']"
-        );
+                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='MixedCabbageString and {plurals} and discussion']");
     }
 
     @Test
     public void highlightingStemmingTest()
     {
-
-        logger.info("######### stemming ###########");
-        SolrServletRequest req = areq(params( "q", "name:discussions", "qt", "/afts", "start", "0", "rows", "5",
+        SolrServletRequest req = areq(params( "q", "name:discuss", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
                 //HighlightParams.Q, "lon*",
                 HighlightParams.FIELDS, "name",
@@ -414,16 +381,13 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
         assertQ(req,
                 "*[count(//lst[@name='highlighting']/lst)=1]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=1]",
-                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='MixedCabbageString and plurals and {discussion}']"
-        );
+                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='MixedCabbageString and plurals and {discussion}']");
     }
 
 
     @Test
     public void highlightingBooleanConjunctionTest()
     {
-
-        logger.info("######### AND ###########");
         SolrServletRequest req = areq(params( "q", "title:(is AND long)", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
                 HighlightParams.FIELDS, "title",
@@ -435,16 +399,12 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
         assertQ(req,
                 "*[count(//lst[@name='highlighting']/lst)=1]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='title'])=1]",
-                "//lst[@name='highlighting']/lst[1]/arr[@name='title']/str[.='title1 {is} very {long}']"
-        );
+                "//lst[@name='highlighting']/lst[1]/arr[@name='title']/str[.='title1 {is} very {long}']");
     }
-
 
     @Test
     public void highlightingBooleanConjunctionGenericTextTest()
     {
-
-        logger.info("######### conjunction queries ###########");
         SolrServletRequest req = areq(params( "q", "(very AND name)", "qt", "/afts", "start", "0", "rows", "5",
                 HighlightParams.HIGHLIGHT, "true",
                 HighlightParams.FIELDS, "name",
@@ -456,8 +416,6 @@ public class AlfrescoHighlighterIT extends AbstractAlfrescoSolrIT
         assertQ(req,
                 "*[count(//lst[@name='highlighting']/lst)=1]",
                 "*[count(//lst[@name='highlighting']/lst/arr[@name='name'])=1]",
-                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='some {very} long {name}']"
-        );
+                "//lst[@name='highlighting']/lst[1]/arr[@name='name']/str[.='some {very} long {name}']");
     }
 }
-

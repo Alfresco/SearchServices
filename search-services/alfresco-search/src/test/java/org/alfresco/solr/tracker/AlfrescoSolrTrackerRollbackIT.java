@@ -78,12 +78,12 @@ public class AlfrescoSolrTrackerRollbackIT extends AbstractAlfrescoSolrIT
 
     @After
     public void clearQueue() throws Exception {
-        SOLRAPIQueueClient.nodeMetaDataMap.clear();
-        SOLRAPIQueueClient.transactionQueue.clear();
-        SOLRAPIQueueClient.aclChangeSetQueue.clear();
-        SOLRAPIQueueClient.aclReadersMap.clear();
-        SOLRAPIQueueClient.aclMap.clear();
-        SOLRAPIQueueClient.nodeMap.clear();
+        SOLRAPIQueueClient.NODE_META_DATA_MAP.clear();
+        SOLRAPIQueueClient.TRANSACTION_QUEUE.clear();
+        SOLRAPIQueueClient.ACL_CHANGE_SET_QUEUE.clear();
+        SOLRAPIQueueClient.ACL_READERS_MAP.clear();
+        SOLRAPIQueueClient.ACL_MAP.clear();
+        SOLRAPIQueueClient.NODE_MAP.clear();
     }
 
 
@@ -194,8 +194,8 @@ public class AlfrescoSolrTrackerRollbackIT extends AbstractAlfrescoSolrIT
         //Take the rollback transaction out of the queue so it doesn't get re-indexed following the rollback.
         //This will prove the rollback transaction was rolled back
 
-        SOLRAPIQueueClient.transactionQueue.remove(rollbackTxn);
-        metadataTracker.setRollback(true);
+        SOLRAPIQueueClient.TRANSACTION_QUEUE.remove(rollbackTxn);
+        metadataTracker.setRollback(true, new Exception("Forced rollback!"));
 
         commitTracker.getRunLock().release();
 

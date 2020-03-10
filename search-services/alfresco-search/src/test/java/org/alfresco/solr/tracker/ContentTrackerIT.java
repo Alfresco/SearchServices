@@ -35,7 +35,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContentTrackerIT
@@ -72,7 +72,7 @@ public class ContentTrackerIT
     public void doTrackWithNoContentDoesNothing() throws Exception
     {
         this.contentTracker.doTrack();
-        verify(srv, never()).updateContentToIndexAndCache(anyLong(), anyString());
+        verify(srv, never()).updateContent(any());
         verify(srv, never()).commit();
     }
 
@@ -120,16 +120,24 @@ public class ContentTrackerIT
          */
 
         // From docs1
-        order.verify(srv, times(UPDATE_BATCH)).updateContentToIndexAndCache(1l, "1");
+        TenantAclIdDbId docRef = new TenantAclIdDbId();
+        docRef.dbId = 1L;
+        docRef.tenant = "1";
+
+        order.verify(srv, times(UPDATE_BATCH)).updateContent(docRef);
         order.verify(srv).commit();
+
         // The one extra doc should be processed and then committed
-        order.verify(srv).updateContentToIndexAndCache(thirdDoc.dbId, thirdDoc.tenant);
+        order.verify(srv).updateContent(thirdDoc);
         order.verify(srv).commit();
         
         order.verify(srv).getDocsWithUncleanContent(0 + READ_BATCH, READ_BATCH);
         
         // From docs2
-        order.verify(srv, times(UPDATE_BATCH)).updateContentToIndexAndCache(2l, "2");
+        docRef = new TenantAclIdDbId();
+        docRef.dbId = 2L;
+        docRef.tenant = "2";
+        order.verify(srv, times(UPDATE_BATCH)).updateContent(docRef);
         order.verify(srv).commit();
         
         order.verify(srv).getDocsWithUncleanContent(0 + READ_BATCH + READ_BATCH, READ_BATCH);
@@ -137,7 +145,6 @@ public class ContentTrackerIT
     @Test
     public void typeCheck()
     {
-        Assert.assertTrue(contentTracker.getType().equals(Tracker.Type.CONTENT));
+        Assert.assertEquals(contentTracker.getType(), Tracker.Type.CONTENT);
     }
-    
 }

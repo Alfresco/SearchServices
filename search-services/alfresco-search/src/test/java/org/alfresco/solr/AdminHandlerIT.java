@@ -1,6 +1,5 @@
 package org.alfresco.solr;
 
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.common.params.CoreAdminParams;
@@ -9,15 +8,14 @@ import org.apache.solr.response.SolrQueryResponse;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 @SolrTestCaseJ4.SuppressSSL
 public class AdminHandlerIT extends AbstractAlfrescoSolrIT
 {
-
     static CoreAdminHandler admin;
 
     @BeforeClass
-    public static void beforeClass() throws Exception {
+    public static void beforeClass() throws Exception
+    {
         initAlfrescoCore("schema.xml");
         admin = getMultiCoreHandler();
     }
@@ -47,7 +45,8 @@ public class AdminHandlerIT extends AbstractAlfrescoSolrIT
         requestAction("SUMMARY");
     }
 
-    private void requestAction(String actionName) throws Exception {
+    private void requestAction(String actionName) throws Exception
+    {
         admin.handleRequestBody(req(CoreAdminParams.ACTION, actionName,
                 CoreAdminParams.NAME, getCore().getName()),
                 new SolrQueryResponse());

@@ -83,15 +83,15 @@
           <arr name="env"> <str>MYVAR=val1</str> </arr>
         </listener>
         -->
-<!--
-        <updateLog enable="${enable.update.log:true}">
+
+        <updateLog enable="true">
             <str name="dir">${solr.ulog.dir:}</str>
         </updateLog>
-
-        <commitWithin>
-            <softCommit>${solr.commitwithin.softcommit:true}</softCommit>
-        </commitWithin>
-        -->
+        <!--
+                <commitWithin>
+                    <softCommit>${solr.commitwithin.softcommit:true}</softCommit>
+                </commitWithin>
+                -->
 
     </updateHandler>
 
@@ -280,6 +280,7 @@
         <arr name="components">
             <str>setLocale</str>
             <str>rewriteFacetParameters</str>
+            <str>rewriteFieldListComponent</str>
             <str>query</str>
             <str>facet</str>
             <str>facet_module</str>
@@ -465,6 +466,27 @@
         <gettableFiles>solrconfig.xml schema.xml admin-extra.html</gettableFiles>
     </admin>
 
+    <updateProcessor name="field-values-deduplication" class="solr.UniqFieldsUpdateProcessorFactory">
+        <arr name="fieldName">
+            <str>FIELDS</str>
+            <str>PROPERTIES</str>
+            <str>NULLPROPERTIES</str>
+            <str>ASPECT</str>
+            <str>ANCESTOR</str>
+            <str>PARENT</str>
+            <str>READER</str>
+            <str>DENIED</str>
+            <str>OWNER</str>
+            <str>SITE</str>
+            <str>TAG</str>
+        </arr>
+    </updateProcessor>
+
+    <updateRequestProcessorChain name="uniq-fields" default="true" post-processor="field-values-deduplication">
+        <processor class="solr.LogUpdateProcessorFactory" />
+        <processor class="solr.RunUpdateProcessorFactory" />
+    </updateRequestProcessorChain>
+
     <!-- test getting system property -->
     <!--  
     <propTest attr1="${solr.test.sys.prop1}-$${literal}"
@@ -549,14 +571,13 @@
 
     </searchComponent>
     <searchComponent name="spellcheckbackcompat" class="org.alfresco.solr.component.spellcheck.AlfrescoSpellCheckBackCompatComponent"/>
-    <searchComponent name="rewriteFacetParameters"     class="org.alfresco.solr.component.RewriteFacetParametersComponent" />
-    <searchComponent name="rewriteFacetCounts"     class="org.alfresco.solr.component.RewriteFacetCountsComponent" />
-    <searchComponent name="setProcessedDenies"     class="org.alfresco.solr.component.SetProcessedDeniesComponent" />
+    <searchComponent name="rewriteFacetParameters" class="org.alfresco.solr.component.RewriteFacetParametersComponent" />
+    <searchComponent name="rewriteFieldListComponent"     class="org.alfresco.solr.component.RewriteFieldListComponent" />
+    <searchComponent name="rewriteFacetCounts" class="org.alfresco.solr.component.RewriteFacetCountsComponent" />
+    <searchComponent name="setProcessedDenies" class="org.alfresco.solr.component.SetProcessedDeniesComponent" />
 
-    <transformer name="cached" class="org.alfresco.solr.transformer.CachedDocTransformerFactory" >
-    </transformer>
-
-
-
+    <!-- CachedDocTransformer has been renamed, but we retained both codes (new and old) for retro-compatibility -->
+    <transformer name="cached" class="org.alfresco.solr.transformer.AlfrescoFieldMapperTransformerFactory" />
+    <transformer name="fmap" class="org.alfresco.solr.transformer.AlfrescoFieldMapperTransformerFactory"/>
 </config>
 

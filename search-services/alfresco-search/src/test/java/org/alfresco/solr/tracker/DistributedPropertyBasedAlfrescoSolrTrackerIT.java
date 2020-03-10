@@ -52,7 +52,6 @@ import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.client.Transaction;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -65,24 +64,23 @@ import org.junit.Test;
  */
 @SolrTestCaseJ4.SuppressSSL
 @SolrTestCaseJ4.SuppressObjectReleaseTracker (bugUrl = "RAMDirectory")
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedPropertyBasedAlfrescoSolrTrackerIT extends AbstractAlfrescoDistributedIT
 {
     private static final String[] DOMAINS = {"alfresco.com", "king.com", "gmail.com", "yahoo.com", "cookie.es"};
     private static final Map<String,Integer> domainsCount = new HashMap<>();
 
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
         for (String domain : DOMAINS)
         {
             domainsCount.put(domain,0);
         }
-        initSolrServers(4, "DistributedPropertyBasedAlfrescoSolrTrackerIT", getProperties());
+        initSolrServers(4, getSimpleClassName(), getProperties());
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }

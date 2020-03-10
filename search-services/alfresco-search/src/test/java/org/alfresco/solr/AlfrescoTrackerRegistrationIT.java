@@ -33,26 +33,30 @@ import org.junit.Test;
 public class AlfrescoTrackerRegistrationIT extends AbstractAlfrescoSolrIT
 {
     @BeforeClass
-    public static void beforeClass() throws Exception {
+    public static void beforeClass() throws Exception
+    {
         initAlfrescoCore("schema.xml");
     }
 
     @After
-    public void clearQueue() throws Exception {
-        SOLRAPIQueueClient.nodeMetaDataMap.clear();
-        SOLRAPIQueueClient.transactionQueue.clear();
-        SOLRAPIQueueClient.aclChangeSetQueue.clear();
-        SOLRAPIQueueClient.aclReadersMap.clear();
-        SOLRAPIQueueClient.aclMap.clear();
-        SOLRAPIQueueClient.nodeMap.clear();
+    public void clearQueue()
+    {
+        SOLRAPIQueueClient.NODE_META_DATA_MAP.clear();
+        SOLRAPIQueueClient.TRANSACTION_QUEUE.clear();
+        SOLRAPIQueueClient.ACL_CHANGE_SET_QUEUE.clear();
+        SOLRAPIQueueClient.ACL_READERS_MAP.clear();
+        SOLRAPIQueueClient.ACL_MAP.clear();
+        SOLRAPIQueueClient.NODE_MAP.clear();
     }
+
     @Test
     public void checkCronOnTrackers()
     {
         Collection<Tracker> trackers = getTrackers();
         Assert.assertNotNull(trackers);
-        trackers.forEach((tracker-> checkCronOnTracker(tracker)));
+        trackers.forEach((this::checkCronOnTracker));
     }
+
     private void checkCronOnTracker(Tracker tracker)
     {
         Properties props = tracker.getProps();

@@ -96,7 +96,11 @@ public class SolrTrackerScheduler
         String jobName = this.getJobName(tracker, coreName);
         JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.put(TrackerJob.JOBDATA_TRACKER_KEY, tracker);
-        JobDetail job = JobBuilder.newJob(TrackerJob.class).withIdentity(jobName, SOLR_JOB_GROUP).setJobData(jobDataMap).build();
+        JobDetail job =
+                JobBuilder.newJob(TrackerJob.class)
+                        .withIdentity(jobName, SOLR_JOB_GROUP)
+                        .withDescription(jobName)
+                        .setJobData(jobDataMap).build();
         Trigger trigger;
         try
         {

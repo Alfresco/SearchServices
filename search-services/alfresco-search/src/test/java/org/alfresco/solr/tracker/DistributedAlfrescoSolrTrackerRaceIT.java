@@ -31,7 +31,6 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -53,23 +52,20 @@ import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
  * @author Andrea Gazzarini
  */
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedAlfrescoSolrTrackerRaceIT extends AbstractAlfrescoDistributedIT
 {
 
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
         initSolrServers(2, "DistributedAlfrescoSolrTrackerRaceTest", null);
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }
-    
-    
 
     @Test
     public void testTracker() throws Exception
@@ -84,7 +80,8 @@ public class DistributedAlfrescoSolrTrackerRaceIT extends AbstractAlfrescoDistri
         AclReaders aclReaders = getAclReaders(aclChangeSet, acl, singletonList("joel"), singletonList("phil"), null);
         AclReaders aclReaders2 = getAclReaders(aclChangeSet, acl2, singletonList("jim"), singletonList("phil"), null);
 
-        Transaction txn = getTransaction(0, 2);
+        // Transaction between [1-2000] is required, when greater value checking the core will fail
+        Transaction txn = getTransaction(0, 2, 1);
         long txnCommitTimeMs = txn.getCommitTimeMs();
 
         // Subtract from the commit time to go beyond hole retention

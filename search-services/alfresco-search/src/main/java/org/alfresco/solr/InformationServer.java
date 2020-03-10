@@ -43,14 +43,14 @@ import org.json.JSONException;
 
 /**
  * This is the interface to the information server, whether it be Solr or some other search server.
- * @author Ahmed Owian
  *
+ * @author Ahmed Owian
  */
 public interface InformationServer extends InformationServerCollectionProvider
 {
-    public static final String PROP_PREFIX_PARENT_TYPE = "alfresco.metadata.ignore.datatype.";
+    String PROP_PREFIX_PARENT_TYPE = "alfresco.metadata.ignore.datatype.";
 
-    public static final String PROP_PREFIX_PARENT_ASPECT = "alfresco.metadata.ignore.aspect.";
+    String PROP_PREFIX_PARENT_ASPECT = "alfresco.metadata.ignore.aspect.";
 
     void rollback() throws IOException;
 
@@ -88,7 +88,7 @@ public interface InformationServer extends InformationServerCollectionProvider
 
     void indexNode(Node node, boolean overwrite) throws IOException, AuthenticationException, JSONException;
     
-    void indexNodes(List<Node> nodes, boolean overwrite, boolean cascade) throws IOException, AuthenticationException, JSONException;
+    void indexNodes(List<Node> nodes, boolean overwrite) throws IOException, AuthenticationException, JSONException;
 
     void cascadeNodes(List<NodeMetaData> nodes, boolean overwrite) throws IOException, AuthenticationException, JSONException;
 
@@ -118,9 +118,9 @@ public interface InformationServer extends InformationServerCollectionProvider
 
     boolean isInIndex(String id) throws IOException;
 
-    public void setCleanContentTxnFloor(long cleanContentTxnFloor);
+    void setCleanContentTxnFloor(long cleanContentTxnFloor);
 
-    public void setCleanCascadeTxnFloor(long cleanCascadeTxnFloor);
+    void setCleanCascadeTxnFloor(long cleanCascadeTxnFloor);
 
     Set<Long> getErrorDocIds() throws IOException;
 
@@ -150,11 +150,15 @@ public interface InformationServer extends InformationServerCollectionProvider
 
     List<TenantAclIdDbId> getDocsWithUncleanContent(int start, int rows) throws IOException;
 
-    void updateContentToIndexAndCache(long dbId, String tenant) throws Exception;
+    void updateContent(TenantAclIdDbId docRef) throws Exception;
 
     void addCommonNodeReportInfo(NodeReport nodeReport);
 
-    void addFTSStatusCounts(NamedList<Object> ihr);
+    /**
+     * Adds to the input report container (a {@link NamedList}) the counts of nodes/documents whose content is
+     * outdated and updated (i.e. in synch with the CMS).
+     */
+    void addContentOutdatedAndUpdatedCounts(NamedList<Object> ihr);
 
     IndexHealthReport reportAclTransactionsInIndex(Long minAclTxId, IOpenBitSet aclTxIdsInDb, long maxAclTxId);
 
@@ -180,5 +184,10 @@ public interface InformationServer extends InformationServerCollectionProvider
     
     String getBaseUrl();
 
-    void flushContentStore() throws IOException;
+    /**
+     * Check if cascade tracking is enabled.
+     *
+     * @return true if cascade tracking is enabled (note that this is the default behaviour if not specified in the properties file).
+     */
+    boolean cascadeTrackingEnabled();
 }

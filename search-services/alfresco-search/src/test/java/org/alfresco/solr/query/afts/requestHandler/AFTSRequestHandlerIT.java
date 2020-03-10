@@ -18,7 +18,6 @@ import org.junit.Test;
 
 import java.util.Locale;
 
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 @SolrTestCaseJ4.SuppressSSL
 public class AFTSRequestHandlerIT extends AbstractRequestHandlerIT implements QueryConstants
 {
@@ -106,14 +105,7 @@ public class AFTSRequestHandlerIT extends AbstractRequestHandlerIT implements Qu
     @Test
     public void primaryParentField()
     {
-
         assertResponseCardinality(FIELD_PRIMARYPARENT, "\"" + TEST_NODEREF + "\"", 2);
-    }
-
-    @Test
-    public void ftsStatusField()
-    {
-        assertResponseCardinality(FIELD_FTSSTATUS, "\"New\"", 2);
     }
 
     @Test

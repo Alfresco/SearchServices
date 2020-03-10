@@ -30,6 +30,7 @@ import org.alfresco.solr.client.PropertyValue;
 import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.dataload.TestDataProvider;
 import org.alfresco.util.Pair;
+import org.apache.solr.SolrTestCaseJ4;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -41,6 +42,7 @@ import java.util.Map;
  *
  * @author elia
  */
+@SolrTestCaseJ4.SuppressSSL
 public class AFTSRangeQueryIT extends AbstractRequestHandlerIT
 {
     @BeforeClass

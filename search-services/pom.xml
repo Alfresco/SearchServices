@@ -15,7 +15,7 @@
     <name>Alfresco Solr Search parent</name>
     <properties>
         <slf4j.version>1.7.30</slf4j.version>
-        <cxf.version>3.2.5</cxf.version>
+        <cxf.version>3.2.12</cxf.version>
     </properties>
     <modules>
         <module>alfresco-solrclient-lib</module>

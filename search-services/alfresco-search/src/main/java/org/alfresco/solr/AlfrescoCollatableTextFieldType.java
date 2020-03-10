@@ -80,7 +80,6 @@ public class AlfrescoCollatableTextFieldType extends StrField
 
     public static class TextSortFieldComparatorSource extends FieldComparatorSource
     {
-
         /*
          * (non-Javadoc)
          * @see org.apache.lucene.search.FieldComparatorSource#newComparator(java.lang.String, int, int, boolean)
@@ -90,10 +89,8 @@ public class AlfrescoCollatableTextFieldType extends StrField
         {
             return new TextSortFieldComparator(numHits, fieldname, I18NUtil.getLocale());
         }
-
     }
 
-    
     
     /*
      * Adapted from org.apache.lucene.search.FieldComparator.TermValComparator<T>
@@ -174,7 +171,7 @@ public class AlfrescoCollatableTextFieldType extends StrField
             else if (withLocale.startsWith("\u0000"))
             {
                 String[] parts = withLocale.split("\u0000");
-                return parts[1];
+                return parts[2];
             }
             else
             {

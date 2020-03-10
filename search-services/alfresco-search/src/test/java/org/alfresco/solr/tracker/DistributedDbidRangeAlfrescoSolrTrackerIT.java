@@ -28,13 +28,13 @@ import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.Transaction;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -52,17 +52,16 @@ import static org.alfresco.solr.AlfrescoSolrUtils.list;
  * @author Joel
  */
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedDbidRangeAlfrescoSolrTrackerIT extends AbstractAlfrescoDistributedIT
 {
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
-        initSolrServers(2, "DistributedDbidRangeAlfrescoSolrTrackerIT", getShardMethod());
+        initSolrServers(2, getSimpleClassName(), getShardMethod());
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }
@@ -75,16 +74,16 @@ public class DistributedDbidRangeAlfrescoSolrTrackerIT extends AbstractAlfrescoD
         int numAcls = 250;
         AclChangeSet bulkAclChangeSet = getAclChangeSet(numAcls);
 
-        List<Acl> bulkAcls = new ArrayList();
-        List<AclReaders> bulkAclReaders = new ArrayList();
+        List<Acl> bulkAcls = new ArrayList<>();
+        List<AclReaders> bulkAclReaders = new ArrayList<>();
 
         for(int i=0; i<numAcls; i++) {
             Acl bulkAcl = getAcl(bulkAclChangeSet);
             bulkAcls.add(bulkAcl);
             bulkAclReaders.add(getAclReaders(bulkAclChangeSet,
                     bulkAcl,
-                    list("joel"+bulkAcl.getId()),
-                    list("phil"+bulkAcl.getId()),
+                    Collections.singletonList("joel"+bulkAcl.getId()),
+                    Collections.singletonList("phil"+bulkAcl.getId()),
                     null));
         }
 
@@ -93,12 +92,13 @@ public class DistributedDbidRangeAlfrescoSolrTrackerIT extends AbstractAlfrescoD
                 bulkAclReaders);
 
         int numNodes = 150;
-        List<Node> nodes = new ArrayList();
-        List<NodeMetaData> nodeMetaDatas = new ArrayList();
+        List<Node> nodes = new ArrayList<>();
+        List<NodeMetaData> nodeMetaDatas = new ArrayList<>();
 
         Transaction bigTxn = getTransaction(0, numNodes);
 
-        for(int i=0; i<numNodes; i++) {
+        for(int i=0; i<numNodes; i++)
+        {
             int aclIndex = i % numAcls;
             Node node = getNode((long)i, bigTxn, bulkAcls.get(aclIndex), Node.SolrApiNodeStatus.UPDATED);
             nodes.add(node);
