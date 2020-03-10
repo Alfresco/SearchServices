@@ -102,7 +102,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
 
         return new AclChangeSets(
                 ACL_CHANGE_SET_QUEUE.stream()
-                        .filter(aclChangeSet -> aclChangeSet.getCommitTimeMs() >= fromCommitTime && aclChangeSet.getCommitTimeMs() <= toCommitTime)
+                        .filter(aclChangeSet -> (fromCommitTime != null && aclChangeSet.getCommitTimeMs() >= fromCommitTime) && (toCommitTime != null && aclChangeSet.getCommitTimeMs() <= toCommitTime))
                         .limit(maxResults)
                         .peek(aclChangeSet -> {
                             maxTime.set(Math.max(aclChangeSet.getCommitTimeMs(), maxTime.get()));
@@ -197,7 +197,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
 
         return new Transactions(
                 TRANSACTION_QUEUE.stream()
-                        .filter(txn -> txn.getCommitTimeMs() >= fromCommitTime && txn.getCommitTimeMs() <= toCommitTime)
+                        .filter(txn -> (fromCommitTime != null && txn.getCommitTimeMs() >= fromCommitTime) && (toCommitTime != null && txn.getCommitTimeMs() <= toCommitTime))
                         .limit(maxResults)
                         .peek(txn -> {
                             maxTime.set(Math.max(txn.getCommitTimeMs(), maxTime.get()));
