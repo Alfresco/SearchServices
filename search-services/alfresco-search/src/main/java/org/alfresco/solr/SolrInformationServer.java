@@ -2531,80 +2531,84 @@ public class SolrInformationServer implements InformationServer
                 QName propertyQName, long dbId, String locale) throws AuthenticationException, IOException
     {
         long start = System.nanoTime();
-
-        // Expensive call to be done with ContentTracker
-        GetTextContentResponse response = repositoryClient.getTextContent(dbId, propertyQName, null);
-
-        addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_STATUS,
-                response);
-        addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_EXCEPTION,
-                response);
-        addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_TIME,
-                response);
-
-        InputStream ris = response.getContent();
-        if (Objects.equals(response.getContentEncoding(), "gzip"))
-        {
-            ris = new GZIPInputStream(ris);
-        }
-        String textContent = "";
+        GetTextContentResponse response = null;
         try
         {
+            // Expensive call to be done with ContentTracker
+            response = repositoryClient.getTextContent(dbId, propertyQName, null);
+
+            addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_STATUS,
+                    response);
+            addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_EXCEPTION,
+                    response);
+            addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_TIME,
+                    response);
+
+            InputStream ris = response.getContent();
+            if (Objects.equals(response.getContentEncoding(), "gzip"))
+            {
+                ris = new GZIPInputStream(ris);
+            }
+            String textContent = "";
+
             if (ris != null)
             {
                 // Get and copy content
                 byte[] bytes = FileCopyUtils.copyToByteArray(new BoundedInputStream(ris, contentStreamLimit));
                 textContent = new String(bytes, StandardCharsets.UTF_8);
             }
+
+            if(minHash && textContent.length() > 0)
+            {
+                Analyzer analyzer = core.getLatestSchema().getFieldType("min_hash").getIndexAnalyzer();
+                TokenStream ts = analyzer.tokenStream("min_hash", textContent);
+                CharTermAttribute termAttribute = ts.getAttribute(CharTermAttribute.class);
+                ts.reset();
+                while (ts.incrementToken())
+                {
+                    StringBuilder tokenBuff = new StringBuilder();
+                    char[] buff = termAttribute.buffer();
+
+                    for(int i=0; i<termAttribute.length();i++)
+                    {
+                        tokenBuff.append(Integer.toHexString(buff[i]));
+                    }
+                    doc.addField(FINGERPRINT_FIELD, tokenBuff.toString());
+
+                }
+                ts.end();
+                ts.close();
+            }
+
+            long end = System.nanoTime();
+            this.getTrackerStats().addDocTransformationTime(end - start);
+
+            StringBuilder builder = new StringBuilder(textContent.length() + 16);
+            builder.append("\u0000").append(locale).append("\u0000");
+            builder.append(textContent);
+            String localisedText = builder.toString();
+
+            for (FieldInstance field : AlfrescoSolrDataModel.getInstance().getIndexedFieldNamesForProperty(propertyQName).getFields())
+            {
+                doc.removeField(field.getField());
+                if(field.isLocalised())
+                {
+                    doc.addField(field.getField(), localisedText);
+                }
+                else
+                {
+                    doc.addField(field.getField(), textContent);
+                }
+                addFieldIfNotSet(doc, field);
+            }
         }
         finally
         {
             // release the response only when the content has been read
-            response.release();
-        }
-
-        if(minHash && textContent.length() > 0)
-        {
-            Analyzer analyzer = core.getLatestSchema().getFieldType("min_hash").getIndexAnalyzer();
-            TokenStream ts = analyzer.tokenStream("min_hash", textContent);
-            CharTermAttribute termAttribute = ts.getAttribute(CharTermAttribute.class);
-            ts.reset();
-            while (ts.incrementToken())
+            if (response != null)
             {
-                StringBuilder tokenBuff = new StringBuilder();
-                char[] buff = termAttribute.buffer();
-
-                for(int i=0; i<termAttribute.length();i++)
-                {
-                    tokenBuff.append(Integer.toHexString(buff[i]));
-                }
-                doc.addField(FINGERPRINT_FIELD, tokenBuff.toString());
-
+                response.release();
             }
-            ts.end();
-            ts.close();
-        }
-
-        long end = System.nanoTime();
-        this.getTrackerStats().addDocTransformationTime(end - start);
-
-        StringBuilder builder = new StringBuilder(textContent.length() + 16);
-        builder.append("\u0000").append(locale).append("\u0000");
-        builder.append(textContent);
-        String localisedText = builder.toString();
-
-        for (FieldInstance field : AlfrescoSolrDataModel.getInstance().getIndexedFieldNamesForProperty(propertyQName).getFields())
-        {
-            doc.removeField(field.getField());
-            if(field.isLocalised())
-            {
-                doc.addField(field.getField(), localisedText);
-            }
-            else
-            {
-                doc.addField(field.getField(), textContent);
-            }
-            addFieldIfNotSet(doc, field);
         }
     }
 

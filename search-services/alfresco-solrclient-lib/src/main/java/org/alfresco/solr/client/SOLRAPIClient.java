@@ -1152,7 +1152,9 @@ public class SOLRAPIClient
         
         if(response.getStatus() != Status.STATUS_NOT_MODIFIED && response.getStatus() != Status.STATUS_NO_CONTENT && response.getStatus() != Status.STATUS_OK)
         {
-            throw new AlfrescoRuntimeException("GetTextContentResponse return status is " + response.getStatus());
+            int status = response.getStatus();
+            response.release();
+            throw new AlfrescoRuntimeException("GetTextContentResponse return status is " + status);
         }
 
         return new GetTextContentResponse(response);
