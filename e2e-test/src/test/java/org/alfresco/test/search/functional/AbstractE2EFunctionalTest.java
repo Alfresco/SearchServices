@@ -6,11 +6,15 @@
  */
 package org.alfresco.test.search.functional;
 
+import static java.util.Optional.ofNullable;
+
 import org.alfresco.cmis.CmisWrapper;
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.core.RestProperties;
 import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.rest.model.RestRequestSpellcheckModel;
+import org.alfresco.rest.search.Pagination;
 import org.alfresco.rest.search.RestRequestHighlightModel;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchNodeModel;
@@ -86,7 +90,10 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
 
     protected static String unique_searchString;
 
-    public static final String NODE_PREFIX = "workspace/SpacesStore/";
+    protected enum SearchLanguage {
+        CMIS,
+        AFTS
+    }
 
     @BeforeSuite(alwaysRun = true)
     public void beforeSuite() throws Exception
@@ -402,12 +409,19 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
      * 
      * @param user: UserModel for the user you wish to run the query as
      * @param queryModel: The queryModel to search for, containing the query
+     * @param paging: Pagination options with skipCount and maxItems
      * @return the search response from the API
      */
-    protected SearchResponse queryAsUser(UserModel user, RestRequestQueryModel queryModel) throws Exception
+
+    protected SearchResponse queryAsUser(UserModel user, RestRequestQueryModel queryModel, Pagination paging)
     {
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.setQuery(queryModel);
+        
+        if (ofNullable(paging).isPresent())
+        {
+            searchRequest.setPaging(paging);
+        }
 
         return restClient.authenticateUser(user).withSearchAPI().search(searchRequest);
     }
@@ -432,5 +446,48 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         queryReq.setQuery(term);
         query.setQuery(queryReq);
         return query;
+    }
+
+    protected SearchResponse performSearch(UserModel asUser, String query, SearchLanguage queryLanguage, Pagination paging)
+    {
+        RestRequestQueryModel queryModel = new RestRequestQueryModel();
+        queryModel.setQuery(query);
+
+        if (!ofNullable(asUser).isPresent())
+        {
+            asUser = testUser;
+        }
+
+        if (ofNullable(queryLanguage).isPresent())
+        {
+            queryModel.setLanguage(queryLanguage.toString());
+        }
+
+        SearchResponse response = queryAsUser(asUser, queryModel, paging);
+
+        return response;
+    }
+
+    /**
+     * Set the pagination options for the API query
+     * @param skipCount Integer
+     * @param maxItems Integer
+     * @return
+     */
+    protected Pagination setPaging(Integer skipCount, Integer maxItems)
+    {
+        Pagination paging = new Pagination();
+        
+        if (ofNullable(skipCount).isPresent())
+        {
+            paging.setSkipCount(skipCount);
+        }
+
+        if (ofNullable(maxItems).isPresent())
+        {
+            paging.setMaxItems(maxItems);
+        }
+        
+        return paging;
     }
 }
