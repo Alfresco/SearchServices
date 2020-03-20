@@ -209,7 +209,7 @@ $ cd packaging/target/docker-resources/
 $ docker build -t searchservices:develop .
 ```
 
-*Search Services* Docker image is configured with with **Mutual Authentication TLS (SSL)** by default.
+*Search Services* Docker image is configured with **Mutual Authentication TLS (SSL)** by default.
 
 
 **Building Docker Image from Windows**
