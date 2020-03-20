@@ -247,6 +247,44 @@ SOLR Web Console will be available at:
 
 [http://localhost:8983/solr](http://localhost:8983/solr)
 
+**Enabling YourKit Java Profiler**
+
+This Docker Image includes [YourKit Java Profiler](https://www.yourkit.com/java/profiler/) server service. In order to enable this service, so the SOLR JVM can be inspected with the YourKit local program, additional configuration is required to set the YourKit `agentpath`. Mapping the exposed profiling port (10001 by default) is also required.
+
+Sample Docker command line invocation
+
+```bash
+$ docker run -p 8983:8983 -p 10001:10001 \
+-e SOLR_CREATE_ALFRESCO_DEFAULTS=alfresco,archive \
+-e SOLR_OPTS="-agentpath:/usr/local/YourKit-JavaProfiler-2019.8/bin/linux-x86-64/libyjpagent.so=port=10001,listen=all" \
+searchservices:develop
+```
+
+Sample Docker Compose service settings
+
+```yaml
+solr6:
+  image: searchservices:develop
+  mem_limit: 2500m
+  environment:
+      # Solr needs to know how to register itself with Alfresco
+      SOLR_ALFRESCO_HOST: "alfresco"
+      SOLR_ALFRESCO_PORT: "8080"
+      # Alfresco needs to know how to call solr
+      SOLR_SOLR_HOST: "solr6"
+      SOLR_SOLR_PORT: "8983"
+      # HTTP settings
+      ALFRESCO_SECURE_COMMS: "none"
+      #Create the default alfresco and archive cores
+      SOLR_CREATE_ALFRESCO_DEFAULTS: "alfresco,archive"
+      SOLR_JAVA_MEM: "-Xms2g -Xmx2g"
+      SOLR_OPTS: "
+          -agentpath:/usr/local/YourKit-JavaProfiler-2019.8/bin/linux-x86-64/libyjpagent.so=port=10001,listen=all
+      "
+  ports:
+      - 8083:8983 #Browser port
+      - 10001:10001 #YourKit port
+```
 
 **Public Docker repository**
 
