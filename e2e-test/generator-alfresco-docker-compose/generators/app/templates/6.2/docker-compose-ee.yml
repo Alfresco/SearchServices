@@ -12,6 +12,7 @@ services:
             TRUSTSTORE_PASS: kT9X6oe68t
             KEYSTORE_TYPE: JCEKS
             KEYSTORE_PASS: kT9X6oe68t <% } %>
+            COMPRESS_CONTENT: "<%=gzip%>"
         mem_limit: 1800m
         environment:
             JAVA_OPTS: "
@@ -78,6 +79,7 @@ services:
             SHARD_KEY: "shard:shardId" <% } %> <% if (shardingMethod == 'EXPLICIT_ID' || shardingMethod == 'EXPLICIT_ID_FALLBACK_LRIS') { %>
             SHARD_KEY: "shard:shardId" <% } %>
             SHARDING_METHOD: <%=shardingMethod%> <% } %>
+            COMPRESS_CONTENT: "<%=gzip%>"
         mem_limit: 1200m
         environment:
             #Solr needs to know how to register itself with Alfresco
@@ -135,6 +137,7 @@ services:
             SHARD_KEY: "shard:shardId" <% } %> <% if (shardingMethod == 'EXPLICIT_ID' || shardingMethod == 'EXPLICIT_ID_FALLBACK_LRIS') { %>
             SHARD_KEY: "shard:shardId" <% } %>
             SHARDING_METHOD: <%=shardingMethod%> <% } %>
+            COMPRESS_CONTENT: "<%=gzip%>"
         mem_limit: 1200m
         environment:
             #Solr needs to know how to register itself with Alfresco
