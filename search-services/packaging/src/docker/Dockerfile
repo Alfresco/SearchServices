@@ -11,6 +11,9 @@ ENV OPENSSL_VERSION 1.0.2k-8.el7
 ARG USERNAME=solr
 ARG USERID=33007
 
+# YourKit Java Profiler
+ARG JAVA_PROFILER=YourKit-JavaProfiler-2019.8-docker
+
 COPY "$SOLR_ZIP" .
 
 RUN set -x \
@@ -24,6 +27,7 @@ RUN set -x \
    && yum update -y \
    && yum install -y unzip \
    && yum install -y lsof ca-certificates openssl-$OPENSSL_VERSION \
+   && yum install -y wget \
    && yum clean all \
    && unzip "$SOLR_ZIP" -d /opt/ && rm "$SOLR_ZIP" \
    && mkdir -p $DIST_DIR/data \
@@ -45,6 +49,22 @@ VOLUME $DIST_DIR/solrhome
 # Expose a folder to mount keystores in the host (required for Mutual TLS Auth)
 VOLUME $DIST_DIR/keystores
 
+# SOLR Service Port
 EXPOSE 8983
+
+# YourKit - Requires additional setting for the agent in JVM to be used
+# For Docker Compose solr6 service, add the following lines:
+#    SOLR_OPTS: "
+#        -agentpath:/usr/local/YourKit-JavaProfiler-2019.8/bin/linux-x86-64/libyjpagent.so=port=10001,listen=all
+#    "
+#    ports:
+#        - 10001:10001
+RUN wget https://www.yourkit.com/download/docker/${JAVA_PROFILER}.zip -P /tmp/ && \
+  unzip /tmp/${JAVA_PROFILER}.zip -d /usr/local && \
+  rm /tmp/${JAVA_PROFILER}.zip
+
+# YourKit Profiling Port
+EXPOSE 10001
+
 USER ${USERNAME}
 CMD $DIST_DIR/solr/bin/search_config_setup.sh "$DIST_DIR/solr/bin/solr start -f"
