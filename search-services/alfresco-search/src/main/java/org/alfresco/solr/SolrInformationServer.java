@@ -2531,11 +2531,10 @@ public class SolrInformationServer implements InformationServer
                 QName propertyQName, long dbId, String locale) throws AuthenticationException, IOException
     {
         long start = System.nanoTime();
-        GetTextContentResponse response = null;
-        try
+
+        try (GetTextContentResponse response = repositoryClient.getTextContent(dbId, propertyQName, null))
         {
             // Expensive call to be done with ContentTracker
-            response = repositoryClient.getTextContent(dbId, propertyQName, null);
 
             addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_STATUS,
                     response);
@@ -2600,14 +2599,6 @@ public class SolrInformationServer implements InformationServer
                     doc.addField(field.getField(), textContent);
                 }
                 addFieldIfNotSet(doc, field);
-            }
-        }
-        finally
-        {
-            // release the response only when the content has been read
-            if (response != null)
-            {
-                response.release();
             }
         }
     }

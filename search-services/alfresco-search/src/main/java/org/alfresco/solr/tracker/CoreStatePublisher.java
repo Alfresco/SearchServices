@@ -197,14 +197,7 @@ public abstract class CoreStatePublisher extends AbstractTracker
                         .map(Tracker::getTrackerState)
                         .orElse(transactionsTrackerState);
 
-        HashMap<String, String> propertyBag = new HashMap<>();
-
-        // This property is needed for LRIS sharding method.
-        // Initially the property was the coreName but it has been changed to storeRef because using coreName
-        // breaks other type sharding under some conditions.
-        propertyBag.put("coreName", storeRef.toString());
-
-        HashMap<String, String> extendedPropertyBag = new HashMap<>(propertyBag);
+        HashMap<String, String> extendedPropertyBag = new HashMap<>();
         updateShardProperty();
 
         extendedPropertyBag.putAll(docRouter.getProperties(shardProperty));
@@ -229,7 +222,6 @@ public abstract class CoreStatePublisher extends AbstractTracker
                                 .withTemplate(shardTemplate)
                                 .withHasContent(transformContent)
                                 .withShardMethod(ShardMethodEnum.getShardMethod(shardMethod))
-                                .withPropertyBag(propertyBag)
                             .endFloc()
                         .endShard()
                     .endShardInstance()
