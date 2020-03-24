@@ -197,7 +197,10 @@ public abstract class CoreStatePublisher extends AbstractTracker
                         .map(Tracker::getTrackerState)
                         .orElse(transactionsTrackerState);
 
-        HashMap<String, String> extendedPropertyBag = new HashMap<>();
+        HashMap<String, String> propertyBag = new HashMap<>();
+        propertyBag.put("coreName", coreName);
+
+        HashMap<String, String> extendedPropertyBag = new HashMap<>(propertyBag);
         updateShardProperty();
 
         extendedPropertyBag.putAll(docRouter.getProperties(shardProperty));
@@ -222,6 +225,7 @@ public abstract class CoreStatePublisher extends AbstractTracker
                                 .withTemplate(shardTemplate)
                                 .withHasContent(transformContent)
                                 .withShardMethod(ShardMethodEnum.getShardMethod(shardMethod))
+                                .withPropertyBag(propertyBag)
                             .endFloc()
                         .endShard()
                     .endShardInstance()
