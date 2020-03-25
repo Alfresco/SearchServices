@@ -56,14 +56,14 @@ jackson-core-2.10.3.jar https://github.com/FasterXML/jackson
 jackson-annotations-2.10.3.jar https://github.com/FasterXML/jackson
 jackson-databind-2.10.3.jar https://github.com/FasterXML/jackson
 commons-httpclient-3.1-HTTPCLIENT-1265.jar      http://jakarta.apache.org/commons/
-spring-aop-5.2.3.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-beans-5.2.3.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-context-5.2.3.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-core-5.2.3.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-expression-5.2.3.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-jdbc-5.2.3.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-orm-5.2.3.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-tx-5.2.3.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-aop-5.2.4.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-beans-5.2.4.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-context-5.2.4.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-core-5.2.4.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-expression-5.2.4.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-jdbc-5.2.4.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-orm-5.2.4.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-tx-5.2.4.RELEASE.jar http://projects.spring.io/spring-framework/
 xercesImpl-2.12.0-alfresco-patched-20191004.jar http://xerces.apache.org/xerces2-j
 guessencoding-1.4.jar   http://docs.codehaus.org/display/GUESSENC/
 xml-apis-1.4.01.jar     https://github.com/FasterXML/jackson
@@ -85,16 +85,21 @@ jetty-xml-9.3.27.v20190418.jar https://www.eclipse.org/jetty/licenses.html
 woodstox-core-5.0.3.jar https://github.com/FasterXML/woodstox
 
 
-=== CDDL 1.0 ===
-jta-1.1.jar  http://geronimo.apache.org/
-
-
 === CDDL 1.1 ===
 jaxb-core-2.3.0.1.jar   http://jaxb.java.net/
-jaxb-api-2.3.1.jar      http://jaxb.java.net/
-jaxb-impl-2.3.2.jar     http://jaxb.java.net/
 jaxb-xjc-2.3.2.jar      http://jaxb.java.net/
-javax.activation-api-1.2.0.jar  https://github.com/javaee/activation/blob/master/LICENSE.txt
+
+
+=== Eclipse Distribution License 1.0 (BSD) ===
+jakarta.activation-1.2.2.jar https://eclipse-ee4j.github.io/jaf
+jakarta.activation-api-1.2.2.jar https://eclipse-ee4j.github.io/jaf
+jakarta.jws-api-1.1.1.jar https://projects.eclipse.org/projects/ee4j.websocket/releases/1.1.1
+jakarta.xml.bind-api-2.3.3.jar https://projects.eclipse.org/projects/ee4j.jaxb
+
+
+=== Eclipse Public License 2.0 ===
+jakarta.annotation-api-1.3.5.jar https://projects.eclipse.org/projects/ee4j.ca
+jakarta.transaction-api-1.3.3.jar https://projects.eclipse.org/projects/ee4j.jta
 
 
 === BSD ===
