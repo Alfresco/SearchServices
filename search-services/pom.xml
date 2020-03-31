@@ -18,7 +18,7 @@
         <!-- Solr startup scripts do not work with any Java version higher than 9 so the scripts have been patched -->
         <solr.zip>https://artifacts.alfresco.com/nexus/content/repositories/public/org/apache/solr/solr/solr-${solr.version}/solr-solr-${solr.version}.zip</solr.zip>
         <solr.directory>${project.build.directory}/solr-${solr.version}</solr.directory>
-        <cxf.version>3.2.5</cxf.version>
+        <cxf.version>3.2.13</cxf.version>
     </properties>
     <distributionManagement>
         <repository>
