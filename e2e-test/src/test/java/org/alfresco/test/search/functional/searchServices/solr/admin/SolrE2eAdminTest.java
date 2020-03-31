@@ -31,6 +31,7 @@ import org.testng.annotations.Test;
  * http://<server>:<port>/solr/admin/cores?action=(actionName)
  * 
  * @author aborroy
+ * @author mbhave
  *
  */
 @Configuration
@@ -465,7 +466,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
      * This test verifies expected result when using another deployment
      * @throws Exception
      */
-    @Test(priority = 20)
+    @Test(priority = 20, groups = {TestGroup.CONFIG_SHARDING})
     public void testRangeCheck() throws Exception
     {
         String coreName = "alfresco";
@@ -475,24 +476,17 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         checkResponseStatusOk(response);
         
         Integer expand = response.getResponse().body().jsonPath().get("expand");             
-        Assert.assertEquals(expand, Integer.valueOf(-1), "Expansion is not allowed when not using Shard DB_ID_RANGE method,");
-    }
-    
-    /**
-     * When using DB_ID_RANGE Sharding method, expand param is including a number of nodes to be extended.
-     * @throws Exception
-     */
-    @Test(priority = 21, groups = { TestGroup.ASS_SHARDING_DB_ID_RANGE })
-    public void testRangeCheckSharding() throws Exception
-    {
-        String coreName = "alfresco";
-        
-        RestResponse response = restClient.withParams("coreName=" + coreName).withSolrAdminAPI().getAction("rangeCheck");
-        
-        checkResponseStatusOk(response);
-        
-        Integer expand = response.getResponse().body().jsonPath().get("expand");             
-        Assert.assertNotEquals(expand, Integer.valueOf(-1), "Expansion is a positive number when using Shard DB_ID_RANGE method,");    
+
+        // RangeCheck action only applies to DB_ID_RANGE Sharding method, so expect error in other sharding methods and success for DB_ID_RANGE
+        if ("DB_ID_RANGE".equalsIgnoreCase(getShardMethod()))
+        {
+            // This assertion replicates: testRangeCheckSharding, priority = 21, hence deleting that test as duplicate
+            Assert.assertNotEquals(expand, Integer.valueOf(-1), "Expansion is not successful when not using Shard DB_ID_RANGE method,");
+        }
+        else
+        {
+            Assert.assertEquals(expand, Integer.valueOf(-1), "Expansion should not have been allowed when not using Shard DB_ID_RANGE method,");
+        }
     }
 
     /**
@@ -500,7 +494,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
      * This test verifies expected result when using another deployment
      * @throws Exception
      */
-    @Test(priority = 22)
+    @Test(priority = 22, groups = { TestGroup.CONFIG_SHARDING})
     public void testExpand() throws Exception
     {
         String coreName = "alfresco";
@@ -509,29 +503,19 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         RestResponse response = restClient.withParams("coreName=" + coreName, "add=" + add).withSolrAdminAPI().getAction("expand");
         
         checkResponseStatusOk(response);
-        
-        // This action only applies to DB_ID_RANGE Sharding method
+
         Integer expand = response.getResponse().body().jsonPath().get("expand");             
-        Assert.assertEquals(expand, Integer.valueOf(-1), "Expansion is not allowed when not using Shard DB_ID_RANGE method,");
-    }
-    
-    /**
-     * When using DB_ID_RANGE Sharding method, expand param is including a number of nodes extended.
-     * @throws Exception
-     */
-    @Test(priority = 23, groups = { TestGroup.ASS_SHARDING_DB_ID_RANGE })
-    public void testExpandSharding() throws Exception
-    {
-        String coreName = "alfresco";
-        String add = "1000";
-        
-        RestResponse response = restClient.withParams("coreName=" + coreName, "add=" + add).withSolrAdminAPI().getAction("expand");
-        
-        checkResponseStatusOk(response);
-        
-        // This action only applies to DB_ID_RANGE Sharding method
-        Integer expand = response.getResponse().body().jsonPath().get("expand");             
-        Assert.assertNotEquals(expand, Integer.valueOf(-1), "Expansion is a positive number when using Shard DB_ID_RANGE method,");
+
+        // Expand action only applies to DB_ID_RANGE Sharding method, so expect error in other sharding methods and success for DB_ID_RANGE
+        if ("DB_ID_RANGE".equalsIgnoreCase(getShardMethod()))
+        {
+         // This assertion replicates: testExpandSharding, priority = 23, hence deleting that test as duplicate
+            Assert.assertNotEquals(expand, Integer.valueOf(-1), "Expansion is not successful when not using Shard DB_ID_RANGE method,");
+        }
+        else
+        {
+            Assert.assertEquals(expand, Integer.valueOf(-1), "Expansion should not have been allowed when not using Shard DB_ID_RANGE method,");
+        }
     }
     
     /**

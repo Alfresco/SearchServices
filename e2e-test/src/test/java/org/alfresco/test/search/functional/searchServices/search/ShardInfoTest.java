@@ -44,7 +44,7 @@ import org.springframework.http.HttpStatus;
 public class ShardInfoTest extends AbstractE2EFunctionalTest
 {
     /* The test that will be excluded when running master slave setup, excluding the ASS_MASTER test group. */
-    @Test(groups = { TestGroup.ACS_60n, TestGroup.ASS_MASTER })
+    @Test(groups = { TestGroup.ACS_60n, TestGroup.CONFIG_MASTER })
     public void getShardInfoWithAdminAuthority() throws JsonProcessingException
     {
         RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI()
@@ -89,7 +89,7 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
     }
 
     /* The test that will be run when in master slave setup by including the ASS_MASTER_SLAVE test group. */
-    @Test(groups = {TestGroup.ACS_60n, TestGroup.ASS_MASTER_SLAVE })
+    @Test(groups = {TestGroup.ACS_60n, TestGroup.CONFIG_MASTER_SLAVE })
     public void getShardInfoWithAdminAuthorityMasterSlaveConfig() throws JsonProcessingException
     {
         RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI()
@@ -139,7 +139,7 @@ public class ShardInfoTest extends AbstractE2EFunctionalTest
      * @throws JsonProcessingException
      */
     
-    @Test(groups = { TestGroup.ACS_60n, TestGroup.SHARDING })
+    @Test(groups = { TestGroup.ACS_60n, TestGroup.CONFIG_SHARDING })
     public void getShardInfoWith2OrMoreShards() throws JsonProcessingException
     {
         RestShardInfoModelCollection info = restClient.authenticateUser(dataUser.getAdminUser()).withShardInfoAPI().getInfo();

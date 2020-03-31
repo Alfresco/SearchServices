@@ -20,7 +20,7 @@ public class ExplicitRoutingTest extends AbstractE2EFunctionalTest {
      * Checks indexing still works after sharding model used for explicit routing has been disabled
      * @throws Exception
      */
-    @Test(priority = 1, groups = {TestGroup.NOT_BAMBOO, TestGroup.EXPLICIT_SHARDING, TestGroup.ACS_62n})
+    @Test(priority = 1, groups = {TestGroup.NOT_BAMBOO, TestGroup.CONFIG_SHARDING_EXPLICIT, TestGroup.ACS_62n})
     public void testIndexingStillWorkingAfterShardModelIsDeactivated() throws Exception
     {
 
