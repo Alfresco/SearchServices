@@ -11,6 +11,8 @@ import static java.util.Optional.ofNullable;
 import static lombok.AccessLevel.PROTECTED;
 import static org.testng.Assert.assertEquals;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,7 +30,6 @@ import org.alfresco.rest.search.RestRequestHighlightModel;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.RestShardInfoModel;
 import org.alfresco.rest.search.RestShardInfoModelCollection;
-import org.alfresco.rest.search.RestShardModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.utility.LogFactory;
@@ -108,6 +109,16 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     protected enum SearchLanguage {
         CMIS,
         AFTS
+    }
+
+    protected enum ShardingMethod {
+        DB_ID,
+        DB_ID_RANGE,
+        MOD_ACL_ID,
+        ACL_ID,
+        DATE,
+        PROPERTY,
+        EXPLICIT_ID
     }
 
     @BeforeSuite (alwaysRun = true)
@@ -614,9 +625,15 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     public String getShardMethod() throws JsonProcessingException, EmptyRestModelCollectionException
     {
         RestShardInfoModelCollection info = getShardInfo();
-
-        shardingMethod = info.getEntryByIndex(0).getShardMethod();
-        return shardingMethod;
+        
+        return shardingMethod = 
+                ofNullable(info)
+                        .map(RestShardInfoModelCollection::getEntries)
+                        .map(Collection::iterator)
+                        .filter(Iterator::hasNext)
+                        .map(Iterator::next)
+                        .map(RestShardInfoModel::getShardMethod)
+                        .orElseThrow( () -> new RuntimeException("Cannot retrieve the shard method in use."));
     }
 
     /**
@@ -628,9 +645,14 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     public int getShardCount() throws JsonProcessingException, EmptyRestModelCollectionException
     {
         RestShardInfoModelCollection info = getShardInfo();
-
-        shardCount = info.getEntryByIndex(0).getNumberOfShards();
-        return shardCount;
+        
+        return shardCount = ofNullable(info)
+                .map(RestShardInfoModelCollection::getEntries)
+                .map(Collection::iterator)
+                .filter(Iterator::hasNext)
+                .map(Iterator::next)
+                .map(RestShardInfoModel::getNumberOfShards)
+                .orElseThrow( () -> new RuntimeException("Cannot retrieve the number of shards registered."));
     }
 
     public RestShardInfoModelCollection getShardInfo() throws JsonProcessingException, EmptyRestModelCollectionException

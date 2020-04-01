@@ -478,7 +478,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         Integer expand = response.getResponse().body().jsonPath().get("expand");             
 
         // RangeCheck action only applies to DB_ID_RANGE Sharding method, so expect error in other sharding methods and success for DB_ID_RANGE
-        if ("DB_ID_RANGE".equalsIgnoreCase(getShardMethod()))
+        if (ShardingMethod.DB_ID_RANGE.toString().equalsIgnoreCase(getShardMethod()))
         {
             // This assertion replicates: testRangeCheckSharding, priority = 21, hence deleting that test as duplicate
             Assert.assertNotEquals(expand, Integer.valueOf(-1), "Expansion is not successful when not using Shard DB_ID_RANGE method,");
@@ -504,10 +504,10 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         
         checkResponseStatusOk(response);
 
-        Integer expand = response.getResponse().body().jsonPath().get("expand");             
+        Integer expand = response.getResponse().body().jsonPath().get("expand");  
 
         // Expand action only applies to DB_ID_RANGE Sharding method, so expect error in other sharding methods and success for DB_ID_RANGE
-        if ("DB_ID_RANGE".equalsIgnoreCase(getShardMethod()))
+        if (ShardingMethod.DB_ID_RANGE.toString().equalsIgnoreCase(getShardMethod()))
         {
          // This assertion replicates: testExpandSharding, priority = 23, hence deleting that test as duplicate
             Assert.assertNotEquals(expand, Integer.valueOf(-1), "Expansion is not successful when not using Shard DB_ID_RANGE method,");
