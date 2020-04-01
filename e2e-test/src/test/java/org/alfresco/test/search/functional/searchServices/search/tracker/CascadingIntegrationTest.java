@@ -187,7 +187,7 @@ public class CascadingIntegrationTest extends AbstractE2EFunctionalTest
      * Check that, after parent renaming, both the children are searchable in the new path
      * (computed accordingly with the new parent folder name)
      */
-    @Test(priority = 3, groups = {TestGroup.NOT_BAMBOO, TestGroup.CONFIG_SHARDING_EXPLICIT })
+    @Test(priority = 3, groups = {TestGroup.CONFIG_SHARDING, TestGroup.CONFIG_SHARDING_EXPLICIT })
     public void testChildrenPathOnParentRenamedWithChildrenInDifferentShards() throws Exception
     {
 
