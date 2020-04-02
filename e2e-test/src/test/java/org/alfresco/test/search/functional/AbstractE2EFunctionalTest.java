@@ -626,14 +626,13 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     {
         RestShardInfoModelCollection info = getShardInfo();
         
-        return shardingMethod = 
-                ofNullable(info)
-                        .map(RestShardInfoModelCollection::getEntries)
-                        .map(Collection::iterator)
-                        .filter(Iterator::hasNext)
-                        .map(Iterator::next)
-                        .map(RestShardInfoModel::getShardMethod)
-                        .orElseThrow( () -> new RuntimeException("Cannot retrieve the shard method in use."));
+        return shardingMethod = ofNullable(info)
+                .map(RestShardInfoModelCollection::getEntries)
+                .map(Collection::iterator).filter(Iterator::hasNext)
+                .map(Iterator::next)
+                .map(RestShardInfoModel::getModel)
+                .map(RestShardInfoModel::getShardMethod)
+                .orElseThrow(() -> new RuntimeException("Cannot retrieve the shard method in use."));
     }
 
     /**
@@ -651,6 +650,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
                 .map(Collection::iterator)
                 .filter(Iterator::hasNext)
                 .map(Iterator::next)
+                .map(RestShardInfoModel::getModel)
                 .map(RestShardInfoModel::getNumberOfShards)
                 .orElseThrow( () -> new RuntimeException("Cannot retrieve the number of shards registered."));
     }
