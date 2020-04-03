@@ -424,13 +424,13 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
         // Make User 2 Site Collaborator
         getDataUser().addUserToSite(testUser2, testSite2, UserRole.SiteCollaborator);
 
-        // Add file <spacebar> to testSite
-        FileModel file1 = new FileModel("spacebar", "", "", FileType.TEXT_PLAIN, "spacebar");
+        // Add file <spellcheckspacebar> to testSite
+        FileModel file1 = new FileModel("spellcheckspacebar", "", "", FileType.TEXT_PLAIN, "spellcheckspacebar");
 
         dataContent.usingUser(testUser).usingSite(testSite).createContent(file1);
 
-        // Add file <spacecar> to testSite, testSite2
-        FileModel file2 = new FileModel("spacecar", "", "", FileType.TEXT_PLAIN, "spacecar");
+        // Add file <spellcheckspacecar> to testSite, testSite2
+        FileModel file2 = new FileModel("spellcheckspacecar", "", "", FileType.TEXT_PLAIN, "spellcheckspacecar");
 
         dataContent.usingUser(testUser).usingSite(testSite).createContent(file2);
         dataContent.usingUser(testUser).usingSite(testSite2).createContent(file2);
@@ -439,62 +439,62 @@ public class SearchSpellCheckTest extends AbstractSearchServicesE2ETest
 
         // Checks for User 2
         // Incorrect spelling with no field
-        SearchResponse response = SearchSpellcheckQuery(testUser, "spaceber", "spaceber");
+        SearchResponse response = SearchSpellcheckQuery(testUser, "spellcheckspaceber", "spellcheckspaceber");
 
-        // Matching Result, Spellcheck = searchInsteadFor: spacebar: alphabetical
+        // Matching Result, Spellcheck = searchInsteadFor: spellcheckspacebar: alphabetical
         Assert.assertTrue(isContentInSearchResponse(response, file1.getName()), "Expected file not returned in the search results: " + file2.getName());
-        testSearchSpellcheckResponse(response, "searchInsteadFor", "spacebar");
+        testSearchSpellcheckResponse(response, "searchInsteadFor", "spellcheckspacebar");
         
         // Correct spelling with no field
-        response = SearchSpellcheckQuery(testUser, "spacebar", "spacebar");
+        response = SearchSpellcheckQuery(testUser, "spellcheckspacebar", "spellcheckspacebar");
 
-        // Matching Result, Spellcheck = searchInsteadFor: spacebar
+        // Matching Result, Spellcheck = searchInsteadFor: spellcheckspacebar
         Assert.assertTrue(isContentInSearchResponse(response, file1.getName()), "Expected file not returned in the search results: " + file1.getName());
-        testSearchSpellcheckResponse(response, "didYouMean", "spacecar");
+        testSearchSpellcheckResponse(response, "didYouMean", "spellcheckspacecar");
 
         // Incorrect spelling with no field
-        response = SearchSpellcheckQuery(testUser, "spacebra", "spacebra");
+        response = SearchSpellcheckQuery(testUser, "spellcheckspacebra", "spellcheckspacebra");
 
-        // Matching Result, Spellcheck = searchInsteadFor: spacebar
+        // Matching Result, Spellcheck = searchInsteadFor: spellcheckspacebar
         Assert.assertTrue(isContentInSearchResponse(response, file1.getName()), "Expected file not returned in the search results: " + file1.getName());
-        testSearchSpellcheckResponse(response, "searchInsteadFor", "spacebar");
+        testSearchSpellcheckResponse(response, "searchInsteadFor", "spellcheckspacebar");
 
         // Correct spelling with no field
-        response = SearchSpellcheckQuery(testUser, "spacecar", "spacecar");
+        response = SearchSpellcheckQuery(testUser, "spellcheckspacecar", "spellcheckspacecar");
 
         // Matching Result, Spellcheck Not returned
         Assert.assertTrue(isContentInSearchResponse(response, file2.getName()), "Expected file not returned in the search results: " + file2.getName());
         testSearchSpellcheckResponse(response, null, null);
 
         // Add Solr Query, to check the suggestions on the shard
-        restClient.authenticateUser(testUser).withParams("spellcheck.q=spacebur&spellcheck=on").withSolrAPI().getSelectQuery();
+        restClient.authenticateUser(testUser).withParams("spellcheck.q=spellcheckspacebur&spellcheck=on").withSolrAPI().getSelectQuery();
  
         // Checks for User 2
         // Incorrect spelling for files created no field
-        response = SearchSpellcheckQuery(testUser2, "spacebur", "spacebur");
+        response = SearchSpellcheckQuery(testUser2, "spellcheckspacebur", "spellcheckspacebur");
 
-        // Matching Result, Spellcheck = searchInsteadFor: spacecar
+        // Matching Result, Spellcheck = searchInsteadFor: spellcheckspacecar
         Assert.assertTrue(isContentInSearchResponse(response, file2.getName()), "Expected file not returned in the search results: " + file2.getName());
-        testSearchSpellcheckResponse(response, "searchInsteadFor", "spacecar");
+        testSearchSpellcheckResponse(response, "searchInsteadFor", "spellcheckspacecar");
 
         // correct spelling no field
-        response = SearchSpellcheckQuery(testUser2, "spacebar", "spacebar");
+        response = SearchSpellcheckQuery(testUser2, "spellcheckspacebar", "spellcheckspacebar");
 
-        // Matching Result, Spellcheck = searchInsteadFor: spacecar
+        // Matching Result, Spellcheck = searchInsteadFor: spellcheckspacecar
         Assert.assertFalse(isContentInSearchResponse(response, file1.getName()), "Expected file not returned in the search results: " + file1.getName());
         Assert.assertTrue(isContentInSearchResponse(response, file2.getName()), "Expected file not returned in the search results: " + file2.getName());
-        testSearchSpellcheckResponse(response, "searchInsteadFor", "spacecar");
+        testSearchSpellcheckResponse(response, "searchInsteadFor", "spellcheckspacecar");
 
         // Incorrect spelling no field
-        response = SearchSpellcheckQuery(testUser2, "spacecra", "spacecra");
+        response = SearchSpellcheckQuery(testUser2, "spellcheckspacecra", "spellcheckspacecra");
 
-        // Matching Result, Spellcheck = searchInsteadFor: spacebar
+        // Matching Result, Spellcheck = searchInsteadFor: spellcheckspacebar
         Assert.assertFalse(isContentInSearchResponse(response, file1.getName()), "Expected file not returned in the search results: " + file1.getName());        
         Assert.assertTrue(isContentInSearchResponse(response, file2.getName()), "Expected file not returned in the search results: " + file2.getName());
-        testSearchSpellcheckResponse(response, "searchInsteadFor", "spacecar");
+        testSearchSpellcheckResponse(response, "searchInsteadFor", "spellcheckspacecar");
 
         // Correct spelling no field
-        response = SearchSpellcheckQuery(testUser2, "spacecar", "spacecar");
+        response = SearchSpellcheckQuery(testUser2, "spellcheckspacecar", "spellcheckspacecar");
 
         // Matching Result, Spellcheck not returned
         Assert.assertFalse(isContentInSearchResponse(response, file1.getName()), "Expected file not returned in the search results: " + file1.getName());
