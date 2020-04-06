@@ -2579,44 +2579,41 @@ public class SolrInformationServer implements InformationServer
         long start = System.nanoTime();
 
         // Expensive call to be done with ContentTracker
-        GetTextContentResponse response = repositoryClient.getTextContent(dbId, propertyQName, null);
+        try (GetTextContentResponse response = repositoryClient.getTextContent(dbId, propertyQName, null)) {
+            addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_STATUS, response);
+            addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_EXCEPTION, response);
+            addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_TIME, response);
 
-        addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_STATUS, response);
-        addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_EXCEPTION, response);
-        addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_TIME, response);
+            final String textContent = textContentFrom(response);
 
-        final String textContent = textContentFrom(response);
+            if (fingerprintHasBeenEnabledOnThisInstance && !textContent.isBlank()) {
+                Analyzer analyzer = core.getLatestSchema().getFieldType("min_hash").getIndexAnalyzer();
+                TokenStream ts = analyzer.tokenStream("dummy_field", textContent);
+                CharTermAttribute termAttribute = ts.getAttribute(CharTermAttribute.class);
+                ts.reset();
+                while (ts.incrementToken()) {
+                    StringBuilder tokenBuff = new StringBuilder();
+                    char[] buff = termAttribute.buffer();
 
-        if(fingerprintHasBeenEnabledOnThisInstance && !textContent.isBlank())
-        {
-            Analyzer analyzer = core.getLatestSchema().getFieldType("min_hash").getIndexAnalyzer();
-            TokenStream ts = analyzer.tokenStream("dummy_field", textContent);
-            CharTermAttribute termAttribute = ts.getAttribute(CharTermAttribute.class);
-            ts.reset();
-            while (ts.incrementToken())
-            {
-                StringBuilder tokenBuff = new StringBuilder();
-                char[] buff = termAttribute.buffer();
+                    for (int i = 0; i < termAttribute.length(); i++) {
+                        tokenBuff.append(Integer.toHexString(buff[i]));
+                    }
+                    doc.addField(FINGERPRINT_FIELD, tokenBuff.toString());
 
-                for(int i=0; i<termAttribute.length();i++)
-                {
-                    tokenBuff.append(Integer.toHexString(buff[i]));
                 }
-                doc.addField(FINGERPRINT_FIELD, tokenBuff.toString());
-
+                ts.end();
+                ts.close();
             }
-            ts.end();
-            ts.close();
+
+            this.getTrackerStats().addDocTransformationTime(System.nanoTime() - start);
+
+            String storedField = dataModel.getStoredContentField(propertyQName);
+            doc.setField(storedField, "\u0000" + languageFrom(locale) + "\u0000" + textContent);
+
+            dataModel.getIndexedFieldNamesForProperty(propertyQName)
+                    .getFields()
+                    .forEach(field -> addFieldIfNotSet(doc, field.getField()));
         }
-
-        this.getTrackerStats().addDocTransformationTime(System.nanoTime() - start);
-
-        String storedField = dataModel.getStoredContentField(propertyQName);
-        doc.setField(storedField, "\u0000" + languageFrom(locale) + "\u0000" + textContent);
-
-        dataModel.getIndexedFieldNamesForProperty(propertyQName)
-                .getFields()
-                .forEach(field -> addFieldIfNotSet(doc, field.getField()));
     }
 
     private String languageFrom(String locale)
