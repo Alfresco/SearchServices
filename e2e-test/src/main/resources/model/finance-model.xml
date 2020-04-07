@@ -103,6 +103,24 @@
                         <facetable>true</facetable>
                     </index>
                 </property>
+                <property name="finance:EmpNo">
+					<title>EmpNo</title>
+					<type>d:int</type>
+					<mandatory>false</mandatory>
+					<index enabled="true">
+						<tokenised>TRUE</tokenised>
+						<facetable>true</facetable>
+					</index>
+				</property>
+				<property name="finance:EmpDept">
+					<title>EmpDept</title>
+					<type>d:float</type>
+					<mandatory>false</mandatory>
+					<index enabled="true">
+						<tokenised>TRUE</tokenised>
+						<facetable>true</facetable>
+					</index>	
+				</property>
             </properties>
             <associations/>
             <overrides/>
