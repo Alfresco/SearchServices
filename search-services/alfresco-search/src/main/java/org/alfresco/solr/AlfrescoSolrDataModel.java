@@ -342,13 +342,12 @@ public class AlfrescoSolrDataModel implements QueryConstants
      * Returns the Solr document identifier in the following format &lt;TENANT>!&lt;ACLID>!&lt;DBID>
      *
      * @param tenant the tenant code.
-     * @param aclId the ACL identifier.
      * @param dbid the DB identifier.
      * @return the Solr document identifier in the following format &lt;TENANT>!&lt;ACLID>!&lt;DBID>
      */
-    public static String getNodeDocumentId(String tenant, Long aclId, Long dbid)
+    public static String getNodeDocumentId(String tenant, Long dbid)
     {
-        return getTenantId(tenant) + "!" + NumericEncoder.encode(aclId) + "!" + NumericEncoder.encode(dbid);
+        return getTenantId(tenant) + "!" + NumericEncoder.encode(dbid);
     }
 
     /**

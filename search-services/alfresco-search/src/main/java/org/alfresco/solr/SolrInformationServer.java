@@ -1845,7 +1845,6 @@ public class SolrInformationServer implements InformationServer
             doc.setField(FIELD_SOLR4_ID,
                     AlfrescoSolrDataModel.getNodeDocumentId(
                             docRef.tenant,
-                            docRef.aclId,
                             docRef.dbId));
 
             if (docRef.optionalBag.containsKey(CONTENT_LOCALE_FIELD))
@@ -2797,7 +2796,7 @@ public class SolrInformationServer implements InformationServer
             FieldInstance fieldInstance = fieldInstances.get(0);
             AddUpdateCommand cmd = new AddUpdateCommand(request);
             SolrInputDocument input = new SolrInputDocument();
-            input.addField(FIELD_SOLR4_ID, AlfrescoSolrDataModel.getNodeDocumentId(nodeMetaData.getTenantDomain(), nodeMetaData.getAclId(), nodeMetaData.getId()));
+            input.addField(FIELD_SOLR4_ID, AlfrescoSolrDataModel.getNodeDocumentId(nodeMetaData.getTenantDomain(), nodeMetaData.getId()));
             input.addField(FIELD_VERSION, 0);
             input.addField(fieldInstance.getField(), stringPropertyValue.getValue());
             cmd.solrDoc = input;
@@ -3245,7 +3244,6 @@ public class SolrInformationServer implements InformationServer
         doc.setField(FIELD_SOLR4_ID,
                 AlfrescoSolrDataModel.getNodeDocumentId(
                         metadata.getTenantDomain(),
-                        metadata.getAclId(),
                         metadata.getId()));
         doc.setField(FIELD_VERSION, 0);
 

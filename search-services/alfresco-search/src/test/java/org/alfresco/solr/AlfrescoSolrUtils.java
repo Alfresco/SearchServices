@@ -531,7 +531,7 @@ public class AlfrescoSolrUtils
                                                    NodeRef[] ancestors)throws IOException
     {
         SolrInputDocument doc = new SolrInputDocument();
-        String id = AlfrescoSolrDataModel.getNodeDocumentId(AlfrescoSolrDataModel.DEFAULT_TENANT, aclId, dbid);
+        String id = AlfrescoSolrDataModel.getNodeDocumentId(AlfrescoSolrDataModel.DEFAULT_TENANT, dbid);
         doc.addField(FIELD_SOLR4_ID, id);
         doc.addField(FIELD_VERSION, 0);
         doc.addField(FIELD_DBID, "" + dbid);
