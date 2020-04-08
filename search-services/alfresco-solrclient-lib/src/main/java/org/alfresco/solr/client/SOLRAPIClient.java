@@ -1127,12 +1127,47 @@ public class SOLRAPIClient
      * @throws AuthenticationException 
      * @throws NoSuchMethodException 
      */
-    public Long getNextTxCommitTime(String coreName, Long fromCommitTime) throws AuthenticationException, IOException
+    public Long getNextTxCommitTime(String coreName, Long fromCommitTime) throws AuthenticationException, IOException, NoSuchMethodException
     {
         StringBuilder url = new StringBuilder(GET_NEXT_TX_COMMIT_TIME);
         url.append("?").append("fromCommitTime").append("=").append(fromCommitTime);
         GetRequest get = new GetRequest(url.toString());
-        JSONObject json = callRepository(GET_NEXT_TX_COMMIT_TIME, get);
+        Response response = null;
+        JSONObject json = null;
+        LookAheadBufferedReader reader = null;
+        try
+        {
+            response = repositoryHttpClient.sendRequest(get);
+            if (response.getStatus() != HttpStatus.SC_OK)
+            {
+                throw new NoSuchMethodException(coreName + " - GetNextTxCommitTime return status is "
+                        + response.getStatus() + " when invoking " + url);
+            }
+
+           reader = new LookAheadBufferedReader(new InputStreamReader(response.getContentAsStream(), StandardCharsets.UTF_8), LOGGER);
+           json = new JSONObject(new JSONTokener(reader));
+        }
+        catch (JSONException exception)
+        {
+            String message = "Received a malformed JSON payload. Request was \"" +
+                    get.getFullUri() +
+                    "Data: "
+                    + ofNullable(reader)
+                    .map(LookAheadBufferedReader::lookAheadAndGetBufferedContent)
+                    .orElse("Not available");
+            LOGGER.error(message);
+            throw exception;
+        }
+        finally
+        {
+            ofNullable(response).ifPresent(Response::release);
+            silentlyClose(reader);
+        }
+
+        if (LOGGER.isDebugEnabled())
+        {
+            LOGGER.debug(json.toString());
+        }
 
         return Long.parseLong(json.get("nextTransactionCommitTimeMs").toString());
     }
@@ -1149,15 +1184,50 @@ public class SOLRAPIClient
      * @throws NoSuchMethodException 
      */
     public Pair<Long, Long> getTxIntervalCommitTime(String coreName, Long fromNodeId, Long toNodeId)
-            throws AuthenticationException, IOException
+            throws AuthenticationException, IOException, NoSuchMethodException
     {
         StringBuilder url = new StringBuilder(GET_TX_INTERVAL_COMMIT_TIME);
         url.append("?").append("fromNodeId").append("=").append(fromNodeId);
         url.append("&").append("toNodeId").append("=").append(toNodeId);
         GetRequest get = new GetRequest(url.toString());
-        JSONObject json = callRepository(GET_TX_INTERVAL_COMMIT_TIME, get);
+        Response response = null;
+        JSONObject json = null;
+        LookAheadBufferedReader reader = null;
+        try
+        {
+            response = repositoryHttpClient.sendRequest(get);
+            if (response.getStatus() != HttpStatus.SC_OK)
+            {
+                throw new NoSuchMethodException(coreName + " - GetTxIntervalCommitTime return status is "
+                        + response.getStatus() + " when invoking " + url);
+            }
 
-        return new Pair<>(Long.parseLong(json.get("minTransactionCommitTimeMs").toString()),
+            reader = new LookAheadBufferedReader(new InputStreamReader(response.getContentAsStream(), StandardCharsets.UTF_8), LOGGER);
+            json = new JSONObject(new JSONTokener(reader));
+        }
+        catch(JSONException exception)
+        {
+            String message = "Received a malformed JSON payload. Request was \"" +
+                    get.getFullUri() +
+                    "Data: "
+                    + ofNullable(reader)
+                    .map(LookAheadBufferedReader::lookAheadAndGetBufferedContent)
+                    .orElse("Not available");
+            LOGGER.error(message);
+            throw exception;
+        }
+        finally
+        {
+            ofNullable(response).ifPresent(Response::release);
+            silentlyClose(reader);
+        }
+
+        if (LOGGER.isDebugEnabled())
+        {
+            LOGGER.debug(json.toString());
+        }
+
+        return new Pair<Long, Long>(Long.parseLong(json.get("minTransactionCommitTimeMs").toString()),
                 Long.parseLong(json.get("maxTransactionCommitTimeMs").toString()));
     }
 
