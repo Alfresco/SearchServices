@@ -500,7 +500,7 @@ public class SOLRAPIClient
         finally
         {
             ofNullable(response).ifPresent(Response::release);
-            silentlyClose(reader);
+            ofNullable(reader).ifPresent(this::silentlyClose);
         }
 
         LOGGER.debug("### Transactions found maxTxnCommitTime: " + maxTxnCommitTime );
@@ -1161,7 +1161,7 @@ public class SOLRAPIClient
         finally
         {
             ofNullable(response).ifPresent(Response::release);
-            silentlyClose(reader);
+            ofNullable(reader).ifPresent(this::silentlyClose);
         }
 
         if (LOGGER.isDebugEnabled())
@@ -1219,7 +1219,7 @@ public class SOLRAPIClient
         finally
         {
             ofNullable(response).ifPresent(Response::release);
-            silentlyClose(reader);
+            ofNullable(reader).ifPresent(this::silentlyClose);
         }
 
         if (LOGGER.isDebugEnabled())
