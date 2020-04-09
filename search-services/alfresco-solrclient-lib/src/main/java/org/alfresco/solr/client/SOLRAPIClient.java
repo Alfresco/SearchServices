@@ -25,11 +25,13 @@
  */
 package org.alfresco.solr.client;
 
-import java.io.BufferedReader;
+import static java.util.Optional.ofNullable;
+
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -46,6 +48,7 @@ import org.alfresco.httpclient.AlfrescoHttpClient;
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.httpclient.GetRequest;
 import org.alfresco.httpclient.PostRequest;
+import org.alfresco.httpclient.Request;
 import org.alfresco.httpclient.Response;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.NamespaceDAO;
@@ -94,7 +97,7 @@ import com.fasterxml.jackson.core.JsonToken;
  */
 public class SOLRAPIClient
 {
-    protected final static Logger log = LoggerFactory.getLogger(SOLRAPIClient.class);
+    protected final static Logger LOGGER = LoggerFactory.getLogger(SOLRAPIClient.class);
     private static final String GET_ACL_CHANGESETS_URL = "api/solr/aclchangesets";
     private static final String GET_ACLS = "api/solr/acls";
     private static final String GET_ACLS_READERS = "api/solr/aclsReaders";
@@ -142,7 +145,7 @@ public class SOLRAPIClient
         this.jsonFactory = new JsonFactory();
         this.compression = compression;
     }
-    
+
     /**
      * Get the ACL ChangeSets
      * 
@@ -179,32 +182,7 @@ public class SOLRAPIClient
         url.append(args);
         
         GetRequest req = new GetRequest(url.toString());
-        Response response = null;
-        JSONObject json = null;
-        try
-        {
-            response = repositoryHttpClient.sendRequest(req);
-
-            if (response.getStatus() != HttpStatus.SC_OK)
-            {
-                throw new AlfrescoRuntimeException(GET_ACL_CHANGESETS_URL + " return status:" + response.getStatus());
-            }
-
-            Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
-            json = new JSONObject(new JSONTokener(reader));
-        }
-        finally
-        {
-            if(response != null)
-            {
-                response.release();
-            }
-        }
-        
-        if (log.isDebugEnabled())
-        {
-            log.debug(json.toString(3));
-        }
+        JSONObject json = callRepository(GET_ACL_CHANGESETS_URL, req);
         
         JSONArray aclChangeSetsJSON = json.getJSONArray("aclChangeSets");
         List<AclChangeSet> aclChangeSets = new ArrayList<AclChangeSet>(aclChangeSetsJSON.length());
@@ -217,8 +195,7 @@ public class SOLRAPIClient
             AclChangeSet aclChangeSet = new AclChangeSet(aclChangeSetId, commitTimeMs, aclCount);
             aclChangeSets.add(aclChangeSet);
         }
-        
-        
+
         Long maxChangeSetCommitTime = null;
         if(json.has("maxChangeSetCommitTime"))
         {
@@ -273,32 +250,7 @@ public class SOLRAPIClient
         jsonReq.put("aclChangeSetIds", aclChangeSetIdsJSON);
 
         PostRequest req = new PostRequest(url.toString(), jsonReq.toString(), "application/json");
-        Response response = null;
-        JSONObject json = null;
-        try
-        {
-            response = repositoryHttpClient.sendRequest(req);
-
-            if (response.getStatus() != HttpStatus.SC_OK)
-            {
-                throw new AlfrescoRuntimeException(GET_ACL_CHANGESETS_URL + " return status:" + response.getStatus());
-            }
-            
-            Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
-            json = new JSONObject(new JSONTokener(reader));
-        }
-        finally
-        {
-            if(response != null)
-            {
-                response.release();
-            }
-        }
-        
-        if (log.isDebugEnabled())
-        {
-            log.debug(json.toString(3));
-        }
+        JSONObject json = callRepository(GET_ACL_CHANGESETS_URL, req);
 
         JSONArray aclsJSON = json.getJSONArray("acls");
         List<Acl> acls = new ArrayList<Acl>(aclsJSON.length());
@@ -336,32 +288,7 @@ public class SOLRAPIClient
         jsonReq.put("aclIds", aclIdsJSON);
 
         PostRequest req = new PostRequest(url.toString(), jsonReq.toString(), "application/json");
-        Response response = null;
-        JSONObject json = null;
-        try
-        {
-            response = repositoryHttpClient.sendRequest(req);
-
-            if (response.getStatus() != HttpStatus.SC_OK)
-            {
-                throw new AlfrescoRuntimeException(GET_ACLS_READERS + " return status:" + response.getStatus());
-            }
-        
-            Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
-            json = new JSONObject(new JSONTokener(reader));
-        }
-        finally
-        {
-            if(response != null)
-            {
-                response.release();
-            }
-        }
-        
-        if (log.isDebugEnabled())
-        {
-            log.debug(json.toString(3));
-        }
+        JSONObject json = callRepository(GET_ACLS_READERS, req);
 
         JSONArray aclsReadersJSON = json.getJSONArray("aclsReaders");
         List<AclReaders> aclsReaders = new ArrayList<AclReaders>(aclsReadersJSON.length());
@@ -421,7 +348,6 @@ public class SOLRAPIClient
     
     public Transactions getTransactions(Long fromCommitTime, Long minTxnId, Long toCommitTime, Long maxTxnId, int maxResults, ShardState shardState) throws AuthenticationException, IOException, JSONException, EncoderException
     {
-        log.debug("### get transactions ###");
         URLCodec encoder = new URLCodec();
         
         StringBuilder url = new StringBuilder(GET_TRANSACTIONS_URL);
@@ -448,7 +374,7 @@ public class SOLRAPIClient
         }
         if(shardState != null)
         {
-            log.debug("### Shard state exists ###");
+            LOGGER.debug("### Shard state exists ###");
             args.append(args.length() == 0 ? "?" : "&");
             args.append(encoder.encode("baseUrl")).append("=").append(encoder.encode(shardState.getShardInstance().getBaseUrl()));
             args.append("&").append(encoder.encode("hostName")).append("=").append(encoder.encode(shardState.getShardInstance().getHostName()));
@@ -497,12 +423,14 @@ public class SOLRAPIClient
         }
         
         url.append(args);
-        log.debug("### GetRequest: " + url.toString());
+        LOGGER.debug("### GetRequest: " + url.toString());
         GetRequest req = new GetRequest(url.toString());
         Response response = null;
         List<Transaction> transactions = new ArrayList<Transaction>();
         Long maxTxnCommitTime = null;
         Long maxTxnIdOnServer = null;
+
+        LookAheadBufferedReader reader = null;
         try
         {
             response = repositoryHttpClient.sendRequest(req);
@@ -510,7 +438,8 @@ public class SOLRAPIClient
             {
                 throw new AlfrescoRuntimeException("GetTransactions return status is " + response.getStatus());
             }
-            Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
+
+            reader = new LookAheadBufferedReader(new InputStreamReader(response.getContentAsStream(), StandardCharsets.UTF_8), LOGGER);
             JsonParser parser = jsonFactory.createParser(reader);
             
             JsonToken token = parser.nextValue();
@@ -556,18 +485,25 @@ public class SOLRAPIClient
                 token = parser.nextValue();
             }
             parser.close();
-            reader.close();
-
+        }
+        catch (JSONException exception)
+        {
+            String message = "Received a malformed JSON payload. Request was \"" +
+                    req.getFullUri() +
+                    "Data: "
+                    + ofNullable(reader)
+                    .map(LookAheadBufferedReader::lookAheadAndGetBufferedContent)
+                    .orElse("Not available");
+            LOGGER.error(message);
+            throw exception;
         }
         finally
         {
-            log.debug("## end getTransactions");
-            if(response != null)
-            {
-                response.release();
-            }
+            ofNullable(response).ifPresent(Response::release);
+            ofNullable(reader).ifPresent(this::silentlyClose);
         }
-        log.debug("### Transactions found maxTxnCommitTime: " + maxTxnCommitTime );
+
+        LOGGER.debug("### Transactions found maxTxnCommitTime: " + maxTxnCommitTime );
         return new Transactions(transactions, maxTxnCommitTime, maxTxnIdOnServer);
     }
     
@@ -637,35 +573,10 @@ public class SOLRAPIClient
 
         
         PostRequest req = new PostRequest(url.toString(), body.toString(), "application/json");
- 
-        Response response = null;
-        JSONObject json = null;
-        try
-        {
-            response = repositoryHttpClient.sendRequest(req);
-            if(response.getStatus() != HttpStatus.SC_OK)
-            {
-                throw new AlfrescoRuntimeException("GetNodes return status is " + response.getStatus());
-            }
-
-            Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
-            json = new JSONObject(new JSONTokener(reader));
-        }
-        finally
-        {
-            if(response != null)
-            {
-                response.release();
-            }
-        }
-        
-        if(log.isDebugEnabled())
-        {
-            log.debug(json.toString());
-        }
+        JSONObject json = callRepository(GET_NODES_URL, req);
 
         JSONArray jsonNodes = json.getJSONArray("nodes");
-        List<Node> nodes = new ArrayList<Node>(jsonNodes.length());
+        List<Node> nodes = new ArrayList<>(jsonNodes.length());
         for(int i = 0; i < jsonNodes.length(); i++)
         {
             JSONObject jsonNodeInfo = jsonNodes.getJSONObject(i);
@@ -893,34 +804,9 @@ public class SOLRAPIClient
         body.put("maxResults", maxResults);
 
         PostRequest req = new PostRequest(url.toString(), body.toString(), "application/json");
-        Response response = null;
-        JSONObject json = null;
-        try
-        {
-            response = repositoryHttpClient.sendRequest(req);
-            if(response.getStatus() != HttpStatus.SC_OK)
-            {
-                throw new AlfrescoRuntimeException("GetNodeMetaData return status is " + response.getStatus());
-            }
-        
-            Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
-            json = new JSONObject(new JSONTokener(reader));
-        }
-        finally
-        {
-            if(response != null)
-            {
-                response.release();
-            }
-        }
+        JSONObject json = callRepository(GET_METADATA_URL, req);
 
-        if (log.isDebugEnabled())
-        {
-            log.debug(json.toString(3));
-        }
-        
         JSONArray jsonNodes = json.getJSONArray("nodes");
-        
         List<NodeMetaData> nodes = new ArrayList<NodeMetaData>(jsonNodes.length());
         for(int i = 0; i < jsonNodes.length(); i++)
         {
@@ -1159,7 +1045,7 @@ public class SOLRAPIClient
         return new GetTextContentResponse(response);
     }
     
-    public AlfrescoModel getModel(String coreName, QName modelName) throws AuthenticationException, IOException, JSONException
+    public AlfrescoModel getModel(String coreName, QName modelName) throws AuthenticationException, IOException
     {
         // If the model is new to the SOLR side the prefix will be unknown so we can not generate prefixes for the request!
         // Always use the full QName with explicit URI
@@ -1209,31 +1095,8 @@ public class SOLRAPIClient
         body.put("models", jsonModels);
 
         PostRequest req = new PostRequest(url.toString(), body.toString(), "application/json");
-        Response response = null;
-        JSONObject json = null;
-        try
-        {
-            response = repositoryHttpClient.sendRequest(req);
-            if(response.getStatus() != HttpStatus.SC_OK)
-            {
-                throw new AlfrescoRuntimeException(coreName + " GetModelsDiff return status is " + response.getStatus());
-            }
-    
-            Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
-            json = new JSONObject(new JSONTokener(reader));
-        }
-        finally
-        {
-            if(response != null)
-            {
-                response.release();
-            }
-        }
-        
-        if(log.isDebugEnabled())
-        {
-            log.debug(json.toString());
-        }
+        JSONObject json = callRepository(GET_MODELS_DIFF, req);
+
         JSONArray jsonDiffs = json.getJSONArray("diffs");
         if(jsonDiffs == null)
         {
@@ -1271,6 +1134,7 @@ public class SOLRAPIClient
         GetRequest get = new GetRequest(url.toString());
         Response response = null;
         JSONObject json = null;
+        LookAheadBufferedReader reader = null;
         try
         {
             response = repositoryHttpClient.sendRequest(get);
@@ -1280,19 +1144,29 @@ public class SOLRAPIClient
                         + response.getStatus() + " when invoking " + url);
             }
 
-            Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
-            json = new JSONObject(new JSONTokener(reader));
+           reader = new LookAheadBufferedReader(new InputStreamReader(response.getContentAsStream(), StandardCharsets.UTF_8), LOGGER);
+           json = new JSONObject(new JSONTokener(reader));
+        }
+        catch (JSONException exception)
+        {
+            String message = "Received a malformed JSON payload. Request was \"" +
+                    get.getFullUri() +
+                    "Data: "
+                    + ofNullable(reader)
+                    .map(LookAheadBufferedReader::lookAheadAndGetBufferedContent)
+                    .orElse("Not available");
+            LOGGER.error(message);
+            throw exception;
         }
         finally
         {
-            if (response != null)
-            {
-                response.release();
-            }
+            ofNullable(response).ifPresent(Response::release);
+            ofNullable(reader).ifPresent(this::silentlyClose);
         }
-        if (log.isDebugEnabled())
+
+        if (LOGGER.isDebugEnabled())
         {
-            log.debug(json.toString());
+            LOGGER.debug(json.toString());
         }
 
         return Long.parseLong(json.get("nextTransactionCommitTimeMs").toString());
@@ -1318,6 +1192,7 @@ public class SOLRAPIClient
         GetRequest get = new GetRequest(url.toString());
         Response response = null;
         JSONObject json = null;
+        LookAheadBufferedReader reader = null;
         try
         {
             response = repositoryHttpClient.sendRequest(get);
@@ -1327,19 +1202,29 @@ public class SOLRAPIClient
                         + response.getStatus() + " when invoking " + url);
             }
 
-            Reader reader = new BufferedReader(new InputStreamReader(response.getContentAsStream(), "UTF-8"));
+            reader = new LookAheadBufferedReader(new InputStreamReader(response.getContentAsStream(), StandardCharsets.UTF_8), LOGGER);
             json = new JSONObject(new JSONTokener(reader));
+        }
+        catch(JSONException exception)
+        {
+            String message = "Received a malformed JSON payload. Request was \"" +
+                    get.getFullUri() +
+                    "Data: "
+                    + ofNullable(reader)
+                    .map(LookAheadBufferedReader::lookAheadAndGetBufferedContent)
+                    .orElse("Not available");
+            LOGGER.error(message);
+            throw exception;
         }
         finally
         {
-            if (response != null)
-            {
-                response.release();
-            }
+            ofNullable(response).ifPresent(Response::release);
+            ofNullable(reader).ifPresent(this::silentlyClose);
         }
-        if (log.isDebugEnabled())
+
+        if (LOGGER.isDebugEnabled())
         {
-            log.debug(json.toString());
+            LOGGER.debug(json.toString());
         }
 
         return new Pair<Long, Long>(Long.parseLong(json.get("minTransactionCommitTimeMs").toString()),
@@ -1691,5 +1576,57 @@ public class SOLRAPIClient
     public void close()
     {
        repositoryHttpClient.close();
+    }
+
+    private JSONObject callRepository(String msgId, Request req) throws IOException, AuthenticationException
+    {
+        Response response = null;
+        LookAheadBufferedReader reader = null;
+        JSONObject json;
+        try
+        {
+            response = repositoryHttpClient.sendRequest(req);
+            if (response.getStatus() != HttpStatus.SC_OK)
+            {
+                throw new AlfrescoRuntimeException(msgId + " return status:" + response.getStatus());
+            }
+
+            reader = new LookAheadBufferedReader(new InputStreamReader(response.getContentAsStream(), StandardCharsets.UTF_8), LOGGER);
+            json = new JSONObject(new JSONTokener(reader));
+
+            if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug(json.toString(3));
+            }
+            return json;
+        }
+        catch (JSONException exception)
+        {
+            String message = "Received a malformed JSON payload. Request was \"" +
+                    req.getFullUri() +
+                    "Data: "
+                    + ofNullable(reader)
+                    .map(LookAheadBufferedReader::lookAheadAndGetBufferedContent)
+                    .orElse("Not available");
+            LOGGER.error(message);
+            throw exception;
+        }
+        finally
+        {
+            ofNullable(response).ifPresent(Response::release);
+            ofNullable(reader).ifPresent(this::silentlyClose);
+        }
+    }
+
+    private void silentlyClose(Closeable closeable)
+    {
+        try
+        {
+            closeable.close();
+        }
+        catch (Exception ignore)
+        {
+            // Nothing to be done here
+        }
     }
 }
