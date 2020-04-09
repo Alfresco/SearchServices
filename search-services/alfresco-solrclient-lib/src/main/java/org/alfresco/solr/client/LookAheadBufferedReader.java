@@ -42,6 +42,8 @@ import java.io.Reader;
  */
 public class LookAheadBufferedReader extends BufferedReader
 {
+    final static String BUFFERING_DISABLED_INFO_MESSAGE = "Not available: please set the logging LEVEL to DEBUG or TRACE.";
+
     private interface BufferingMode
     {
         void append(char ch);
@@ -148,25 +150,20 @@ public class LookAheadBufferedReader extends BufferedReader
         @Override
         public String toString()
         {
-            return "Not available: please set the logging LEVEL to DEBUG or TRACE.";
+            return BUFFERING_DISABLED_INFO_MESSAGE;
         }
     }
 
     private final BufferingMode bufferingMode;
 
-    public LookAheadBufferedReader(Reader in, Logger logger)
-    {
-        this(in, 250, logger);
-    }
-
-    public LookAheadBufferedReader(Reader in, final int windowSize, Logger logger)
+    LookAheadBufferedReader(Reader in, final int windowSize, boolean isDebugEnabled, boolean isTraceEnabled)
     {
         super(in);
-        if (logger.isTraceEnabled())
+        if (isTraceEnabled)
         {
             bufferingMode = new WholeValue();
         }
-        else if(logger.isDebugEnabled())
+        else if(isDebugEnabled)
         {
             bufferingMode = new Windowing(windowSize);
         }
@@ -175,11 +172,23 @@ public class LookAheadBufferedReader extends BufferedReader
         }
     }
 
+    public LookAheadBufferedReader(Reader in, final int windowSize, Logger logger)
+    {
+        this(in, windowSize, logger.isDebugEnabled(), logger.isTraceEnabled());
+    }
+
+    public LookAheadBufferedReader(Reader in, Logger logger)
+    {
+        this(in, 250, logger);
+    }
+
     @Override
     public int read() throws IOException
     {
         int ch  = super.read();
-        bufferingMode.append((char)ch);
+
+        if (ch != -1) bufferingMode.append((char)ch);
+
         return ch;
     }
 
@@ -199,5 +208,20 @@ public class LookAheadBufferedReader extends BufferedReader
             // Just return the collected data
         }
         return bufferingMode.toString();
+    }
+
+    boolean isInWindowingMode()
+    {
+        return bufferingMode instanceof Windowing;
+    }
+
+    boolean isInCollectEverythingMode()
+    {
+        return bufferingMode instanceof WholeValue;
+    }
+
+    boolean isBufferingDisabled()
+    {
+        return bufferingMode instanceof NoOp;
     }
 }
