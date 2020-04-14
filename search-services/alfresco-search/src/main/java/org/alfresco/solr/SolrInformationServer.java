@@ -126,7 +126,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel.FieldInstance;
 import org.alfresco.solr.AlfrescoSolrDataModel.IndexedField;
-import org.alfresco.solr.AlfrescoSolrDataModel.TenantAclIdDbId;
+import org.alfresco.solr.AlfrescoSolrDataModel.TenantDbId;
 import org.alfresco.solr.adapters.IOpenBitSet;
 import org.alfresco.solr.adapters.ISimpleOrderedMap;
 import org.alfresco.solr.adapters.SolrOpenBitSetAdapter;
@@ -802,12 +802,12 @@ public class SolrInformationServer implements InformationServer
     }
 
     @Override
-    public List<TenantAclIdDbId> getDocsWithUncleanContent(int start, int rows) throws IOException
+    public List<TenantDbId> getDocsWithUncleanContent(int start, int rows) throws IOException
     {
         RefCounted<SolrIndexSearcher> refCounted = null;
         try
         {
-            List<TenantAclIdDbId> docIds = new ArrayList<>();
+            List<TenantDbId> docIds = new ArrayList<>();
             refCounted = this.core.getSearcher();
             SolrIndexSearcher searcher = refCounted.get();
 
@@ -929,7 +929,7 @@ public class SolrInformationServer implements InformationServer
                     processedTxns.add(txnId);
                     IndexableField id = document.getField(FIELD_SOLR4_ID);
                     String idString = id.stringValue();
-                    TenantAclIdDbId tenantAndDbId = AlfrescoSolrDataModel.decodeNodeDocumentId(idString);
+                    TenantDbId tenantAndDbId = AlfrescoSolrDataModel.decodeNodeDocumentId(idString);
 
                     ofNullable(document.getField(CONTENT_LOCALE_FIELD))
                             .map(IndexableField::stringValue)
@@ -1767,7 +1767,7 @@ public class SolrInformationServer implements InformationServer
                 Document document = searcher.doc(docId, REQUEST_ONLY_ID_FIELD);
                 IndexableField indexableField = document.getField(FIELD_SOLR4_ID);
                 String id = indexableField.stringValue();
-                TenantAclIdDbId ids = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
+                TenantDbId ids = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
                 parentNodesId.add(ids.dbId);
             }
         }
@@ -1830,7 +1830,7 @@ public class SolrInformationServer implements InformationServer
     }
 
     @Override
-    public void updateContent(TenantAclIdDbId docRef) throws Exception
+    public void updateContent(TenantDbId docRef) throws Exception
     {
         LOGGER.debug("Text content of Document DBID={} is going to be updated.", docRef.dbId);
 
@@ -2535,7 +2535,7 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    private void addContentToDoc(TenantAclIdDbId docRef, SolrInputDocument doc, long dbId) throws AuthenticationException, IOException
+    private void addContentToDoc(TenantDbId docRef, SolrInputDocument doc, long dbId) throws AuthenticationException, IOException
     {
         String locale = (String) docRef.optionalBag.get(CONTENT_LOCALE_FIELD);
         String qNamePart = CONTENT_LOCALE_FIELD.substring(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX.length());
@@ -3362,7 +3362,7 @@ public class SolrInformationServer implements InformationServer
                 Document document = searcher.doc(docId, REQUEST_ONLY_ID_FIELD);
                 IndexableField indexableField = document.getField(FIELD_SOLR4_ID);
                 String id = indexableField.stringValue();
-                TenantAclIdDbId ids = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
+                TenantDbId ids = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
                 childIds.add(ids.dbId);
             }
         }
@@ -3497,7 +3497,7 @@ public class SolrInformationServer implements InformationServer
         for (SolrDocument doc : docs)
         {
             String id = getFieldValueString(doc, FIELD_SOLR4_ID);
-            TenantAclIdDbId ids = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
+            TenantDbId ids = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
             childIds.add(ids.dbId);
         }
 

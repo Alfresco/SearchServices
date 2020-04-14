@@ -21,12 +21,7 @@ package org.alfresco.solr;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.InputStream;
-
-import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.solr.AlfrescoSolrDataModel.FieldUse;
-import org.alfresco.solr.AlfrescoSolrDataModel.TenantAclIdDbId;
 import org.junit.Test;
 
 /**
