@@ -732,7 +732,7 @@ public class SOLRAPIClient
         return ret;
     }
     
-    public List<NodeMetaData> getNodesMetaData(NodeMetaDataParameters params, int maxResults) throws AuthenticationException, IOException, JSONException
+    public List<NodeMetaData> getNodesMetaData(NodeMetaDataParameters params) throws AuthenticationException, IOException, JSONException
     {
         List<Long> nodeIds = params.getNodeIds();
         
@@ -801,13 +801,16 @@ public class SOLRAPIClient
             body.put("includeTxnId", params.isIncludeTxnId());
         }
 
-        body.put("maxResults", maxResults);
+        if (params.getMaxResults().isPresent())
+        {
+            body.put("maxResults", params.getMaxResults());
+        }
 
         PostRequest req = new PostRequest(url.toString(), body.toString(), "application/json");
         JSONObject json = callRepository(GET_METADATA_URL, req);
 
         JSONArray jsonNodes = json.getJSONArray("nodes");
-        List<NodeMetaData> nodes = new ArrayList<NodeMetaData>(jsonNodes.length());
+        List<NodeMetaData> nodes = new ArrayList<>(jsonNodes.length());
         for(int i = 0; i < jsonNodes.length(); i++)
         {
             JSONObject jsonNodeInfo = jsonNodes.getJSONObject(i);
