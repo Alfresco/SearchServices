@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Alfresco Software Limited.
+ * Copyright (C) 2020 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -69,6 +69,7 @@ import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXCOM
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TYPE;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_VERSION;
+import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
 
 import java.io.File;
 import java.io.IOException;
@@ -85,7 +86,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -451,7 +451,7 @@ public class SolrInformationServer implements InformationServer
         this.core = core;
         this.nativeRequestHandler = core.getRequestHandler(REQUEST_HANDLER_NATIVE);
         this.cloud = new Cloud();
-        this.repositoryClient = repositoryClient;
+        this.repositoryClient = Objects.requireNonNull(repositoryClient);
         this.solrContentStore = solrContentStore;
 
         Properties p = core.getResourceLoader().getCoreProperties();
@@ -1502,7 +1502,7 @@ public class SolrInformationServer implements InformationServer
                 NodeMetaDataParameters nmdp = new NodeMetaDataParameters();
                 nmdp.setFromNodeId(node.getId());
                 nmdp.setToNodeId(node.getId());
-                List<NodeMetaData> nodeMetaDatas;
+                Collection<NodeMetaData> nodeMetaDatas;
                 if ((node.getStatus() == SolrApiNodeStatus.DELETED)
                         || cascadeTrackingEnabled() && ((node.getStatus() == SolrApiNodeStatus.NON_SHARD_DELETED)
                                                      || (node.getStatus() == SolrApiNodeStatus.NON_SHARD_UPDATED)))
@@ -1513,13 +1513,14 @@ public class SolrInformationServer implements InformationServer
                 }
                 else
                 {
-                    nodeMetaDatas = repositoryClient.getNodesMetaData(nmdp, Integer.MAX_VALUE);
+                    nmdp.setMaxResults(Integer.MAX_VALUE);
+                    nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
                 }
 
                 NodeMetaData nodeMetaData;
                 if (!nodeMetaDatas.isEmpty())
                 {
-                    nodeMetaData = nodeMetaDatas.get(0);
+                    nodeMetaData = nodeMetaDatas.iterator().next();
                     if (!(nodeMetaData.getTxnId() > node.getTxnId()))
                     {
                         if (node.getStatus() == SolrApiNodeStatus.DELETED)
@@ -1557,15 +1558,15 @@ public class SolrInformationServer implements InformationServer
             		NodeMetaDataParameters nmdp = new NodeMetaDataParameters();
             		nmdp.setFromNodeId(node.getId());
             		nmdp.setToNodeId(node.getId());
-
-            		List<NodeMetaData> nodeMetaDatas =  repositoryClient.getNodesMetaData(nmdp, Integer.MAX_VALUE);
+                    nmdp.setMaxResults(Integer.MAX_VALUE);
+            		Collection<NodeMetaData> nodeMetaDatas =  getNodesMetaDataFromRepository(nmdp);
 
             		AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
             		addDocCmd.overwrite = overwrite;
 
             		if (!nodeMetaDatas.isEmpty())
             		{
-            			NodeMetaData nodeMetaData = nodeMetaDatas.get(0);
+            			NodeMetaData nodeMetaData = nodeMetaDatas.iterator().next();
             			if(node.getTxnId() == Long.MAX_VALUE) {
             				//This is a re-index. We need to clear the txnId from the pr
             				this.cleanContentCache.remove(nodeMetaData.getTxnId());
@@ -1722,8 +1723,9 @@ public class SolrInformationServer implements InformationServer
             nmdp.setIncludePaths(true);
             nmdp.setIncludeProperties(false);
             nmdp.setIncludeTxnId(true);
+            nmdp.setMaxResults(1);
             // Gets only one
-            List<NodeMetaData> nodeMetaDatas = repositoryClient.getNodesMetaData(nmdp, 1);
+            Collection<NodeMetaData> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
             allNodeMetaDatas.addAll(nodeMetaDatas);
         }
 
@@ -1808,6 +1810,14 @@ public class SolrInformationServer implements InformationServer
                 processor.processAdd(addDocCmd);
             }
         }
+        catch (AlfrescoLockException exception)
+        {
+            LOGGER.error(exception.getMessage());
+        }
+        catch (Exception exception)
+        {
+            LOGGER.error("Unable to update the text content of node {}. See the stacktrace below for further details.", dbId, exception);
+        }
         finally
         {
             unlock(dbId);
@@ -1862,7 +1872,8 @@ public class SolrInformationServer implements InformationServer
                     nmdp.setIncludeAspects(false);
                     nmdp.setIncludePaths(false);
                     nmdp.setIncludeParentAssociations(false);
-                    nodeMetaDatas.addAll(repositoryClient.getNodesMetaData(nmdp, Integer.MAX_VALUE));
+                    nmdp.setMaxResults(Integer.MAX_VALUE);
+                    nodeMetaDatas.addAll(getNodesMetaDataFromRepository(nmdp));
                 }
 
                 for (NodeMetaData nodeMetaData : nodeMetaDatas)
@@ -1880,6 +1891,14 @@ public class SolrInformationServer implements InformationServer
                         lock(nodeMetaData.getId());
 
                         solrContentStore.removeDocFromContentStore(nodeMetaData);
+                    }
+                    catch (AlfrescoLockException exception)
+                    {
+                        LOGGER.error(exception.getMessage());
+                    }
+                    catch (Exception exception)
+                    {
+                        LOGGER.error("Unable to remove document {} from the content store. See the stacktrace below for further details.", nodeMetaData.getId(), exception);
                     }
                     finally
                     {
@@ -1907,7 +1926,8 @@ public class SolrInformationServer implements InformationServer
                 nmdp.setIncludeChildAssociations(false);
 
                 // Fetches bulk metadata
-                List<NodeMetaData> nodeMetaDatas = repositoryClient.getNodesMetaData(nmdp, Integer.MAX_VALUE);
+                nmdp.setMaxResults(Integer.MAX_VALUE);
+                Collection<NodeMetaData> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
                 
                 NEXT_NODE:
                 for (NodeMetaData nodeMetaData : nodeMetaDatas)
@@ -1976,6 +1996,14 @@ public class SolrInformationServer implements InformationServer
 
                         long end = System.nanoTime();
                         this.trackerStats.addNodeTime(end - start);
+                    }
+                    catch (AlfrescoLockException exception)
+                    {
+                        LOGGER.error(exception.getMessage());
+                    }
+                    catch (Exception exception)
+                    {
+                        LOGGER.error("Upsert failure on Node {}. See the stacktrace below for further details.", nodeId, exception);
                     }
                     finally
                     {
@@ -2484,11 +2512,12 @@ public class SolrInformationServer implements InformationServer
         NodeMetaDataParameters nmdp = new NodeMetaDataParameters();
         nmdp.setFromNodeId(dbId);
         nmdp.setToNodeId(dbId);
-        List<NodeMetaData> nodeMetaDatas = repositoryClient.getNodesMetaData(nmdp, Integer.MAX_VALUE);
+        nmdp.setMaxResults(Integer.MAX_VALUE);
+        Collection<NodeMetaData> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
         SolrInputDocument newDoc = null;
         if (!nodeMetaDatas.isEmpty())
         {
-            NodeMetaData nodeMetaData = nodeMetaDatas.get(0);
+            NodeMetaData nodeMetaData = nodeMetaDatas.iterator().next();
             newDoc = createNewDoc(nodeMetaData, DOC_TYPE_NODE);
             addFieldsToDoc(nodeMetaData, newDoc);
             boolean isContentIndexedForNode = isContentIndexedForNode(nodeMetaData.getProperties());
@@ -3155,10 +3184,10 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    private void lock(Object id) throws IOException
+    private void lock(Object id) throws AlfrescoLockException
     {
         long startTime = System.currentTimeMillis();
-        while(!lockRegistry.add(id))
+        while (!lockRegistry.add(id))
         {
             try
             {
@@ -3169,9 +3198,9 @@ public class SolrInformationServer implements InformationServer
                 // I don't think we are concerned with this exception.
             }
 
-            if(System.currentTimeMillis() - startTime > 120000)
+            if (System.currentTimeMillis() - startTime > 120000)
             {
-                throw new IOException("Unable to acquire lock on nodeId " + id + " after " + 120000 + " msecs.");
+                throw new AlfrescoLockException("Unable to acquire lock on nodeId " + id + " after " + 120000 + " msecs.");
             }
         }
     }
@@ -3375,12 +3404,13 @@ public class SolrInformationServer implements InformationServer
             nmdp.setIncludeProperties(false);
             nmdp.setIncludeType(false);
             nmdp.setIncludeTxnId(true);
+            nmdp.setMaxResults(1);
             // Gets only one
-            List<NodeMetaData> nodeMetaDatas = repositoryClient.getNodesMetaData(nmdp, 1);
+            Collection<NodeMetaData> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
 
             if (!nodeMetaDatas.isEmpty())
             {
-                NodeMetaData nodeMetaData = nodeMetaDatas.get(0);
+                NodeMetaData nodeMetaData = nodeMetaDatas.iterator().next();
 
                 // Only cascade update nods we know can not have changed and must be in this shard
                 // Node in the current TX will be explicitly updated in the outer loop
@@ -3431,6 +3461,14 @@ public class SolrInformationServer implements InformationServer
                         {
                             LOGGER.debug("No child doc found to update {}", childId);
                         }
+                    }
+                    catch (AlfrescoLockException exception)
+                    {
+                        LOGGER.error(exception.getMessage());
+                    }
+                    catch (Exception exception)
+                    {
+                        LOGGER.error("Cascade update failure on child document {}. See the stacktrace below for further details.", childId, exception);
                     }
                     finally
                     {
@@ -3822,5 +3860,23 @@ public class SolrInformationServer implements InformationServer
     public void flushContentStore() throws IOException
     {
         solrContentStore.flushChangeSet();
+    }
+
+    private Collection<NodeMetaData> getNodesMetaDataFromRepository(NodeMetaDataParameters parameters)
+    {
+        try
+        {
+            return notNullOrEmpty(repositoryClient.getNodesMetaData(parameters));
+        }
+        catch (JSONException exception)
+        {
+            // Nothing to be done here: the exception has been already logged in repositoryClient
+            return Collections.emptyList();
+        }
+        catch (Exception exception)
+        {
+            LOGGER.error("Unable to get nodes metadata from repository. See the stacktrace below for further details.", exception);
+            return Collections.emptyList();
+        }
     }
 }

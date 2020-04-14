@@ -452,7 +452,8 @@ public class SOLRAPIClientTest extends TestCase
 
         NodeMetaDataParameters metaParams = new NodeMetaDataParameters();
         metaParams.setNodeIds(nodeIds);
-        List<NodeMetaData> metadata = client.getNodesMetaData(metaParams, 3);
+        metaParams.setMaxResults(3);
+        List<NodeMetaData> metadata = client.getNodesMetaData(metaParams);
         for (NodeMetaData info : metadata)
         {
             logger.debug(info);
@@ -463,9 +464,10 @@ public class SOLRAPIClientTest extends TestCase
     {
         NodeMetaDataParameters metaParams = new NodeMetaDataParameters();
         List<Long> nodeIds = new ArrayList<Long>(1);
-        nodeIds.add(1l);
+        nodeIds.add(1L);
+        metaParams.setMaxResults(3);
         metaParams.setNodeIds(nodeIds);
-        List<NodeMetaData> metadata = client.getNodesMetaData(metaParams, 3);
+        List<NodeMetaData> metadata = client.getNodesMetaData(metaParams);
         for (NodeMetaData info : metadata)
         {
             logger.debug(info);
@@ -473,9 +475,10 @@ public class SOLRAPIClientTest extends TestCase
 
         metaParams = new NodeMetaDataParameters();
         nodeIds = new ArrayList<Long>(1);
-        nodeIds.add(9l);
+        nodeIds.add(9L);
         metaParams.setNodeIds(nodeIds);
-        metadata = client.getNodesMetaData(metaParams, 3);
+        metaParams.setMaxResults(3);
+        metadata = client.getNodesMetaData(metaParams);
         for (NodeMetaData info : metadata)
         {
             logger.debug(info);
@@ -483,9 +486,10 @@ public class SOLRAPIClientTest extends TestCase
 
         metaParams = new NodeMetaDataParameters();
         nodeIds = new ArrayList<Long>(1);
-        nodeIds.add(19l);
+        nodeIds.add(19L);
         metaParams.setNodeIds(nodeIds);
-        metadata = client.getNodesMetaData(metaParams, 3);
+        metaParams.setMaxResults(3);
+        metadata = client.getNodesMetaData(metaParams);
         for (NodeMetaData info : metadata)
         {
             logger.debug(info);
@@ -495,9 +499,10 @@ public class SOLRAPIClientTest extends TestCase
         // TODO check why the category path has a null QName
         metaParams = new NodeMetaDataParameters();
         nodeIds = new ArrayList<Long>(1);
-        nodeIds.add(49437l);
+        nodeIds.add(49437L);
         metaParams.setNodeIds(nodeIds);
-        metadata = client.getNodesMetaData(metaParams, 3);
+        metaParams.setMaxResults(3);
+        metadata = client.getNodesMetaData(metaParams);
         for (NodeMetaData info : metadata)
         {
             logger.debug(info);
@@ -506,9 +511,10 @@ public class SOLRAPIClientTest extends TestCase
         // content with tags
         metaParams = new NodeMetaDataParameters();
         nodeIds = new ArrayList<Long>(1);
-        nodeIds.add(49431l);
+        nodeIds.add(49431L);
         metaParams.setNodeIds(nodeIds);
-        metadata = client.getNodesMetaData(metaParams, 3);
+        metaParams.setMaxResults(3);
+        metadata = client.getNodesMetaData(metaParams);
         for (NodeMetaData info : metadata)
         {
             logger.debug(info);
@@ -525,9 +531,10 @@ public class SOLRAPIClientTest extends TestCase
         // content with null property values for author
         metaParams = new NodeMetaDataParameters();
         nodeIds = new ArrayList<Long>(1);
-        nodeIds.add(117630l);
+        nodeIds.add(117630L);
         metaParams.setNodeIds(nodeIds);
-        metadata = client.getNodesMetaData(metaParams, 3);
+        metaParams.setMaxResults(3);
+        metadata = client.getNodesMetaData(metaParams);
         for (NodeMetaData info : metadata)
         {
             logger.debug(info);
@@ -536,9 +543,10 @@ public class SOLRAPIClientTest extends TestCase
         // content with accented characters in title properties
         metaParams = new NodeMetaDataParameters();
         nodeIds = new ArrayList<Long>(1);
-        nodeIds.add(117678l);
+        nodeIds.add(117678L);
         metaParams.setNodeIds(nodeIds);
-        metadata = client.getNodesMetaData(metaParams, 3);
+        metaParams.setMaxResults(3);
+        metadata = client.getNodesMetaData(metaParams);
         for (NodeMetaData info : metadata)
         {
             logger.debug(info);
