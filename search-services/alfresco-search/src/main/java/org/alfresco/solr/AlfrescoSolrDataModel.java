@@ -304,18 +304,6 @@ public class AlfrescoSolrDataModel implements QueryConstants
         return "TRACKER" + "!" + CHANGE_SET + "!" + NumericEncoder.encode(aclChangeSetId);
     }
 
-    /**
-     * Extracts the ACL changeset identifier from the input document identifier.
-     * The "input document identifier" is the alphanumeric identifier used for Solr documents.
-     *
-     * @param documentId the document identifier.
-     * @see #getAclChangeSetDocumentId(Long)
-     * @return the numeric ACL changeset identifier.
-     */
-    public static Long parseAclChangeSetId(String documentId)
-    {
-        return parseIdFromDocumentId(documentId);
-    }
 
     /**
      * Extracts the transaction identifier from the input document identifier.

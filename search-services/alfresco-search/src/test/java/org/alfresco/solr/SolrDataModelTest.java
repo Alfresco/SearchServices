@@ -43,28 +43,6 @@ public class SolrDataModelTest
     private static QName OBJECT_ID = QName.createQName("{http://www.alfresco.org/model/cmis/1.0/cs01}objectId");
 
     @Test
-    public void testDecodeSolr4id()
-    {
-        String tenant = "TheTenant";
-        Long aclId = 987698769860l;
-        Long dbId = 9879987l;
-        String id = AlfrescoSolrDataModel.getNodeDocumentId(tenant, dbId);
-        TenantAclIdDbId ids = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
-        assertEquals(tenant,ids.tenant);
-        assertEquals(aclId, ids.aclId);
-        assertEquals(dbId, ids.dbId);
-    }
-    
-    @Test
-    public void testParseAclChangeSetId()
-    {
-        Long expectedAclChangeSetId = 94032903249l;
-        String aclChangeSetDocumentId = AlfrescoSolrDataModel.getAclChangeSetDocumentId(expectedAclChangeSetId);
-        Long actualAclChangeSetId = AlfrescoSolrDataModel.parseAclChangeSetId(aclChangeSetDocumentId);
-        assertEquals(expectedAclChangeSetId, actualAclChangeSetId);
-    }
-    
-    @Test
     public void testParseTransactionId()
     {
         Long expectedId = 94032903249l;
