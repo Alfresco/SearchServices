@@ -1810,6 +1810,10 @@ public class SolrInformationServer implements InformationServer
                 processor.processAdd(addDocCmd);
             }
         }
+        catch (AlfrescoLockException exception)
+        {
+            LOGGER.error(exception.getMessage());
+        }
         catch (Exception exception)
         {
             LOGGER.error("Unable to update the text content of node {}. See the stacktrace below for further details.", dbId, exception);
@@ -1887,6 +1891,14 @@ public class SolrInformationServer implements InformationServer
                         lock(nodeMetaData.getId());
 
                         solrContentStore.removeDocFromContentStore(nodeMetaData);
+                    }
+                    catch (AlfrescoLockException exception)
+                    {
+                        LOGGER.error(exception.getMessage());
+                    }
+                    catch (Exception exception)
+                    {
+                        LOGGER.error("Unable to remove document {} from the content store. See the stacktrace below for further details.", nodeMetaData.getId(), exception);
                     }
                     finally
                     {
@@ -1984,6 +1996,14 @@ public class SolrInformationServer implements InformationServer
 
                         long end = System.nanoTime();
                         this.trackerStats.addNodeTime(end - start);
+                    }
+                    catch (AlfrescoLockException exception)
+                    {
+                        LOGGER.error(exception.getMessage());
+                    }
+                    catch (Exception exception)
+                    {
+                        LOGGER.error("Upsert failure on Node {}. See the stacktrace below for further details.", nodeId, exception);
                     }
                     finally
                     {
@@ -3164,10 +3184,10 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    private void lock(Object id) throws IOException
+    private void lock(Object id) throws AlfrescoLockException
     {
         long startTime = System.currentTimeMillis();
-        while(!lockRegistry.add(id))
+        while (!lockRegistry.add(id))
         {
             try
             {
@@ -3178,9 +3198,9 @@ public class SolrInformationServer implements InformationServer
                 // I don't think we are concerned with this exception.
             }
 
-            if(System.currentTimeMillis() - startTime > 120000)
+            if (System.currentTimeMillis() - startTime > 120000)
             {
-                throw new IOException("Unable to acquire lock on nodeId " + id + " after " + 120000 + " msecs.");
+                throw new AlfrescoLockException("Unable to acquire lock on nodeId " + id + " after " + 120000 + " msecs.");
             }
         }
     }
@@ -3441,6 +3461,14 @@ public class SolrInformationServer implements InformationServer
                         {
                             LOGGER.debug("No child doc found to update {}", childId);
                         }
+                    }
+                    catch (AlfrescoLockException exception)
+                    {
+                        LOGGER.error(exception.getMessage());
+                    }
+                    catch (Exception exception)
+                    {
+                        LOGGER.error("Cascade update failure on child document {}. See the stacktrace below for further details.", childId, exception);
                     }
                     finally
                     {
