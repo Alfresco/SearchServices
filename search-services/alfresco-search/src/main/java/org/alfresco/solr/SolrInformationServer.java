@@ -1997,14 +1997,6 @@ public class SolrInformationServer implements InformationServer
                         long end = System.nanoTime();
                         this.trackerStats.addNodeTime(end - start);
                     }
-                    catch (AlfrescoLockException exception)
-                    {
-                        LOGGER.error(exception.getMessage());
-                    }
-                    catch (Exception exception)
-                    {
-                        LOGGER.error("Upsert failure on Node {}. See the stacktrace below for further details.", nodeId, exception);
-                    }
                     finally
                     {
                         unlock(nodeId);
