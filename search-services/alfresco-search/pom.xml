@@ -168,7 +168,7 @@
 		<dependency>
 			<groupId>org.apache.calcite</groupId>
 			<artifactId>calcite-linq4j</artifactId>
-			<version>1.12.0</version>
+			<version>1.22.0</version>
 		</dependency>
 
         <!-- Test dependencies -->
