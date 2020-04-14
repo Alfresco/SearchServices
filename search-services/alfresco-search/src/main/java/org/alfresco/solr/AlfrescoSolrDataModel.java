@@ -113,10 +113,9 @@ import static java.util.Optional.ofNullable;
  */
 public class AlfrescoSolrDataModel implements QueryConstants
 {
-    public static class TenantAclIdDbId
+    public static class TenantDbId
     {
         public String tenant;
-        public Long aclId;
         public Long dbId;
 
         public Map<String, Object> optionalBag = new HashMap<>();
@@ -342,18 +341,16 @@ public class AlfrescoSolrDataModel implements QueryConstants
      * Destructures a document identifier in the three compounding parts (tenant, aclid and dbid).
      *
      * @param id the document identifier.
-     * @return a {@link TenantAclIdDbId} instance containing the destructured identifier.
+     * @return a {@link TenantDbId} instance containing the destructured identifier.
      */
-    public static TenantAclIdDbId decodeNodeDocumentId(String id)
+    public static TenantDbId decodeNodeDocumentId(String id)
     {
-        TenantAclIdDbId ids = new TenantAclIdDbId();
+        TenantDbId ids = new TenantDbId();
         String[] split = id.split("!");
         if (split.length > 0)
             ids.tenant = split[0];
         if (split.length > 1)
-            ids.aclId = NumericEncoder.decodeLong(split[1]);
-        if (split.length > 2)
-            ids.dbId = NumericEncoder.decodeLong(split[2]);
+            ids.dbId = NumericEncoder.decodeLong(split[1]);
         return ids;
     }
 
