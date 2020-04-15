@@ -1892,14 +1892,6 @@ public class SolrInformationServer implements InformationServer
 
                         solrContentStore.removeDocFromContentStore(nodeMetaData);
                     }
-                    catch (AlfrescoLockException exception)
-                    {
-                        LOGGER.error(exception.getMessage());
-                    }
-                    catch (Exception exception)
-                    {
-                        LOGGER.error("Unable to remove document {} from the content store. See the stacktrace below for further details.", nodeMetaData.getId(), exception);
-                    }
                     finally
                     {
                         unlock(nodeMetaData.getId());
