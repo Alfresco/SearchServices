@@ -117,7 +117,7 @@ public class MetadataTrackerTest
         nodes.add(node );
         when(repositoryClient.getNodes(any(GetNodesParameters.class), anyInt())).thenReturn(nodes);
         
-        this.metadataTracker.doTrack();
+        this.metadataTracker.doTrack("AnIterationId");
 
         InOrder inOrder = inOrder(srv);
         inOrder.verify(srv).indexNodes(nodes, true);
@@ -141,7 +141,7 @@ public class MetadataTrackerTest
         when(repositoryClient.getTransactions(anyLong(), anyLong(), anyLong(), anyLong(), anyInt(), any(ShardState.class))).thenReturn(txs);
         when(repositoryClient.getTransactions(anyLong(), anyLong(), anyLong(), anyLong(), anyInt())).thenReturn(txs);
 
-        this.metadataTracker.doTrack();
+        this.metadataTracker.doTrack("AnIterationId");
 
         verify(srv, never()).commit();
     }
