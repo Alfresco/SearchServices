@@ -1587,58 +1587,6 @@ public class SOLRAPIClient
     public void close()
     {
        repositoryHttpClient.close();
-       executor.shutdown();
-    }
-
-    final ExecutorService executor = Executors.newSingleThreadExecutor();
-
-    private JSONObject callRepositoryWithTimeout(String msgId, Request req) throws IOException, AuthenticationException, InterruptedException, TimeoutException, ExecutionException {
-        List<Future<JSONObject>> result = executor.invokeAll(singletonList(() -> {
-            Response response = null;
-            LookAheadBufferedReader reader = null;
-            JSONObject json;
-            try
-            {
-                response = repositoryHttpClient.sendRequest(req);
-                if (response.getStatus() != HttpStatus.SC_OK)
-                {
-                    throw new AlfrescoRuntimeException(msgId + " return status:" + response.getStatus());
-                }
-
-                reader = new LookAheadBufferedReader(new InputStreamReader(response.getContentAsStream(), StandardCharsets.UTF_8), LOGGER);
-                json = new JSONObject(new JSONTokener(reader));
-
-                if (LOGGER.isDebugEnabled())
-                {
-                    LOGGER.debug(json.toString(3));
-                }
-                return json;
-            }
-            catch (JSONException exception)
-            {
-                String message = "Received a malformed JSON payload. Request was \"" +
-                        req.getFullUri() +
-                        "Data: "
-                        + ofNullable(reader)
-                        .map(LookAheadBufferedReader::lookAheadAndGetBufferedContent)
-                        .orElse("Not available");
-                LOGGER.error(message);
-                throw exception;
-            }
-            finally
-            {
-                ofNullable(response).ifPresent(Response::release);
-                ofNullable(reader).ifPresent(this::silentlyClose);
-            }
-        }), 5, TimeUnit.SECONDS);
-
-        Future<JSONObject> response = result.iterator().next();
-        if(response.isCancelled())
-        {
-            throw new TimeoutException("Request " + req + "has timed out. It has taken more than 5 seconds to respond");
-        }
-
-        return response.get();
     }
 
     private JSONObject callRepository(String msgId, Request req) throws IOException, AuthenticationException

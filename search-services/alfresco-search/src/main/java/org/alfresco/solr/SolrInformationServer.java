@@ -296,6 +296,8 @@ public class SolrInformationServer implements InformationServer
     private String skippingDocsQueryString;
     private boolean isSkippingDocsInitialized;
 
+    private long maxAllowedTimeForAcquiringDbIdLock;
+
     protected enum FTSStatus {New, Dirty, Clean}
 
     static class DocListCollector implements Collector, LeafCollector
@@ -460,6 +462,8 @@ public class SolrInformationServer implements InformationServer
         lag = Integer.parseInt(p.getProperty("alfresco.lag", "1000"));
         holeRetention = Integer.parseInt(p.getProperty("alfresco.hole.retention", "3600000"));
         minHash = Boolean.parseBoolean(p.getProperty("alfresco.fingerprint", "true"));
+
+        maxAllowedTimeForAcquiringDbIdLock = Long.parseLong(p.getProperty("alfresco.tracker.maxNodeLockMs", "120000"));
 
         dataModel = AlfrescoSolrDataModel.getInstance();
 
@@ -3182,9 +3186,9 @@ public class SolrInformationServer implements InformationServer
                 // I don't think we are concerned with this exception.
             }
 
-            if (System.currentTimeMillis() - startTime > 120000)
+            if (System.currentTimeMillis() - startTime > maxAllowedTimeForAcquiringDbIdLock)
             {
-                throw new AlfrescoLockException("Unable to acquire lock on nodeId " + id + " after " + 120000 + " msecs.");
+                throw new AlfrescoLockException("Unable to acquire lock on nodeId " + id + " after " + maxAllowedTimeForAcquiringDbIdLock + " msecs.");
             }
         }
     }
