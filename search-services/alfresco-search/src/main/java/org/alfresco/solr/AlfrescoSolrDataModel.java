@@ -326,11 +326,11 @@ public class AlfrescoSolrDataModel implements QueryConstants
     }
 
     /**
-     * Returns the Solr document identifier in the following format &lt;TENANT>!&lt;ACLID>!&lt;DBID>
+     * Returns the Solr document identifier in the following format &lt;TENANT>!&lt;!&lt;DBID>
      *
      * @param tenant the tenant code.
      * @param dbid the DB identifier.
-     * @return the Solr document identifier in the following format &lt;TENANT>!&lt;ACLID>!&lt;DBID>
+     * @return the Solr document identifier in the following format &lt;TENANT>!&lt;!&lt;DBID>
      */
     public static String getNodeDocumentId(String tenant, Long dbid)
     {
@@ -338,7 +338,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
     }
 
     /**
-     * Destructures a document identifier in the three compounding parts (tenant, aclid and dbid).
+     * Destructures a document identifier in the three compounding parts (tenant and dbid).
      *
      * @param id the document identifier.
      * @return a {@link TenantDbId} instance containing the destructured identifier.
