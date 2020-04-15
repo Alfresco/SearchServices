@@ -20,7 +20,6 @@ package org.alfresco.solr.tracker;
 
 import static java.util.Optional.ofNullable;
 
-import java.lang.invoke.MethodHandles;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.util.Properties;
@@ -45,7 +44,7 @@ public abstract class AbstractTracker implements Tracker
     static final long TIME_STEP_1_HR_IN_MS = 60 * 60 * 1000L;
     static final String SHARD_METHOD_DBID = "DB_ID";
 
-    protected final static Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
     
     protected Properties props;    
     protected SOLRAPIClient client;
@@ -73,6 +72,7 @@ public abstract class AbstractTracker implements Tracker
      */
     protected Throwable rollbackCausedBy;
     protected final Type type;
+    protected final String trackerId;
 
     /*
      * A thread handler can be used by subclasses, but they have to intentionally instantiate it.
@@ -85,8 +85,9 @@ public abstract class AbstractTracker implements Tracker
     protected AbstractTracker(Type type)
     {
         this.type = type;
+        this.trackerId = type + "@" + hashCode();
     }
-    
+
     protected AbstractTracker(Properties p, SOLRAPIClient client, String coreName, InformationServer informationServer,Type type)
     {
         this.props = p;
@@ -109,6 +110,8 @@ public abstract class AbstractTracker implements Tracker
         this.trackerStats = this.infoSrv.getTrackerStats();
         
         this.type = type;
+
+        this.trackerId = type + "@" + hashCode();
     }
 
     
@@ -121,8 +124,10 @@ public abstract class AbstractTracker implements Tracker
      *     <li>Index</li>
      *     <li>Track repository</li>
      * </ol>
+     *
+     * @param iterationId an identifier which is uniquely associated with a given iteration.
      */
-    protected abstract void doTrack() throws Throwable;
+    protected abstract void doTrack(String iterationId) throws Throwable;
 
 
     private boolean assertTrackerStateRemainsNull() {
@@ -156,14 +161,16 @@ public abstract class AbstractTracker implements Tracker
     }
     /**
      * Template method - subclasses must implement the {@link Tracker}-specific indexing
-     * by implementing the abstract method {@link #doTrack()}.
+     * by implementing the abstract method {@link #doTrack(String)}.
      */
     @Override
     public void track()
     {
+        String iterationId = "IT #" + System.currentTimeMillis();
+
         if(runLock.availablePermits() == 0)
         {
-            LOGGER.info("... {}  for core [{}] is already in use {}", this.getClass().getSimpleName(), coreName, getClass());
+            logger.info("[{} / {} / {}] Tracker already registered.", coreName, trackerId, iterationId);
             return;
         }
 
@@ -180,13 +187,11 @@ public abstract class AbstractTracker implements Tracker
                 assert(assertTrackerStateRemainsNull());
             }
 
-            LOGGER.info("[CORE {}] Running {}", coreName, this.getClass().getSimpleName());
-            
             if(this.state == null)
             {
                 this.state = getTrackerState();
 
-                LOGGER.debug("[CORE {}] Global Tracker State set to: {}", coreName, this.state.toString());
+                logger.debug("[{} / {} / {}]  Global Tracker State set to: {}", coreName, trackerId, iterationId, this.state.toString());
                 this.state.setRunning(true);
             }
             else
@@ -199,33 +204,33 @@ public abstract class AbstractTracker implements Tracker
 
             try
             {
-                doTrack();
+                doTrack(iterationId);
             }
             catch(IndexTrackingShutdownException t)
             {
                 setRollback(true, t);
-                LOGGER.info("[CORE {}] Stopping index tracking for {}", coreName, getClass().getSimpleName());
+                logger.info("[{} / {} / {}] Tracking cycle stopped. See the stacktrace below for further details.", coreName, trackerId, iterationId, t);
             }
             catch(Throwable t)
             {
                 setRollback(true, t);
                 if (t instanceof SocketTimeoutException || t instanceof ConnectException)
                 {
-                    LOGGER.warn("[CORE {}] Tracking communication timed out for {}", coreName, getClass().getSimpleName());
-                    if (LOGGER.isDebugEnabled())
+                    logger.warn("[{} / {} / {}] Tracking communication timed out. See the stacktrace below for further details.", coreName, trackerId, iterationId);
+                    if (logger.isDebugEnabled())
                     {
-                        LOGGER.debug("[CORE {}] Stack trace", coreName, t);
+                        logger.debug("[{} / {} / {}] Stack trace", coreName, trackerId, iterationId, t);
                     }
                 }
                 else
                 {
-                    LOGGER.error("[CORE {}] Tracking failed for {}", coreName, getClass().getSimpleName(), t);
+                    logger.error("[{} / {} / {}] Tracking failure. See the stacktrace below for further details.", coreName, trackerId, iterationId, t);
                 }
             }
         }
         catch (InterruptedException e)
         {
-            LOGGER.error("[CORE {}] Semaphore interrupted for {}", coreName, getClass().getSimpleName(), e);
+            logger.error("[{} / {} / {}] Semaphore interruption. See the stacktrace below for further details.", coreName, trackerId, iterationId, e);
         }
         finally
         {

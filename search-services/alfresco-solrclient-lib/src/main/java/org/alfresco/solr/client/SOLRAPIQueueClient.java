@@ -285,7 +285,8 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
         return allNodes;
     }
 
-    public List<NodeMetaData> getNodesMetaData(NodeMetaDataParameters params, int maxResults) throws AuthenticationException, IOException, JSONException
+    @Override
+    public List<NodeMetaData> getNodesMetaData(NodeMetaDataParameters params) throws AuthenticationException, IOException, JSONException
     {
         if(throwException) {
             throw new ConnectException("THROWING EXCEPTION, better be ready!");

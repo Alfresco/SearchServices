@@ -118,7 +118,7 @@ public class ModelTrackerIT
     public void testDoTrack() throws AuthenticationException, IOException, JSONException
     {
         ModelTracker spiedModelTracker = spy(this.modelTracker);
-        spiedModelTracker.doTrack();
+        spiedModelTracker.doTrack("AnIterationId");
 
         verify(this.srv).getRegisteredSearcherCount();
         verify(spiedModelTracker).trackModels(false);
