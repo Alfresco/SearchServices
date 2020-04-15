@@ -803,7 +803,7 @@ public class SOLRAPIClient
 
         if (params.getMaxResults().isPresent())
         {
-            body.put("maxResults", params.getMaxResults());
+            body.put("maxResults", params.getMaxResults().getAsInt());
         }
 
         PostRequest req = new PostRequest(url.toString(), body.toString(), "application/json");
