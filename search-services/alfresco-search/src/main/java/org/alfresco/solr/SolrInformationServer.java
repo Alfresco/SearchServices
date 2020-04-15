@@ -1666,7 +1666,7 @@ public class SolrInformationServer implements InformationServer
                     AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
                     addDocCmd.overwrite = overwrite;
 
-                    deleteNode(processor, request, node);
+                    deleteErrorNode(processor, request, node);
 
                     // Check index control
                     Map<QName, PropertyValue> properties = nodeMetaData.getProperties();
@@ -2011,7 +2011,8 @@ public class SolrInformationServer implements InformationServer
                     }
 
                     // Make sure any unindexed or error doc is removed.
-                    deleteNode(processor, request, node);
+                    deleteErrorNode(processor, request, node);
+
                     addDocCmd.solrDoc =
                             populateWithMetadata(basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new),
                                     nodeMetaData);
