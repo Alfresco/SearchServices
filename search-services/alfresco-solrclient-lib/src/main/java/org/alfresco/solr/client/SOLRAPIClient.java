@@ -25,6 +25,7 @@
  */
 package org.alfresco.solr.client;
 
+import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 
 import java.io.Closeable;
@@ -42,6 +43,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AlfrescoHttpClient;
@@ -75,6 +82,7 @@ import org.alfresco.util.Pair;
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.SimpleHttpConnectionManager;
 import org.apache.commons.httpclient.util.DateUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -1579,6 +1587,58 @@ public class SOLRAPIClient
     public void close()
     {
        repositoryHttpClient.close();
+       executor.shutdown();
+    }
+
+    final ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    private JSONObject callRepositoryWithTimeout(String msgId, Request req) throws IOException, AuthenticationException, InterruptedException, TimeoutException, ExecutionException {
+        List<Future<JSONObject>> result = executor.invokeAll(singletonList(() -> {
+            Response response = null;
+            LookAheadBufferedReader reader = null;
+            JSONObject json;
+            try
+            {
+                response = repositoryHttpClient.sendRequest(req);
+                if (response.getStatus() != HttpStatus.SC_OK)
+                {
+                    throw new AlfrescoRuntimeException(msgId + " return status:" + response.getStatus());
+                }
+
+                reader = new LookAheadBufferedReader(new InputStreamReader(response.getContentAsStream(), StandardCharsets.UTF_8), LOGGER);
+                json = new JSONObject(new JSONTokener(reader));
+
+                if (LOGGER.isDebugEnabled())
+                {
+                    LOGGER.debug(json.toString(3));
+                }
+                return json;
+            }
+            catch (JSONException exception)
+            {
+                String message = "Received a malformed JSON payload. Request was \"" +
+                        req.getFullUri() +
+                        "Data: "
+                        + ofNullable(reader)
+                        .map(LookAheadBufferedReader::lookAheadAndGetBufferedContent)
+                        .orElse("Not available");
+                LOGGER.error(message);
+                throw exception;
+            }
+            finally
+            {
+                ofNullable(response).ifPresent(Response::release);
+                ofNullable(reader).ifPresent(this::silentlyClose);
+            }
+        }), 5, TimeUnit.SECONDS);
+
+        Future<JSONObject> response = result.iterator().next();
+        if(response.isCancelled())
+        {
+            throw new TimeoutException("Request " + req + "has timed out. It has taken more than 5 seconds to respond");
+        }
+
+        return response.get();
     }
 
     private JSONObject callRepository(String msgId, Request req) throws IOException, AuthenticationException
