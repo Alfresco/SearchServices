@@ -101,7 +101,7 @@ public class CommitTracker extends AbstractTracker
     }
 
     @Override
-    protected void doTrack() throws Throwable
+    protected void doTrack(String iterationId) throws Throwable
     {
         long currentTime = System.currentTimeMillis();
         boolean commitNeeded = false;

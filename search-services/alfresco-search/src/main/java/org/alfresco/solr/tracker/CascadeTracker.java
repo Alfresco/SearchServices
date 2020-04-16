@@ -36,6 +36,9 @@ import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.util.stream.Collectors.joining;
+import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
+
 /*
  * This tracks Cascading Updates
  * @author Joel Bernstein
@@ -61,13 +64,13 @@ public class CascadeTracker extends AbstractTracker implements Tracker
     }
 
     @Override
-    protected void doTrack() throws AuthenticationException, IOException, JSONException, EncoderException
+    protected void doTrack(String iterationId) throws AuthenticationException, IOException, JSONException, EncoderException
     {
         // MetadataTracker must wait until ModelTracker has run
         ModelTracker modelTracker = this.infoSrv.getAdminHandler().getTrackerRegistry().getModelTracker();
         if (modelTracker != null && modelTracker.hasModels())
         {
-            trackRepository();
+            trackRepository(iterationId);
         }
     }
 
@@ -79,10 +82,10 @@ public class CascadeTracker extends AbstractTracker implements Tracker
         return false;
     }
 
-    private void trackRepository() throws IOException, AuthenticationException, JSONException, EncoderException
+    private void trackRepository(String iterationId) throws IOException, AuthenticationException, JSONException, EncoderException
     {
         checkShutdown();
-        processCascades();
+        processCascades(iterationId);
     }
 
     private void updateTransactionsAfterAsynchronous(List<Transaction> txsIndexed)
@@ -125,9 +128,8 @@ public class CascadeTracker extends AbstractTracker implements Tracker
         infoSrv.setCleanCascadeTxnFloor(-1);
     }
 
-    private void processCascades() throws IOException
+    private void processCascades(String iterationId) throws IOException
     {
-        //System.out.println("######### processCascades()");
         int num = 50;
         List<Transaction> txBatch = null;
         do {
@@ -160,7 +162,17 @@ public class CascadeTracker extends AbstractTracker implements Tracker
                             batch.add(stack.removeFirst());
                         }
 
+
                         CascadeIndexWorkerRunnable worker = new CascadeIndexWorkerRunnable(this.threadHandler, batch, infoSrv);
+
+                        if (logger.isTraceEnabled())
+                        {
+                            String nodes = notNullOrEmpty(batch).stream()
+                                                .map(NodeMetaData::getId)
+                                                .map(Object::toString)
+                                                .collect(joining(","));
+                            logger.trace("[{} / {} / {} / {}] Worker has been created for nodes {}", coreName, trackerId, iterationId, worker.hashCode(), nodes);
+                        }
                         this.threadHandler.scheduleTask(worker);
                     }
                     while (stack.size() > 0);

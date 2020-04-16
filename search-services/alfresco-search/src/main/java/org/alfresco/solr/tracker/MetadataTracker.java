@@ -169,7 +169,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     }
 
     @Override
-    protected void doTrack() throws AuthenticationException, IOException, JSONException, EncoderException
+    protected void doTrack(String iterationId) throws AuthenticationException, IOException, JSONException, EncoderException
     {
         log.debug("### MetadataTracker doTrack ###");
         // MetadataTracker must wait until ModelTracker has run

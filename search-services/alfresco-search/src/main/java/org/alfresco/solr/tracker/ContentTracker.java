@@ -57,7 +57,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
     }
     
     @Override
-    protected void doTrack() throws Exception
+    protected void doTrack(String iterationId) throws Exception
     {
         //System.out.println("############## Content Tracker doTrack()");
         try {
