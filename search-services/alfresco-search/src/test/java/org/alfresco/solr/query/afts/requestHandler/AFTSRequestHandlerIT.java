@@ -328,7 +328,7 @@ public class AFTSRequestHandlerIT extends AbstractRequestHandlerIT implements Qu
     public void idField()
     {
         range(1, 16)
-                .mapToObj(dbId -> escape(AlfrescoSolrDataModel.getNodeDocumentId(AlfrescoSolrDataModel.DEFAULT_TENANT, 1L, dbId)))
+                .mapToObj(dbId -> escape(AlfrescoSolrDataModel.getNodeDocumentId(AlfrescoSolrDataModel.DEFAULT_TENANT, dbId)))
                 .forEach(id -> assertResponseCardinality(FIELD_SOLR4_ID, id, 1));
     }
 

@@ -27,14 +27,12 @@ public class TestGroup
     public static final String PREUPGRADE = "pre-upgrade";
     public static final String POSTUPGRADE = "post-upgrade";
 
-    public static final String ASS_MASTER_SLAVE = "ASS_Master_Slave"; // Alfresco Search Services using master slave configurations
-    public static final String ASS_MASTER ="ASS_Master"; // Alfresco search services using master/stand alone mode
-    public static final String EXPLICIT_SHARDING ="Explicit_Sharding"; // Alfresco search services using sharded environment and explicit routing
+    public static final String CONFIG_MASTER_SLAVE = "CONFIG_Master_Slave"; // Alfresco Search Services using master slave configurations
+    public static final String CONFIG_MASTER ="CONFIG_Master"; // Alfresco search services using master/stand alone mode
 
-    public static final String SHARDING ="Sharding"; // Alfresco search services using sharded environment
-
-    public static final String ASS_SHARDING = "ASS_Sharding"; // Alfresco Search Services using Sharding
-    public static final String ASS_SHARDING_DB_ID_RANGE = "ASS_Sharding_DB_ID_RANGE"; // Alfresco Search Services using Sharding with DB_ID_RANGE
+    public static final String CONFIG_SHARDING ="CONFIG_Sharding"; // Alfresco search services using sharded environment
+    public static final String CONFIG_SHARDING_EXPLICIT ="CONFIG_Sharding_EXPLICIT"; // Alfresco search services using sharded environment and explicit routing
+    public static final String CONFIG_SHARDING_DB_ID_RANGE = "CONFIG_Sharding_DB_ID_RANGE"; // Alfresco Search Services using Sharding with DB_ID_RANGE
 
     public static final String NOT_INSIGHT_ENGINE = "Not_InsightEngine"; // When Alfresco Insight Engine 1.0 isn't running
 
@@ -46,6 +44,4 @@ public class TestGroup
     public static final String ACS_63n = "ACS_63n"; // Alfresco Content Services 6.3 or above
 
     public static final String AGS_302 = "AGS_302"; // Alfresco governance Services 3.0.2 or above
-    
-    public static final String NOT_BAMBOO = "Not_Bamboo"; // The does not run on bamboo
 }

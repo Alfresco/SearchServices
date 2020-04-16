@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
-import org.alfresco.solr.AlfrescoSolrDataModel.TenantAclIdDbId;
+import org.alfresco.solr.AlfrescoSolrDataModel.TenantDbId;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.client.SOLRAPIClient;
 
@@ -73,7 +73,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
 
                     getWriteLock().acquire();
 
-                    List<TenantAclIdDbId> docs = notNullOrEmpty(infoSrv.getDocsWithUncleanContent(start, ROWS));
+                    List<TenantDbId> docs = notNullOrEmpty(infoSrv.getDocsWithUncleanContent(start, ROWS));
                     if (docs.isEmpty())
                     {
                         LOGGER.debug("No unclean document has been detected in the current ContentTracker cycle.");
@@ -81,7 +81,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
                     }
 
                     int docsUpdatedSinceLastCommit = 0;
-                    for (TenantAclIdDbId doc : docs)
+                    for (TenantDbId doc : docs)
                     {
                         ContentIndexWorkerRunnable ciwr = new ContentIndexWorkerRunnable(super.threadHandler, doc, infoSrv);
                         super.threadHandler.scheduleTask(ciwr);
@@ -143,9 +143,9 @@ public class ContentTracker extends AbstractTracker implements Tracker
     class ContentIndexWorkerRunnable extends AbstractWorkerRunnable
     {
         InformationServer infoServer;
-        TenantAclIdDbId docRef;
+        TenantDbId docRef;
 
-        ContentIndexWorkerRunnable(QueueHandler queueHandler, TenantAclIdDbId docRef, InformationServer infoServer)
+        ContentIndexWorkerRunnable(QueueHandler queueHandler, TenantDbId docRef, InformationServer infoServer)
         {
             super(queueHandler);
 

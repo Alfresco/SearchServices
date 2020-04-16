@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.alfresco.solr.AlfrescoSolrDataModel.TenantAclIdDbId;
+import org.alfresco.solr.AlfrescoSolrDataModel.TenantDbId;
 import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.junit.Assert;
@@ -80,25 +80,25 @@ public class ContentTrackerIT
     @Ignore("Superseded by AlfrescoSolrTrackerTest")
     public void doTrackWithContentUpdatesContent() throws Exception
     {
-        List<TenantAclIdDbId> docs1 = new ArrayList<>();
-        List<TenantAclIdDbId> docs2 = new ArrayList<>();
-        List<TenantAclIdDbId> emptyList = new ArrayList<>();
+        List<TenantDbId> docs1 = new ArrayList<>();
+        List<TenantDbId> docs2 = new ArrayList<>();
+        List<TenantDbId> emptyList = new ArrayList<>();
         // Adds one more than the UPDATE_BATCH
         for (int i = 0; i <= UPDATE_BATCH; i++)
         {
-            TenantAclIdDbId doc = new TenantAclIdDbId();
+            TenantDbId doc = new TenantDbId();
             doc.dbId = 1l;
             doc.tenant = "1";
             docs1.add(doc);
         }
-        TenantAclIdDbId thirdDoc = docs1.get(UPDATE_BATCH);
+        TenantDbId thirdDoc = docs1.get(UPDATE_BATCH);
         thirdDoc.dbId = 3l;
         thirdDoc.tenant = "3";
 
         // Adds UPDATE_BATCH
         for (long i = 0; i < UPDATE_BATCH; i++)
         {
-            TenantAclIdDbId doc = new TenantAclIdDbId();
+            TenantDbId doc = new TenantDbId();
             doc.dbId = 2l;
             doc.tenant = "2";
             docs2.add(doc);
@@ -120,7 +120,7 @@ public class ContentTrackerIT
          */
 
         // From docs1
-        TenantAclIdDbId docRef = new TenantAclIdDbId();
+        TenantDbId docRef = new TenantDbId();
         docRef.dbId = 1L;
         docRef.tenant = "1";
 
@@ -134,7 +134,7 @@ public class ContentTrackerIT
         order.verify(srv).getDocsWithUncleanContent(0 + READ_BATCH, READ_BATCH);
         
         // From docs2
-        docRef = new TenantAclIdDbId();
+        docRef = new TenantDbId();
         docRef.dbId = 2L;
         docRef.tenant = "2";
         order.verify(srv, times(UPDATE_BATCH)).updateContent(docRef);

@@ -1101,8 +1101,7 @@ public class SOLRAPIClient
         return nodes;
     }
     
-    public GetTextContentResponse getTextContent(Long nodeId, QName propertyQName, Long modifiedSince) throws AuthenticationException, IOException
-    {
+    public GetTextContentResponse getTextContent(Long nodeId, QName propertyQName, Long modifiedSince) throws AuthenticationException, IOException {
         StringBuilder url = new StringBuilder(128);
         url.append(GET_CONTENT);
         
@@ -1152,7 +1151,9 @@ public class SOLRAPIClient
         
         if(response.getStatus() != Status.STATUS_NOT_MODIFIED && response.getStatus() != Status.STATUS_NO_CONTENT && response.getStatus() != Status.STATUS_OK)
         {
-            throw new AlfrescoRuntimeException("GetTextContentResponse return status is " + response.getStatus());
+            int status = response.getStatus();
+            response.release();
+            throw new AlfrescoRuntimeException("GetTextContentResponse return status is " + status);
         }
 
         return new GetTextContentResponse(response);
@@ -1590,7 +1591,7 @@ public class SOLRAPIClient
     }
 
     // TODO register a stream close listener that release the response when the response has been read
-    public static class GetTextContentResponse extends SOLRResponse
+    public static class GetTextContentResponse extends SOLRResponse implements AutoCloseable
     {
         private InputStream content;
         private SolrApiContentStatus status;
@@ -1679,6 +1680,11 @@ public class SOLRAPIClient
         public String getContentEncoding()
         {
             return contentEncoding;
+        }
+
+        @Override
+        public void close() {
+            response.release();
         }
     }
 

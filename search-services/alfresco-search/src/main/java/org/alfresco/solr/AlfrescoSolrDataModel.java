@@ -113,10 +113,9 @@ import static java.util.Optional.ofNullable;
  */
 public class AlfrescoSolrDataModel implements QueryConstants
 {
-    public static class TenantAclIdDbId
+    public static class TenantDbId
     {
         public String tenant;
-        public Long aclId;
         public Long dbId;
 
         public Map<String, Object> optionalBag = new HashMap<>();
@@ -304,18 +303,6 @@ public class AlfrescoSolrDataModel implements QueryConstants
         return "TRACKER" + "!" + CHANGE_SET + "!" + NumericEncoder.encode(aclChangeSetId);
     }
 
-    /**
-     * Extracts the ACL changeset identifier from the input document identifier.
-     * The "input document identifier" is the alphanumeric identifier used for Solr documents.
-     *
-     * @param documentId the document identifier.
-     * @see #getAclChangeSetDocumentId(Long)
-     * @return the numeric ACL changeset identifier.
-     */
-    public static Long parseAclChangeSetId(String documentId)
-    {
-        return parseIdFromDocumentId(documentId);
-    }
 
     /**
      * Extracts the transaction identifier from the input document identifier.
@@ -339,34 +326,31 @@ public class AlfrescoSolrDataModel implements QueryConstants
     }
 
     /**
-     * Returns the Solr document identifier in the following format &lt;TENANT>!&lt;ACLID>!&lt;DBID>
+     * Returns the Solr document identifier in the following format &lt;TENANT>!&lt;!&lt;DBID>
      *
      * @param tenant the tenant code.
-     * @param aclId the ACL identifier.
      * @param dbid the DB identifier.
-     * @return the Solr document identifier in the following format &lt;TENANT>!&lt;ACLID>!&lt;DBID>
+     * @return the Solr document identifier in the following format &lt;TENANT>!&lt;!&lt;DBID>
      */
-    public static String getNodeDocumentId(String tenant, Long aclId, Long dbid)
+    public static String getNodeDocumentId(String tenant, Long dbid)
     {
-        return getTenantId(tenant) + "!" + NumericEncoder.encode(aclId) + "!" + NumericEncoder.encode(dbid);
+        return getTenantId(tenant) + "!" + NumericEncoder.encode(dbid);
     }
 
     /**
-     * Destructures a document identifier in the three compounding parts (tenant, aclid and dbid).
+     * Destructures a document identifier in the three compounding parts (tenant and dbid).
      *
      * @param id the document identifier.
-     * @return a {@link TenantAclIdDbId} instance containing the destructured identifier.
+     * @return a {@link TenantDbId} instance containing the destructured identifier.
      */
-    public static TenantAclIdDbId decodeNodeDocumentId(String id)
+    public static TenantDbId decodeNodeDocumentId(String id)
     {
-        TenantAclIdDbId ids = new TenantAclIdDbId();
+        TenantDbId ids = new TenantDbId();
         String[] split = id.split("!");
         if (split.length > 0)
             ids.tenant = split[0];
         if (split.length > 1)
-            ids.aclId = NumericEncoder.decodeLong(split[1]);
-        if (split.length > 2)
-            ids.dbId = NumericEncoder.decodeLong(split[2]);
+            ids.dbId = NumericEncoder.decodeLong(split[1]);
         return ids;
     }
 

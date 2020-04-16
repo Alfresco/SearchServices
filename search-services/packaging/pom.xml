@@ -159,6 +159,8 @@
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/jackson-mapper-asl-1.9.13.jar" />
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/dom4j-1.6.1.jar" />
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/woodstox-core-asl-4.4.1.jar" />
+                                <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/calcite-core-1.11.0.jar" />
+                                <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/calcite-linq4j-1.11.0.jar" />
                             </target>
 
                         </configuration>

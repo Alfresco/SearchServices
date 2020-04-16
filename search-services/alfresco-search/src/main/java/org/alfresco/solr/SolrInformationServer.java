@@ -126,7 +126,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoSolrDataModel.FieldInstance;
 import org.alfresco.solr.AlfrescoSolrDataModel.IndexedField;
-import org.alfresco.solr.AlfrescoSolrDataModel.TenantAclIdDbId;
+import org.alfresco.solr.AlfrescoSolrDataModel.TenantDbId;
 import org.alfresco.solr.adapters.IOpenBitSet;
 import org.alfresco.solr.adapters.ISimpleOrderedMap;
 import org.alfresco.solr.adapters.SolrOpenBitSetAdapter;
@@ -802,12 +802,12 @@ public class SolrInformationServer implements InformationServer
     }
 
     @Override
-    public List<TenantAclIdDbId> getDocsWithUncleanContent(int start, int rows) throws IOException
+    public List<TenantDbId> getDocsWithUncleanContent(int start, int rows) throws IOException
     {
         RefCounted<SolrIndexSearcher> refCounted = null;
         try
         {
-            List<TenantAclIdDbId> docIds = new ArrayList<>();
+            List<TenantDbId> docIds = new ArrayList<>();
             refCounted = this.core.getSearcher();
             SolrIndexSearcher searcher = refCounted.get();
 
@@ -929,7 +929,7 @@ public class SolrInformationServer implements InformationServer
                     processedTxns.add(txnId);
                     IndexableField id = document.getField(FIELD_SOLR4_ID);
                     String idString = id.stringValue();
-                    TenantAclIdDbId tenantAndDbId = AlfrescoSolrDataModel.decodeNodeDocumentId(idString);
+                    TenantDbId tenantAndDbId = AlfrescoSolrDataModel.decodeNodeDocumentId(idString);
 
                     ofNullable(document.getField(CONTENT_LOCALE_FIELD))
                             .map(IndexableField::stringValue)
@@ -1767,7 +1767,7 @@ public class SolrInformationServer implements InformationServer
                 Document document = searcher.doc(docId, REQUEST_ONLY_ID_FIELD);
                 IndexableField indexableField = document.getField(FIELD_SOLR4_ID);
                 String id = indexableField.stringValue();
-                TenantAclIdDbId ids = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
+                TenantDbId ids = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
                 parentNodesId.add(ids.dbId);
             }
         }
@@ -1830,7 +1830,7 @@ public class SolrInformationServer implements InformationServer
     }
 
     @Override
-    public void updateContent(TenantAclIdDbId docRef) throws Exception
+    public void updateContent(TenantDbId docRef) throws Exception
     {
         LOGGER.debug("Text content of Document DBID={} is going to be updated.", docRef.dbId);
 
@@ -1845,7 +1845,6 @@ public class SolrInformationServer implements InformationServer
             doc.setField(FIELD_SOLR4_ID,
                     AlfrescoSolrDataModel.getNodeDocumentId(
                             docRef.tenant,
-                            docRef.aclId,
                             docRef.dbId));
 
             if (docRef.optionalBag.containsKey(CONTENT_LOCALE_FIELD))
@@ -2536,7 +2535,7 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    private void addContentToDoc(TenantAclIdDbId docRef, SolrInputDocument doc, long dbId) throws AuthenticationException, IOException
+    private void addContentToDoc(TenantDbId docRef, SolrInputDocument doc, long dbId) throws AuthenticationException, IOException
     {
         String locale = (String) docRef.optionalBag.get(CONTENT_LOCALE_FIELD);
         String qNamePart = CONTENT_LOCALE_FIELD.substring(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX.length());
@@ -2579,44 +2578,41 @@ public class SolrInformationServer implements InformationServer
         long start = System.nanoTime();
 
         // Expensive call to be done with ContentTracker
-        GetTextContentResponse response = repositoryClient.getTextContent(dbId, propertyQName, null);
+        try (GetTextContentResponse response = repositoryClient.getTextContent(dbId, propertyQName, null)) {
+            addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_STATUS, response);
+            addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_EXCEPTION, response);
+            addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_TIME, response);
 
-        addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_STATUS, response);
-        addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_EXCEPTION, response);
-        addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_TIME, response);
+            final String textContent = textContentFrom(response);
 
-        final String textContent = textContentFrom(response);
+            if (fingerprintHasBeenEnabledOnThisInstance && !textContent.isBlank()) {
+                Analyzer analyzer = core.getLatestSchema().getFieldType("min_hash").getIndexAnalyzer();
+                TokenStream ts = analyzer.tokenStream("dummy_field", textContent);
+                CharTermAttribute termAttribute = ts.getAttribute(CharTermAttribute.class);
+                ts.reset();
+                while (ts.incrementToken()) {
+                    StringBuilder tokenBuff = new StringBuilder();
+                    char[] buff = termAttribute.buffer();
 
-        if(fingerprintHasBeenEnabledOnThisInstance && !textContent.isBlank())
-        {
-            Analyzer analyzer = core.getLatestSchema().getFieldType("min_hash").getIndexAnalyzer();
-            TokenStream ts = analyzer.tokenStream("dummy_field", textContent);
-            CharTermAttribute termAttribute = ts.getAttribute(CharTermAttribute.class);
-            ts.reset();
-            while (ts.incrementToken())
-            {
-                StringBuilder tokenBuff = new StringBuilder();
-                char[] buff = termAttribute.buffer();
+                    for (int i = 0; i < termAttribute.length(); i++) {
+                        tokenBuff.append(Integer.toHexString(buff[i]));
+                    }
+                    doc.addField(FINGERPRINT_FIELD, tokenBuff.toString());
 
-                for(int i=0; i<termAttribute.length();i++)
-                {
-                    tokenBuff.append(Integer.toHexString(buff[i]));
                 }
-                doc.addField(FINGERPRINT_FIELD, tokenBuff.toString());
-
+                ts.end();
+                ts.close();
             }
-            ts.end();
-            ts.close();
+
+            this.getTrackerStats().addDocTransformationTime(System.nanoTime() - start);
+
+            String storedField = dataModel.getStoredContentField(propertyQName);
+            doc.setField(storedField, "\u0000" + languageFrom(locale) + "\u0000" + textContent);
+
+            dataModel.getIndexedFieldNamesForProperty(propertyQName)
+                    .getFields()
+                    .forEach(field -> addFieldIfNotSet(doc, field.getField()));
         }
-
-        this.getTrackerStats().addDocTransformationTime(System.nanoTime() - start);
-
-        String storedField = dataModel.getStoredContentField(propertyQName);
-        doc.setField(storedField, "\u0000" + languageFrom(locale) + "\u0000" + textContent);
-
-        dataModel.getIndexedFieldNamesForProperty(propertyQName)
-                .getFields()
-                .forEach(field -> addFieldIfNotSet(doc, field.getField()));
     }
 
     private String languageFrom(String locale)
@@ -2800,7 +2796,7 @@ public class SolrInformationServer implements InformationServer
             FieldInstance fieldInstance = fieldInstances.get(0);
             AddUpdateCommand cmd = new AddUpdateCommand(request);
             SolrInputDocument input = new SolrInputDocument();
-            input.addField(FIELD_SOLR4_ID, AlfrescoSolrDataModel.getNodeDocumentId(nodeMetaData.getTenantDomain(), nodeMetaData.getAclId(), nodeMetaData.getId()));
+            input.addField(FIELD_SOLR4_ID, AlfrescoSolrDataModel.getNodeDocumentId(nodeMetaData.getTenantDomain(), nodeMetaData.getId()));
             input.addField(FIELD_VERSION, 0);
             input.addField(fieldInstance.getField(), stringPropertyValue.getValue());
             cmd.solrDoc = input;
@@ -3248,7 +3244,6 @@ public class SolrInformationServer implements InformationServer
         doc.setField(FIELD_SOLR4_ID,
                 AlfrescoSolrDataModel.getNodeDocumentId(
                         metadata.getTenantDomain(),
-                        metadata.getAclId(),
                         metadata.getId()));
         doc.setField(FIELD_VERSION, 0);
 
@@ -3367,7 +3362,7 @@ public class SolrInformationServer implements InformationServer
                 Document document = searcher.doc(docId, REQUEST_ONLY_ID_FIELD);
                 IndexableField indexableField = document.getField(FIELD_SOLR4_ID);
                 String id = indexableField.stringValue();
-                TenantAclIdDbId ids = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
+                TenantDbId ids = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
                 childIds.add(ids.dbId);
             }
         }
@@ -3502,7 +3497,7 @@ public class SolrInformationServer implements InformationServer
         for (SolrDocument doc : docs)
         {
             String id = getFieldValueString(doc, FIELD_SOLR4_ID);
-            TenantAclIdDbId ids = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
+            TenantDbId ids = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
             childIds.add(ids.dbId);
         }
 
