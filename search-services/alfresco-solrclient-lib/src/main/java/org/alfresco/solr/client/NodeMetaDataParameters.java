@@ -26,6 +26,7 @@
 package org.alfresco.solr.client;
 
 import java.util.List;
+import java.util.OptionalInt;
 
 /**
  * Stores node meta data query parameters for use in SOLR remote api calls
@@ -39,7 +40,7 @@ public class NodeMetaDataParameters
     private Long toTxnId;
 
     // default is 'all' results
-    private int maxResults = 0;
+    private OptionalInt maxResults = OptionalInt.empty();
 
     private Long fromNodeId;
     private Long toNodeId;
@@ -147,14 +148,14 @@ public class NodeMetaDataParameters
         this.includeParentAssociations = includeParentAssociations;
     }
 
-    public int getMaxResults()
+    public OptionalInt getMaxResults()
     {
         return maxResults;
     }
 
     public void setMaxResults(int maxResults)
     {
-        this.maxResults = maxResults;
+        this.maxResults = OptionalInt.of(maxResults);
     }
 
     public List<Long> getNodeIds()
