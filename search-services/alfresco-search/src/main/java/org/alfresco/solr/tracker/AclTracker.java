@@ -90,7 +90,7 @@ public class AclTracker extends AbstractTracker
     }
 
     @Override
-    protected void doTrack() throws Throwable
+    protected void doTrack(String iterationId) throws Throwable
     {
         trackRepository();
     }

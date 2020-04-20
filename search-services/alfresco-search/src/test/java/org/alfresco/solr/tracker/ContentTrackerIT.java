@@ -71,7 +71,7 @@ public class ContentTrackerIT
 
     public void doTrackWithNoContentDoesNothing() throws Exception
     {
-        this.contentTracker.doTrack();
+        this.contentTracker.doTrack("anIterationId");
         verify(srv, never()).updateContent(any());
         verify(srv, never()).commit();
     }
@@ -107,7 +107,7 @@ public class ContentTrackerIT
                 .thenReturn(docs1)
                 .thenReturn(docs2)
             .thenReturn(emptyList);
-        this.contentTracker.doTrack();
+        this.contentTracker.doTrack("anIterationId");
         
         InOrder order = inOrder(srv);
         order.verify(srv).getDocsWithUncleanContent(0, READ_BATCH);

@@ -55,7 +55,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
     }
     
     @Override
-    protected void doTrack() throws Exception
+    protected void doTrack(String iterationId) throws Exception
     {
         try
         {
@@ -76,7 +76,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
                     List<TenantDbId> docs = notNullOrEmpty(infoSrv.getDocsWithUncleanContent(start, ROWS));
                     if (docs.isEmpty())
                     {
-                        LOGGER.debug("No unclean document has been detected in the current ContentTracker cycle.");
+                        logger.debug("No unclean document has been detected in the current ContentTracker cycle.");
                         break;
                     }
 
@@ -116,7 +116,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
                 }
             }
 
-            LOGGER.info("Total number of docs with content updated: {}", totalDocs);
+            logger.info("Total number of docs with content updated: {}", totalDocs);
         }
         catch(Exception e)
         {

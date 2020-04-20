@@ -58,7 +58,7 @@ public class SlaveCoreStatePublisher extends CoreStatePublisher
     }
 
     @Override
-    protected void doTrack()
+    protected void doTrack(String iterationId)
     {
         try
         {
@@ -67,7 +67,7 @@ public class SlaveCoreStatePublisher extends CoreStatePublisher
         }
         catch (EncoderException | IOException | AuthenticationException exception )
         {
-            LOGGER.error("Unable to publish this node state. " +
+            logger.error("Unable to publish this node state. " +
                     "A failure condition has been met during the outbound subscription message encoding process. " +
                     "See the stacktrace below for further details.", exception);
         }
