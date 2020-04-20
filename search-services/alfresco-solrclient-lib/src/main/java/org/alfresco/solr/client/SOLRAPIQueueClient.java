@@ -218,7 +218,8 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
                     .collect(Collectors.toList());
     }
 
-    public List<NodeMetaData> getNodesMetaData(NodeMetaDataParameters params, int maxResults) throws IOException, JSONException
+    @Override
+    public List<NodeMetaData> getNodesMetaData(NodeMetaDataParameters params) throws IOException, JSONException
     {
         if(throwException)
         {

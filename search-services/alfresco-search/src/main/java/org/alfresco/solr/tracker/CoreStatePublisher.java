@@ -118,7 +118,7 @@ public abstract class CoreStatePublisher extends AbstractTracker
             updateShardProperty();
             if (shardProperty.isEmpty())
             {
-                LOGGER.warn("Sharding property {} was set to {}, but no such property was found.", SHARD_KEY_KEY, shardKeyName);
+                logger.warn("Sharding property {} was set to {}, but no such property was found.", SHARD_KEY_KEY, shardKeyName);
             }
         });
     }
@@ -134,11 +134,11 @@ public abstract class CoreStatePublisher extends AbstractTracker
             {
                 if (updatedShardProperty.isEmpty())
                 {
-                    LOGGER.warn("The model defining {} property has been disabled", shardKeyName);
+                    logger.warn("The model defining {} property has been disabled", shardKeyName);
                 }
                 else
                 {
-                    LOGGER.info("New {} property found for {} ", SHARD_KEY_KEY, shardKeyName);
+                    logger.info("New {} property found for {} ", SHARD_KEY_KEY, shardKeyName);
                 }
             }
             shardProperty = updatedShardProperty;

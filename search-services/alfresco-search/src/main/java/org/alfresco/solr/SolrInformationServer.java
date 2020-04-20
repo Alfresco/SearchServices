@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Alfresco Software Limited.
+ * Copyright (C) 2020 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -81,13 +81,13 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -438,7 +438,7 @@ public class SolrInformationServer implements InformationServer
     static class TxnCacheFilter extends DelegatingCollector
     {
         private NumericDocValues currentLongs;
-        private Map<Long, Long> txnLRU;
+        private final Map<Long, Long> txnLRU;
 
         TxnCacheFilter(Map<Long, Long> txnLRU)
         {
@@ -465,7 +465,7 @@ public class SolrInformationServer implements InformationServer
     static class TxnCollector extends DelegatingCollector
     {
         private NumericDocValues currentLongs;
-        private LongHashSet txnSet = new LongHashSet(1000);
+        private final LongHashSet txnSet = new LongHashSet(1000);
         private final long txnFloor;
         private final long txnCeil;
 
@@ -506,7 +506,7 @@ public class SolrInformationServer implements InformationServer
 
     static class LRU extends LinkedHashMap<Long,Long>
     {
-        private int maxSize;
+        private final int maxSize;
 
         LRU(int maxSize)
         {
@@ -553,7 +553,7 @@ public class SolrInformationServer implements InformationServer
         this.core = core;
         this.nativeRequestHandler = core.getRequestHandler(REQUEST_HANDLER_NATIVE);
         this.cloud = new Cloud();
-        this.repositoryClient = repositoryClient;
+        this.repositoryClient = Objects.requireNonNull(repositoryClient);
 
         Properties coreConfiguration = core.getResourceLoader().getCoreProperties();
 
@@ -1649,8 +1649,9 @@ public class SolrInformationServer implements InformationServer
                 NodeMetaDataParameters nmdp = new NodeMetaDataParameters();
                 nmdp.setFromNodeId(node.getId());
                 nmdp.setToNodeId(node.getId());
+                nmdp.setMaxResults(Integer.MAX_VALUE);
 
-                List<NodeMetaData> nodeMetaDatas = notNullOrEmpty(repositoryClient.getNodesMetaData(nmdp, Integer.MAX_VALUE));
+                Collection<NodeMetaData> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
 
                 if (nodeMetaDatas.isEmpty()) return;
 
@@ -1727,7 +1728,7 @@ public class SolrInformationServer implements InformationServer
     }
 
     @Override
-    public List<NodeMetaData> getCascadeNodes(List<Long> txnIds) throws AuthenticationException, IOException, JSONException
+    public List<NodeMetaData> getCascadeNodes(List<Long> txnIds) throws IOException, JSONException
     {
         List<FieldInstance> list = dataModel.getIndexedFieldNamesForProperty(ContentModel.PROP_CASCADE_TX).getFields();
         FieldInstance fieldInstance = list.get(0);
@@ -1791,8 +1792,9 @@ public class SolrInformationServer implements InformationServer
             nmdp.setIncludePaths(true);
             nmdp.setIncludeProperties(false);
             nmdp.setIncludeTxnId(true);
+            nmdp.setMaxResults(1);
             // Gets only one
-            List<NodeMetaData> nodeMetaDatas = repositoryClient.getNodesMetaData(nmdp, 1);
+            Collection<NodeMetaData> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
             allNodeMetaDatas.addAll(nodeMetaDatas);
         }
 
@@ -1874,6 +1876,10 @@ public class SolrInformationServer implements InformationServer
                     docRef.dbId,
                     (latestAppliedVersionId == CONTENT_UPDATED_MARKER ? "N.A." : latestAppliedVersionId));
         }
+        catch (Exception exception)
+        {
+            LOGGER.error("Unable to update the text content of node {}. See the stacktrace below for further details.", docRef.dbId, exception);
+        }
         finally
         {
             if(processor != null) {processor.finish();}
@@ -1928,7 +1934,8 @@ public class SolrInformationServer implements InformationServer
                     nmdp.setIncludeAspects(false);
                     nmdp.setIncludePaths(false);
                     nmdp.setIncludeParentAssociations(false);
-                    nodeMetaDatas.addAll(repositoryClient.getNodesMetaData(nmdp, Integer.MAX_VALUE));
+                    nmdp.setMaxResults(Integer.MAX_VALUE);
+                    nodeMetaDatas.addAll(getNodesMetaDataFromRepository(nmdp));
                 }
 
                 for (NodeMetaData nodeMetaData : nodeMetaDatas)
@@ -1961,8 +1968,9 @@ public class SolrInformationServer implements InformationServer
                 nmdp.setIncludeChildAssociations(false);
 
                 // Fetches bulk metadata
-                List<NodeMetaData> nodeMetaDatas = repositoryClient.getNodesMetaData(nmdp, Integer.MAX_VALUE);
-
+                nmdp.setMaxResults(Integer.MAX_VALUE);
+                Collection<NodeMetaData> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
+                
                 NEXT_NODE:
                 for (NodeMetaData nodeMetaData : nodeMetaDatas)
                 {
@@ -3337,7 +3345,7 @@ public class SolrInformationServer implements InformationServer
             NodeMetaData parentNodeMetaData,
             boolean overwrite,
             SolrQueryRequest request,
-            UpdateRequestProcessor processor) throws AuthenticationException, IOException, JSONException
+            UpdateRequestProcessor processor) throws IOException, JSONException
     {
         RefCounted<SolrIndexSearcher> refCounted = null;
         IntArrayList docList;
@@ -3389,9 +3397,9 @@ public class SolrInformationServer implements InformationServer
             nmdp.setIncludeProperties(false);
             nmdp.setIncludeType(true);
             nmdp.setIncludeTxnId(true);
-
+            nmdp.setMaxResults(1);
             // Gets only one
-            List<NodeMetaData> nodeMetaDatas = repositoryClient.getNodesMetaData(nmdp, 1);
+            Collection<NodeMetaData> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
 
             if (!nodeMetaDatas.isEmpty())
             {
@@ -3417,132 +3425,6 @@ public class SolrInformationServer implements InformationServer
                     }
                         processor.processAdd(addDocCmd);
                 }
-            }
-        }
-    }
-
-    private void updateDescendantDocs(NodeMetaData parentNodeMetaData, boolean overwrite,
-                                      SolrQueryRequest request, UpdateRequestProcessor processor, LinkedHashSet<Long> stack)
-            throws AuthenticationException, IOException, JSONException
-    {
-        if (stack.contains(parentNodeMetaData.getId()))
-        {
-            LOGGER.warning("Found descendant data loop for node id {}", parentNodeMetaData.getId());
-            LOGGER.warning("Stack to node = {} ", stack);
-        }
-        else
-        {
-            try
-            {
-                stack.add(parentNodeMetaData.getId());
-                doUpdateDescendantDocs(parentNodeMetaData, overwrite, request, processor, stack);
-            }
-            finally
-            {
-                stack.remove(parentNodeMetaData.getId());
-            }
-        }
-    }
-
-    private boolean shouldBeIgnoredByAnyAspect(Set<QName> aspects)
-    {
-        if (null == aspects)
-        {
-            return false;
-        }
-
-        for (QName aspectForSkipping : aspectsForSkippingDescendantDocs)
-        {
-            if (aspects.contains(aspectForSkipping))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void doUpdateDescendantDocs(NodeMetaData parentNodeMetaData, boolean overwrite,
-                                        SolrQueryRequest request, UpdateRequestProcessor processor, LinkedHashSet<Long> stack)
-            throws AuthenticationException, IOException, JSONException
-    {
-        // skipDescendantDocsForSpecificAspects is initialised on a synchronised method, so access must be also synchronised
-        synchronized (this)
-        {
-            if ((skipDescendantDocsForSpecificTypes && typesForSkippingDescendantDocs.contains(parentNodeMetaData.getType())) ||
-                    (skipDescendantDocsForSpecificAspects && shouldBeIgnoredByAnyAspect(parentNodeMetaData.getAspects())))
-            {
-                return;
-            }
-        }
-
-        Set<Long> childIds = new HashSet<>();
-
-        if (parentNodeMetaData.getChildIds() != null)
-        {
-            childIds.addAll(parentNodeMetaData.getChildIds());
-        }
-
-        String query = FIELD_PARENT + ":\"" + parentNodeMetaData.getNodeRef() + "\"";
-        ModifiableSolrParams params =
-                new ModifiableSolrParams(request.getParams())
-                        .set(CommonParams.Q, query)
-                        .set(CommonParams.FL, FIELD_SOLR4_ID);
-
-        if (skippingDocsQueryString != null && !skippingDocsQueryString.isEmpty())
-        {
-            params.set(CommonParams.FQ, "NOT ( " + skippingDocsQueryString + " )");
-        }
-
-        SolrDocumentList docs = cloud.getSolrDocumentList(nativeRequestHandler, request, params);
-        for (SolrDocument doc : docs)
-        {
-            String id = getFieldValueString(doc, FIELD_SOLR4_ID);
-            TenantDbId ids = AlfrescoSolrDataModel.decodeNodeDocumentId(id);
-            childIds.add(ids.dbId);
-        }
-
-        for (Long childId : childIds)
-        {
-            NodeMetaDataParameters nmdp = new NodeMetaDataParameters();
-            nmdp.setFromNodeId(childId);
-            nmdp.setToNodeId(childId);
-            nmdp.setIncludeAclId(false);
-            nmdp.setIncludeAspects(false);
-            nmdp.setIncludeChildAssociations(false);
-            nmdp.setIncludeChildIds(true);
-            nmdp.setIncludeNodeRef(false);
-            nmdp.setIncludeOwner(false);
-            nmdp.setIncludeParentAssociations(false);
-
-            // We only care about the path and ancestors (which is included) for this case
-            nmdp.setIncludePaths(true);
-            nmdp.setIncludeProperties(false);
-            nmdp.setIncludeType(false);
-            nmdp.setIncludeTxnId(false);
-
-            // Gets only one
-            List<NodeMetaData> nodeMetaDatas = repositoryClient.getNodesMetaData(nmdp, 1);
-
-            if (!nodeMetaDatas.isEmpty())
-            {
-                NodeMetaData nodeMetaData = nodeMetaDatas.iterator().next();
-                if (mayHaveChildren(nodeMetaData))
-                {
-                    updateDescendantDocs(nodeMetaData, overwrite, request, processor, stack);
-                }
-
-                LOGGER.debug("Cascade update child doc {}", childId);
-
-                SolrInputDocument document = basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new);
-                updatePathRelatedFields(nodeMetaData, document);
-                updateNamePathRelatedFields(nodeMetaData, document);
-                updateAncestorRelatedFields(nodeMetaData, document);
-
-                AddUpdateCommand addDocCmd = new AddUpdateCommand(request);
-                addDocCmd.overwrite = overwrite;
-                addDocCmd.solrDoc = document;
-
-                processor.processAdd(addDocCmd);
             }
         }
     }
@@ -3932,5 +3814,23 @@ public class SolrInformationServer implements InformationServer
         nodeMetaData.setNodeRef(new NodeRef(node.getNodeRef()));
         nodeMetaData.setTxnId(node.getTxnId());
         return nodeMetaData;
+    }
+
+    private Collection<NodeMetaData> getNodesMetaDataFromRepository(NodeMetaDataParameters parameters)
+    {
+        try
+        {
+            return notNullOrEmpty(repositoryClient.getNodesMetaData(parameters));
+        }
+        catch (JSONException exception)
+        {
+            // Nothing to be done here: the exception has been already logged in repositoryClient
+            return Collections.emptyList();
+        }
+        catch (Exception exception)
+        {
+            LOGGER.error("Unable to get nodes metadata from repository. See the stacktrace below for further details.", exception);
+            return Collections.emptyList();
+        }
     }
 }
