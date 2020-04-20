@@ -29,7 +29,7 @@
                     <type>d:text</type>
                     <mandatory>false</mandatory>
                     <index enabled="true">
-                        <tokenised>BOTH</tokenised>
+                        <tokenised>TRUE</tokenised>
                         <facetable>false</facetable>
                     </index>
                 </property>
