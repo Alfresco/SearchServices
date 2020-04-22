@@ -3,7 +3,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-search-and-insight-parent</artifactId>
-      <version>1.4.2-RC2</version>
+      <version>1.4.2-SNAPSHOT</version>
    </parent>
    <groupId>search-analytics-e2e-test</groupId>
    <artifactId>search-analytics-e2e-test</artifactId>
