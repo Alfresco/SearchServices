@@ -19,6 +19,7 @@
 package org.alfresco.solr.tracker;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -108,9 +109,8 @@ public class DBIDRangeRouter implements DocRouter
     }
 
     @Override
-    public Map<String, String> getProperties(QName shardProperty)
+    public Map<String, String> getProperties(Optional<QName> shardProperty)
     {
         return Map.of(DocRouterFactory.SHARD_RANGE_KEY, startRange + "-" + expandableRange);
     }
-    
 }

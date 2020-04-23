@@ -22,6 +22,7 @@ import org.alfresco.solr.client.Node;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.client.Acl;
@@ -65,13 +66,13 @@ public interface DocRouter
     Boolean routeNode(int shardCount, int shardInstance, Node node);
     
     /**
-     * Get additional properties to "shardProperty" depending on the Shard Method
-     * @param shardProperty custom property used to configure the Router
+     * Get additional properties to "shardProperty" depending on the Shard Method.
+     *
+     * @param shardProperty custom property used to configure the Router. Note not all routers need that.
      * @return pair of key, value
      */
-    default public Map<String, String> getProperties(QName shardProperty) {
+    default Map<String, String> getProperties(Optional<QName> shardProperty) {
         return Collections.emptyMap();
     }
-    
 }
 
