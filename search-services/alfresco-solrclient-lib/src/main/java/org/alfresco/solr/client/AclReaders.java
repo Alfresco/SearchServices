@@ -51,8 +51,8 @@ public class AclReaders
     public AclReaders(long id, List<String> readers, List<String> denied, long aclChangeSetId, String tenantDomain)
     {
         this.id = id;
-        this.readers = new ArrayList<>(readers);
-        this.denied = new ArrayList<>(denied);
+        this.readers = (readers == null ? null : new ArrayList<>(readers));
+        this.denied = (denied == null ? null : new ArrayList<>(denied));
         this.aclChangeSetId = aclChangeSetId;
         this.tenantDomain = tenantDomain;
     }

@@ -43,7 +43,7 @@ public class AclChangeSets
     
     AclChangeSets(List<AclChangeSet> aclChangeSets, Long maxChangeSetCommitTime, Long maxChangeSetId)
     {
-        this.aclChangeSets = new ArrayList<>(aclChangeSets);
+        this.aclChangeSets = (aclChangeSets == null ? null : new ArrayList<>(aclChangeSets));
         this.maxChangeSetCommitTime = maxChangeSetCommitTime;
         this.maxChangeSetId = maxChangeSetId;
     }
