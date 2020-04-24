@@ -47,9 +47,9 @@ import org.json.JSONException;
 
 public class SOLRAPIQueueClient extends SOLRAPIClient
 {
-    protected static final List<AclChangeSet> ACL_CHANGE_SET_QUEUE = Collections.synchronizedList(new ArrayList());
-    protected static final Map<Long, List<Acl>> ACL_MAP = Collections.synchronizedMap(new HashMap());
-    protected static final Map<Long, AclReaders> ACL_READERS_MAP = Collections.synchronizedMap(new HashMap());
+    public static final List<AclChangeSet> ACL_CHANGE_SET_QUEUE = Collections.synchronizedList(new ArrayList());
+    public static final Map<Long, List<Acl>> ACL_MAP = Collections.synchronizedMap(new HashMap());
+    public static final Map<Long, AclReaders> ACL_READERS_MAP = Collections.synchronizedMap(new HashMap());
 
     public static List<Transaction> transactionQueue = Collections.synchronizedList(new ArrayList());
     public static Map<Long, List<Node>> nodeMap = Collections.synchronizedMap(new HashMap());
