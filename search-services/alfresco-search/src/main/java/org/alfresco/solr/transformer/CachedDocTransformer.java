@@ -47,8 +47,6 @@ public class CachedDocTransformer extends DocTransformer
 {
     protected final static Logger log = LoggerFactory.getLogger(CachedDocTransformer.class);
 
-    private ResultContext context;
-    
     /* (non-Javadoc)
      * @see org.apache.solr.response.transform.DocTransformer#getName()
      */
