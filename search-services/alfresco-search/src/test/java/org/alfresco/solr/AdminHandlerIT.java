@@ -1,8 +1,10 @@
 package org.alfresco.solr;
 
+import static org.junit.Assert.fail;
+
 import org.apache.lucene.util.LuceneTestCase;
-import org.apache.solr.common.SolrException;
 import org.apache.solr.SolrTestCaseJ4;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.handler.admin.CoreAdminHandler;
 import org.apache.solr.response.SolrQueryResponse;
@@ -32,19 +34,33 @@ public class AdminHandlerIT extends AbstractAlfrescoSolrIT
     }
 
     @Test
-    public void testhandledCores() throws Exception
+    public void testHandledCores()
     {
-        requestAction("newCore");
-        requestAction("updateCore");
-        requestAction("removeCore");
+        try
+        {
+            requestAction("newCore");
+            requestAction("updateCore");
+            requestAction("removeCore");
+        }
+        catch (Exception e)
+        {
+            fail("Expected to receive no exception, but got " + e);
+        }
     }
 
     @Test
-    public void testhandledReports() throws Exception
+    public void testHandledReports()
     {
-        requestAction("CHECK");
-        requestAction("REPORT");
-        requestAction("SUMMARY");
+        try
+        {
+            requestAction("CHECK");
+            requestAction("REPORT");
+            requestAction("SUMMARY");
+        }
+        catch (Exception e)
+        {
+            fail("Expected to receive no exception, but got " + e);
+        }
     }
 
     private void requestAction(String actionName) throws Exception {
