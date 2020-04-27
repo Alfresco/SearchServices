@@ -89,7 +89,6 @@ import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.client.Transaction;
 import org.alfresco.util.ISO9075;
-import org.alfresco.util.Pair;
 import org.apache.solr.SolrTestCaseJ4.XmlDoc;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.CoreAdminParams;
@@ -383,17 +382,17 @@ public class AlfrescoSolrUtils
     public static void indexAclChangeSet(AclChangeSet aclChangeSet, List<Acl> aclList, List<AclReaders> aclReadersList)
     {
         //First map the nodes to a transaction.
-        SOLRAPIQueueClient.aclMap.put(aclChangeSet.getId(), aclList);
+        SOLRAPIQueueClient.ACL_MAP.put(aclChangeSet.getId(), aclList);
 
         //Next map a node to the NodeMetaData
         for(AclReaders aclReaders : aclReadersList)
         {
-            SOLRAPIQueueClient.aclReadersMap.put(aclReaders.getId(), aclReaders);
+            SOLRAPIQueueClient.ACL_READERS_MAP.put(aclReaders.getId(), aclReaders);
         }
 
         //Next add the transaction to the queue
 
-        SOLRAPIQueueClient.aclChangeSetQueue.add(aclChangeSet);
+        SOLRAPIQueueClient.ACL_CHANGE_SET_QUEUE.add(aclChangeSet);
     }
     /**
      * Generate a collection from input.

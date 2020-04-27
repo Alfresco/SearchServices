@@ -4,7 +4,6 @@ import com.carrotsearch.randomizedtesting.annotations.ThreadLeakLingering;
 import org.alfresco.solr.basics.RandomSupplier;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.apache.commons.io.FileUtils;
-import org.apache.hadoop.util.Time;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.embedded.JettyConfig;
@@ -15,7 +14,6 @@ import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.BeforeClass;
-import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -224,9 +222,9 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
 
         SOLRAPIQueueClient.nodeMetaDataMap.clear();
         SOLRAPIQueueClient.transactionQueue.clear();
-        SOLRAPIQueueClient.aclChangeSetQueue.clear();
-        SOLRAPIQueueClient.aclReadersMap.clear();
-        SOLRAPIQueueClient.aclMap.clear();
+        SOLRAPIQueueClient.ACL_CHANGE_SET_QUEUE.clear();
+        SOLRAPIQueueClient.ACL_READERS_MAP.clear();
+        SOLRAPIQueueClient.ACL_MAP.clear();
         SOLRAPIQueueClient.nodeMap.clear();
     }
 

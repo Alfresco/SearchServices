@@ -47,9 +47,9 @@ import org.json.JSONException;
 
 public class SOLRAPIQueueClient extends SOLRAPIClient
 {
-    public static List<AclChangeSet> aclChangeSetQueue = Collections.synchronizedList(new ArrayList());
-    public static Map<Long, List<Acl>> aclMap = Collections.synchronizedMap(new HashMap());
-    public static Map<Long, AclReaders> aclReadersMap = Collections.synchronizedMap(new HashMap());
+    public static final List<AclChangeSet> ACL_CHANGE_SET_QUEUE = Collections.synchronizedList(new ArrayList());
+    public static final Map<Long, List<Acl>> ACL_MAP = Collections.synchronizedMap(new HashMap());
+    public static final Map<Long, AclReaders> ACL_READERS_MAP = Collections.synchronizedMap(new HashMap());
 
     public static List<Transaction> transactionQueue = Collections.synchronizedList(new ArrayList());
     public static Map<Long, List<Node>> nodeMap = Collections.synchronizedMap(new HashMap());
@@ -74,7 +74,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
         }
 
-        int size = aclChangeSetQueue.size();
+        int size = ACL_CHANGE_SET_QUEUE.size();
         long maxTime = 0L;
         long maxId = 0L;
 
@@ -83,7 +83,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
             List<AclChangeSet> aclChangeSetList = new ArrayList();
             for(int i=0; i<size; i++)
             {
-                AclChangeSet aclChangeSet = aclChangeSetQueue.get(i);
+                AclChangeSet aclChangeSet = ACL_CHANGE_SET_QUEUE.get(i);
                 if(aclChangeSet.getId() >= minAclChangeSetId && aclChangeSet.getId() < maxAclChangeSetId)
                 {
                     aclChangeSetList.add(aclChangeSet);
@@ -103,7 +103,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
 
         for(int i=0; i<size; i++)
         {
-            AclChangeSet aclChangeSet = aclChangeSetQueue.get(i);
+            AclChangeSet aclChangeSet = ACL_CHANGE_SET_QUEUE.get(i);
 
             if(aclChangeSet.getCommitTimeMs() < fromCommitTime)
             {
@@ -149,7 +149,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
         List<Acl> allAcls = new ArrayList();
         for(AclChangeSet aclChangeSet : aclChangeSets)
         {
-            List aclList = aclMap.get(aclChangeSet.getId());
+            List aclList = ACL_MAP.get(aclChangeSet.getId());
             allAcls.addAll(aclList);
         }
         return allAcls;
@@ -170,7 +170,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
         List<AclReaders> allAclReaders = new ArrayList();
         for(Acl acl : acls)
         {
-            AclReaders aclReaders = aclReadersMap.get(acl.getId());
+            AclReaders aclReaders = ACL_READERS_MAP.get(acl.getId());
             allAclReaders.add(aclReaders);
         }
         return allAclReaders;

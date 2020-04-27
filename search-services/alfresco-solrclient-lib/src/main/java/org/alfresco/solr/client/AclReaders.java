@@ -25,6 +25,10 @@
  */
 package org.alfresco.solr.client;
 
+import static java.util.Collections.unmodifiableList;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -36,7 +40,7 @@ public class AclReaders
 {
     private final long id;
 
-    private final List<String> readers;
+    private List<String> readers;
     
     private final List<String> denied;
 
@@ -47,8 +51,8 @@ public class AclReaders
     public AclReaders(long id, List<String> readers, List<String> denied, long aclChangeSetId, String tenantDomain)
     {
         this.id = id;
-        this.readers = readers;
-        this.denied = denied;
+        this.readers = (readers == null ? null : new ArrayList<>(readers));
+        this.denied = (denied == null ? null : new ArrayList<>(denied));
         this.aclChangeSetId = aclChangeSetId;
         this.tenantDomain = tenantDomain;
     }
@@ -96,12 +100,17 @@ public class AclReaders
 
     public List<String> getReaders()
     {
-        return readers;
+        return unmodifiableList(readers);
+    }
+
+    public void setReaders(List readers)
+    {
+        this.readers = new ArrayList<>(readers);
     }
 
     public List<String> getDenied()
     {
-        return denied;
+        return unmodifiableList(denied);
     }
 
     public long getAclChangeSetId()
