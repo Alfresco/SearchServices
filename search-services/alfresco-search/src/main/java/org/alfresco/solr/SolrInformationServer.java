@@ -69,6 +69,9 @@ import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXCOM
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TYPE;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_VERSION;
+import static org.alfresco.service.cmr.security.AuthorityType.EVERYONE;
+import static org.alfresco.service.cmr.security.AuthorityType.GROUP;
+import static org.alfresco.service.cmr.security.AuthorityType.GUEST;
 import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
 
 import java.io.File;
@@ -3216,17 +3219,10 @@ public class SolrInformationServer implements InformationServer
      */
     private String addTenantToAuthority(String authority, String tenant)
     {
-        switch (AuthorityType.getAuthorityType(authority))
+        AuthorityType authorityType = AuthorityType.getAuthorityType(authority);
+        if ((authorityType == GROUP || authorityType == EVERYONE || authorityType == GUEST) && !tenant.isEmpty())
         {
-            case GROUP:
-            case EVERYONE:
-            case GUEST:
-                if (tenant.length() != 0)
-                {
-                    return authority + "@" + tenant;
-                }
-            default:
-                break;
+            return authority + "@" + tenant;
         }
         return authority;
     }
