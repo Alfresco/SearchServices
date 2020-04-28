@@ -43,8 +43,7 @@ public abstract class AbstractTracker implements Tracker
     static final long TIME_STEP_32_DAYS_IN_MS = 1000 * 60 * 60 * 24 * 32L;
     static final long TIME_STEP_1_HR_IN_MS = 60 * 60 * 1000L;
     static final String SHARD_METHOD_DBID = "DB_ID";
-
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTracker.class);
     
     protected Properties props;    
     protected SOLRAPIClient client;
@@ -170,7 +169,7 @@ public abstract class AbstractTracker implements Tracker
 
         if(runLock.availablePermits() == 0)
         {
-            logger.info("[{} / {} / {}] Tracker already registered.", coreName, trackerId, iterationId);
+            LOGGER.info("[{} / {} / {}] Tracker already registered.", coreName, trackerId, iterationId);
             return;
         }
 
@@ -191,7 +190,7 @@ public abstract class AbstractTracker implements Tracker
             {
                 this.state = getTrackerState();
 
-                logger.debug("[{} / {} / {}]  Global Tracker State set to: {}", coreName, trackerId, iterationId, this.state.toString());
+                LOGGER.debug("[{} / {} / {}]  Global Tracker State set to: {}", coreName, trackerId, iterationId, this.state.toString());
                 this.state.setRunning(true);
             }
             else
@@ -209,28 +208,25 @@ public abstract class AbstractTracker implements Tracker
             catch(IndexTrackingShutdownException t)
             {
                 setRollback(true, t);
-                logger.info("[{} / {} / {}] Tracking cycle stopped. See the stacktrace below for further details.", coreName, trackerId, iterationId, t);
+                LOGGER.info("[{} / {} / {}] Tracking cycle stopped. See the stacktrace below for further details.", coreName, trackerId, iterationId, t);
             }
             catch(Throwable t)
             {
                 setRollback(true, t);
                 if (t instanceof SocketTimeoutException || t instanceof ConnectException)
                 {
-                    logger.warn("[{} / {} / {}] Tracking communication timed out. See the stacktrace below for further details.", coreName, trackerId, iterationId);
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("[{} / {} / {}] Stack trace", coreName, trackerId, iterationId, t);
-                    }
+                    LOGGER.warn("[{} / {} / {}] Tracking communication timed out. See the stacktrace below for further details.", coreName, trackerId, iterationId);
+                    LOGGER.debug("[{} / {} / {}] Stack trace", coreName, trackerId, iterationId, t);
                 }
                 else
                 {
-                    logger.error("[{} / {} / {}] Tracking failure. See the stacktrace below for further details.", coreName, trackerId, iterationId, t);
+                    LOGGER.error("[{} / {} / {}] Tracking failure. See the stacktrace below for further details.", coreName, trackerId, iterationId, t);
                 }
             }
         }
         catch (InterruptedException e)
         {
-            logger.error("[{} / {} / {}] Semaphore interruption. See the stacktrace below for further details.", coreName, trackerId, iterationId, e);
+            LOGGER.error("[{} / {} / {}] Semaphore interruption. See the stacktrace below for further details.", coreName, trackerId, iterationId, e);
         }
         finally
         {

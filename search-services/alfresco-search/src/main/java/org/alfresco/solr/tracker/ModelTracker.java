@@ -47,6 +47,8 @@ import org.alfresco.solr.client.SOLRAPIClient;
 import org.alfresco.solr.config.ConfigUtil;
 import org.apache.solr.core.SolrResourceLoader;
 import org.json.JSONException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @startuml
@@ -82,6 +84,7 @@ import org.json.JSONException;
  */
 public class ModelTracker extends AbstractTracker implements Tracker
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ModelTracker.class);
 
     private final Set<StoreRef> indexedStores = new HashSet<>();
     private final Set<StoreRef> ignoredStores = new HashSet<>();
@@ -106,7 +109,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
         super(p, client, coreName, informationServer, Tracker.Type.MODEL);
         String normalSolrHome = SolrResourceLoader.normalizeDir(solrHome);
         alfrescoModelDir = new File(ConfigUtil.locateProperty("solr.model.dir", normalSolrHome+"alfrescoModels"));
-        logger.info("Alfresco Model dir " + alfrescoModelDir);
+        LOGGER.info("Alfresco Model dir {}", alfrescoModelDir);
         if (!alfrescoModelDir.exists())
         {
             alfrescoModelDir.mkdir();
@@ -197,7 +200,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
         int registeredSearcherCount = this.infoSrv.getRegisteredSearcherCount();
         if (registeredSearcherCount >= getMaxLiveSearchers())
         {
-            logger.info(".... skipping tracking registered searcher count = " + registeredSearcherCount);
+            LOGGER.info(".... skipping tracking registered searcher count = {}", registeredSearcherCount);
             return;
         }
 
@@ -268,7 +271,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
         }
         catch (Throwable t)
         {
-            logger.error("Model tracking failed for core: "+ coreName, t);
+            LOGGER.error("Model tracking failed for core: {}", coreName, t);
         }
 
     }
@@ -534,7 +537,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
             {
                 loadedModels.add(modelName);
             }
-            logger.info("Loading model " + model.getName());
+            LOGGER.info("Loading model {}", model.getName());
         }
     }
 

@@ -26,6 +26,8 @@ import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.TrackerState;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.apache.commons.codec.EncoderException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -47,6 +49,8 @@ import java.util.Properties;
  */
 public class SlaveCoreStatePublisher extends CoreStatePublisher
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SlaveCoreStatePublisher.class);
+
     public SlaveCoreStatePublisher(
             boolean isMaster,
             Properties coreProperties,
@@ -67,7 +71,7 @@ public class SlaveCoreStatePublisher extends CoreStatePublisher
         }
         catch (EncoderException | IOException | AuthenticationException exception )
         {
-            logger.error("Unable to publish this node state. " +
+            LOGGER.error("Unable to publish this node state. " +
                     "A failure condition has been met during the outbound subscription message encoding process. " +
                     "See the stacktrace below for further details.", exception);
         }
