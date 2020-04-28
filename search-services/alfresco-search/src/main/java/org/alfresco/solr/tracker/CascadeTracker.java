@@ -18,6 +18,10 @@
  */
 package org.alfresco.solr.tracker;
 
+import static java.util.stream.Collectors.joining;
+
+import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,13 +35,9 @@ import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.alfresco.solr.client.Transaction;
-import org.apache.commons.codec.EncoderException;
 import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static java.util.stream.Collectors.joining;
-import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
 
 /*
  * This tracks Cascading Updates
@@ -45,10 +45,7 @@ import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
  */
 public class CascadeTracker extends AbstractTracker implements Tracker
 {
-
-    protected final static Logger log = LoggerFactory.getLogger(CascadeTracker.class);
-
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(CascadeTracker.class);
 
     public CascadeTracker(Properties p, SOLRAPIClient client, String coreName,
                            InformationServer informationServer)
@@ -64,7 +61,7 @@ public class CascadeTracker extends AbstractTracker implements Tracker
     }
 
     @Override
-    protected void doTrack(String iterationId) throws AuthenticationException, IOException, JSONException, EncoderException
+    protected void doTrack(String iterationId) throws IOException, JSONException
     {
         // MetadataTracker must wait until ModelTracker has run
         ModelTracker modelTracker = this.infoSrv.getAdminHandler().getTrackerRegistry().getModelTracker();
@@ -74,15 +71,15 @@ public class CascadeTracker extends AbstractTracker implements Tracker
         }
     }
 
-    public void maintenance() throws Exception {
-
+    public void maintenance()
+    {
     }
 
     public boolean hasMaintenance() {
         return false;
     }
 
-    private void trackRepository(String iterationId) throws IOException, AuthenticationException, JSONException, EncoderException
+    private void trackRepository(String iterationId) throws IOException, JSONException
     {
         checkShutdown();
         processCascades(iterationId);
@@ -123,7 +120,8 @@ public class CascadeTracker extends AbstractTracker implements Tracker
         }
     }
 
-    public void invalidateState() {
+    public void invalidateState()
+    {
         super.invalidateState();
         infoSrv.setCleanCascadeTxnFloor(-1);
     }
@@ -131,55 +129,58 @@ public class CascadeTracker extends AbstractTracker implements Tracker
     private void processCascades(String iterationId) throws IOException
     {
         int num = 50;
-        List<Transaction> txBatch = null;
-        do {
-            try {
+        List<Transaction> txBatch;
+        do
+        {
+            try
+            {
                 getWriteLock().acquire();
                 txBatch = infoSrv.getCascades(num);
-                if(txBatch.size() == 0) {
+                if(txBatch.size() == 0)
+                {
                     //No transactions to process for cascades.
                     return;
                 }
 
-                ArrayList<Long> txIds = new ArrayList<Long>();
-                Set<Long> txIdSet = new HashSet<Long>();
-                for (Transaction tx : txBatch) {
+                ArrayList<Long> txIds = new ArrayList<>();
+                Set<Long> txIdSet = new HashSet<>();
+                for (Transaction tx : txBatch)
+                {
                     txIds.add(tx.getId());
                     txIdSet.add(tx.getId());
                 }
 
                 List<NodeMetaData> nodeMetaDatas = infoSrv.getCascadeNodes(txIds);
 
-                //System.out.println("########### Cascade node meta datas:"+nodeMetaDatas.size());
-                if(nodeMetaDatas.size() > 0) {
-                    LinkedList<NodeMetaData> stack = new LinkedList<NodeMetaData>();
+                if(nodeMetaDatas.size() > 0)
+                {
+                    LinkedList<NodeMetaData> stack = new LinkedList<>();
                     stack.addAll(nodeMetaDatas);
                     int batchSize = 10;
 
-                    do {
-                        List<NodeMetaData> batch = new ArrayList<NodeMetaData>();
-                        while (batch.size() < batchSize && stack.size() > 0) {
+                    do
+                    {
+                        List<NodeMetaData> batch = new ArrayList<>();
+                        while (batch.size() < batchSize && stack.size() > 0)
+                        {
                             batch.add(stack.removeFirst());
                         }
 
-
                         CascadeIndexWorkerRunnable worker = new CascadeIndexWorkerRunnable(this.threadHandler, batch, infoSrv);
 
-                        if (logger.isTraceEnabled())
+                        if (LOGGER.isTraceEnabled())
                         {
                             String nodes = notNullOrEmpty(batch).stream()
                                                 .map(NodeMetaData::getId)
                                                 .map(Object::toString)
                                                 .collect(joining(","));
-                            logger.trace("[{} / {} / {} / {}] Worker has been created for nodes {}", coreName, trackerId, iterationId, worker.hashCode(), nodes);
+                            LOGGER.trace("[{} / {} / {} / {}] Worker has been created for nodes {}", coreName, trackerId, iterationId, worker.hashCode(), nodes);
                         }
                         this.threadHandler.scheduleTask(worker);
-                    }
-                    while (stack.size() > 0);
+                    } while (stack.size() > 0);
                 }
                 //Update the transaction records.
                 updateTransactionsAfterAsynchronous(txBatch);
-                //System.out.println("######################: Finished Cascade Run #########");
             }
             catch (AuthenticationException e)
             {
@@ -195,10 +196,8 @@ public class CascadeTracker extends AbstractTracker implements Tracker
             }
             finally
             {
-                //System.out.println("###################: Releasing Cascade write lock");
                 getWriteLock().release();
             }
-
         } while(txBatch.size() > 0);
     }
 }

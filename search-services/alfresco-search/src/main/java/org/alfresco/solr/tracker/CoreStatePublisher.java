@@ -46,6 +46,8 @@ import org.alfresco.solr.NodeReport;
 import org.alfresco.solr.TrackerState;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Optional;
@@ -63,6 +65,7 @@ import java.util.Properties;
  */
 public abstract class CoreStatePublisher extends AbstractTracker
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CoreStatePublisher.class);
     DocRouter docRouter;
     private final boolean isMaster;
 
@@ -118,7 +121,7 @@ public abstract class CoreStatePublisher extends AbstractTracker
             updateShardProperty();
             if (shardProperty.isEmpty())
             {
-                logger.warn("Sharding property {} was set to {}, but no such property was found.", SHARD_KEY_KEY, shardKeyName);
+                LOGGER.warn("Sharding property {} was set to {}, but no such property was found.", SHARD_KEY_KEY, shardKeyName);
             }
         });
     }
@@ -134,11 +137,11 @@ public abstract class CoreStatePublisher extends AbstractTracker
             {
                 if (updatedShardProperty.isEmpty())
                 {
-                    logger.warn("The model defining {} property has been disabled", shardKeyName);
+                    LOGGER.warn("The model defining {} property has been disabled", shardKeyName);
                 }
                 else
                 {
-                    logger.info("New {} property found for {} ", SHARD_KEY_KEY, shardKeyName);
+                    LOGGER.info("New {} property found for {}", SHARD_KEY_KEY, shardKeyName);
                 }
             }
             shardProperty = updatedShardProperty;
