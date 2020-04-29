@@ -87,9 +87,24 @@ public class SolrSearchByIdTests extends AbstractCmisE2ETest
         Utility.waitToLoopTime(getSolrWaitTimeInSeconds());
     }
     
-    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
+    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
     @XMLDataConfig(file = "src/test/resources/testdata/search-by-id.xml")
     public void executeSearchById(QueryModel query) throws Exception
+    {
+        String currentQuery = query.getValue()
+                .replace("NODE_REF[siteId]", siteDoclibNodeRef)
+                .replace("NODE_REF[d1]", tasSubFile1.getNodeRefWithoutVersion())
+                .replace("NODE_REF[d2]", tasSubFile2.getNodeRefWithoutVersion())
+                .replace("NODE_REF[f1]", tasFolder1.getNodeRef())
+                .replace("NODE_REF[f1-1]", tasSubFolder1.getNodeRef());
+
+        cmisApi.authenticateUser(testUser);
+        Assert.assertTrue(waitForIndexing(currentQuery, query.getResults()), String.format("Result count not as expected for query: %s", currentQuery));
+    }
+    
+    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
+    @XMLDataConfig(file = "src/test/resources/testdata/search-by-id-in-tree.xml")
+    public void executeSearchByIdInTree(QueryModel query) throws Exception
     {
         String currentQuery = query.getValue()
                 .replace("NODE_REF[siteId]", siteDoclibNodeRef)
