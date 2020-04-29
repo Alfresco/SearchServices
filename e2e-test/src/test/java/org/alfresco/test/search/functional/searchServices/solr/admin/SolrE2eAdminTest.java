@@ -475,17 +475,24 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         
         checkResponseStatusOk(response);
         
-        Integer expand = response.getResponse().body().jsonPath().get("expand");             
+        Integer expand = response.getResponse().body().jsonPath().get("expand");   
 
         // RangeCheck action only applies to DB_ID_RANGE Sharding method, so expect error in other sharding methods and success for DB_ID_RANGE
         if (ShardingMethod.DB_ID_RANGE.toString().equalsIgnoreCase(getShardMethod()))
         {
             // This assertion replicates: testRangeCheckSharding, priority = 21, hence deleting that test as duplicate
-            Assert.assertNotEquals(expand, Integer.valueOf(-1), "Expansion is not successful when not using Shard DB_ID_RANGE method,");
+            // Value -1 is expected when the next shard already has nodes indexed.
+            Assert.assertTrue((expand == Integer.valueOf(-1) || expand == Integer.valueOf(0)), "RangeCheck should not have been allowed when not using Shard DB_ID_RANGE method,");
+            
+            Integer minDbid = response.getResponse().body().jsonPath().get("minDbid");
+            Assert.assertTrue(minDbid > 0, "RangeCheck is not successful when not using Shard DB_ID_RANGE method,");
         }
         else
         {
-            Assert.assertEquals(expand, Integer.valueOf(-1), "Expansion should not have been allowed when not using Shard DB_ID_RANGE method,");
+            Assert.assertEquals(expand, Integer.valueOf(-1), "RangeCheck should not have been allowed when not using Shard DB_ID_RANGE method,");
+
+            String exception = response.getResponse().body().jsonPath().get("exception");
+            Assert.assertEquals(exception, "ERROR: Wrong document router type:DBIDRouter", "Expansion should not have been allowed when not using Shard DB_ID_RANGE method,");
         }
     }
 
@@ -509,7 +516,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         // Expand action only applies to DB_ID_RANGE Sharding method, so expect error in other sharding methods and success for DB_ID_RANGE
         if (ShardingMethod.DB_ID_RANGE.toString().equalsIgnoreCase(getShardMethod()))
         {
-         // This assertion replicates: testExpandSharding, priority = 23, hence deleting that test as duplicate
+            // This assertion replicates: testExpandSharding, priority = 23, hence deleting that test as duplicate
             Assert.assertNotEquals(expand, Integer.valueOf(-1), "Expansion is not successful when not using Shard DB_ID_RANGE method,");
         }
         else
