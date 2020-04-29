@@ -31,8 +31,10 @@ import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.RestResultBucketsModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
+import org.alfresco.search.TestGroup;
 import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.alfresco.utility.data.RandomData;
+import org.alfresco.utility.data.provider.XMLTestDataProvider;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
@@ -93,7 +95,7 @@ public class FacetFieldsSearchTest extends AbstractE2EFunctionalTest
         waitForContentIndexing(htmlFile.getContent(), true);
     }
     
-    @Test
+    @Test(groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
     public void testSearchFacetFieldsBucketExcludedWhenMinCount2() throws Exception
     {
         // Create Query with FacetFields: Site and Content MimeType
@@ -129,7 +131,7 @@ public class FacetFieldsSearchTest extends AbstractE2EFunctionalTest
 
     }
 
-    @Test
+    @Test(groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
     public void testSearchWithFacetFieldsMinCountChecks() throws Exception
     {
         SearchRequest query = new SearchRequest();
@@ -204,7 +206,7 @@ public class FacetFieldsSearchTest extends AbstractE2EFunctionalTest
         Assert.assertNull(response.getContext().getFacetsFields());
     }
 
-    @Test
+    @Test(groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
     public void testSearchWithFacetFieldsOnlyFacetsWhereAccess() throws Exception
     {
         SearchRequest query = new SearchRequest();

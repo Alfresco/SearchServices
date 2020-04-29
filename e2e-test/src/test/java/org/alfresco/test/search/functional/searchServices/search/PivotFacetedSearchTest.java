@@ -120,7 +120,7 @@ public class PivotFacetedSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH },
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.CONFIG_DISABLE_CASCADE_TRACKER},
               executionType = ExecutionType.REGRESSION,
               description = "Checks nested pivot using Search api")
     public void searchWithNestedPivoting()

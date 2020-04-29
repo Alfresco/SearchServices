@@ -76,7 +76,7 @@ public class CascadingIntegrationTest extends AbstractE2EFunctionalTest
                 "failing while removing sharding model");
     }
 
-    @Test(priority = 1)
+    @Test(priority = 1, groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
     public void testChildPathWhenParentRenamed() throws Exception
     {
         // Create Parent folder
@@ -119,7 +119,7 @@ public class CascadingIntegrationTest extends AbstractE2EFunctionalTest
         Assert.assertEquals(descendantCountOfOriginalName, 0, "Old path still has descendants: " + parentQuery);
     }
 
-    @Test(priority = 2)
+    @Test(priority = 2, groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
     public void testGrandChildPathWhenGrandParentRenamed() throws Exception
     {
         // Create grand parent folder

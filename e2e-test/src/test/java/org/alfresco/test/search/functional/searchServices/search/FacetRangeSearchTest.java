@@ -110,7 +110,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.CONFIG_DISABLE_CASCADE_TRACKER}, executionType = ExecutionType.REGRESSION,
             description = "Check basic facet range search api")
     @SuppressWarnings("unchecked")
     public void searchWithRange()
@@ -160,7 +160,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.CONFIG_DISABLE_CASCADE_TRACKER }, executionType = ExecutionType.REGRESSION,
             description = "Check date facet intervals search api")
     @SuppressWarnings("unchecked")
     public void searchWithRangeHardend()
@@ -258,7 +258,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.CONFIG_DISABLE_CASCADE_TRACKER}, executionType = ExecutionType.REGRESSION,
             description = "Check basic facet range search api")
     @SuppressWarnings("unchecked")
     public void searchWithRangeAndIncludeUpperBound()

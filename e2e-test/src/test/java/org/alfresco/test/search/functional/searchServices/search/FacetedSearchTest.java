@@ -103,7 +103,7 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
     }
 
     @Test
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION, description = "Checks facet queries for the Search api")
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SEARCH, TestGroup.CONFIG_DISABLE_CASCADE_TRACKER }, executionType = ExecutionType.REGRESSION, description = "Checks facet queries for the Search api")
     public void searchWithQueryFaceting() throws Exception
     {
         SearchRequest query = new SearchRequest();

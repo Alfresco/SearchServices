@@ -1,5 +1,6 @@
 package org.alfresco.test.search.functional.searchServices.cmis;
 
+import org.alfresco.search.TestGroup;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.data.CustomObjectTypeProperties;
 import org.alfresco.utility.data.provider.XMLDataConfig;
@@ -86,7 +87,7 @@ public class SolrSearchByIdTests extends AbstractCmisE2ETest
         Utility.waitToLoopTime(getSolrWaitTimeInSeconds());
     }
     
-    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
+    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
     @XMLDataConfig(file = "src/test/resources/testdata/search-by-id.xml")
     public void executeSearchById(QueryModel query) throws Exception
     {

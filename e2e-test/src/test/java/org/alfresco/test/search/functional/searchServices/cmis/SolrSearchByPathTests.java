@@ -1,5 +1,6 @@
 package org.alfresco.test.search.functional.searchServices.cmis;
 
+import org.alfresco.search.TestGroup;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.data.provider.XMLDataConfig;
 import org.alfresco.utility.data.provider.XMLTestData;
@@ -48,7 +49,7 @@ public class SolrSearchByPathTests extends AbstractCmisE2ETest
         Utility.waitToLoopTime(getSolrWaitTimeInSeconds());
     }
 
-    @Test(dependsOnMethods = "prepareDataForSearchByPath", dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
+    @Test(dependsOnMethods = "prepareDataForSearchByPath", dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
     @XMLDataConfig(file = "src/test/resources/testdata/search-by-path.xml")
     public void executeSearchByPathQueries(QueryModel query)
     {
