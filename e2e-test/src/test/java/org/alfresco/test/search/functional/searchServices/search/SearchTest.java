@@ -101,8 +101,8 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         response.getContext().assertThat().field("request").isNotEmpty();
     }
 
-    @Test
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.CONFIG_DISABLE_CASCADE_TRACKER }, executionType = ExecutionType.REGRESSION,
+    @Test(groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
             description = "Tests a search request containing a sort clause.")
     public void searchWithOneSortClause()
     {
@@ -148,8 +148,8 @@ public class SearchTest extends AbstractSearchServicesE2ETest
      * The first clause has always the same value for all matches so the test makes sure the request is correctly
      * processed and the returned order is determined by the second clause.
      */
-    @Test
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH, TestGroup.CONFIG_DISABLE_CASCADE_TRACKER}, executionType = ExecutionType.REGRESSION,
+    @Test(groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
             description = "Tests a search request containing a sort clause.")
     public void searchWithTwoSortClauses()
     {
