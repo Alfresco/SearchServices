@@ -18,9 +18,11 @@
  */
 package org.alfresco.test.search.functional.searchServices.search;
 
+import static jersey.repackaged.com.google.common.collect.Sets.newHashSet;
 import static org.testng.Assert.assertTrue;
 
-import org.alfresco.rest.search.SearchNodeModel;
+import java.util.Set;
+
 import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.alfresco.utility.model.FileModel;
@@ -35,12 +37,18 @@ import org.testng.annotations.Test;
  * Search end point Public API test with finger print.
  * 
  * @author Michael Suzuki
+ * @author Meenal Bhave
  */
 public class FingerPrintTest extends AbstractE2EFunctionalTest
 {
-    private FileModel file1;
-    private FileModel file2;
     private FolderModel folder;
+    private FileModel fileBanana, fileTaco, fileCat, fileDog, fileOriginal;
+    /**
+     * File to be created in dataprep with same content as fileOriginal
+     * File to be updated in test searchAfterVersionUpdate
+     * File to be reverted in test searchAfterVersionRevert
+     */
+    private FileModel fileToBeUpdated;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -51,30 +59,39 @@ public class FingerPrintTest extends AbstractE2EFunctionalTest
          *    |-- pangram-banana.txt
          *    |-- pangram-taco.txt
          *    |-- pangram-cat.txt
-         *    |-- dog.txt
+         *    |-- pangram-dog.txt
+         *    |-- original.txt
+         *    |-- toBeUpdated.txt
          */
         folder = new FolderModel("The quick brown fox jumps over");
         dataContent.usingUser(testUser).usingSite(testSite).createFolder(folder);
 
-        file1 = new FileModel("pangram-banana.txt", FileType.TEXT_PLAIN, "The quick brown fox jumps over the lazy banana");
-        file2 = new FileModel("pangram-taco.txt", FileType.TEXT_PLAIN, "The quick brown fox jumps over the lazy dog that ate the taco");
+        fileBanana = new FileModel("pangram-banana.txt", FileType.TEXT_PLAIN, "The quick brown fox jumps over the lazy banana");
+        fileTaco = new FileModel("pangram-taco.txt", FileType.TEXT_PLAIN, "The quick brown fox jumps over the lazy dog that ate the taco");
 
-        FileModel file3 = new FileModel("pangram-cat.txt", FileType.TEXT_PLAIN, "The quick brown fox jumps over the lazy cat");
-        FileModel file4 = new FileModel("dog.txt", FileType.TEXT_PLAIN, "The quick brown fox ate the lazy dog");
+        fileCat = new FileModel("pangram-cat.txt", FileType.TEXT_PLAIN, "The quick brown fox jumps over the lazy cat");
+        fileDog = new FileModel("pangram-dog.txt", FileType.TEXT_PLAIN, "The quick brown fox ate the lazy dog");
+        
+        // fileOriginal with different content
+        fileOriginal = new FileModel("original.txt", FileType.TEXT_PLAIN, "This is an original file with some content");
+        
+        // Index a new fileToBeUpdated with content similar to fileOriginal
+        fileToBeUpdated = new FileModel("toBeUpdated.txt", FileType.TEXT_PLAIN, "This is an original file with some content");
 
-        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file1);
-        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file2);
-        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file3);
-        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(file4);
-
-        waitForContentIndexing(file4.getContent(), true);
+        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(fileBanana);
+        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(fileTaco);
+        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(fileCat);
+        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(fileDog);
+        
+        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(fileOriginal);
+        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(fileToBeUpdated);
 
         // Additional wait implemented to remove inconsistent failures. Ref: Search-1438 for details
-        waitForIndexing("FINGERPRINT:" + file2.getNodeRefWithoutVersion(), true);
-        waitForIndexing("FINGERPRINT:" + file3.getNodeRefWithoutVersion(), true);
+        waitForIndexing("FINGERPRINT:" + fileDog.getNodeRefWithoutVersion(), true);
+        waitForIndexing("FINGERPRINT:" + fileToBeUpdated.getNodeRefWithoutVersion(), true);
     }
 
-    @Test
+    @Test(priority = 1)
     @Bug(id = "MNT-20449")
     public void makeSureFingerprintQueryWorksAfterMetadataUpdate() throws Exception
     {
@@ -105,86 +122,125 @@ public class FingerPrintTest extends AbstractE2EFunctionalTest
      * to the files loaded as part of this test.
      * Note that for fingerprint to work it need a 5 word sequence.
      */
-    @Test
+    @Test(priority = 2)
     public void search()
     {
-        String uuid = file1.getNodeRefWithoutVersion();
+        String uuid = fileBanana.getNodeRefWithoutVersion();
         Assert.assertNotNull(uuid);
-        String fingerprint = String.format("FINGERPRINT:%s", uuid);
-        SearchResponse response = query(fingerprint);
+  
+        String fingerprintQuery = String.format("FINGERPRINT:%s", uuid);
+        SearchResponse response = queryAsUser(testUser, fingerprintQuery);
+
         int count = response.getEntries().size();
         assertTrue(count > 1);
-        for (SearchNodeModel m : response.getEntries())
-        {
-            String match = m.getModel().getName();
-            switch (match)
-            {
-                case "pangram.txt":
-                case "pangram-banana.txt":
-                case "pangram-taco.txt":
-                case "pangram-cat.txt":
-                    break;
-                default:
-                    throw new AssertionError("Not a match to an expected file: " + m.getModel().getName());
-            }
-            m.getModel().assertThat().field("name").isNot("dog.txt");
-            m.getModel().assertThat().field("name").isNot("cars.txt");
-        }
+
+        Set<String> expectedNames = newHashSet();
+        expectedNames.add(fileBanana.getName());
+        expectedNames.add(fileTaco.getName());
+        expectedNames.add(fileCat.getName());
+        
+        testSearchQueryUnordered(fingerprintQuery, expectedNames, SearchLanguage.AFTS);
     }
 
-    @Test
+    @Test(priority = 3)
     public void searchSimilar()
     {
-        String uuid = file2.getNodeRefWithoutVersion();
+        String uuid = fileTaco.getNodeRefWithoutVersion();
         Assert.assertNotNull(uuid);
 
         // In the response entity there is a score of each doc, change below threshold to bring more like or less.
-        String fingerprint = String.format("FINGERPRINT:%s_68", uuid);
-        SearchResponse response = query(fingerprint);
+        String fingerprintQuery = String.format("FINGERPRINT:%s_68", uuid);
+        SearchResponse response = query(fingerprintQuery);
 
         int count = response.getEntries().size();
         assertTrue(count > 1);
-
-        for (SearchNodeModel m : response.getEntries())
-        {
-            switch (m.getModel().getName())
-            {
-                case "pangram.txt":
-                case "pangram-taco.txt":
-                    break;
-                default:
-                    throw new AssertionError("Not a match to an expected file: " + m.getModel().getName());
-            }
-            m.getModel().assertThat().field("name").isNot("pangram-banana.txt");
-            m.getModel().assertThat().field("name").isNot("pangram-cat.txt");
-            m.getModel().assertThat().field("name").isNot("dog.txt");
-            m.getModel().assertThat().field("name").isNot("cars.txt");
-        }
+        
+        Set<String> expectedNames = newHashSet();
+        expectedNames.add(fileTaco.getName());
+        
+        testSearchQueryUnordered(fingerprintQuery, expectedNames, SearchLanguage.AFTS);
     }
 
-    @Test
+    @Test(priority = 4)
     public void searchSimilar67Percent()
     {
-        String uuid = file2.getNodeRefWithoutVersion();
+        String uuid = fileTaco.getNodeRefWithoutVersion();
         Assert.assertNotNull(uuid);
-        String fingerprint = String.format("FINGERPRINT:%s_68", uuid);
-        SearchResponse response = query(fingerprint);
+
+        // Check that: When asked for less overlap of 67%: More documents are matched
+        String fingerprintQuery = String.format("FINGERPRINT:%s_67", uuid);
+        SearchResponse response = query(fingerprintQuery);
+
         int count = response.getEntries().size();
         assertTrue(count > 1);
-        for (SearchNodeModel m : response.getEntries())
-        {
-            switch (m.getModel().getName())
-            {
-                case "pangram.txt":
-                case "pangram-taco.txt":
-                case "pangram-cat.txt":
-                    break;
-                default:
-                    throw new AssertionError("Not a match to an expected file: " + m.getModel().getName());
-            }
-            m.getModel().assertThat().field("name").isNot("pangram-banana.txt");
-            m.getModel().assertThat().field("name").isNot("dog.txt");
-            m.getModel().assertThat().field("name").isNot("cars.txt");
-        }
+        
+        Set<String> expectedNames = newHashSet();
+        expectedNames.add(fileTaco.getName());
+        expectedNames.add(fileBanana.getName());
+        expectedNames.add(fileCat.getName());
+        
+        testSearchQueryUnordered(fingerprintQuery, expectedNames, SearchLanguage.AFTS);
+    }
+    
+    @Test(priority = 5, enabled = false)
+    @Bug(id = "SEARCH-2065")
+    public void searchAfterVersionUpdate()
+    {
+        // Check that fileToBeUpdated is found with a fingerprint query with fileOriginal: as they have similar content
+        boolean found = isContentInSearchResults("FINGERPRINT:" + fileOriginal.getNodeRefWithoutVersion(), fileToBeUpdated.getName(), true);
+        Assert.assertTrue(found, "Matching File Not found in results for Fingerprint Query with original file");
+
+        // Update content of the fileToBeUpdated to match file1 in the dataprep
+        String newFileContent = "The quick brown fox jumps over the updated file";
+        fileToBeUpdated.setContent(newFileContent);
+        dataContent.usingUser(testUser).usingSite(testSite).usingResource(fileToBeUpdated).updateContent(newFileContent);
+
+        // Wair for the new version of the file to be indexed
+        assertTrue(waitForContentIndexing(fileToBeUpdated.getContent(), true));
+ 
+        // Check that fileToBeUpdated is NOT found with a fingerprint query with fileOriginal
+        boolean notFound = isContentInSearchResults("FINGERPRINT:" + fileOriginal.getNodeRefWithoutVersion(), fileToBeUpdated.getName(), false);
+        Assert.assertTrue(notFound, "Updated File unexpectedly found in results for Fingerprint Query with original file");
+
+        // Check that fileToBeUpdated is found with a fingerprint query with file1
+        found = isContentInSearchResults("FINGERPRINT:" + fileBanana.getNodeRefWithoutVersion(), fileToBeUpdated.getName(), true);
+        Assert.assertTrue(found, "Update File Not found in results for Fingerprint Query with updated content"); 
+    }
+
+    @Test(priority = 6, enabled = false)
+    @Bug(id = "SEARCH-2065")
+    public void searchAfterVersionRevert() throws Exception
+    {
+        // Revert fileToBeUpdated to previous version
+        restClient.authenticateUser(testUser).withCoreAPI().usingNode(fileToBeUpdated).revertVersion("1.0", "{}");
+        String revertedContent = restClient.authenticateUser(testUser).withCoreAPI().usingNode(fileToBeUpdated).getVersionContent("1.2").toString();
+        Assert.assertEquals(revertedContent, fileOriginal.getContent(), "Reverted content does not match Original");
+
+        // Wair for the new version of the file to be indexed
+        assertTrue(waitForContentIndexing(fileToBeUpdated.getContent(), true));
+ 
+        // Check that fileToBeUpdated is found with a fingerprint query with fileOriginal
+        boolean found = isContentInSearchResults("FINGERPRINT:" + fileOriginal.getNodeRefWithoutVersion(), fileToBeUpdated.getName(), true);
+        Assert.assertTrue(found, "File not found in results for Fingerprint Query with original file after reverting version changes");
+
+        // Check that fileToBeUpdated is NOT found with a fingerprint query with file1
+        boolean notFound = isContentInSearchResults("FINGERPRINT:" + fileBanana.getNodeRefWithoutVersion(), fileToBeUpdated.getName(), false);
+        Assert.assertTrue(notFound, "File appears in the results for Fingerprint Query even after reverting content changes");
+    }
+
+    @Test(priority = 7, enabled = false)
+    @Bug(id = "SEARCH-2065")
+    public void searchAfterVersionDelete() throws Exception
+    {
+        // Revert fileToBeUpdated to previous version
+        restClient.authenticateUser(testUser).withCoreAPI().usingNode(fileToBeUpdated).deleteNodeVersion("1.2");
+ 
+        // Check that fileToBeUpdated is NOT found with a fingerprint query with fileOriginal
+        boolean notFound = isContentInSearchResults("FINGERPRINT:" + fileOriginal.getNodeRefWithoutVersion(), fileToBeUpdated.getName(), false);
+        Assert.assertTrue(notFound, "Updated File unexpectedly found in results for Fingerprint Query with original file");
+
+        // Check that fileToBeUpdated is found with a fingerprint query with file1
+        boolean found = isContentInSearchResults("FINGERPRINT:" + fileBanana.getNodeRefWithoutVersion(), fileToBeUpdated.getName(), true);
+        Assert.assertTrue(found, "Update File Not found in results for Fingerprint Query with updated content"); 
     }
 }
