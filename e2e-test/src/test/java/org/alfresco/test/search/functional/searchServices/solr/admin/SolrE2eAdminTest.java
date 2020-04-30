@@ -517,11 +517,17 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         if (ShardingMethod.DB_ID_RANGE.toString().equalsIgnoreCase(getShardMethod()))
         {
             // This assertion replicates: testExpandSharding, priority = 23, hence deleting that test as duplicate
-            Assert.assertNotEquals(expand, Integer.valueOf(-1), "Expansion is not successful when not using Shard DB_ID_RANGE method,");
+            Assert.assertTrue((expand == Integer.valueOf(-1) || expand == Integer.valueOf(0)), "Expansion is not successful when not using Shard DB_ID_RANGE method,");
+            if (expand == Integer.valueOf(-1))
+            {
+                String exceptionExpected = "Expansion cannot occur if max DBID in the index is more then 75% of range.";
+                String exception = response.getResponse().body().jsonPath().get("exception");
+                Assert.assertEquals(exception, exceptionExpected, "Expansion failed with unexpected Exception while using DB_ID_RANGE sharding");
+            }
         }
         else
         {
-            Assert.assertEquals(expand, Integer.valueOf(-1), "Expansion should not have been allowed when not using Shard DB_ID_RANGE method,");
+            Assert.assertEquals(expand, Integer.valueOf(-1), "Expansion should not have been allowed when not using Shard DB_ID_RANGE method");
         }
     }
     
