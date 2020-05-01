@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -102,6 +104,20 @@ public class ModelTracker extends AbstractTracker implements Tracker
     private ReentrantReadWriteLock modelLock = new ReentrantReadWriteLock();
     private volatile boolean hasModels = false;
     private File alfrescoModelDir;
+    
+    // Share run and write locks across all ModelTracker threads
+    private static Map<String, Semaphore> RUN_LOCK_BY_CORE = new ConcurrentHashMap<>();
+    private static Map<String, Semaphore> WRITE_LOCK_BY_CORE = new ConcurrentHashMap<>();
+    @Override
+    public Semaphore getWriteLock()
+    {
+        return WRITE_LOCK_BY_CORE.get(coreName);
+    }
+    @Override
+    public Semaphore getRunLock()
+    {
+        return RUN_LOCK_BY_CORE.get(coreName);
+    }
 
     public ModelTracker(String solrHome, Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
@@ -116,6 +132,9 @@ public class ModelTracker extends AbstractTracker implements Tracker
         }
 
         loadPersistedModels();
+        
+        RUN_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
+        WRITE_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
     }
 
     @Override

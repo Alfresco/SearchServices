@@ -246,7 +246,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
             {
                 //We have moved beyond this transaction.
             }
-            else if(txn.getCommitTimeMs() > toCommitTime)
+            else if (toCommitTime != null && txn.getCommitTimeMs() > toCommitTime)
             {
                 //We have not yet reached this transaction so break out of the loop
                 break;

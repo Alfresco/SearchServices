@@ -27,6 +27,7 @@ package org.alfresco.solr.client;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -46,6 +47,18 @@ public class AclChangeSets
         this.aclChangeSets = (aclChangeSets == null ? null : new ArrayList<>(aclChangeSets));
         this.maxChangeSetCommitTime = maxChangeSetCommitTime;
         this.maxChangeSetId = maxChangeSetId;
+    }
+
+    public AclChangeSets(List<AclChangeSet> aclChangeSets)
+    {
+        this.aclChangeSets = aclChangeSets;
+        if (!aclChangeSets.isEmpty())
+        {
+            this.maxChangeSetCommitTime = aclChangeSets.stream()
+                    .max(Comparator.comparing(AclChangeSet::getCommitTimeMs)).get().getCommitTimeMs();
+            this.maxChangeSetId = aclChangeSets.stream()
+                    .max(Comparator.comparing(AclChangeSet::getId)).get().getId();
+        }
     }
 
     public List<AclChangeSet> getAclChangeSets()

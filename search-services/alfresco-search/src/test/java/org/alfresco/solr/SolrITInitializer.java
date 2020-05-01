@@ -1,6 +1,7 @@
 package org.alfresco.solr;
 
 import com.carrotsearch.randomizedtesting.annotations.ThreadLeakLingering;
+import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 import org.alfresco.solr.basics.RandomSupplier;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.apache.commons.io.FileUtils;
@@ -67,7 +68,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.createCoreUsingTemplate;
  * @since solr 1.5
  * @author Michael Suzuki 
  */
-@ThreadLeakLingering(linger = 5000)
+@ThreadLeakScope(ThreadLeakScope.Scope.NONE)
 public abstract class SolrITInitializer extends SolrTestCaseJ4
 {
     private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

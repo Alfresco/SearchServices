@@ -18,6 +18,7 @@
  */
 package org.alfresco.solr.transformer;
 
+import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -34,7 +35,6 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
@@ -56,7 +56,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
 import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
+@ThreadLeakScope(ThreadLeakScope.Scope.NONE)
 @SolrTestCaseJ4.SuppressSSL
 public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
 {
@@ -80,7 +80,7 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
     {
         putHandleDefaults();
         //Test 1: Running a simple query without invoking CachedDocTransformer, expected to see id,DBID and _version_
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts"));
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "sort", "id asc", "shards.qt", "/afts"));
         assertNotNull(resp);
         SolrDocumentList results = resp.getResults();
         assertEquals("Expecting 5 rows",5, results.size());
@@ -106,7 +106,7 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
         putHandleDefaults();
         
         //Test 2: Running simple query with CachedDocTransformer, expected to see all fields returned
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","*,[cached]"));
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts", "sort", "id asc", "fl", "*,[cached]"));
         SolrDocument docWithAllFields = resp.getResults().get(0);
         assertTrue(docWithAllFields.size() > 3);
 
@@ -128,7 +128,7 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
         putHandleDefaults();
 
         //Test 3: Running simple query with CachedDocTransformer, expected to see selected fields returned
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","id,DBID,[cached]"));
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts", "sort", "id asc", "fl","id,DBID,[cached]"));
 
         assertNotNull(resp);
         SolrDocument docWithRequestedFields = resp.getResults().get(0);
@@ -143,7 +143,7 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
         putHandleDefaults();
         
         //Test 4: Running simple query with CachedDocTransformer on non default fields, expected to see selected fields returned
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","id, cm_title,[cached]"));
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","sort", "id asc", "fl","id, cm_title,[cached]"));
 
         assertNotNull(resp);
         SolrDocument docWithRequestedFields3 = resp.getResults().get(0);
@@ -158,7 +158,7 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
     {
         putHandleDefaults();
 
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_name, score, [cached]"));
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts", "sort", "id asc", "fl","cm_name, score, [cached]"));
         assertNotNull(resp);
         SolrDocumentList results = resp.getResults();
         SolrDocument docWithAllFields = results.get(0);
@@ -173,7 +173,7 @@ public class CachedDocTransformerIT extends AbstractAlfrescoDistributedIT
     {
         putHandleDefaults();
 
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_title, cm_created, DBID, score, [cached]"));
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","sort", "id asc", "fl","cm_title, cm_created, DBID, score, [cached]"));
         assertNotNull(resp);
         SolrDocumentList results = resp.getResults();
         SolrDocument docWithAllFields = results.get(0);

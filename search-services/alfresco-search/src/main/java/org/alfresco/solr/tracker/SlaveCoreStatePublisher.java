@@ -30,7 +30,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 
 /**
  * Despite belonging to the Tracker ecosystem, this component is actually a publisher, which periodically informs
@@ -51,6 +54,21 @@ public class SlaveCoreStatePublisher extends CoreStatePublisher
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(SlaveCoreStatePublisher.class);
 
+
+    // Share run and write locks across all SlaveCoreStatePublisher threads
+    private static Map<String, Semaphore> RUN_LOCK_BY_CORE = new ConcurrentHashMap<>();
+    private static Map<String, Semaphore> WRITE_LOCK_BY_CORE = new ConcurrentHashMap<>();
+    @Override
+    public Semaphore getWriteLock()
+    {
+        return WRITE_LOCK_BY_CORE.get(coreName);
+    }
+    @Override
+    public Semaphore getRunLock()
+    {
+        return RUN_LOCK_BY_CORE.get(coreName);
+    }
+
     public SlaveCoreStatePublisher(
             boolean isMaster,
             Properties coreProperties,
@@ -59,6 +77,9 @@ public class SlaveCoreStatePublisher extends CoreStatePublisher
             SolrInformationServer informationServer)
     {
         super(isMaster, coreProperties, repositoryClient, name, informationServer, NODE_STATE_PUBLISHER);
+
+        RUN_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
+        WRITE_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
     }
 
     @Override

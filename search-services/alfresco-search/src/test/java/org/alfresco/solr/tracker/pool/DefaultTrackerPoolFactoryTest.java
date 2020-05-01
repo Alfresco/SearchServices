@@ -82,7 +82,7 @@ public class DefaultTrackerPoolFactoryTest
     public void testAclDefaultProperties()
     {
         poolFactory = new DefaultTrackerPoolFactory(properties, "TheCore", "AclTracker");
-        
+
         tpe = poolFactory.create();
         assertEquals(4, tpe.getCorePoolSize());
         assertEquals(4, tpe.getMaximumPoolSize());
@@ -96,7 +96,7 @@ public class DefaultTrackerPoolFactoryTest
         properties.put("alfresco.acl.tracker.keepAliveTime", "200");
         poolFactory = new DefaultTrackerPoolFactory(properties, "TheCore", "AclTracker");
         tpe = poolFactory.create();
-        
+
         assertEquals(30, tpe.getCorePoolSize());
         assertEquals(40, tpe.getMaximumPoolSize());
         assertEquals(200, tpe.getKeepAliveTime(TimeUnit.SECONDS));
@@ -120,7 +120,7 @@ public class DefaultTrackerPoolFactoryTest
         properties.put("alfresco.content.tracker.keepAliveTime", "201");
         poolFactory = new DefaultTrackerPoolFactory(properties, "TheCore", "ContentTracker");
         tpe = poolFactory.create();
-        
+
         assertEquals(100, tpe.getCorePoolSize());
         assertEquals(140, tpe.getMaximumPoolSize());
         assertEquals(201, tpe.getKeepAliveTime(TimeUnit.SECONDS));
@@ -129,9 +129,9 @@ public class DefaultTrackerPoolFactoryTest
     public void testMetaDataDefaultProperties()
     {
         poolFactory = new DefaultTrackerPoolFactory(properties, "TheCore", "MetadataTracker");
-        
+
         tpe = poolFactory.create();
-        
+
         assertEquals(4, tpe.getCorePoolSize());
         assertEquals(4, tpe.getMaximumPoolSize());
         assertEquals(120, tpe.getKeepAliveTime(TimeUnit.SECONDS));
@@ -143,9 +143,9 @@ public class DefaultTrackerPoolFactoryTest
         properties.put("alfresco.metadata.tracker.maximumPoolSize", "140");
         properties.put("alfresco.metadata.tracker.keepAliveTime", "201");
         poolFactory = new DefaultTrackerPoolFactory(properties, "TheCore", "MetadataTracker");
-        
+
         tpe = poolFactory.create();
-        
+
         assertEquals(100, tpe.getCorePoolSize());
         assertEquals(140, tpe.getMaximumPoolSize());
         assertEquals(201, tpe.getKeepAliveTime(TimeUnit.SECONDS));

@@ -53,14 +53,12 @@ public class ContentTrackerIT
     private TrackerStats trackerStats;
 
     private int UPDATE_BATCH = 2;
-    private int READ_BATCH = 400;
 
     @Before
     public void setUp() throws Exception
     {
         doReturn("workspace://SpacesStore").when(props).getProperty(eq("alfresco.stores"), anyString());
         doReturn("" + UPDATE_BATCH).when(props).getProperty(eq("alfresco.contentUpdateBatchSize"), anyString());
-        doReturn("" + READ_BATCH).when(props).getProperty(eq("alfresco.contentReadBatchSize"), anyString());
         when(srv.getTrackerStats()).thenReturn(trackerStats);
         this.contentTracker = new ContentTracker(props, repositoryClient, coreName, srv);
        
@@ -103,14 +101,14 @@ public class ContentTrackerIT
             doc.tenant = "2";
             docs2.add(doc);
         }
-        when(this.srv.getDocsWithUncleanContent(anyInt(), anyInt()))
+        when(this.srv.getDocsWithUncleanContent())
                 .thenReturn(docs1)
                 .thenReturn(docs2)
             .thenReturn(emptyList);
         this.contentTracker.doTrack("anIterationId");
         
         InOrder order = inOrder(srv);
-        order.verify(srv).getDocsWithUncleanContent(0, READ_BATCH);
+        order.verify(srv).getDocsWithUncleanContent();
         
         /*
          * I had to make each bunch of calls have different parameters to prevent Mockito from incorrectly failing
@@ -126,13 +124,13 @@ public class ContentTrackerIT
         order.verify(srv).updateContentToIndexAndCache(thirdDoc.dbId, thirdDoc.tenant);
         order.verify(srv).commit();
         
-        order.verify(srv).getDocsWithUncleanContent(0 + READ_BATCH, READ_BATCH);
+        order.verify(srv).getDocsWithUncleanContent();
         
         // From docs2
         order.verify(srv, times(UPDATE_BATCH)).updateContentToIndexAndCache(2l, "2");
         order.verify(srv).commit();
         
-        order.verify(srv).getDocsWithUncleanContent(0 + READ_BATCH + READ_BATCH, READ_BATCH);
+        order.verify(srv).getDocsWithUncleanContent();
     }
     @Test
     public void typeCheck()
