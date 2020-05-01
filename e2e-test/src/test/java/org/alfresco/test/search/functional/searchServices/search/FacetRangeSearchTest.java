@@ -109,7 +109,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
                   .containsSummary(String.format(RestErrorModel.MANDATORY_PARAM, "gap"));
     }
 
-    @Test(groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
+    @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
             description = "Check basic facet range search api")
     @SuppressWarnings("unchecked")
@@ -159,7 +159,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         assertEquals(info.get("endInclusive"), "true");
     }
 
-    @Test(groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
+    @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
             description = "Check date facet intervals search api")
     @SuppressWarnings("unchecked")
@@ -257,7 +257,7 @@ public class FacetRangeSearchTest extends AbstractSearchServicesE2ETest
         query.setRanges(ranges);
     }
 
-    @Test(groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
+    @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION,
             description = "Check basic facet range search api")
     @SuppressWarnings("unchecked")

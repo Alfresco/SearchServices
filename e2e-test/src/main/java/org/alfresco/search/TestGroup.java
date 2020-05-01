@@ -34,7 +34,7 @@ public class TestGroup
     public static final String CONFIG_SHARDING_EXPLICIT ="CONFIG_Sharding_EXPLICIT"; // Alfresco search services using sharded environment and explicit routing
     public static final String CONFIG_SHARDING_DB_ID_RANGE = "CONFIG_Sharding_DB_ID_RANGE"; // Alfresco Search Services using Sharding with DB_ID_RANGE
 
-    public static final String CONFIG_DISABLE_CASCADE_TRACKER ="Config_Disable_Cascade_Tracker"; // Alfresco search services does not index fields related to cascaded updates
+    public static final String CONFIG_ENABLED_CASCADE_TRACKER ="Config_Enabled_Cascade_Tracker"; // Alfresco search services does not index fields related to cascaded updates
 
     public static final String NOT_INSIGHT_ENGINE = "Not_InsightEngine"; // When Alfresco Insight Engine 1.0 isn't running
 

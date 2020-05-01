@@ -102,7 +102,7 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
         waitForContentIndexing(file4.getContent(), true);
     }
 
-    @Test(groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
+    @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     @TestRail(section = { TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION, description = "Checks facet queries for the Search api")
     public void searchWithQueryFaceting() throws Exception
     {

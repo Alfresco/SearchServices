@@ -155,7 +155,7 @@ public class SearchAFTSInFieldTest extends AbstractE2EFunctionalTest
         });
     }
 
-    @Test(groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
+    @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     public void testSearchInFieldSITE()
     {
         String query = "SITE:" + testSite.getId();

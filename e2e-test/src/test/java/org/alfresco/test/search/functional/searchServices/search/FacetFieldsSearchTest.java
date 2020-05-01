@@ -95,7 +95,7 @@ public class FacetFieldsSearchTest extends AbstractE2EFunctionalTest
         waitForContentIndexing(htmlFile.getContent(), true);
     }
     
-    @Test(groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
+    @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     public void testSearchFacetFieldsBucketExcludedWhenMinCount2() throws Exception
     {
         // Create Query with FacetFields: Site and Content MimeType
@@ -131,7 +131,7 @@ public class FacetFieldsSearchTest extends AbstractE2EFunctionalTest
 
     }
 
-    @Test(groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
+    @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     public void testSearchWithFacetFieldsMinCountChecks() throws Exception
     {
         SearchRequest query = new SearchRequest();
@@ -206,7 +206,7 @@ public class FacetFieldsSearchTest extends AbstractE2EFunctionalTest
         Assert.assertNull(response.getContext().getFacetsFields());
     }
 
-    @Test(groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
+    @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     public void testSearchWithFacetFieldsOnlyFacetsWhereAccess() throws Exception
     {
         SearchRequest query = new SearchRequest();

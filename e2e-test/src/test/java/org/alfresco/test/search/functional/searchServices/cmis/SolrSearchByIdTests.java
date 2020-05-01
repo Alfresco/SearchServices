@@ -102,7 +102,7 @@ public class SolrSearchByIdTests extends AbstractCmisE2ETest
         Assert.assertTrue(waitForIndexing(currentQuery, query.getResults()), String.format("Result count not as expected for query: %s", currentQuery));
     }
     
-    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
+    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     @XMLDataConfig(file = "src/test/resources/testdata/search-by-id-in-tree.xml")
     public void executeSearchByIdInTree(QueryModel query) throws Exception
     {

@@ -53,7 +53,7 @@ public class SearchSecondaryAssociationTest extends AbstractE2EFunctionalTest
         waitForMetadataIndexing(file1.getName(), true);
     }
     
-    @Test(priority = 1, groups={TestGroup.CONFIG_DISABLE_CASCADE_TRACKER})
+    @Test(priority = 1, groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     public void testSearchPathForSecondaryAssociation() throws Exception
     {
         String queryPathFolder1 = "PATH:\"/app:company_home/st:sites/cm:" + testSite.getTitle() +
