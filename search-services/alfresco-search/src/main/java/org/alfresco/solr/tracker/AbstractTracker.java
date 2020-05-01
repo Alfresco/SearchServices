@@ -56,9 +56,6 @@ public abstract class AbstractTracker implements Tracker
     private int maxLiveSearchers;
     private volatile boolean shutdown = false;
 
-    private Semaphore runLock = new Semaphore(1, true);
-    private Semaphore writeLock = new Semaphore(1, true);
-
     protected volatile TrackerState state;
     protected int shardCount;
     protected int shardInstance;
@@ -72,11 +69,6 @@ public abstract class AbstractTracker implements Tracker
     protected Throwable rollbackCausedBy;
     protected final Type type;
     protected final String trackerId;
-
-    /*
-     * A thread handler can be used by subclasses, but they have to intentionally instantiate it.
-     */
-    ThreadHandler threadHandler;
 
     /**
      * Default constructor, strictly for testing.
@@ -167,7 +159,7 @@ public abstract class AbstractTracker implements Tracker
     {
         String iterationId = "IT #" + System.currentTimeMillis();
 
-        if(runLock.availablePermits() == 0)
+        if(getRunLock().availablePermits() == 0)
         {
             LOGGER.info("[{} / {} / {}] Tracker already registered.", coreName, trackerId, iterationId);
             return;
@@ -179,7 +171,7 @@ public abstract class AbstractTracker implements Tracker
             * The runLock ensures that for each tracker type (metadata, content, commit, cascade) only one tracker will
             * be running at a time.
             */
-            runLock.acquire();
+            getRunLock().acquire();
 
             if (state==null && Boolean.parseBoolean(System.getProperty("alfresco.test", "false")))
             {
@@ -236,7 +228,7 @@ public abstract class AbstractTracker implements Tracker
                 state.setRunning(false);
                 state.setCheck(false);
             });
-            runLock.release();
+            getRunLock().release();
         }
     }
 
@@ -280,30 +272,6 @@ public abstract class AbstractTracker implements Tracker
         }
     }
 
-    /**
-     * Allows time for the scheduled asynchronous tasks to complete
-     */
-    synchronized void waitForAsynchronous()
-    {
-        AbstractWorkerRunnable currentRunnable = this.threadHandler.peekHeadReindexWorker();
-        while (currentRunnable != null)
-        {
-            checkShutdown();
-            synchronized (this)
-            {
-                try
-                {
-                    wait(100);
-                }
-                catch (InterruptedException e)
-                {
-                    // Nothing to be done here
-                }
-            }
-            currentRunnable = this.threadHandler.peekHeadReindexWorker();
-        }
-    }
-
     int getMaxLiveSearchers()
     {
         return maxLiveSearchers;
@@ -333,21 +301,19 @@ public abstract class AbstractTracker implements Tracker
     public void shutdown()
     {
         setShutdown(true);
-        if(this.threadHandler != null)
-        {
-            threadHandler.shutDownThreadPool();
-        }
     }
 
-    public Semaphore getWriteLock()
-    {
-        return this.writeLock;
-    }
+    /**
+     * Trackers implementing this method should decide if the Write Lock is applied
+     * globally for every Tracker Thread (static) or locally for each running Thread
+     */
+    public abstract Semaphore getWriteLock();
 
-    Semaphore getRunLock()
-    {
-        return this.runLock;
-    }
+    /**
+     * Trackers implementing this method should decide if the Run Lock is applied
+     * globally for every Tracker Thread (static) or locally for each running Thread
+     */
+    public abstract Semaphore getRunLock();
 
     public Properties getProps()
     {

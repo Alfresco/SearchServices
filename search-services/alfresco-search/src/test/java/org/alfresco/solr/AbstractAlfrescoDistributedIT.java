@@ -850,7 +850,8 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
 
     public static void indexTransaction(Transaction transaction, List<Node> nodes, List<NodeMetaData> nodeMetaDatas)
     {
-        //First map the nodes to a transaction.
+        // First map the nodes to a transaction.
+        nodes.stream().forEach(node -> node.setTxnId(transaction.getId()));
         SOLRAPIQueueClient.nodeMap.put(transaction.getId(), nodes);
 
         //Next map a node to the NodeMetaData

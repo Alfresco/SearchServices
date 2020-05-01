@@ -148,7 +148,7 @@ public interface InformationServer extends InformationServerCollectionProvider
 
     IndexHealthReport reportIndexTransactions(Long minTxId, IOpenBitSet txIdsInDb, long maxTxId) throws IOException;
 
-    List<TenantAclIdDbId> getDocsWithUncleanContent(int start, int rows) throws IOException;
+    List<TenantAclIdDbId> getDocsWithUncleanContent() throws IOException;
 
     void updateContentToIndexAndCache(long dbId, String tenant) throws Exception;
 

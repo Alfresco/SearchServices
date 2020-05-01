@@ -663,7 +663,7 @@ public class SolrInformationServer implements InformationServer
     }
 
     @Override
-    public List<TenantAclIdDbId> getDocsWithUncleanContent(int start, int rows) throws IOException
+    public List<TenantAclIdDbId> getDocsWithUncleanContent() throws IOException
     {
         RefCounted<SolrIndexSearcher> refCounted = null;
         try
@@ -688,7 +688,7 @@ public class SolrInformationServer implements InformationServer
             *  in current snapshot of the index.
             *
             *  The code below runs every two minutes and purges transactions from the
-            *  cleanContentCache that is more then 20 minutes old.
+            *  cleanContentCache that is more than 20 minutes old.
             *
             */
             long purgeTime = System.currentTimeMillis();
@@ -721,7 +721,11 @@ public class SolrInformationServer implements InformationServer
             DelegatingCollector delegatingCollector = new TxnCacheFilter(cleanContentCache); //Filter transactions that have already been processed.
             delegatingCollector.setLastDelegate(collector);
             searcher.search(dirtyOrNewContentQuery(), delegatingCollector);
+            
 
+            LOGGER.debug("{}-[CORE {}] Processing {} documents with content to be indexed", Thread.currentThread().getId(), core.getName(), collector.getTotalHits());
+
+            
             if(collector.getTotalHits() == 0)
             {
                 return docIds;

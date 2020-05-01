@@ -25,11 +25,16 @@ import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Semaphore;
 
+import com.google.common.collect.Lists;
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.client.NodeMetaData;
@@ -45,14 +50,46 @@ import org.slf4j.LoggerFactory;
  */
 public class CascadeTracker extends AbstractTracker implements Tracker
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CascadeTracker.class);
+
+    protected final static Logger LOGGER = LoggerFactory.getLogger(CascadeTracker.class);
+
+    private static final int DEFAULT_CASCADE_TRACKER_MAX_PARALLELISM = 32;
+    private static final int DEFAULT_CASCADE_NODE_BATCH_SIZE = 10;
+
+
+    // Share run and write locks across all CascadeTracker threads
+    private static Map<String, Semaphore> RUN_LOCK_BY_CORE = new ConcurrentHashMap<>();
+    private static Map<String, Semaphore> WRITE_LOCK_BY_CORE = new ConcurrentHashMap<>();
+    private int cascadeBatchSize;
+    private ForkJoinPool forkJoinPool;
+    private int cascadeTrackerParallelism;
+
+    @Override
+    public Semaphore getWriteLock()
+    {
+        return WRITE_LOCK_BY_CORE.get(coreName);
+    }
+    @Override
+    public Semaphore getRunLock()
+    {
+        return RUN_LOCK_BY_CORE.get(coreName);
+    }
+
 
     public CascadeTracker(Properties p, SOLRAPIClient client, String coreName,
                            InformationServer informationServer)
     {
         super(p, client, coreName, informationServer, Tracker.Type.CASCADE);
 
-        threadHandler = new ThreadHandler(p, coreName, "CascadeTracker");
+        cascadeTrackerParallelism = Integer.parseInt(p.getProperty("alfresco.cascadeTrackerMaxParallelism",
+                String.valueOf(DEFAULT_CASCADE_TRACKER_MAX_PARALLELISM)));
+
+        cascadeBatchSize = Integer.parseInt(p.getProperty("alfresco.cascadeNodeBatchSize",
+                String.valueOf(DEFAULT_CASCADE_NODE_BATCH_SIZE)));;
+
+        forkJoinPool = new ForkJoinPool(cascadeTrackerParallelism);
+        RUN_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
+        WRITE_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
     }
 
     CascadeTracker()
@@ -85,24 +122,22 @@ public class CascadeTracker extends AbstractTracker implements Tracker
         processCascades(iterationId);
     }
 
-    private void updateTransactionsAfterAsynchronous(List<Transaction> txsIndexed)
+    private void updateTransactionsAfterWorker(List<Transaction> txsIndexed)
             throws IOException
     {
-        waitForAsynchronous();
         for (Transaction tx : txsIndexed)
         {
             super.infoSrv.updateTransaction(tx);
         }
     }
 
-    class CascadeIndexWorkerRunnable extends AbstractWorkerRunnable
+    class CascadeIndexWorker extends AbstractWorker
     {
         InformationServer infoServer;
         List<NodeMetaData> nodes;
 
-        CascadeIndexWorkerRunnable(QueueHandler queueHandler, List<NodeMetaData> nodes, InformationServer infoServer)
+        CascadeIndexWorker(List<NodeMetaData> nodes, InformationServer infoServer)
         {
-            super(queueHandler);
             this.infoServer = infoServer;
             this.nodes = nodes;
         }
@@ -116,7 +151,7 @@ public class CascadeTracker extends AbstractTracker implements Tracker
         @Override
         protected void onFail(Throwable failCausedBy) 
         {
-        	setRollback(true, failCausedBy);
+            setRollback(true, failCausedBy);
         }
     }
 
@@ -129,58 +164,69 @@ public class CascadeTracker extends AbstractTracker implements Tracker
     private void processCascades(String iterationId) throws IOException
     {
         int num = 50;
-        List<Transaction> txBatch;
-        do
-        {
-            try
-            {
+        List<Transaction> txBatch = null;
+        long totalUpdatedDocs = 0;
+
+        do {
+            try {
                 getWriteLock().acquire();
                 txBatch = infoSrv.getCascades(num);
-                if(txBatch.size() == 0)
+
+                if (txBatch.size() > 0)
                 {
-                    //No transactions to process for cascades.
+                    LOGGER.info("{}-[CORE {}] Found {} transactions, transactions from {} to {}",
+                            Thread.currentThread().getId(),
+                            coreName,
+                            txBatch.size(),
+                            txBatch.get(0),
+                            txBatch.get(txBatch.size() - 1));
+                }
+                else
+                {
+                    LOGGER.info("{}-[CORE {}] No transaction found",
+                            Thread.currentThread().getId(), coreName);
+                }
+
+                if(txBatch.size() == 0) {
                     return;
                 }
 
                 ArrayList<Long> txIds = new ArrayList<>();
                 Set<Long> txIdSet = new HashSet<>();
-                for (Transaction tx : txBatch)
-                {
+                for (Transaction tx : txBatch) {
                     txIds.add(tx.getId());
                     txIdSet.add(tx.getId());
                 }
 
                 List<NodeMetaData> nodeMetaDatas = infoSrv.getCascadeNodes(txIds);
+                Integer processedCascades = 0;
 
-                if(nodeMetaDatas.size() > 0)
-                {
-                    LinkedList<NodeMetaData> stack = new LinkedList<>();
-                    stack.addAll(nodeMetaDatas);
-                    int batchSize = 10;
+                if(nodeMetaDatas.size() > 0) {
+                    List<List<NodeMetaData>> nodeBatches = Lists.partition(nodeMetaDatas, cascadeBatchSize);
 
-                    do
-                    {
-                        List<NodeMetaData> batch = new ArrayList<>();
-                        while (batch.size() < batchSize && stack.size() > 0)
-                        {
-                            batch.add(stack.removeFirst());
-                        }
+                    processedCascades = forkJoinPool.submit( () ->
+                            nodeBatches.parallelStream().map( batch -> {
 
-                        CascadeIndexWorkerRunnable worker = new CascadeIndexWorkerRunnable(this.threadHandler, batch, infoSrv);
+                                CascadeIndexWorker worker = new CascadeIndexWorker(batch, infoSrv);
+                                worker.run();
 
-                        if (LOGGER.isTraceEnabled())
-                        {
-                            String nodes = notNullOrEmpty(batch).stream()
-                                                .map(NodeMetaData::getId)
-                                                .map(Object::toString)
-                                                .collect(joining(","));
-                            LOGGER.trace("[{} / {} / {} / {}] Worker has been created for nodes {}", coreName, trackerId, iterationId, worker.hashCode(), nodes);
-                        }
-                        this.threadHandler.scheduleTask(worker);
-                    } while (stack.size() > 0);
+                                if (LOGGER.isTraceEnabled())
+                                {
+                                    String nodes = notNullOrEmpty(batch).stream()
+                                            .map(NodeMetaData::getId)
+                                            .map(Object::toString)
+                                            .collect(joining(","));
+                                    LOGGER.trace("[{} / {} / {} / {}] Worker has been created for nodes {}", coreName, trackerId, iterationId, worker.hashCode(), nodes);
+                                }
+                                return batch.size();
+                            }).reduce(0, Integer::sum)
+                    ).get();
+
+
                 }
                 //Update the transaction records.
-                updateTransactionsAfterAsynchronous(txBatch);
+                updateTransactionsAfterWorker(txBatch);
+                totalUpdatedDocs += processedCascades;
             }
             catch (AuthenticationException e)
             {
@@ -193,11 +239,15 @@ public class CascadeTracker extends AbstractTracker implements Tracker
             catch(InterruptedException e)
             {
                 throw new IOException(e);
-            }
-            finally
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } finally
             {
                 getWriteLock().release();
             }
         } while(txBatch.size() > 0);
+
+        LOGGER.info("{}-[CORE {}] Updated {} DOCs", Thread.currentThread().getId(), coreName, totalUpdatedDocs);
+
     }
 }
