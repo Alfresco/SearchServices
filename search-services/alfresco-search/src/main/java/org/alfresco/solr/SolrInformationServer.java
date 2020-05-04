@@ -72,6 +72,7 @@ import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_VERSI
 import static org.alfresco.solr.AlfrescoSolrDataModel.getAclChangeSetDocumentId;
 import static org.alfresco.solr.AlfrescoSolrDataModel.getAclDocumentId;
 import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
+import static org.alfresco.util.ISO8601DateFormat.isTimeComponentDefined;
 
 import java.io.File;
 import java.io.IOException;
@@ -80,6 +81,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -118,6 +121,7 @@ import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -363,6 +367,14 @@ public class SolrInformationServer implements InformationServer
     /** Shared property to determine if the cascade tracking is enabled. */
     public static final String CASCADE_TRACKER_ENABLED = "alfresco.cascade.tracker.enabled";
 
+    private static final String UNIT_OF_TIME_FIELD_INFIX = "_unit_of_time";
+    static final String UNIT_OF_TIME_YEAR_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_year";
+    static final String UNIT_OF_TIME_MONTH_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_month";
+    static final String UNIT_OF_TIME_DAY_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_day";
+    static final String UNIT_OF_TIME_HOUR_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_hour";
+    static final String UNIT_OF_TIME_MINUTE_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_minute";
+    static final String UNIT_OF_TIME_SECOND_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_second";
+
     private final static Function<String, List<Object>> LAZY_EMPTY_MUTABLE_LIST = key -> new ArrayList<>();
 
     private final AlfrescoCoreAdminHandler adminHandler;
@@ -402,6 +414,8 @@ public class SolrInformationServer implements InformationServer
 
     private String skippingDocsQueryString;
     private boolean isSkippingDocsInitialized;
+
+    private final boolean dateFieldDestructuringHasBeenEnabledOnThisInstance;
 
     static class DocListCollector implements Collector, LeafCollector
     {
@@ -580,6 +594,11 @@ public class SolrInformationServer implements InformationServer
 
         port = portNumber(props);
         baseUrl = baseUrl(props);
+
+        dateFieldDestructuringHasBeenEnabledOnThisInstance = Boolean.parseBoolean(coreConfiguration.getProperty("alfresco.destructureDateFields", "true"));
+        LOGGER.info(
+                "Date fields destructuring has been {} on this instance.",
+                dateFieldDestructuringHasBeenEnabledOnThisInstance ? "enabled" : "disabled");
     }
 
     @Override
@@ -2191,7 +2210,7 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    static void mltextProperty(QName propertyQName, MLTextPropertyValue value, final BiConsumer<String, Object> valueHolder)
+    void mltextProperty(QName propertyQName, MLTextPropertyValue value, final BiConsumer<String, Object> valueHolder)
     {
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
         List<FieldInstance> fields = dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields();
@@ -2204,7 +2223,7 @@ public class SolrInformationServer implements InformationServer
             .forEach(field -> addMLTextProperty(valueHolder, field, value));
     }
 
-    static void stringProperty(QName propertyQName, StringPropertyValue value, PropertyValue locale, final BiConsumer<String, Object> valueHolder)
+    void stringProperty(QName propertyQName, StringPropertyValue value, PropertyValue locale, final BiConsumer<String, Object> valueHolder)
     {
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
         PropertyDefinition definition = dataModel.getPropertyDefinition(propertyQName);
@@ -2217,15 +2236,21 @@ public class SolrInformationServer implements InformationServer
             dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
                     .stream()
                     .filter(field -> field.getField().startsWith("text@sd___@"))
-                    .forEach(field -> addStringProperty(valueHolder, field, value, locale));
+                    .forEach(field -> addStringProperty(valueHolder, field, value, locale, definition));
         } else
         {
             dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
-                    .forEach(field -> addStringProperty(valueHolder, field, value, locale));
+                    .forEach(field -> {
+                        if (canBeDestructured(definition, field.getField()))
+                        {
+                            setUnitOfTimeFields(valueHolder, field.getField(), value.getValue(), definition.getDataType());
+                        }
+                        addStringProperty(valueHolder, field, value, locale, definition);
+                    });
         }
     }
 
-    static void populateProperties(
+    void populateProperties(
             Map<QName, PropertyValue> properties,
             boolean contentIndexingHasBeenRequestedForThisNode,
             SolrInputDocument document,
@@ -2384,7 +2409,7 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    private static void addContentPropertyMetadata(
+    private void addContentPropertyMetadata(
             BiConsumer<String, Object> consumer,
             QName propertyQName,
             ContentPropertyValue contentPropertyValue,
@@ -2424,7 +2449,7 @@ public class SolrInformationServer implements InformationServer
      *
      * @see #insertContentUpdateMarker(SolrInputDocument, ContentPropertyValue)
      */
-    private static void markAsContentInSynch(SolrInputDocument document)
+    private void markAsContentInSynch(SolrInputDocument document)
     {
         markAsContentInSynch(document, (ContentPropertyValue)null);
     }
@@ -2435,7 +2460,7 @@ public class SolrInformationServer implements InformationServer
      *
      * @see #insertContentUpdateMarker(SolrInputDocument, ContentPropertyValue)
      */
-    private static void markAsContentInSynch(SolrInputDocument document, ContentPropertyValue value)
+    private void markAsContentInSynch(SolrInputDocument document, ContentPropertyValue value)
     {
         ofNullable(value)
                 .map(ContentPropertyValue::getId)
@@ -2450,7 +2475,7 @@ public class SolrInformationServer implements InformationServer
      *
      * @see #insertContentUpdateMarker(SolrInputDocument, ContentPropertyValue)
      */
-    private static void markAsContentInSynch(SolrInputDocument document, Long id)
+    private void markAsContentInSynch(SolrInputDocument document, Long id)
     {
         long contentVersionId = ofNullable(id).orElse(CONTENT_UPDATED_MARKER);
 
@@ -2513,7 +2538,7 @@ public class SolrInformationServer implements InformationServer
      *
      * As a side note, please keep in mind the FTSSTATUS field has been removed.
      */
-    private static void insertContentUpdateMarker(SolrInputDocument document, ContentPropertyValue value)
+    private void insertContentUpdateMarker(SolrInputDocument document, ContentPropertyValue value)
     {
         ofNullable(value)
                 .map(ContentPropertyValue::getId)
@@ -2524,7 +2549,7 @@ public class SolrInformationServer implements InformationServer
                         () ->  document.setField(LAST_INCOMING_CONTENT_VERSION_ID, CONTENT_OUTDATED_MARKER));
     }
 
-    private static void addContentProperty(
+    private void addContentProperty(
             BiConsumer<String, Object> consumer,
             SolrInputDocument document,
             QName propertyName,
@@ -2629,7 +2654,7 @@ public class SolrInformationServer implements InformationServer
         return indexOfSeparator == -1 ? locale : locale.substring(0, indexOfSeparator);
     }
 
-    private static List<String> getLocalisedValues(MLTextPropertyValue mlTextPropertyValue)
+    private List<String> getLocalisedValues(MLTextPropertyValue mlTextPropertyValue)
     {
         if (mlTextPropertyValue == null)
         {
@@ -2650,7 +2675,7 @@ public class SolrInformationServer implements InformationServer
         return values;
     }
 
-    private static void addMLTextProperty(BiConsumer<String, Object> consumer, FieldInstance field, MLTextPropertyValue mlTextPropertyValue)
+    private void addMLTextProperty(BiConsumer<String, Object> consumer, FieldInstance field, MLTextPropertyValue mlTextPropertyValue)
     {
         if (mlTextPropertyValue == null)
         {
@@ -3700,7 +3725,7 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    private static String getLocalisedValue(StringPropertyValue property, PropertyValue localeProperty)
+    private String getLocalisedValue(StringPropertyValue property, PropertyValue localeProperty)
     {
         Locale locale =
                 ofNullable(localeProperty)
@@ -3712,12 +3737,80 @@ public class SolrInformationServer implements InformationServer
         return "\u0000" + locale.getLanguage() + "\u0000" + property.getValue();
     }
 
-    private static void addStringProperty(BiConsumer<String, Object> consumer, FieldInstance field, StringPropertyValue property, PropertyValue localeProperty)
+    private void addStringProperty(BiConsumer<String, Object> consumer, FieldInstance field, StringPropertyValue property, PropertyValue localeProperty, PropertyDefinition definition)
     {
         consumer.accept(field.getField(), field.isLocalised() ? getLocalisedValue(property, localeProperty) : property.getValue());
     }
 
-    private static void addFieldIfNotSet(SolrInputDocument doc, String name)
+    /**
+     * Checks if the given property definition refers to a field that can be destructured in parts.
+     * A field can be destructured only if:
+     *
+     * <ul>
+     *     <li>It is not multivalued</li>
+     *     <li>Destructuring is not disabled in configuration</li>
+     *     <li>Its data type is {@link DataTypeDefinition#DATE} or {@link DataTypeDefinition#DATETIME}</li>
+     * </ul>
+     */
+    boolean canBeDestructured(PropertyDefinition definition, String fieldName)
+    {
+        return !definition.isMultiValued() &&
+                fieldName != null &&
+                fieldName.contains("@") && // avoid static date/datetime fields
+                dateFieldDestructuringHasBeenEnabledOnThisInstance &&
+                (definition.getDataType().getName().equals(DataTypeDefinition.DATETIME) ||
+                        definition.getDataType().getName().equals(DataTypeDefinition.DATE));
+    }
+
+    /**
+     * To add support for SQL date functions SEARCH-2171 introduced date and datetime fields destructuration.
+     * Other than being indexed as plain TrieDate fields, date and datetime fields are also indexed in separate fields that
+     * contain their constituent parts.
+     *
+     * Date fields:
+     *
+     * <ul>
+     *     <li>YEAR</li>
+     *     <li>MONTH (1-12)</li>
+     *     <li>DAY (OF THE MONTH)</li>
+     * </ul>
+     *
+     * Datetime fields also add the following:
+     *
+     * <ul>
+     *     <li>HOUR (0-23)</li>
+     *     <li>MINUTE</li>
+     *     <li>SECOND</li>
+     * </ul>
+     *
+     * Note the destructured parts are not localised to a specific Timezone: they are always expressed in UTC.
+     *
+     * @see <a href="https://issues.alfresco.com/jira/browse/SEARCH-2171">SEARCH-2171</a>
+     */
+    void setUnitOfTimeFields(BiConsumer<String, Object> consumer, String sourceFieldName, String value, DataTypeDefinition dataType)
+    {
+        try
+        {
+            String fieldNamePrefix = dataModel.destructuredDateTimePartFieldNamePrefix(sourceFieldName, dataType);
+            ZonedDateTime dateTime = ZonedDateTime.parse(value, DateTimeFormatter.ISO_ZONED_DATE_TIME);
+            consumer.accept(fieldNamePrefix + UNIT_OF_TIME_YEAR_FIELD_SUFFIX, dateTime.getYear());
+            consumer.accept(fieldNamePrefix + UNIT_OF_TIME_MONTH_FIELD_SUFFIX, dateTime.getMonth().getValue());
+            consumer.accept(fieldNamePrefix + UNIT_OF_TIME_DAY_FIELD_SUFFIX, dateTime.getDayOfMonth());
+
+            if (DataTypeDefinition.DATETIME.equals(dataType.getName()) && isTimeComponentDefined(value))
+            {
+                consumer.accept(fieldNamePrefix + UNIT_OF_TIME_MINUTE_FIELD_SUFFIX, dateTime.getMinute());
+                consumer.accept(fieldNamePrefix + UNIT_OF_TIME_HOUR_FIELD_SUFFIX, dateTime.getHour());
+                consumer.accept(fieldNamePrefix + UNIT_OF_TIME_SECOND_FIELD_SUFFIX, dateTime.getSecond());
+            }
+        }
+        catch (Exception exception)
+        {
+            LOGGER.error("Unable to destructure date/datetime value {} (Field was {})", value, sourceFieldName, exception);
+        }
+    }
+
+    private void addFieldIfNotSet(SolrInputDocument doc, String name)
     {
         doc.addField(FIELD_FIELDS, name);
     }
@@ -3796,12 +3889,12 @@ public class SolrInformationServer implements InformationServer
         return searchers;
     }
 
-    private static void clearFields(SolrInputDocument document, List<String> fields)
+    private void clearFields(SolrInputDocument document, List<String> fields)
     {
         notNullOrEmpty(fields).forEach(document::removeField);
     }
 
-    private static void clearFields(SolrInputDocument document, String... fields)
+    private void clearFields(SolrInputDocument document, String... fields)
     {
         stream(notNullOrEmpty(fields)).forEach(document::removeField);
     }
