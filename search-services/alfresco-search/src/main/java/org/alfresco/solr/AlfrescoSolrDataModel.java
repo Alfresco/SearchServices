@@ -152,6 +152,23 @@ public class AlfrescoSolrDataModel implements QueryConstants
     }
 
     public static final String CONTENT_S_LOCALE_PREFIX = "content@s__locale@";
+
+    static final String PART_FIELDNAME_PREFIX = "part@sd@";
+
+    /**
+     * Infix used for denoting a primitive single valued field with no doc values enabled
+     *
+     * @see #getFieldForText
+     */
+    private static final String SINGLE_VALUE_WITHOUT_DOC_VALUES_MARKER = "@s_@";
+
+    /**
+     * Infix used for denoting a primitive single valued field with no doc values enabled
+     *
+     * @see #getFieldForText
+     */
+    private static final String SINGLE_VALUE_WITH_DOC_VALUES_MARKER = "@sd@";
+
     static final String SHARED_PROPERTIES = "shared.properties";
 
     protected final static Logger log = LoggerFactory.getLogger(AlfrescoSolrDataModel.class);
@@ -760,7 +777,6 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     private void addHighlightSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
     {
-
         QName propertyName = propertyDefinition.getName();
         QName propertyDataTypeQName = propertyDefinition.getDataType().getName();
         String fieldName;
@@ -1416,7 +1432,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     public static class IndexedField
     {
-        private List<FieldInstance> fields = new LinkedList<>();
+        private final List<FieldInstance> fields = new LinkedList<>();
 
         public List<FieldInstance> getFields()
         {
@@ -1746,5 +1762,28 @@ public class AlfrescoSolrDataModel implements QueryConstants
         {
             getNamespaceDAO().addPrefix("", NamespaceService.CONTENT_MODEL_1_0_URI);
         }
+    }
+
+    /**
+     * Returns the prefix used for denoting a field which is meant to represent a constituent part of a
+     * date or datetime (e.g. year, month, second, minute).
+     *
+     * @param sourceFieldName the date/datetime source field name.
+     * @param sourceDataTypeDefinition the datatype of the source field name (date or datetime)
+     * @return the prefix that can be used for denoting a date or datetime part
+     */
+    public String destructuredDateTimePartFieldNamePrefix(String sourceFieldName, DataTypeDefinition sourceDataTypeDefinition) {
+        // source field name example: datetime@sd@{http://www.alfresco.org/model/content/1.0}created
+        // prefix: datetime
+        String prefix = sourceFieldName.substring(0, sourceFieldName.indexOf("@"));
+
+        // prefix, docValues disabled option: datetime@s_@
+        String sourceFieldNamePrefixWithoutDocValues = prefix + SINGLE_VALUE_WITHOUT_DOC_VALUES_MARKER;
+
+        // prefix, docValues enabled option: datetime@sd@
+        String sourceFieldNamePrefixWithDocValues = prefix + SINGLE_VALUE_WITH_DOC_VALUES_MARKER;
+
+        return sourceFieldName.replace(sourceFieldNamePrefixWithoutDocValues, PART_FIELDNAME_PREFIX)
+                .replace(sourceFieldNamePrefixWithDocValues, PART_FIELDNAME_PREFIX);
     }
 }

@@ -86,7 +86,7 @@ public class AlfrescoSolrReloadIT extends AbstractAlfrescoSolrIT
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes, 100000);
 
         Collection<Tracker> trackers = getTrackers();
-        
+
 
         int numOfTrackers = trackers.size();
         int jobs = getJobsCount();

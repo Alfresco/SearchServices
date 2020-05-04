@@ -477,11 +477,14 @@ public class AlfrescoSolrUtils
         SolrServletRequest solrQueryRequest = null;
         try
         {
+            AlfrescoCoreAdminHandler admin = (AlfrescoCoreAdminHandler) core.getCoreContainer().getMultiCoreHandler();
+            SolrInformationServer solrInformationServer = (SolrInformationServer) admin.getInformationServers().get(core.getName());
+
             solrQueryRequest = new SolrServletRequest(core, null);
             AddUpdateCommand addDocCmd = new AddUpdateCommand(solrQueryRequest);
             addDocCmd.overwrite = true;
             addDocCmd.solrDoc = createDocument(dataModel, new Long(txid), new Long(dbid), nodeRef, type, aspects,
-                  properties, content, new Long(aclid), paths, owner, parentAssocs, ancestors);
+                  properties, content, new Long(aclid), paths, owner, parentAssocs, ancestors, solrInformationServer);
             core.getUpdateHandler().addDoc(addDocCmd);
             if (commit)
             {
@@ -528,7 +531,8 @@ public class AlfrescoSolrUtils
                                                    String[] paths,
                                                    String owner, 
                                                    ChildAssociationRef[] parentAssocs,
-                                                   NodeRef[] ancestors)throws IOException
+                                                   NodeRef[] ancestors,
+                                                   SolrInformationServer solrInformationServer)
     {
         SolrInputDocument doc = new SolrInputDocument();
         String id = AlfrescoSolrDataModel.getNodeDocumentId(AlfrescoSolrDataModel.DEFAULT_TENANT, dbid);
@@ -615,7 +619,7 @@ public class AlfrescoSolrUtils
         {
             final boolean isContentIndexedForNode = true;
             final boolean transformContentFlag = true;
-            SolrInformationServer.populateProperties(properties, isContentIndexedForNode, doc, transformContentFlag);
+            solrInformationServer.populateProperties(properties, isContentIndexedForNode, doc, transformContentFlag);
             if (content != null)
             {
                 addContentToDoc(doc, content);
@@ -740,12 +744,15 @@ public class AlfrescoSolrUtils
           SolrServletRequest solrQueryRequest = null;
           try
           {
+              AlfrescoCoreAdminHandler admin = (AlfrescoCoreAdminHandler) core.getCoreContainer().getMultiCoreHandler();
+              SolrInformationServer solrInformationServer = (SolrInformationServer) admin.getInformationServers().get(core.getName());
+
               solrQueryRequest = new SolrServletRequest(core, null);
               AddUpdateCommand addDocCmd = new AddUpdateCommand(solrQueryRequest);
               addDocCmd.overwrite = true;
               addDocCmd.solrDoc = createDocument(dataModel, new Long(txid), new Long(dbid), rootNodeRef,
                       ContentModel.TYPE_STOREROOT, new QName[]{ContentModel.ASPECT_ROOT}, null, null, new Long(aclid),
-                      new String[]{"/"}, "system", null, null);
+                      new String[]{"/"}, "system", null, null, solrInformationServer);
               core.getUpdateHandler().addDoc(addDocCmd);
               addAcl(solrQueryRequest, core, dataModel, acltxid, aclid, 0, 0);
               AddUpdateCommand txCmd = new AddUpdateCommand(solrQueryRequest);

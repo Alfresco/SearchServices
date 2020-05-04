@@ -660,7 +660,19 @@
       <!-- Single value indexed  -->
       <dynamicField name="any@s_@*"           type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
       <dynamicField name="encrypted@s_@*"     type="oldStandardAnalysis" indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="true" />
-      <dynamicField name="int@s_@*"           type="int"               indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="false" sortMissingFirst="false" />
+
+       <!--
+        SEARCH-2171 introduced these fields for capturing the destructured parts of a date/datetime field.
+        An investigation [1] revealed the optimal field/field type definition for these fields doesn't match any current
+        field / field type currently defined. The closest is the "int" datatype but we still need to override some option.
+        As consequence of that, until we work on a refactoring ticket for primitive datatypes, we need to define a specific
+        field for destructured date / datetime parts.
+
+        [1] https://issues.alfresco.com/jira/browse/SEARCH-2171?focusedCommentId=767859&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-767859
+       -->
+       <dynamicField name="part@sd@*" type="int" indexed="true" stored="false" docValues="true"/>
+
+       <dynamicField name="int@s_@*"           type="int"               indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="false" sortMissingFirst="false" />
       <dynamicField name="long@s_@*"          type="long"              indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="false" sortMissingFirst="false" />
       <dynamicField name="float@s_@*"         type="float"             indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="false" sortMissingFirst="false" />
       <dynamicField name="double@s_@*"        type="double"            indexed="true" omitNorms="true"  stored="false"  multiValued="false" sortMissingLast="false" sortMissingFirst="false" />
