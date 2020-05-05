@@ -9,33 +9,23 @@
     </namespaces>
     <data-types/>
     <constraints/>
-    <types>
-        <type name="allfieldtypes:document">
-            <title>allfieldtypes Content</title>
-            <parent>cm:content</parent>
+    <aspects>
+        <aspect name="allfieldtypes:content">
+            <title>content</title>
             <properties>
-                <property name="allfieldtypes:TextPropertyA">
-                    <title>Text</title>
-                    <type>d:text</type>
+                <property name="allfieldtypes:contentTokenizedBoth">
+                    <title>alltypecontent</title>
+                    <type>d:content</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>BOTH</tokenised>
+                    </index>
                 </property>
             </properties>
-
-            <associations>
-                <association name="allfieldtypes:allfieldtypesContent">
-                    <source>
-                        <mandatory>false</mandatory>
-                        <many>false</many>
-                    </source>
-                    <target>
-                        <class>cm:content</class>
-                        <mandatory>false</mandatory>
-                        <many>false</many>
-                    </target>
-                </association>
-            </associations>
-        </type>
-    </types>
-    <aspects>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </aspect>
         <aspect name="allfieldtypes:text">
             <title>text</title>
             <properties>

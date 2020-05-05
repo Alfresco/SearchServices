@@ -34,7 +34,14 @@ public class FieldDefinitionTest extends AbstractSearchServicesE2ETest {
      //   dataContent.usingUser(testUser).usingSite(testSite).createCustomContent(File1, "D:allfieldtypes:document", new CustomObjectTypeProperties()
        //         .addProperty("allfieldtypes:mltextLOVPartial", "text folder-2"));
         
-        dataContent.usingUser(testUser).usingSite(testSite).createCustomContent(File1, "allfieldtypes:document", new CustomObjectTypeProperties());
+        dataContent.usingUser(testUser).usingSite(testSite).createCustomContent(File1, "cmis:document", new CustomObjectTypeProperties());
+
+        cmisApi.authenticateUser(testUser).usingResource(File1).addSecondaryTypes("P:allfieldtypes:text", "P:allfieldtypes:content")
+                .updateProperty("allfieldtypes:mltextLOVPartial", "field definition test")
+                .updateProperty("allfieldtypes:textPatternUnique", "field definition test");
+//                .updateProperty("allfieldtypes:contentTokenizedBoth", "field definition content test");
+
+
     }
 	
 	@Test(priority = 1)
