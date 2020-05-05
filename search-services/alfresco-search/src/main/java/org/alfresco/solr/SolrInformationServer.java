@@ -3875,8 +3875,8 @@ public class SolrInformationServer implements InformationServer
     /**
      * Get the metadata for the specified nodes from the repository.
      *
-     * @param parameters A parameters object containing either a list of nodes ({@link NodeMetaDataParameters.getNodeIds})
-     * or a node range ({@link NodeMetaDataParameters.getFromNodeId} and {@link NodeMetaDataParameters.getToNodeId}).
+     * @param parameters A parameters object containing either a list of nodes ({@link NodeMetaDataParameters#getNodeIds})
+     * or a node range ({@link NodeMetaDataParameters#getFromNodeId} and {@link NodeMetaDataParameters#getToNodeId}).
      * @return Either the metadata returned by the repository, or null if there was a problem.
      */
     private Collection<NodeMetaData> getNodesMetaDataFromRepository(NodeMetaDataParameters parameters)
