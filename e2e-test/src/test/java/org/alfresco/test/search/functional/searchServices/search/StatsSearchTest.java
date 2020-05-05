@@ -203,7 +203,7 @@ public class StatsSearchTest extends AbstractSearchServicesE2ETest
         assertTrue((Integer)metricCount.get("countValues") > count, "With the exclude filter there will be more documents than returned");
     }
 
-    @Test
+    @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH},
               executionType = ExecutionType.REGRESSION,
               description = "Checks errors with stats with Pivot using Search api")

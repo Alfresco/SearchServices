@@ -73,6 +73,9 @@ import static org.alfresco.solr.AlfrescoSolrDataModel.getAclChangeSetDocumentId;
 import static org.alfresco.solr.AlfrescoSolrDataModel.getAclDocumentId;
 import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
 import static org.alfresco.util.ISO8601DateFormat.isTimeComponentDefined;
+import static org.alfresco.service.cmr.security.AuthorityType.EVERYONE;
+import static org.alfresco.service.cmr.security.AuthorityType.GROUP;
+import static org.alfresco.service.cmr.security.AuthorityType.GUEST;
 
 import java.io.File;
 import java.io.IOException;
@@ -821,7 +824,7 @@ public class SolrInformationServer implements InformationServer
     }
 
     @Override
-    public List<TenantDbId> getDocsWithUncleanContent(int start, int rows) throws IOException
+    public List<TenantDbId> getDocsWithUncleanContent() throws IOException
     {
         RefCounted<SolrIndexSearcher> refCounted = null;
         try
@@ -846,7 +849,7 @@ public class SolrInformationServer implements InformationServer
             *  in current snapshot of the index.
             *
             *  The code below runs every two minutes and purges transactions from the
-            *  cleanContentCache that is more then 20 minutes old.
+            *  cleanContentCache that is more than 20 minutes old.
             *
             */
             long purgeTime = System.currentTimeMillis();
@@ -879,6 +882,9 @@ public class SolrInformationServer implements InformationServer
             DelegatingCollector delegatingCollector = new TxnCacheFilter(cleanContentCache); //Filter transactions that have already been processed.
             delegatingCollector.setLastDelegate(collector);
             searcher.search(documentsWithOutdatedContentQuery(), delegatingCollector);
+
+            LOGGER.debug("{}-[CORE {}] Processing {} documents with content to be indexed", Thread.currentThread().getId(), core.getName(), collector.getTotalHits());
+
 
             if(collector.getTotalHits() == 0)
             {
@@ -2236,7 +2242,7 @@ public class SolrInformationServer implements InformationServer
             dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
                     .stream()
                     .filter(field -> field.getField().startsWith("text@sd___@"))
-                    .forEach(field -> addStringProperty(valueHolder, field, value, locale, definition));
+                    .forEach(field -> addStringProperty(valueHolder, field, value, locale));
         } else
         {
             dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
@@ -2245,7 +2251,7 @@ public class SolrInformationServer implements InformationServer
                         {
                             setUnitOfTimeFields(valueHolder, field.getField(), value.getValue(), definition.getDataType());
                         }
-                        addStringProperty(valueHolder, field, value, locale, definition);
+                        addStringProperty(valueHolder, field, value, locale);
                     });
         }
     }
@@ -3247,17 +3253,10 @@ public class SolrInformationServer implements InformationServer
      */
     private String addTenantToAuthority(String authority, String tenant)
     {
-        switch (AuthorityType.getAuthorityType(authority))
+        AuthorityType authorityType = AuthorityType.getAuthorityType(authority);
+        if ((authorityType == GROUP || authorityType == EVERYONE || authorityType == GUEST) && !tenant.isEmpty())
         {
-            case GROUP:
-            case EVERYONE:
-            case GUEST:
-                if (tenant.length() != 0)
-                {
-                    return authority + "@" + tenant;
-                }
-            default:
-                break;
+            return authority + "@" + tenant;
         }
         return authority;
     }
@@ -3737,7 +3736,7 @@ public class SolrInformationServer implements InformationServer
         return "\u0000" + locale.getLanguage() + "\u0000" + property.getValue();
     }
 
-    private void addStringProperty(BiConsumer<String, Object> consumer, FieldInstance field, StringPropertyValue property, PropertyValue localeProperty, PropertyDefinition definition)
+    private void addStringProperty(BiConsumer<String, Object> consumer, FieldInstance field, StringPropertyValue property, PropertyValue localeProperty)
     {
         consumer.accept(field.getField(), field.isLocalised() ? getLocalisedValue(property, localeProperty) : property.getValue());
     }

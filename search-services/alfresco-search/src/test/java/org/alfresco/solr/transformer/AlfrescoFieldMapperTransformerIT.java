@@ -18,6 +18,7 @@
  */
 package org.alfresco.solr.transformer;
 
+import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
