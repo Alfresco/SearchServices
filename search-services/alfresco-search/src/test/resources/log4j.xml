@@ -7,22 +7,12 @@
         </layout>
     </appender>
 
-    <!-- Useful tests categories -->
-    <category name="org.alfresco.solr.AbstractAlfrescoSolrIT">
-        <priority value="WARN"/>
-    </category>
-
     <!-- ##### ALL ALFRESCO MESSAGES ##### -->
     <!--
         <category name="org.alfresco">
             <priority value="INFO"/>
         </category>
     -->
-
-    <!-- ##### SOLR INFORMATION SERVER MESSAGES ##### -->
-        <category name="org.alfresco.solr.SolrInformationServer">
-            <priority value="DEBUG"/>
-        </category>
 
     <!-- ##### ONLY SOLR QUERIES ##### -->
     <!--
