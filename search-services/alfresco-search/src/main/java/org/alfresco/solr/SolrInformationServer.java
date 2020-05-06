@@ -20,6 +20,7 @@ package org.alfresco.solr;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTXCOMMITTIME;
@@ -1676,11 +1677,11 @@ public class SolrInformationServer implements InformationServer
                 nmdp.setToNodeId(node.getId());
                 nmdp.setMaxResults(Integer.MAX_VALUE);
 
-                Collection<NodeMetaData> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
+                Optional<Collection<NodeMetaData>> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
 
-                if (nodeMetaDatas.isEmpty()) return;
+                if (nodeMetaDatas.isEmpty() || nodeMetaDatas.get().isEmpty()) return;
 
-                NodeMetaData nodeMetaData = nodeMetaDatas.iterator().next();
+                NodeMetaData nodeMetaData = nodeMetaDatas.get().iterator().next();
                 if (node.getTxnId() == Long.MAX_VALUE)
                 {
                     LOGGER.debug("Node {} index request is part of a re-index.", node.getId());
@@ -1819,8 +1820,8 @@ public class SolrInformationServer implements InformationServer
             nmdp.setIncludeTxnId(true);
             nmdp.setMaxResults(1);
             // Gets only one
-            Collection<NodeMetaData> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
-            allNodeMetaDatas.addAll(nodeMetaDatas);
+            Optional<Collection<NodeMetaData>> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
+            allNodeMetaDatas.addAll(nodeMetaDatas.orElse(Collections.emptyList()));
         }
 
         return allNodeMetaDatas;
@@ -1960,7 +1961,14 @@ public class SolrInformationServer implements InformationServer
                     nmdp.setIncludePaths(false);
                     nmdp.setIncludeParentAssociations(false);
                     nmdp.setMaxResults(Integer.MAX_VALUE);
-                    nodeMetaDatas.addAll(getNodesMetaDataFromRepository(nmdp));
+
+                    Optional<Collection<NodeMetaData>> nodesMetaDataFromRepository = getNodesMetaDataFromRepository(nmdp);
+                    if (nodesMetaDataFromRepository.isEmpty())
+                    {
+                        // Using exception for flow handling to jump to single node processing.
+                        throw new Exception("Error loading node metadata from repository for bulk delete.");
+                    }
+                    nodeMetaDatas.addAll(nodesMetaDataFromRepository.get());
                 }
 
                 for (NodeMetaData nodeMetaData : nodeMetaDatas)
@@ -1994,10 +2002,15 @@ public class SolrInformationServer implements InformationServer
 
                 // Fetches bulk metadata
                 nmdp.setMaxResults(Integer.MAX_VALUE);
-                Collection<NodeMetaData> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
+                Optional<Collection<NodeMetaData>> nodesMetaDataFromRepository = getNodesMetaDataFromRepository(nmdp);
+                if (nodesMetaDataFromRepository.isEmpty())
+                {
+                    // Using exception for flow handling to jump to single node processing.
+                    throw new Exception("Error loading node metadata from repository for bulk delete.");
+                }
                 
                 NEXT_NODE:
-                for (NodeMetaData nodeMetaData : nodeMetaDatas)
+                for (NodeMetaData nodeMetaData : nodesMetaDataFromRepository.get())
                 {
                     long start = System.nanoTime();
 
@@ -3423,11 +3436,11 @@ public class SolrInformationServer implements InformationServer
             nmdp.setIncludeTxnId(true);
             nmdp.setMaxResults(1);
             // Gets only one
-            Collection<NodeMetaData> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
+            Optional<Collection<NodeMetaData>> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
 
-            if (!nodeMetaDatas.isEmpty())
+            if (nodeMetaDatas.isPresent() && !nodeMetaDatas.get().isEmpty())
             {
-                NodeMetaData nodeMetaData = nodeMetaDatas.iterator().next();
+                NodeMetaData nodeMetaData = nodeMetaDatas.get().iterator().next();
 
                 // Only cascade update nods we know can not have changed and must be in this shard
                 // Node in the current TX will be explicitly updated in the outer loop
@@ -3908,21 +3921,30 @@ public class SolrInformationServer implements InformationServer
         return nodeMetaData;
     }
 
-    private Collection<NodeMetaData> getNodesMetaDataFromRepository(NodeMetaDataParameters parameters)
+    /**
+     * Get the metadata for the specified nodes from the repository.
+     *
+     * @param parameters A parameters object containing either a list of nodes ({@link NodeMetaDataParameters#getNodeIds})
+     * or a node range ({@link NodeMetaDataParameters#getFromNodeId} and {@link NodeMetaDataParameters#getToNodeId}).
+     * @return Either the metadata returned by the repository, or null if there was a problem.
+     */
+    private Optional<Collection<NodeMetaData>> getNodesMetaDataFromRepository(NodeMetaDataParameters parameters)
     {
+        Collection<NodeMetaData> nodeMetaDataCollection = null;
         try
         {
-            return notNullOrEmpty(repositoryClient.getNodesMetaData(parameters));
+            return Optional.of(notNullOrEmpty(repositoryClient.getNodesMetaData(parameters)));
         }
         catch (JSONException exception)
         {
-            // Nothing to be done here: the exception has been already logged in repositoryClient
-            return Collections.emptyList();
+            // The exception has been already logged in repositoryClient and could be huge. Simply log a reference to it here.
+            LOGGER.debug("JSON exception swallowed by SolrInformationServer.");
+            return empty();
         }
         catch (Exception exception)
         {
             LOGGER.error("Unable to get nodes metadata from repository. See the stacktrace below for further details.", exception);
-            return Collections.emptyList();
+            return empty();
         }
     }
 }
