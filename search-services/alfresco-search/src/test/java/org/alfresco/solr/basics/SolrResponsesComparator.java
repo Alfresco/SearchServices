@@ -42,7 +42,7 @@ public class SolrResponsesComparator
      * Puts default values for handle
      */
     public void putHandleDefaults() {
-        handle.put("explain", SKIPVAL);
+        handle.put("[explain]", SKIPVAL);
         handle.put("timestamp", SKIPVAL);
         handle.put("score", SKIPVAL);
         handle.put("wt", SKIP);
