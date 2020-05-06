@@ -3888,8 +3888,8 @@ public class SolrInformationServer implements InformationServer
         }
         catch (JSONException exception)
         {
-            // Nothing to be done here: the exception has been already logged in repositoryClient
-            LOGGER.debug("JSON exception raised while getting node metadata from repository.", exception);
+            // The exception has been already logged in repositoryClient and could be huge. Simply log a reference to it here.
+            LOGGER.debug("JSON exception swallowed by SolrInformationServer.");
         }
         catch (Exception exception)
         {
