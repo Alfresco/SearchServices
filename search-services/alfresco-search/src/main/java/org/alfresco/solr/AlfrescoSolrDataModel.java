@@ -796,8 +796,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
             fieldName = getStoredTextField(propertyName);
         }
 
-        FieldInstance field = new FieldInstance(fieldName, false, false);
-        indexedField.getFields().add(field);
+        indexedField.addField(fieldName, false, false);
     }
 
     /*
