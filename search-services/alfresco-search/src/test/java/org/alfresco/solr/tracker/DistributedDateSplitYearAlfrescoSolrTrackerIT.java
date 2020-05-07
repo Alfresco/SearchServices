@@ -19,7 +19,6 @@
 package org.alfresco.solr.tracker;
 
 import org.alfresco.repo.index.shard.ShardMethodEnum;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -32,23 +31,23 @@ import java.util.Properties;
  */
 
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedDateSplitYearAlfrescoSolrTrackerIT extends DistributedDateAbstractSolrTrackerIT
 {
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
-        initSolrServers(3, "DistributedDateSplitYearAlfrescoSolrTrackerIT", getShardMethod());
+        initSolrServers(3, getSimpleClassName(), getShardMethod());
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }
     
     @Override
-    protected void assertCorrect(int numNodes) throws Exception {
+    protected void assertCorrect(int numNodes) throws Exception
+    {
         //We should expect roughly 50% on each of the 2 cores
         int shardHits = assertNodesPerShardGreaterThan((int)((numNodes)*.48), true);
         //We have 3 shards but we should be only be using 2

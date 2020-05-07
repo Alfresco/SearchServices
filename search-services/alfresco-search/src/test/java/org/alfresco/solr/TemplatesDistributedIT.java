@@ -18,7 +18,9 @@
  */
 package org.alfresco.solr;
 
-import org.apache.lucene.util.LuceneTestCase;
+import static org.alfresco.solr.AlfrescoSolrUtils.assertSummaryCorrect;
+import static org.alfresco.solr.AlfrescoSolrUtils.createCoreUsingTemplate;
+
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
@@ -26,12 +28,6 @@ import org.apache.solr.response.SolrQueryResponse;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
-
-import static org.alfresco.solr.AlfrescoSolrUtils.*;
 
 /**
  * Tests the different templates.
@@ -39,20 +35,18 @@ import static org.alfresco.solr.AlfrescoSolrUtils.*;
  * @author Gethin James
  */
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class TemplatesDistributedIT extends AbstractAlfrescoDistributedIT
 {
-    private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    final static String JETTY_SERVER_ID = "TemplatesDistributedTest";
+    static String testFolder;
 
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
-        initSolrServers(0, JETTY_SERVER_ID, null);
+        testFolder = initSolrServers(0, TemplatesDistributedIT.class.getSimpleName(), null);
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }
@@ -61,7 +55,7 @@ public class TemplatesDistributedIT extends AbstractAlfrescoDistributedIT
     @Test
     public void newCoreUsinglshTemplate() throws Exception
     {
-        CoreContainer coreContainer = jettyContainers.get(JETTY_SERVER_ID).getCoreContainer();
+        CoreContainer coreContainer = jettyContainers.get(testFolder).getCoreContainer();
 
         //Now create the new core with
         AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler)  coreContainer.getMultiCoreHandler();

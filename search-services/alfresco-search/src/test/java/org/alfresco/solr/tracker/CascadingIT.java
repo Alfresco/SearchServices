@@ -150,12 +150,12 @@ public class CascadingIT extends AbstractAlfrescoSolrIT
     @After
     public void clearQueue()
     {
-        SOLRAPIQueueClient.nodeMetaDataMap.clear();
-        SOLRAPIQueueClient.transactionQueue.clear();
+        SOLRAPIQueueClient.NODE_META_DATA_MAP.clear();
+        SOLRAPIQueueClient.TRANSACTION_QUEUE.clear();
         SOLRAPIQueueClient.ACL_CHANGE_SET_QUEUE.clear();
         SOLRAPIQueueClient.ACL_READERS_MAP.clear();
         SOLRAPIQueueClient.ACL_MAP.clear();
-        SOLRAPIQueueClient.nodeMap.clear();
+        SOLRAPIQueueClient.NODE_MAP.clear();
     }
 
     /**

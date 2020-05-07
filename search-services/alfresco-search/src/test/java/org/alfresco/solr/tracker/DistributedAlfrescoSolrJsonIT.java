@@ -18,6 +18,11 @@
  */
 package org.alfresco.solr.tracker;
 
+import static org.alfresco.solr.AlfrescoSolrUtils.TestActChanges;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
+
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.solr.AbstractAlfrescoDistributedIT;
 import org.alfresco.solr.client.Acl;
@@ -30,7 +35,6 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.junit.AfterClass;
@@ -40,26 +44,20 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.alfresco.solr.AlfrescoSolrUtils.TestActChanges;
-import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
-import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
-import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
-
 /**
  * @author Joel
  */
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedAlfrescoSolrJsonIT extends AbstractAlfrescoDistributedIT
 {
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
-        initSolrServers(2, "DistributedAlfrescoSolrJsonTest", null);
+        initSolrServers(2, getSimpleClassName(), null);
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }
@@ -82,19 +80,21 @@ public class DistributedAlfrescoSolrJsonIT extends AbstractAlfrescoDistributedIT
         //Load 1000 nodes
 
         int numNodes = 1000;
-        List<Node> nodes = new ArrayList();
-        List<NodeMetaData> nodeMetaDatas = new ArrayList();
+        List<Node> nodes = new ArrayList<>();
+        List<NodeMetaData> nodeMetaDatas = new ArrayList<>();
 
         Transaction bigTxn = getTransaction(0, numNodes);
 
-        for(int i=0; i<500; i++) {
+        for(int i=0; i<500; i++)
+        {
             Node node = getNode(bigTxn, acl1, Node.SolrApiNodeStatus.UPDATED);
             nodes.add(node);
             NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, acl1, "mike", null, false);
             nodeMetaDatas.add(nodeMetaData);
         }
 
-        for(int i=0; i<500; i++) {
+        for(int i=0; i<500; i++)
+        {
             Node node = getNode(bigTxn, acl2, Node.SolrApiNodeStatus.UPDATED);
             nodes.add(node);
             NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, acl2, "steve", null, false);

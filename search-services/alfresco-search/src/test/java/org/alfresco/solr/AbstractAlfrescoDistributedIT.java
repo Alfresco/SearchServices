@@ -1,14 +1,14 @@
 package org.alfresco.solr;
 
-import com.carrotsearch.randomizedtesting.annotations.ThreadLeakLingering;
+import static java.util.Arrays.asList;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
+
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.Transaction;
 import org.alfresco.solr.basics.RandomSupplier;
 import org.alfresco.solr.basics.SolrResponsesComparator;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
@@ -48,21 +48,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
-
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DBID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_INTXID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_OWNER;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_SOLR4_ID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_VERSION;
 
 /**
  * Clone of a helper base class for distributed search test cases
@@ -86,7 +78,6 @@ import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_VERSI
  * @author Michael Suzuki
  * @author Andrea Gazzarini
  */
-@ThreadLeakLingering(linger = 5000)
 public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
 {
     protected static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -120,13 +111,6 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
         System.setProperty("alfresco.test", "true");
         System.setProperty("solr.tests.maxIndexingThreads", "10");
         System.setProperty("solr.tests.ramBufferSizeMB", "1024");
-    }
-
-    public static final String[] FIELD_NAMES = new String[] { "n_ti1", "n_f1", "n_tf1", "n_d1", "n_td1", "n_l1", "n_tl1", "n_dt1", "n_tdt1" };
-
-    protected static String[] getFieldNames()
-    {
-        return FIELD_NAMES;
     }
 
     protected static void putHandleDefaults()
@@ -277,8 +261,6 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
     public static void waitForDocCount(ModifiableSolrParams query, int count, long waitMillis) throws Exception
     {
         long begin = System.currentTimeMillis();
-        //TODO: Support multiple cores per jetty
-        System.out.println(getStandaloneClients().size());
         SolrClient standaloneClient = getStandaloneClients().get(0); //Get the first one
         waitForDocCountCore(standaloneClient, query, count, waitMillis, begin);
         waitForShardsCount(query, count, waitMillis, begin);
@@ -349,34 +331,12 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
         waitForShardsCount(solrQuery, count, waitMillis, start);
     }
 
-    protected static void injectDocToShards(long txnId, long aclId, long dbId, String owner) throws Exception
-    {
-        for(SolrClient clientShard : clientShards)
-        {
-            SolrInputDocument doc = new SolrInputDocument();
-            String id = AlfrescoSolrDataModel.getNodeDocumentId(AlfrescoSolrDataModel.DEFAULT_TENANT, aclId, dbId);
-            doc.addField(FIELD_SOLR4_ID, id);
-            doc.addField(FIELD_VERSION, 0);
-            doc.addField(FIELD_DBID, "" + dbId);
-            doc.addField(FIELD_INTXID, "" + txnId);
-            doc.addField(FIELD_ACLID, "" + aclId);
-            doc.addField(FIELD_OWNER, owner);
-            clientShard.add(doc);
-            clientShard.commit();
-        }
-    }
-
     /**
      * Gets the cores for the jetty instances
      */
-    protected static List<SolrCore> getJettyCores(Collection<JettySolrRunner> runners)
+    protected static Collection<SolrCore> getCores(Collection<JettySolrRunner> runners)
     {
-        List<SolrCore> cores = new ArrayList<>();
-        for (JettySolrRunner jettySolrRunner : runners)
-        {
-            cores.addAll(jettySolrRunner.getCoreContainer().getCores());
-        }
-        return cores;
+        return jettyContainers.values().iterator().next().getCoreContainer().getCores();
     }
 
     protected static List<AlfrescoCoreAdminHandler> getAdminHandlers(Collection<JettySolrRunner> runners)
@@ -470,7 +430,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
     public static void assertShardSequence(int shard, SolrQuery query, int count) throws Exception
     {
         List<SolrClient> clients = getShardedClients();
-        int totalCount = 0;
+        int totalCount;
         SolrClient client = clients.get(shard);
 
         QueryResponse response = client.query(query);
@@ -513,7 +473,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
     }
 
     protected static List<Tuple> getTuples(TupleStream tupleStream) throws IOException {
-        List<Tuple> tuples = new ArrayList();
+        List<Tuple> tuples = new ArrayList<>();
         tupleStream.open();
         try {
             while (true) {
@@ -551,7 +511,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
             int nDeadServers = r.nextInt(deadServers.length + 1);
             if (nDeadServers > 0)
             {
-                List<String> replicas = new ArrayList<>(Arrays.asList(deadServers));
+                List<String> replicas = new ArrayList<>(asList(deadServers));
                 Collections.shuffle(replicas, r);
                 replicas.add(r.nextInt(nDeadServers + 1), shard);
                 for (int i = 0; i < nDeadServers + 1; i++)
@@ -578,21 +538,6 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
         }
     }// add random fields to the documet before indexing
 
-    protected static void indexr(SolrClient client, boolean andShards, Object... fields) throws Exception
-    {
-        SolrInputDocument doc = new SolrInputDocument();
-        addFields(doc, fields);
-        addFields(doc, "rnd_b", true);
-        addRandFields(doc);
-        indexDoc(client, andShards, doc);
-    }
-
-    protected static SolrInputDocument addRandFields(SolrInputDocument sdoc)
-    {
-        addFields(sdoc, SOLR_RANDOM_SUPPLIER.getRandFields(getFieldNames(), SOLR_RANDOM_SUPPLIER.getRandValues()));
-        return sdoc;
-    }
-
     protected static void index(SolrClient client, int shardId, Object... fields) throws Exception
     {
         SolrInputDocument doc = new SolrInputDocument();
@@ -607,8 +552,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
         throws IOException, SolrServerException
     {
         client.add(doc);
-        int which = shardId;
-        SolrClient clientShard = clientShards.get(which);
+        SolrClient clientShard = clientShards.get(shardId);
         clientShard.add(doc);
     }
     
@@ -633,18 +577,6 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
         }
     }
 
-    /**
-     * Indexes the document in 2 clients asserting that the respones are equivilent
-     */
-    protected static UpdateResponse indexDoc(SolrClient client1, SolrClient client2, SolrParams params, SolrInputDocument... sdocs)
-            throws IOException, SolrServerException
-    {
-        UpdateResponse controlRsp = add(client1, params, sdocs);
-        UpdateResponse specificRsp = add(client2, params, sdocs);
-        SOLR_RESPONSE_COMPARATOR.compareSolrResponses(specificRsp, controlRsp);
-        return specificRsp;
-    }
-
     protected static UpdateResponse add(SolrClient client, SolrParams params, SolrInputDocument... sdocs)
             throws IOException, SolrServerException
     {
@@ -656,50 +588,6 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
         }
         return ureq.process(client);
     }
-
-    protected static UpdateResponse del(SolrClient client, SolrParams params, Object... ids)
-            throws IOException, SolrServerException
-    {
-        UpdateRequest ureq = new UpdateRequest();
-        ureq.setParams(new ModifiableSolrParams(params));
-        for (Object id : ids)
-        {
-            ureq.deleteById(id.toString());
-        }
-        return ureq.process(client);
-    }
-
-    protected static UpdateResponse delQ(SolrClient client, SolrParams params, String... queries)
-            throws IOException, SolrServerException
-    {
-        UpdateRequest ureq = new UpdateRequest();
-        ureq.setParams(new ModifiableSolrParams(params));
-        for (String q : queries)
-        {
-            ureq.deleteByQuery(q);
-        }
-        return ureq.process(client);
-    }
-
-    /**
-     * Deletes from the specified client, and optionally all shards
-     * @param q
-     * @param client
-     * @param andShards
-     * @throws Exception
-     */
-    protected static void del(String q, SolrClient client, boolean andShards) throws Exception
-    {
-        client.deleteByQuery(q);
-        if (andShards)
-        {
-            for (SolrClient cshards : clientShards)
-            {
-                cshards.deleteByQuery(q);
-            }
-        }
-
-    }// serial commit...
 
     /**
      * * Commits to the specified client, and optionally all shards
@@ -714,7 +602,6 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
                 cshards.commit();
             }
         }
-
     }
 
     protected static QueryResponse queryRandomShard(ModifiableSolrParams params) throws SolrServerException, IOException
@@ -722,8 +609,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
         Random r = SOLR_RANDOM_SUPPLIER.getRandomGenerator();
         int which = r.nextInt(clientShards.size());
         SolrClient client = clientShards.get(which);
-        QueryResponse rsp = client.query(params);
-        return rsp;
+        return client.query(params);
     }
 
     protected QueryResponse query(SolrClient solrClient, boolean andShards, String json, ModifiableSolrParams params) throws Exception
@@ -789,29 +675,24 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
             Thread[] threads = new Thread[nThreads];
             for (int i = 0; i < threads.length; i++)
             {
-                threads[i] = new Thread()
-                {
-                    @Override
-                    public void run()
+                threads[i] = new Thread(() -> {
+                    for (int j = 0; j < stress; j++)
                     {
-                        for (int j = 0; j < stress; j++)
+                        int which = r.nextInt(clientShards.size());
+                        SolrClient client = clientShards.get(which);
+                        try
                         {
-                            int which = r.nextInt(clientShards.size());
-                            SolrClient client = clientShards.get(which);
-                            try
+                            QueryResponse rsp1 = client.query(new ModifiableSolrParams(params));
+                            if (verifyStress)
                             {
-                                QueryResponse rsp = client.query(new ModifiableSolrParams(params));
-                                if (verifyStress)
-                                {
-                                    SOLR_RESPONSE_COMPARATOR.compareResponses(rsp, controlRsp);
-                                }
-                            } catch (SolrServerException | IOException e)
-                            {
-                                throw new RuntimeException(e);
+                                SOLR_RESPONSE_COMPARATOR.compareResponses(rsp1, controlRsp);
                             }
+                        } catch (SolrServerException | IOException e)
+                        {
+                            throw new RuntimeException(e);
                         }
                     }
-                };
+                });
                 threads[i].start();
             }
 
@@ -826,7 +707,7 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
     public static QueryResponse queryAndCompare(SolrParams params, SolrClient... clients)
             throws SolrServerException, IOException
     {
-        return queryAndCompare(params, Arrays.<SolrClient> asList(clients));
+        return queryAndCompare(params, asList(clients));
     }
 
     public static QueryResponse queryAndCompare(SolrParams params, Iterable<SolrClient> clients)
@@ -852,43 +733,40 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
     {
         // First map the nodes to a transaction.
         nodes.stream().forEach(node -> node.setTxnId(transaction.getId()));
-        SOLRAPIQueueClient.nodeMap.put(transaction.getId(), nodes);
+        SOLRAPIQueueClient.NODE_MAP.put(transaction.getId(), nodes);
 
         //Next map a node to the NodeMetaData
         for(NodeMetaData nodeMetaData : nodeMetaDatas)
         {
-            SOLRAPIQueueClient.nodeMetaDataMap.put(nodeMetaData.getId(), nodeMetaData);
+            SOLRAPIQueueClient.NODE_META_DATA_MAP.put(nodeMetaData.getId(), nodeMetaData);
         }
 
         //Next add the transaction to the queue
-        SOLRAPIQueueClient.transactionQueue.add(transaction);
+        SOLRAPIQueueClient.TRANSACTION_QUEUE.add(transaction);
     }
 
     public static void indexTransaction(Transaction transaction, List<Node> nodes, List<NodeMetaData> nodeMetaDatas, List<String> content)
     {
         //First map the nodes to a transaction.
-        SOLRAPIQueueClient.nodeMap.put(transaction.getId(), nodes);
+        SOLRAPIQueueClient.NODE_MAP.put(transaction.getId(), nodes);
 
         //Next map a node to the NodeMetaData
         int i=0;
         for(NodeMetaData nodeMetaData : nodeMetaDatas)
         {
-            SOLRAPIQueueClient.nodeMetaDataMap.put(nodeMetaData.getId(), nodeMetaData);
-            SOLRAPIQueueClient.nodeContentMap.put(nodeMetaData.getId(), content.get(i++));
+            SOLRAPIQueueClient.NODE_META_DATA_MAP.put(nodeMetaData.getId(), nodeMetaData);
+            SOLRAPIQueueClient.NODE_CONTENT_MAP.put(nodeMetaData.getId(), content.get(i++));
         }
 
         //Next add the transaction to the queue
-        SOLRAPIQueueClient.transactionQueue.add(transaction);
+        SOLRAPIQueueClient.TRANSACTION_QUEUE.add(transaction);
     }
 
     /**
      * Calls the Admin handler with an action.
-     * @param coreAdminHandler
-     * @param testingCore
-     * @param action
-     * @return
      */
-    protected static SolrQueryResponse callHandler(AlfrescoCoreAdminHandler coreAdminHandler, SolrCore testingCore, String action) {
+    protected static SolrQueryResponse callHandler(AlfrescoCoreAdminHandler coreAdminHandler, SolrCore testingCore, String action)
+    {
         SolrQueryRequest request = new LocalSolrQueryRequest(testingCore,
                 params(CoreAdminParams.ACTION, action, CoreAdminParams.CORE, testingCore.getName()));
         SolrQueryResponse response = new SolrQueryResponse();
@@ -896,9 +774,8 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
         return response;
     }
 
-    protected static SolrQueryResponse callExpand(AlfrescoCoreAdminHandler coreAdminHandler,
-                                           SolrCore testingCore,
-                                           int value) {
+    protected static SolrQueryResponse callExpand(AlfrescoCoreAdminHandler coreAdminHandler, SolrCore testingCore, int value)
+    {
         SolrQueryRequest request = new LocalSolrQueryRequest(testingCore,
             params(CoreAdminParams.ACTION, "EXPAND",
                   CoreAdminParams.CORE, testingCore.getName(),
@@ -908,65 +785,67 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
         return response;
     }
 
-
-    public static SolrQueryResponse rangeCheck(int shard) throws Exception {
-        while(true) {
-            List<SolrCore> cores = getJettyCores(solrShards);
+    public static SolrQueryResponse rangeCheck(int shard) throws Exception
+    {
+        int maxAttemps = 10;
+        for (int attemp=0; attemp < maxAttemps; ++attemp)
+        {
+            Collection<SolrCore> cores = getCores(solrShards);
             List<AlfrescoCoreAdminHandler> alfrescoCoreAdminHandlers = getAdminHandlers(solrShards);
-            SolrCore core = cores.get(shard);
+            SolrCore core = cores.stream()
+                    .filter(solrcore -> solrcore.getName().equals("shard" + shard)).findAny().orElseThrow(RuntimeException::new);
             AlfrescoCoreAdminHandler alfrescoCoreAdminHandler = alfrescoCoreAdminHandlers.get(shard);
             SolrQueryResponse response = callHandler(alfrescoCoreAdminHandler, core, "RANGECHECK");
-            NamedList values = response.getValues();
-            String ex = (String)values.get("exception");
-            if(ex == null || ex.indexOf("not initialized") == -1) {
-                return response;
-            } else {
+            NamedList<?> values = response.getValues();
+
+            boolean isReady = !Optional.ofNullable(values.get("report"))
+                        .map(Object::toString)
+                        .filter(r -> r.contains("WARNING=The requested endpoint is not available on the slave"))
+                        .isPresent() &&
+                    !Optional.ofNullable(values.get("exception"))
+                        .map(Object::toString)
+                        .filter(ex -> ex.contains("not initialized"))
+                        .isPresent();
+
+            if (!isReady)
+            {
                 Thread.sleep(1000);
             }
+            else
+            {
+                return response;
+            }
         }
+
+        throw new Exception("impossible to perform rangeChack");
     }
 
-    public static SolrQueryResponse expand(int shard, int value) {
-        List<SolrCore> cores = getJettyCores(solrShards);
+    public static SolrQueryResponse expand(int shard, int value)
+    {
+        Collection<SolrCore> cores = getCores(solrShards);
         List<AlfrescoCoreAdminHandler> alfrescoCoreAdminHandlers = getAdminHandlers(solrShards);
-        SolrCore core = cores.get(shard);
+        SolrCore core = cores.stream()
+                .filter(solrcore -> solrcore.getName().equals("shard" + shard)).findAny().orElseThrow(RuntimeException::new);
+
+//        SolrCore core = cores.get(shard);
         AlfrescoCoreAdminHandler alfrescoCoreAdminHandler = alfrescoCoreAdminHandlers.get(shard);
-        SolrQueryResponse response = callExpand(alfrescoCoreAdminHandler, core, value);
-        return response;
+        return callExpand(alfrescoCoreAdminHandler, core, value);
     }
 
-    private static String getFieldValueString(Document doc, String fieldName)
+    public static class BasicAuthFilter implements Filter
     {
-        IndexableField field = doc.getField(fieldName);
-        String value = null;
-        if (field != null)
+        @Override
+        public void init(FilterConfig config)
         {
-            value = field.stringValue();
-        }
-        return value;
-    }
-
-
-    private static long getFieldValueLong(Document doc, String fieldName)
-    {
-        return Long.parseLong(getFieldValueString(doc, fieldName));
-    }
-
-    public static class BasicAuthFilter implements Filter {
-
-        public BasicAuthFilter() {
-
+            // Nothing to be done here
         }
 
-        public void init(FilterConfig config) {
-
-        }
-
-        public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
-            throws IOException, ServletException  {
+        public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException
+        {
             //Parse the basic auth filter
             String auth = ((HttpServletRequest)request).getHeader("Authorization");
-            if(auth != null) {
+            if(auth != null)
+            {
                 auth = auth.replace("Basic ", "");
                 byte[] bytes = Base64.getDecoder().decode(auth);
                 String decodedBytes = new String(bytes);
@@ -974,18 +853,24 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
                 String user = pair[0];
                 String password = pair[1];
                 //Just look for the hard coded user and password.
-                if (user.equals("test") && password.equals("pass")) {
+                if (user.equals("test") && password.equals("pass"))
+                {
                     filterChain.doFilter(request, response);
-                } else {
+                }
+                else
+                {
                     ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
                 }
-            } else {
+            }
+            else
+            {
                 ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
             }
         }
 
-        public void destroy() {
-
+        public void destroy()
+        {
+            // Nothing to be done here
         }
     }
 }

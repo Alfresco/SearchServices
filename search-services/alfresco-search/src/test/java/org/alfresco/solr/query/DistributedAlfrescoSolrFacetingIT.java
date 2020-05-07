@@ -19,7 +19,6 @@
 package org.alfresco.solr.query;
 
 import org.alfresco.solr.AbstractAlfrescoDistributedIT;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.PivotField;
@@ -35,20 +34,18 @@ import java.util.List;
 
 import static org.hamcrest.core.Is.is;
 
-@SolrTestCaseJ4.SuppressSSL @LuceneTestCase.SuppressCodecs({ "Appending", "Lucene3x", "Lucene40", "Lucene41",
-    "Lucene42", "Lucene43", "Lucene44", "Lucene45", "Lucene46", "Lucene47", "Lucene48",
-    "Lucene49" }) public class DistributedAlfrescoSolrFacetingIT extends AbstractAlfrescoDistributedIT
+@SolrTestCaseJ4.SuppressSSL
+public class DistributedAlfrescoSolrFacetingIT extends AbstractAlfrescoDistributedIT
 {
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
-        initSolrServers(2, "DistributedAlfrescoSolrFacetingIT", null);
+        initSolrServers(2, DistributedAlfrescoSolrFacetingIT.class.getSimpleName(), null);
         indexSampleDocumentsForFacetingMincount();
-        
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }

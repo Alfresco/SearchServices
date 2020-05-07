@@ -36,7 +36,7 @@ import java.util.List;
  */
 public class AclChangeSets
 {
-    private List<AclChangeSet> aclChangeSets;
+    private final List<AclChangeSet> aclChangeSets;
     
     private Long maxChangeSetCommitTime;
     

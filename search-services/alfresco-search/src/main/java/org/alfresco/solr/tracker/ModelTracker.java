@@ -104,7 +104,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
     private ReentrantReadWriteLock modelLock = new ReentrantReadWriteLock();
     private volatile boolean hasModels = false;
     private File alfrescoModelDir;
-    
+
     // Share run and write locks across all ModelTracker threads
     private static Map<String, Semaphore> RUN_LOCK_BY_CORE = new ConcurrentHashMap<>();
     private static Map<String, Semaphore> WRITE_LOCK_BY_CORE = new ConcurrentHashMap<>();
@@ -132,7 +132,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
         }
 
         loadPersistedModels();
-        
+
         RUN_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
         WRITE_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
     }

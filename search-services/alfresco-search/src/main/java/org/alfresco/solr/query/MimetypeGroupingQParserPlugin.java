@@ -35,12 +35,16 @@ import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.search.QParser;
 import org.apache.solr.search.QParserPlugin;
 import org.apache.solr.search.SyntaxError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Andy
  */
 public class MimetypeGroupingQParserPlugin extends QParserPlugin
 {
+    protected static final Logger LOGGER = LoggerFactory.getLogger(MimetypeGroupingQParserPlugin.class);
+
     private static HashMap<String, String> mappings = new HashMap<>();
     
     private static  HashMap<String, ArrayList<String>> reverseMappings = new HashMap<>();
@@ -86,15 +90,9 @@ public class MimetypeGroupingQParserPlugin extends QParserPlugin
                 }
             }
         }
-        catch (FileNotFoundException e1)
+        catch (Exception exception)
         {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
-        catch (IOException e1)
-        {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
+            LOGGER.error("Exception during the MimetypeGroupingQParserPlugin. See the stacktrace below for further details.", exception);
         }
     }
 

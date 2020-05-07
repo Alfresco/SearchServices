@@ -80,7 +80,7 @@ public class RandomSupplier
 
     public static abstract class RandVal
     {
-        public static Set uniqueValues = new HashSet();
+        public static Set<Object> uniqueValues = new HashSet<>();
 
         public abstract Object val();
 

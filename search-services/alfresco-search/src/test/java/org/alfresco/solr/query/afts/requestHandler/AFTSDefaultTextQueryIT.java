@@ -20,14 +20,18 @@ package org.alfresco.solr.query.afts.requestHandler;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.solr.client.ContentPropertyValue;
+import org.alfresco.solr.client.MLTextPropertyValue;
 import org.alfresco.solr.client.PropertyValue;
 import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.dataload.TestDataProvider;
+import org.apache.solr.SolrTestCaseJ4;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 
@@ -49,9 +53,9 @@ import static com.google.common.collect.ImmutableMap.of;
  * This test set checks that in all these query types the default fields are involved in the search.
  *
  */
+@SolrTestCaseJ4.SuppressSSL
 public class AFTSDefaultTextQueryIT extends AbstractRequestHandlerIT
 {
-
     @BeforeClass
     public static void beforeClass() throws Exception
     {
@@ -95,14 +99,15 @@ public class AFTSDefaultTextQueryIT extends AbstractRequestHandlerIT
 
                     Map<QName, PropertyValue> properties = new HashMap<>();
                     properties.put(PROP_NAME, new StringPropertyValue(name));
-                    properties.put(PROP_DESCRIPTION, new StringPropertyValue(description));
-                    properties.put(PROP_CONTENT, new StringPropertyValue(content));
-                    properties.put(PROP_TITLE, new StringPropertyValue(title));
+                    properties.put(PROP_DESCRIPTION, new MLTextPropertyValue(Map.of(Locale.getDefault(), description)));
+                    properties.put(PROP_TITLE, new MLTextPropertyValue(Map.of(Locale.getDefault(), title)));
                     properties.put(PROP_CREATOR, new StringPropertyValue(creator));
+
+                    Map<QName, String> contents = Map.of(PROP_CONTENT, content);
 
                     addNode(getCore(),
                             dataModel, 1, dbId, 1,
-                            TYPE_CONTENT, null, properties, null,
+                            TYPE_CONTENT, null, properties, contents,
                             "the_owner_of_this_node_is" + name,
                             null,
                             new NodeRef[]{ TEST_ROOT_NODEREF },
@@ -259,6 +264,4 @@ public class AFTSDefaultTextQueryIT extends AbstractRequestHandlerIT
          */
         assertResponseCardinality("oth*", 3);
     }
-
-
 }

@@ -51,7 +51,7 @@ public class Solr4QueryParserTest
     public void setUp() throws Exception
     {
         SolrQueryRequest req = Mockito.mock(SolrQueryRequest.class);
-        parser = new Solr4QueryParser(req, Version.LUCENE_5_5_0, "TEXT", null, FTSQueryParser.RerankPhase.SINGLE_PASS);
+        parser = new Solr4QueryParser(req, Version.LATEST, "TEXT", null, FTSQueryParser.RerankPhase.SINGLE_PASS);
         parser.setSearchParameters(searchParameters);
     }
 

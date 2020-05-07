@@ -118,13 +118,13 @@ public class SearchAFTSInFieldTest extends AbstractE2EFunctionalTest
             boolean fileFound = isContentInSearchResults(query, file2.getName(), true);
             Assert.assertTrue(fileFound, "File Not found for query: " + query);
 
-            testSearchQuery(query, 1, SearchLanguage.AFTS);
+            testSearchQuery(query, 2, SearchLanguage.AFTS);
 
             query = fieldName + ":'" + file2.getName() + "\'";
             fileFound = isContentInSearchResults(query, file2.getName(), true);
             Assert.assertTrue(fileFound, "File Not found for query: " + query);
 
-            testSearchQuery(query, 1, SearchLanguage.AFTS);
+            testSearchQuery(query, 2, SearchLanguage.AFTS);
         });
     }
 

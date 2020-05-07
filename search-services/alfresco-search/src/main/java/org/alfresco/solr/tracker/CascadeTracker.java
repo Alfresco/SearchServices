@@ -44,6 +44,9 @@ import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.util.stream.Collectors.joining;
+import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
+
 /*
  * This tracks Cascading Updates
  * @author Joel Bernstein
@@ -239,9 +242,12 @@ public class CascadeTracker extends AbstractTracker implements Tracker
             catch(InterruptedException e)
             {
                 throw new IOException(e);
-            } catch (ExecutionException e) {
+            }
+            catch (ExecutionException e)
+            {
                 e.printStackTrace();
-            } finally
+            }
+            finally
             {
                 getWriteLock().release();
             }

@@ -65,7 +65,6 @@ import org.alfresco.repo.search.impl.parsers.AlfrescoFunctionEvaluationContext;
 import org.alfresco.repo.search.impl.parsers.FTSParser;
 import org.alfresco.repo.search.impl.parsers.FTSQueryParser;
 import org.alfresco.repo.search.impl.querymodel.Constraint;
-import org.alfresco.repo.search.impl.querymodel.Ordering;
 import org.alfresco.repo.search.impl.querymodel.QueryModelFactory;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions.Connective;
 import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilder;
@@ -108,17 +107,25 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
+import static java.util.Optional.ofNullable;
+
 /**
  * @author Andy
  *
  */
 public class AlfrescoSolrDataModel implements QueryConstants
 {
-    public static class TenantAclIdDbId
+    public static class TenantDbId
     {
         public String tenant;
-        public Long aclId;
         public Long dbId;
+
+        public Map<String, Object> optionalBag = new HashMap<>();
+
+        public void setProperty(String name, Object value)
+        {
+            optionalBag.put(name, value);
+        }
     }
 
     public enum FieldUse
@@ -147,7 +154,23 @@ public class AlfrescoSolrDataModel implements QueryConstants
     }
 
     public static final String CONTENT_S_LOCALE_PREFIX = "content@s__locale@";
-    public static final String CONTENT_M_LOCALE_PREFIX = "content@m__locale@";
+
+    static final String PART_FIELDNAME_PREFIX = "part@sd@";
+
+    /**
+     * Infix used for denoting a primitive single valued field with no doc values enabled
+     *
+     * @see #getFieldForText
+     */
+    private static final String SINGLE_VALUE_WITHOUT_DOC_VALUES_MARKER = "@s_@";
+
+    /**
+     * Infix used for denoting a primitive single valued field with no doc values enabled
+     *
+     * @see #getFieldForText
+     */
+    private static final String SINGLE_VALUE_WITH_DOC_VALUES_MARKER = "@sd@";
+
     static final String SHARED_PROPERTIES = "shared.properties";
 
     protected final static Logger log = LoggerFactory.getLogger(AlfrescoSolrDataModel.class);
@@ -299,18 +322,6 @@ public class AlfrescoSolrDataModel implements QueryConstants
         return "TRACKER" + "!" + CHANGE_SET + "!" + NumericEncoder.encode(aclChangeSetId);
     }
 
-    /**
-     * Extracts the ACL changeset identifier from the input document identifier.
-     * The "input document identifier" is the alphanumeric identifier used for Solr documents.
-     *
-     * @param documentId the document identifier.
-     * @see #getAclChangeSetDocumentId(Long)
-     * @return the numeric ACL changeset identifier.
-     */
-    public static Long parseAclChangeSetId(String documentId)
-    {
-        return parseIdFromDocumentId(documentId);
-    }
 
     /**
      * Extracts the transaction identifier from the input document identifier.
@@ -334,34 +345,31 @@ public class AlfrescoSolrDataModel implements QueryConstants
     }
 
     /**
-     * Returns the Solr document identifier in the following format &lt;TENANT>!&lt;ACLID>!&lt;DBID>
+     * Returns the Solr document identifier in the following format &lt;TENANT>!&lt;!&lt;DBID>
      *
      * @param tenant the tenant code.
-     * @param aclId the ACL identifier.
      * @param dbid the DB identifier.
-     * @return the Solr document identifier in the following format &lt;TENANT>!&lt;ACLID>!&lt;DBID>
+     * @return the Solr document identifier in the following format &lt;TENANT>!&lt;!&lt;DBID>
      */
-    public static String getNodeDocumentId(String tenant, Long aclId, Long dbid)
+    public static String getNodeDocumentId(String tenant, Long dbid)
     {
-        return getTenantId(tenant) + "!" + NumericEncoder.encode(aclId) + "!" + NumericEncoder.encode(dbid);
+        return getTenantId(tenant) + "!" + NumericEncoder.encode(dbid);
     }
 
     /**
-     * Destructures a document identifier in the three compounding parts (tenant, aclid and dbid).
+     * Destructures a document identifier in the three compounding parts (tenant and dbid).
      *
      * @param id the document identifier.
-     * @return a {@link TenantAclIdDbId} instance containing the destructured identifier.
+     * @return a {@link TenantDbId} instance containing the destructured identifier.
      */
-    public static TenantAclIdDbId decodeNodeDocumentId(String id)
+    public static TenantDbId decodeNodeDocumentId(String id)
     {
-        TenantAclIdDbId ids = new TenantAclIdDbId();
+        TenantDbId ids = new TenantDbId();
         String[] split = id.split("!");
         if (split.length > 0)
             ids.tenant = split[0];
         if (split.length > 1)
-            ids.aclId = NumericEncoder.decodeLong(split[1]);
-        if (split.length > 2)
-            ids.dbId = NumericEncoder.decodeLong(split[2]);
+            ids.dbId = NumericEncoder.decodeLong(split[1]);
         return ids;
     }
 
@@ -771,23 +779,24 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     private void addHighlightSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
     {
-        if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE)
-                || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
+        QName propertyName = propertyDefinition.getName();
+        QName propertyDataTypeQName = propertyDefinition.getDataType().getName();
+        String fieldName;
+
+        if(propertyDataTypeQName.equals(DataTypeDefinition.MLTEXT))
         {
-            if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
-            {
-                indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
-                indexedField.addField(getFieldForText(true, true, false, propertyDefinition), false, false);
-            }
-            else
-            {
-                indexedField.addField(getFieldForText(true, true, false, propertyDefinition), false, false);
-            }
+            fieldName = getStoredMLTextField(propertyName);
+        }
+        else if(propertyDataTypeQName.equals(DataTypeDefinition.CONTENT))
+        {
+            fieldName = getStoredContentField(propertyName);
         }
         else
         {
-            indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
+            fieldName = getStoredTextField(propertyName);
         }
+
+        indexedField.addField(fieldName, false, false);
     }
 
     /*
@@ -931,6 +940,94 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
     }
 
+
+    public String getStoredTextField(QName propertyQName)
+    {
+        PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("text@" + (propertyDefinition.isMultiValued()? "m" : "s") + "_stored_");
+
+        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE ||
+            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH)? "t" : "_");
+
+        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE ||
+            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH ||
+            isIdentifierTextProperty(propertyDefinition.getName()))? "s" : "_");
+
+        sb.append((crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) ||
+            crossLocaleSearchProperties.contains(propertyDefinition.getName())) ? "c" : "_");
+
+        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE ||
+            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH ||
+            isIdentifierTextProperty(propertyDefinition.getName())) && !propertyDefinition.isMultiValued()? "s" : "_");
+
+        sb.append(isSuggestable(propertyQName)? "s": "_");
+
+        sb.append("@");
+        sb.append(propertyDefinition.getName().toString());
+
+        return sb.toString();
+
+    }
+
+    public String getStoredMLTextField(QName propertyQName)
+    {
+        PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("mltext@m_stored_");
+
+        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE ||
+            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH)? "t" : "_");
+
+        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE ||
+            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH ||
+            isIdentifierTextProperty(propertyDefinition.getName()))? "s" : "_");
+
+        sb.append((crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) ||
+            crossLocaleSearchProperties.contains(propertyDefinition.getName())) ? "c" : "_");
+
+        sb.append("_");
+
+        sb.append(isSuggestable(propertyQName)? "s": "_");
+
+        sb.append("@");
+        sb.append(propertyDefinition.getName().toString());
+
+        return sb.toString();
+
+    }
+
+    public String getStoredContentField(QName propertyQName)
+    {
+        PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("content@s_stored_");
+
+        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE ||
+            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH)? "t" : "_");
+
+        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE ||
+            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH ||
+            isIdentifierTextProperty(propertyDefinition.getName()))? "s" : "_");
+
+        sb.append((crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) ||
+            crossLocaleSearchProperties.contains(propertyDefinition.getName())) ? "c" : "_");
+
+
+        sb.append("_");
+        sb.append(isSuggestable(propertyQName)? "s": "_");
+
+        sb.append("@");
+        sb.append(propertyDefinition.getName().toString());
+
+        return sb.toString();
+
+    }
+
+
     /**
      * Get all the field names into which we must copy the source data
      *
@@ -971,7 +1068,6 @@ public class AlfrescoSolrDataModel implements QueryConstants
             {
                 indexedField.addField(getFieldForText(true, false, false, propertyDefinition), true, false);
                 indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
-
             }
 
             if(dataTypeDefinition.getName().equals(DataTypeDefinition.TEXT))
@@ -1023,18 +1119,18 @@ public class AlfrescoSolrDataModel implements QueryConstants
         return identifierProperties.contains(propertyQName);
     }
 
-    private boolean isTextField(PropertyDefinition propertyDefinition)
+    public boolean isTextField(PropertyDefinition propertyDefinition)
     {
-        QName propertyDataTypeQName = propertyDefinition.getDataType().getName();
-        if(propertyDataTypeQName.equals(DataTypeDefinition.MLTEXT))
-        {
-            return true;
-        }
-        else if(propertyDataTypeQName.equals(DataTypeDefinition.CONTENT))
-        {
-            return true;
-        }
-        else return propertyDataTypeQName.equals(DataTypeDefinition.TEXT);
+        return ofNullable(propertyDefinition)
+                .map(PropertyDefinition::getDataType)
+                .map(DataTypeDefinition::getName)
+                .map(name ->
+                        name.equals(DataTypeDefinition.MLTEXT)
+                        ||
+                        name.equals(DataTypeDefinition.CONTENT)
+                        ||
+                        name.equals(DataTypeDefinition.TEXT))
+                .orElse(false);
     }
 
     private boolean isSuggestable(QName propertyQName)
@@ -1337,7 +1433,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     public static class IndexedField
     {
-        private List<FieldInstance> fields = new LinkedList<>();
+        private final List<FieldInstance> fields = new LinkedList<>();
 
         public List<FieldInstance> getFields()
         {
@@ -1412,7 +1508,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
     public Solr4QueryParser getLuceneQueryParser(SearchParameters searchParameters, SolrQueryRequest req, FTSQueryParser.RerankPhase rerankPhase)
     {
         Analyzer analyzer =  req.getSchema().getQueryAnalyzer();
-        Solr4QueryParser parser = new Solr4QueryParser(req, Version.LUCENE_5_5_0, searchParameters.getDefaultFieldName(), analyzer, rerankPhase);
+        Solr4QueryParser parser = new Solr4QueryParser(req, Version.LATEST, searchParameters.getDefaultFieldName(), analyzer, rerankPhase);
         parser.setNamespacePrefixResolver(namespaceDAO);
         parser.setDictionaryService(getDictionaryService(CMISStrictDictionaryService.DEFAULT));
         parser.setTenantService(tenantService);
@@ -1449,7 +1545,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         Constraint constraint = FTSQueryParser.buildFTS(searchParameters.getQuery(), factory, functionContext, null, null, mode,
                 searchParameters.getDefaultFTSOperator() == org.alfresco.service.cmr.search.SearchParameters.Operator.OR ? Connective.OR : Connective.AND,
                 searchParameters.getQueryTemplates(), searchParameters.getDefaultFieldName(), rerankPhase);
-        org.alfresco.repo.search.impl.querymodel.Query queryModelQuery = factory.createQuery(null, null, constraint, new ArrayList<Ordering>());
+        org.alfresco.repo.search.impl.querymodel.Query queryModelQuery = factory.createQuery(null, null, constraint, new ArrayList<>());
 
         @SuppressWarnings("unchecked")
         LuceneQueryBuilder<Query, Sort, ParseException> builder = (LuceneQueryBuilder<Query, Sort, ParseException>) queryModelQuery;
@@ -1492,6 +1588,66 @@ public class AlfrescoSolrDataModel implements QueryConstants
         return mapProperty(potentialProperty, fieldUse, req, 0);
     }
 
+    /**
+     *
+     * return the stored field associated to potentialProperty parameter
+     */
+    public String mapStoredProperty(String potentialProperty, SolrQueryRequest req)
+    {
+        if(potentialProperty.equals("asc") || potentialProperty.equals("desc") || potentialProperty.equals("_docid_"))
+        {
+            return potentialProperty;
+        }
+
+        if(potentialProperty.equalsIgnoreCase("score") || potentialProperty.equalsIgnoreCase("SEARCH_SCORE"))
+        {
+            return "score";
+        }
+
+        AlfrescoFunctionEvaluationContext functionContext =
+            new AlfrescoSolr4FunctionEvaluationContext(
+                getNamespaceDAO(),
+                getDictionaryService(CMISStrictDictionaryService.DEFAULT),
+                NamespaceService.CONTENT_MODEL_1_0_URI,
+                req.getSchema());
+
+
+        Pair<String, String> fieldNameAndEnding = QueryParserUtils.extractFieldNameAndEnding(potentialProperty);
+        String luceneField =  functionContext.getLuceneFieldName(fieldNameAndEnding.getFirst());
+
+        PropertyDefinition propertyDef = getPropertyDefinition(fieldNameAndEnding.getFirst());
+        //Retry scan using luceneField.
+        if(propertyDef == null)
+        {
+            if(luceneField.contains("@"))
+            {
+                int index = luceneField.lastIndexOf("@");
+                propertyDef = getPropertyDefinition(luceneField.substring(index +1));
+            }
+        }
+
+        if (propertyDef == null || propertyDef.getName() == null){
+            return mapNonPropertyFields(luceneField);
+        }
+
+        if (propertyDef.getName().equals(DataTypeDefinition.TEXT))
+        {
+            return getStoredTextField(propertyDef.getName());
+        }
+        else if (propertyDef.getName().equals(DataTypeDefinition.MLTEXT))
+        {
+            return getStoredMLTextField(propertyDef.getName());
+        }
+        else if (propertyDef.getName().equals(DataTypeDefinition.CONTENT))
+        {
+            return getStoredContentField(propertyDef.getName());
+        }
+        else
+        {
+            return mapAlfrescoField(FieldUse.FTS, 0, fieldNameAndEnding, luceneField, propertyDef);
+        }
+    }
+
     public String  mapProperty(String  potentialProperty,  FieldUse fieldUse, SolrQueryRequest req, int position)
     {
         if(potentialProperty.equals("asc") || potentialProperty.equals("desc") || potentialProperty.equals("_docid_"))
@@ -1529,6 +1685,12 @@ public class AlfrescoSolrDataModel implements QueryConstants
                 propertyDef = getPropertyDefinition(luceneField.substring(index +1));
             }
         }
+        String solrSortField;
+        solrSortField = mapAlfrescoField(fieldUse, position, fieldNameAndEnding, luceneField, propertyDef);
+        return solrSortField;
+    }
+
+    private String mapAlfrescoField(FieldUse fieldUse, int position, Pair<String, String> fieldNameAndEnding, String luceneField, PropertyDefinition propertyDef) {
         String solrSortField;
         if(propertyDef != null)
         {
@@ -1601,5 +1763,28 @@ public class AlfrescoSolrDataModel implements QueryConstants
         {
             getNamespaceDAO().addPrefix("", NamespaceService.CONTENT_MODEL_1_0_URI);
         }
+    }
+
+    /**
+     * Returns the prefix used for denoting a field which is meant to represent a constituent part of a
+     * date or datetime (e.g. year, month, second, minute).
+     *
+     * @param sourceFieldName the date/datetime source field name.
+     * @param sourceDataTypeDefinition the datatype of the source field name (date or datetime)
+     * @return the prefix that can be used for denoting a date or datetime part
+     */
+    public String destructuredDateTimePartFieldNamePrefix(String sourceFieldName, DataTypeDefinition sourceDataTypeDefinition) {
+        // source field name example: datetime@sd@{http://www.alfresco.org/model/content/1.0}created
+        // prefix: datetime
+        String prefix = sourceFieldName.substring(0, sourceFieldName.indexOf("@"));
+
+        // prefix, docValues disabled option: datetime@s_@
+        String sourceFieldNamePrefixWithoutDocValues = prefix + SINGLE_VALUE_WITHOUT_DOC_VALUES_MARKER;
+
+        // prefix, docValues enabled option: datetime@sd@
+        String sourceFieldNamePrefixWithDocValues = prefix + SINGLE_VALUE_WITH_DOC_VALUES_MARKER;
+
+        return sourceFieldName.replace(sourceFieldNamePrefixWithoutDocValues, PART_FIELDNAME_PREFIX)
+                .replace(sourceFieldNamePrefixWithDocValues, PART_FIELDNAME_PREFIX);
     }
 }

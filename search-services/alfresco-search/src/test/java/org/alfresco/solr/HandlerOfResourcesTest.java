@@ -21,24 +21,22 @@
  */
 package org.alfresco.solr;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Properties;
 
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.*;
 
 /**
  * Tests HandlerOfResources
  */
-public class HandlerOfResourcesTest {
-
-
+public class HandlerOfResourcesTest
+{
     @Test
-    public void allowedPropertiesTest() throws Exception {
+    public void allowedPropertiesTest()
+    {
         assertTrue(HandlerOfResources.allowedProperties(null,null));
         assertTrue(HandlerOfResources.allowedProperties(new Properties(),null));
         assertTrue(HandlerOfResources.allowedProperties(new Properties(), new ArrayList<String>()));
@@ -46,8 +44,8 @@ public class HandlerOfResourcesTest {
         Properties props = new Properties();
         props.setProperty("king", "kong");
         props.setProperty("barbie", "doll");
-        assertFalse(HandlerOfResources.allowedProperties(props, Arrays.asList("bar")));
-        assertTrue( HandlerOfResources.allowedProperties(props, Arrays.asList("bark")));
+        assertFalse(HandlerOfResources.allowedProperties(props, singletonList("bar")));
+        assertTrue( HandlerOfResources.allowedProperties(props, singletonList("bark")));
 
         assertTrue(HandlerOfResources.allowedProperties(props, HandlerOfResources.DISALLOWED_SHARED_UPDATES));
 
@@ -71,5 +69,4 @@ public class HandlerOfResourcesTest {
         assertFalse(HandlerOfResources.allowedProperties(props, HandlerOfResources.DISALLOWED_SHARED_UPDATES));
         props.remove("alfresco.cross.locale.datatype.2");
     }
-
 }

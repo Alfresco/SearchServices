@@ -81,6 +81,9 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     private ConcurrentLinkedQueue<Long> nodesToIndex = new ConcurrentLinkedQueue<>();
     private ConcurrentLinkedQueue<Long> nodesToPurge = new ConcurrentLinkedQueue<>();
     private ConcurrentLinkedQueue<String> queriesToReindex = new ConcurrentLinkedQueue<>();
+
+    private final boolean isRunningInProduction = !Boolean.parseBoolean(System.getProperty("alfresco.test", "false"));
+
     private ForkJoinPool forkJoinPool;
 
     // Share run and write locks across all MetadataTracker threads
@@ -96,7 +99,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     {
         return RUN_LOCK_BY_CORE.get(coreName);
     }
-    
+
     /**
      * Check if nextTxCommitTimeService is available in the repository.
      * This service is used to find the next available transaction commit time from a given time,
@@ -163,7 +166,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         
         // In order to apply performance optimizations, checking the availability of Repo Web Scripts is required.
         // As these services are available from ACS 6.2
-        if (checkRepoServicesAvailability)
+        if (checkRepoServicesAvailability && isRunningInProduction)
         {
             // Try invoking getNextTxCommitTime service
             try
@@ -342,8 +345,8 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                     if (setSize == 0)
                     {
                         LOGGER.error("First transaction was not found with the correct timestamp.");
-                        LOGGER.error("SOLR has successfully connected to your repository  however the SOLR indexes and repository database do not match."); 
-                        LOGGER.error("If this is a new or rebuilt database your SOLR indexes also need to be re-built to match the database."); 
+                        LOGGER.error("SOLR has successfully connected to your repository  however the SOLR indexes and repository database do not match.");
+                        LOGGER.error("If this is a new or rebuilt database your SOLR indexes also need to be re-built to match the database.");
                         LOGGER.error("You can also check your SOLR connection details in solrcore.properties.");
                         throw new AlfrescoRuntimeException("Initial transaction not found with correct timestamp");
                     }
@@ -380,7 +383,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                     LOGGER.error("Max Tx In Index: " + maxTxInIndex.getId() + ", In Repo: " + maxTxnIdInRepo);
                     LOGGER.error("Max Tx Commit Time In Index: " + maxTxInIndex.getCommitTimeMs() + ", In Repo: "
                             + maxTxnCommitTimeInRepo);
-                    LOGGER.error("SOLR has successfully connected to your repository  however the SOLR indexes and repository database do not match."); 
+                    LOGGER.error("SOLR has successfully connected to your repository  however the SOLR indexes and repository database do not match.");
                     LOGGER.error("If this is a new or rebuilt database your SOLR indexes also need to be re-built to match the database.");
                     LOGGER.error("You can also check your SOLR connection details in solrcore.properties.");
                     throw new AlfrescoRuntimeException("Last transaction found in index with incorrect timestamp");
@@ -672,10 +675,6 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
      *  The next time the metadata tracker runs the "continueState()" method applies the "hole retention"
      *  to state.getLastGoodTxCommitTimeInIndex(). This causes the state.getLastGoodTxCommitTimeInIndex() to scan
      *  for prior transactions that might have been missed.
-     *  
-     * @param txnsFound
-     * @param lastGoodTxCommitTimeInIndex
-     * @return
      */
     protected Long getTxFromCommitTime(BoundedDeque<Transaction> txnsFound, long lastGoodTxCommitTimeInIndex) {
         if (txnsFound.size() > 0)
@@ -728,7 +727,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                                           maxResults, 
                                           shardstate);
         }
-        
+
         do
         {
             transactions = client.getTransactions(startTime, null, startTime + actualTimeStep, null, maxResults, shardstate);
@@ -740,7 +739,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 Long nextTxCommitTime = client.getNextTxCommitTime(coreName, startTime);
                 if (nextTxCommitTime != -1)
                 {
-                    LOGGER.info("{}-[CORE {}] Advancing transactions from {} to {}", 
+                    LOGGER.info("{}-[CORE {}] Advancing transactions from {} to {}",
                             Thread.currentThread().getId(), coreName, startTime, nextTxCommitTime);
                     transactions = client.getTransactions(nextTxCommitTime, null, nextTxCommitTime + actualTimeStep, null, maxResults, shardstate);
                 }
@@ -752,27 +751,21 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
 
         return transactions;
     }
-    
+
     /**
      * When using DB_ID_RANGE, fromCommitTime cannot be before the commit time of the first transaction
      * for the DB_ID_RANGE to be indexed and commit time of the last transaction cannot be lower than fromCommitTime.
      * When there isn't nodes in that range, -1 is returned as commit times
-     * 
+     *
      * @param fromCommitTime Starting commit time to get transactions from Repository
      * @param txnsFound List of transactions previously found
      * @return List of transactions to be indexed
-     * 
-     * @throws NoSuchMethodException
-     * @throws AuthenticationException
-     * @throws IOException
-     * @throws JSONException
-     * @throws EncoderException
      */
     private Transactions getDBIDRangeTransactions(Long fromCommitTime, BoundedDeque<Transaction> txnsFound)
             throws NoSuchMethodException, AuthenticationException, IOException, JSONException, EncoderException
     {
         boolean shardOutOfRange = false;
-            
+
         DBIDRangeRouter dbIdRangeRouter = (DBIDRangeRouter) docRouter;
         Pair<Long, Long> commitTimes = client.getTxIntervalCommitTime(coreName,
                 dbIdRangeRouter.getStartRange(), dbIdRangeRouter.getEndRange());
@@ -808,8 +801,8 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
 
         Transactions transactions = getSomeTransactions(txnsFound, fromCommitTime, TIME_STEP_1_HR_IN_MS, maxNumberOfTransactions,
                                            state.getTimeToStopIndexing());
-        
-        
+
+
         // When transactions are out of Shard range, only the latest transaction needs to be indexed
         // in order to preserve the state up-to-date of the MetadataTracker
         if (shardOutOfRange)
@@ -819,16 +812,16 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
             latestTransaction.setId(transactions.getMaxTxnId());
             transactions = new Transactions(
                     Arrays.asList(latestTransaction),
-                    transactions.getMaxTxnCommitTime(), 
+                    transactions.getMaxTxnCommitTime(),
                     transactions.getMaxTxnId());
         }
-        
+
         return transactions;
     }
-    
+
     /**
      * Remove transactions already present in SOLR index
-     * 
+     *
      * @param transactions List of transactions to be indexed
      * @return List of transactions not indexed in SOLR index
      */
@@ -840,9 +833,9 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                     {
                         boolean isInIndex = (transaction.getCommitTimeMs() <= state.getLastIndexedTxCommitTime() &&
                                 infoSrv.txnInIndex(transaction.getId(), true));
-                        if (LOGGER.isTraceEnabled()) 
+                        if (LOGGER.isTraceEnabled())
                         {
-                            LOGGER.trace("{}-[CORE {}] Skipping Transaction Id {} as it was already indexed", 
+                            LOGGER.trace("{}-[CORE {}] Skipping Transaction Id {} as it was already indexed",
                                     Thread.currentThread().getId(), coreName, transaction.getId());
                         }
                         return !isInIndex;
@@ -862,8 +855,8 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
 
     //fixme remove
     /**
-     * Keep only transactions previous to node transaction Id 
-     * 
+     * Keep only transactions previous to node transaction Id
+     *
      * @param transactions List of transactions from Repository
      * @param node Last Node indexed in the cycle
      * @return Filtered list of transactions
@@ -879,9 +872,9 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
 
     /**
      * Indexing new transactions from repository in batches of "transactionDocsBatchSize" size.
-     * 
-     * Additionally, the nodes inside a transaction batch are indexed in batches of "nodeBatchSize" size. 
-     * 
+     *
+     * Additionally, the nodes inside a transaction batch are indexed in batches of "nodeBatchSize" size.
+     *
      * @throws AuthenticationException
      * @throws IOException
      * @throws JSONException
@@ -890,17 +883,17 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     protected void trackTransactions() throws AuthenticationException, IOException, JSONException, EncoderException
     {
         long startElapsed = System.nanoTime();
-        
+
         boolean upToDate = false;
         Transactions transactions;
         BoundedDeque<Transaction> txnsFound = new BoundedDeque<Transaction>(100);
         int totalUpdatedDocs = 0;
-        
+
         LOGGER.info("{}-[CORE {}] Starting metadata tracker execution", Thread.currentThread().getId(), coreName);
-        
+
         do
         {
-            
+
             try
             {
                 /*
@@ -916,9 +909,9 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 */
                 this.state = getTrackerState();
 
-                Long fromCommitTime = getTxFromCommitTime(txnsFound, 
+                Long fromCommitTime = getTxFromCommitTime(txnsFound,
                         state.getLastIndexedTxCommitTime() == 0 ? state.getLastGoodTxCommitTimeInIndex() : state.getLastIndexedTxCommitTime());
-                
+
                 // Get transaction list to be indexed
                 if (docRouter instanceof DBIDRangeRouter && txIntervalCommitTimeServiceAvailable)
                 {
@@ -927,38 +920,38 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 else
                 {
                     transactions = getSomeTransactions(txnsFound, fromCommitTime, TIME_STEP_1_HR_IN_MS, maxNumberOfTransactions,
-                            state.getTimeToStopIndexing());                    
+                            state.getTimeToStopIndexing());
                 }
-                
+
                 // Remove transactions already indexed
                 transactions = removeIndexedTransactions(transactions);
-                
+
                 if (transactions.getTransactions().size() > 0)
                 {
-                    LOGGER.info("{}-[CORE {}] Found {} transactions after lastTxCommitTime {}, transactions from {} to {}", 
+                    LOGGER.info("{}-[CORE {}] Found {} transactions after lastTxCommitTime {}, transactions from {} to {}",
                             Thread.currentThread().getId(),
-                            coreName, 
+                            coreName,
                             transactions.getTransactions().size(),
                             fromCommitTime,
                             transactions.getTransactions().get(0),
                             transactions.getTransactions().get(transactions.getTransactions().size() - 1));
-                } 
-                else 
+                }
+                else
                 {
                     LOGGER.info("{}-[CORE {}] No transaction found after lastTxCommitTime {}",
-                            Thread.currentThread().getId(), 
-                            coreName, 
+                            Thread.currentThread().getId(),
+                            coreName,
                             ((txnsFound.size() > 0) ? txnsFound.getLast().getCommitTimeMs() : state.getLastIndexedTxCommitTime()));
                 }
-                
+
                 // Group the transactions in batches of transactionDocsBatchSize (or less)
                 List<List<Transaction>> txBatches = new ArrayList<>();
                 List<Transaction> txBatch = new ArrayList<>();
                 for (Transaction info : transactions.getTransactions()) {
-                    
-                    if (LOGGER.isTraceEnabled()) 
+
+                    if (LOGGER.isTraceEnabled())
                     {
-                        LOGGER.trace("{}-[CORE {}] Tracking {} Transactions. Current Transaction Id to be indexed: {}", 
+                        LOGGER.trace("{}-[CORE {}] Tracking {} Transactions. Current Transaction Id to be indexed: {}",
                                 Thread.currentThread().getId(), coreName, transactions.getTransactions().size(), info.getId());
                     }
 
@@ -979,15 +972,15 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 {
                     txBatches.add(txBatch);
                 }
-                
+
                 // Index batches of transactions and the nodes updated or deleted within the transaction
                 for (List<Transaction> batch : txBatches)
                 {
-                    
+
                     // Index nodes contained in the transactions
                     int docCount =  indexBatchOfTransactions(batch, totalUpdatedDocs);
                     totalUpdatedDocs += docCount;
-                    
+
                     // Add the transactions as found to avoid processing them again in the next iteration
                     batch.forEach(transaction -> txnsFound.add(transaction));
 
@@ -999,9 +992,9 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 }
 
 
-                
+
                 setLastTxCommitTimeAndTxIdInTrackerState(transactions);
-                
+
             }
             catch(Exception e)
             {
@@ -1078,15 +1071,15 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
 
     /**
      * Index a batch of transactions.
-     * 
-     * Updated or deleted nodes from these transactions are also packed into batches in order to get 
-     * the metadata of the nodes in smaller invocations to Repository 
-     * 
+     *
+     * Updated or deleted nodes from these transactions are also packed into batches in order to get
+     * the metadata of the nodes in smaller invocations to Repository
+     *
      * @param txBatch Batch of transactions to be indexed
      * @param indexedNodes Number of nodes indexed in this Tracker execution
-     * 
+     *
      * @return Number of nodes indexed and last node indexed
-     * 
+     *
      * @throws AuthenticationException
      * @throws IOException
      * @throws JSONException
@@ -1103,14 +1096,15 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 txIds.add(tx.getId());
             }
         }
-        
+
         // Get Nodes Id properties for every transaction
         GetNodesParameters gnp = new GetNodesParameters();
         gnp.setTransactionIds(txIds);
         gnp.setStoreProtocol(storeRef.getProtocol());
         gnp.setStoreIdentifier(storeRef.getIdentifier());
         updateShardProperty();
-        shardProperty.ifPresent(p -> gnp.setShardProperty(p));
+        shardProperty.ifPresent(gnp::setShardProperty);
+
         gnp.setCoreName(coreName);
         List<Node> nodes = client.getNodes(gnp, Integer.MAX_VALUE);
 
@@ -1119,7 +1113,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
             LOGGER.debug("{}-[CORE {}] Found {} Nodes to be indexed from Transactions: {}", Thread.currentThread().getId(),
                     coreName, nodes.size(), txIds);
         }
-        
+
         // Group the nodes in batches of nodeBatchSize (or less)
         List<List<Node>> nodeBatches = Lists.partition(nodes, nodeBatchSize);
 
@@ -1167,10 +1161,9 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
         
         private List<Node> filterNodes(List<Node> nodes)
         {
-            ArrayList<Node> filteredList = new ArrayList<Node>(nodes.size());
+            List<Node> filteredList = new ArrayList<>(nodes.size());
             for(Node node : nodes)
             {
-
                 if(docRouter.routeNode(shardCount, shardInstance, node))
                 {
                     filteredList.add(node);

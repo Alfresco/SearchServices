@@ -227,7 +227,7 @@ class HandlerReportHelper
             ihr.add("Last indexed transaction commit date", CachingDateFormat.getDateFormat().format(lastTxDate));
             ihr.add("Last TX id before holes", metaState.getLastIndexedTxIdBeforeHoles());
 
-            srv.addFTSStatusCounts(ihr);
+            srv.addContentOutdatedAndUpdatedCounts(ihr);
 
             return ihr;
         }
@@ -275,7 +275,7 @@ class HandlerReportHelper
 
         NamedList<Object> ftsSummary = new SimpleOrderedMap<>();
         long remainingContentTimeMillis = 0;
-        srv.addFTSStatusCounts(ftsSummary);
+        srv.addContentOutdatedAndUpdatedCounts(ftsSummary);
         long cleanCount =
                 ofNullable(ftsSummary.get("Node count with FTSStatus Clean"))
                         .map(Number.class::cast)
@@ -422,7 +422,7 @@ class HandlerReportHelper
 
         NamedList<Object> ftsSummary = new SimpleOrderedMap<>();
         long remainingContentTimeMillis = 0;
-        srv.addFTSStatusCounts(ftsSummary);
+        srv.addContentOutdatedAndUpdatedCounts(ftsSummary);
         long cleanCount =
                 ofNullable(ftsSummary.get("Node count with FTSStatus Clean"))
                         .map(Number.class::cast)

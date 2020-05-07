@@ -56,7 +56,6 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.junit.After;
@@ -64,7 +63,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 @SolrTestCaseJ4.SuppressSSL
 public class AlfrescoSolrTrackerIT extends AbstractAlfrescoSolrIT
 {
@@ -86,12 +84,12 @@ public class AlfrescoSolrTrackerIT extends AbstractAlfrescoSolrIT
 
     @After
     public void clearQueue() throws Exception {
-        SOLRAPIQueueClient.nodeMetaDataMap.clear();
-        SOLRAPIQueueClient.transactionQueue.clear();
+        SOLRAPIQueueClient.NODE_META_DATA_MAP.clear();
+        SOLRAPIQueueClient.TRANSACTION_QUEUE.clear();
         SOLRAPIQueueClient.ACL_CHANGE_SET_QUEUE.clear();
         SOLRAPIQueueClient.ACL_READERS_MAP.clear();
         SOLRAPIQueueClient.ACL_MAP.clear();
-        SOLRAPIQueueClient.nodeMap.clear();
+        SOLRAPIQueueClient.NODE_MAP.clear();
     }
 
 

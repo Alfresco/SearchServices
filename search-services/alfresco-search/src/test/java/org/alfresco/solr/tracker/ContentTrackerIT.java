@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.alfresco.solr.AlfrescoSolrDataModel.TenantAclIdDbId;
+import org.alfresco.solr.AlfrescoSolrDataModel.TenantDbId;
 import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.junit.Assert;
@@ -35,7 +35,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContentTrackerIT
@@ -70,7 +70,7 @@ public class ContentTrackerIT
     public void doTrackWithNoContentDoesNothing() throws Exception
     {
         this.contentTracker.doTrack("anIterationId");
-        verify(srv, never()).updateContentToIndexAndCache(anyLong(), anyString());
+        verify(srv, never()).updateContent(any());
         verify(srv, never()).commit();
     }
 
@@ -78,25 +78,25 @@ public class ContentTrackerIT
     @Ignore("Superseded by AlfrescoSolrTrackerTest")
     public void doTrackWithContentUpdatesContent() throws Exception
     {
-        List<TenantAclIdDbId> docs1 = new ArrayList<>();
-        List<TenantAclIdDbId> docs2 = new ArrayList<>();
-        List<TenantAclIdDbId> emptyList = new ArrayList<>();
+        List<TenantDbId> docs1 = new ArrayList<>();
+        List<TenantDbId> docs2 = new ArrayList<>();
+        List<TenantDbId> emptyList = new ArrayList<>();
         // Adds one more than the UPDATE_BATCH
         for (int i = 0; i <= UPDATE_BATCH; i++)
         {
-            TenantAclIdDbId doc = new TenantAclIdDbId();
+            TenantDbId doc = new TenantDbId();
             doc.dbId = 1l;
             doc.tenant = "1";
             docs1.add(doc);
         }
-        TenantAclIdDbId thirdDoc = docs1.get(UPDATE_BATCH);
+        TenantDbId thirdDoc = docs1.get(UPDATE_BATCH);
         thirdDoc.dbId = 3l;
         thirdDoc.tenant = "3";
 
         // Adds UPDATE_BATCH
         for (long i = 0; i < UPDATE_BATCH; i++)
         {
-            TenantAclIdDbId doc = new TenantAclIdDbId();
+            TenantDbId doc = new TenantDbId();
             doc.dbId = 2l;
             doc.tenant = "2";
             docs2.add(doc);
@@ -118,16 +118,24 @@ public class ContentTrackerIT
          */
 
         // From docs1
-        order.verify(srv, times(UPDATE_BATCH)).updateContentToIndexAndCache(1l, "1");
+        TenantDbId docRef = new TenantDbId();
+        docRef.dbId = 1L;
+        docRef.tenant = "1";
+
+        order.verify(srv, times(UPDATE_BATCH)).updateContent(docRef);
         order.verify(srv).commit();
+
         // The one extra doc should be processed and then committed
-        order.verify(srv).updateContentToIndexAndCache(thirdDoc.dbId, thirdDoc.tenant);
+        order.verify(srv).updateContent(thirdDoc);
         order.verify(srv).commit();
         
         order.verify(srv).getDocsWithUncleanContent();
         
         // From docs2
-        order.verify(srv, times(UPDATE_BATCH)).updateContentToIndexAndCache(2l, "2");
+        docRef = new TenantDbId();
+        docRef.dbId = 2L;
+        docRef.tenant = "2";
+        order.verify(srv, times(UPDATE_BATCH)).updateContent(docRef);
         order.verify(srv).commit();
         
         order.verify(srv).getDocsWithUncleanContent();
@@ -135,7 +143,6 @@ public class ContentTrackerIT
     @Test
     public void typeCheck()
     {
-        Assert.assertTrue(contentTracker.getType().equals(Tracker.Type.CONTENT));
+        Assert.assertEquals(contentTracker.getType(), Tracker.Type.CONTENT);
     }
-    
 }

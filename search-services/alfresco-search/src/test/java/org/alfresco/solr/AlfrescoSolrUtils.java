@@ -57,7 +57,6 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -103,6 +102,8 @@ import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.update.AddUpdateCommand;
 import org.apache.solr.update.CommitUpdateCommand;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 /**
  * Alfresco Solr Test Utility class which provide helper methods.
  *
@@ -223,7 +224,7 @@ public class AlfrescoSolrUtils
         nodeMetaData.setAncestors(ancestors);
         Map<QName, PropertyValue> props = new HashMap<>();
         props.put(ContentModel.PROP_IS_INDEXED, new StringPropertyValue("true"));
-        props.put(ContentModel.PROP_CONTENT, new ContentPropertyValue(Locale.US, 0l, "UTF-8", "text/plain", null));
+        props.put(ContentModel.PROP_CONTENT, new ContentPropertyValue(Locale.US, 0L, "UTF-8", "text/plain", null));
         nodeMetaData.setProperties(props);
         //If create createError is true then we leave out the nodeRef which will cause an error
         if(!createError) {
@@ -268,16 +269,16 @@ public class AlfrescoSolrUtils
     public void indexTransaction(Transaction transaction, List<Node> nodes, List<NodeMetaData> nodeMetaDatas)
     {
         //First map the nodes to a transaction.
-        SOLRAPIQueueClient.nodeMap.put(transaction.getId(), nodes);
+        SOLRAPIQueueClient.NODE_MAP.put(transaction.getId(), nodes);
 
         //Next map a node to the NodeMetaData
         for(NodeMetaData nodeMetaData : nodeMetaDatas)
         {
-            SOLRAPIQueueClient.nodeMetaDataMap.put(nodeMetaData.getId(), nodeMetaData);
+            SOLRAPIQueueClient.NODE_META_DATA_MAP.put(nodeMetaData.getId(), nodeMetaData);
         }
 
         //Next add the transaction to the queue
-        SOLRAPIQueueClient.transactionQueue.add(transaction);
+        SOLRAPIQueueClient.TRANSACTION_QUEUE.add(transaction);
     }
     /**
      * 
@@ -476,11 +477,14 @@ public class AlfrescoSolrUtils
         SolrServletRequest solrQueryRequest = null;
         try
         {
+            AlfrescoCoreAdminHandler admin = (AlfrescoCoreAdminHandler) core.getCoreContainer().getMultiCoreHandler();
+            SolrInformationServer solrInformationServer = (SolrInformationServer) admin.getInformationServers().get(core.getName());
+
             solrQueryRequest = new SolrServletRequest(core, null);
             AddUpdateCommand addDocCmd = new AddUpdateCommand(solrQueryRequest);
             addDocCmd.overwrite = true;
             addDocCmd.solrDoc = createDocument(dataModel, new Long(txid), new Long(dbid), nodeRef, type, aspects,
-                  properties, content, new Long(aclid), paths, owner, parentAssocs, ancestors);
+                  properties, content, new Long(aclid), paths, owner, parentAssocs, ancestors, solrInformationServer);
             core.getUpdateHandler().addDoc(addDocCmd);
             if (commit)
             {
@@ -527,14 +531,15 @@ public class AlfrescoSolrUtils
                                                    String[] paths,
                                                    String owner, 
                                                    ChildAssociationRef[] parentAssocs,
-                                                   NodeRef[] ancestors)throws IOException
+                                                   NodeRef[] ancestors,
+                                                   SolrInformationServer solrInformationServer)
     {
         SolrInputDocument doc = new SolrInputDocument();
-        String id = AlfrescoSolrDataModel.getNodeDocumentId(AlfrescoSolrDataModel.DEFAULT_TENANT, aclId, dbid);
+        String id = AlfrescoSolrDataModel.getNodeDocumentId(AlfrescoSolrDataModel.DEFAULT_TENANT, dbid);
         doc.addField(FIELD_SOLR4_ID, id);
         doc.addField(FIELD_VERSION, 0);
         doc.addField(FIELD_DBID, "" + dbid);
-        doc.addField(FIELD_LID, nodeRef);
+        doc.addField(FIELD_LID, String.valueOf(nodeRef));
         doc.addField(FIELD_INTXID, "" + txid);
         doc.addField(FIELD_ACLID, "" + aclId);
         doc.addField(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_NODE);
@@ -563,13 +568,12 @@ public class AlfrescoSolrUtils
                 }
                 qNameBuffer.append(ISO9075.getXPathName(childAssocRef.getQName()));
                 assocTypeQNameBuffer.append(ISO9075.getXPathName(childAssocRef.getTypeQName()));
-                doc.addField(FIELD_PARENT, childAssocRef.getParentRef());
+                doc.addField(FIELD_PARENT, ofNullable(childAssocRef.getParentRef()).map(Object::toString).orElse(null));
                 
                 if (childAssocRef.isPrimary())
                 {
-                    doc.addField(FIELD_PRIMARYPARENT, childAssocRef.getParentRef());
-                    doc.addField(FIELD_PRIMARYASSOCTYPEQNAME,
-                            ISO9075.getXPathName(childAssocRef.getTypeQName()));
+                    doc.addField(FIELD_PRIMARYPARENT,  ofNullable(childAssocRef.getParentRef()).map(Object::toString).orElse(null));
+                    doc.addField(FIELD_PRIMARYASSOCTYPEQNAME,  ISO9075.getXPathName(childAssocRef.getTypeQName()));
                     doc.addField(FIELD_PRIMARYASSOCQNAME, ISO9075.getXPathName(childAssocRef.getQName()));
                 }
             }
@@ -614,40 +618,39 @@ public class AlfrescoSolrUtils
         if (properties != null)
         {
             final boolean isContentIndexedForNode = true;
-            final SolrInputDocument cachedDoc = null;
             final boolean transformContentFlag = true;
-            SolrInformationServer.addPropertiesToDoc(properties, isContentIndexedForNode, doc, cachedDoc, transformContentFlag);
-            addContentToDoc(doc, content);
+            solrInformationServer.populateProperties(properties, isContentIndexedForNode, doc, transformContentFlag);
+            if (content != null)
+            {
+                addContentToDoc(doc, content);
+            }
         }
         
-        doc.addField(FIELD_TYPE, type);
+        doc.addField(FIELD_TYPE, String.valueOf(type));
         if (aspects != null)
         {
             for (QName aspect : aspects)
             {
-                doc.addField(FIELD_ASPECT, aspect);
+                doc.addField(FIELD_ASPECT, String.valueOf(aspect));
             }
         }
         doc.addField(FIELD_ISNODE, "T");
         doc.addField(FIELD_TENANT, AlfrescoSolrDataModel.DEFAULT_TENANT);
-        
+
         return doc;
     }
-    private static void addContentToDoc(SolrInputDocument cachedDoc, Map<QName, String> content)
+    private static void addContentToDoc(SolrInputDocument doc, Map<QName, String> content)
     {
-        Collection<String> fieldNames = cachedDoc.deepCopy().getFieldNames();
-        for (String fieldName : fieldNames)
-        {
-            if (fieldName.startsWith(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX))
-              {
-                  String locale = String.valueOf(cachedDoc.getFieldValue(fieldName));
-                  String qNamePart = fieldName.substring(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX.length());
-                  QName propertyQName = QName.createQName(qNamePart);
-                  addContentPropertyToDoc(cachedDoc, propertyQName, locale, content);
-              }
-              // Could update multi content but it is broken ....
-          }
-      }
+        AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
+        Locale locale = I18NUtil.getLocale();
+        content.forEach((propertyQName, textContent) -> {
+            String storedField = dataModel.getStoredContentField(propertyQName);
+            doc.setField(storedField, "\u0000" + locale.toString() + "\u0000" + textContent);
+        });
+
+    }
+
+
       private static void addContentPropertyToDoc(SolrInputDocument cachedDoc,
               QName propertyQName,
               String locale,
@@ -741,12 +744,15 @@ public class AlfrescoSolrUtils
           SolrServletRequest solrQueryRequest = null;
           try
           {
+              AlfrescoCoreAdminHandler admin = (AlfrescoCoreAdminHandler) core.getCoreContainer().getMultiCoreHandler();
+              SolrInformationServer solrInformationServer = (SolrInformationServer) admin.getInformationServers().get(core.getName());
+
               solrQueryRequest = new SolrServletRequest(core, null);
               AddUpdateCommand addDocCmd = new AddUpdateCommand(solrQueryRequest);
               addDocCmd.overwrite = true;
               addDocCmd.solrDoc = createDocument(dataModel, new Long(txid), new Long(dbid), rootNodeRef,
                       ContentModel.TYPE_STOREROOT, new QName[]{ContentModel.ASPECT_ROOT}, null, null, new Long(aclid),
-                      new String[]{"/"}, "system", null, null);
+                      new String[]{"/"}, "system", null, null, solrInformationServer);
               core.getUpdateHandler().addDoc(addDocCmd);
               addAcl(solrQueryRequest, core, dataModel, acltxid, aclid, 0, 0);
               AddUpdateCommand txCmd = new AddUpdateCommand(solrQueryRequest);
@@ -890,7 +896,7 @@ public class AlfrescoSolrUtils
         }
         else
         {
-            
+
             NamedList action = (NamedList) response.getValues().get("action");
             assertEquals(coreName, action.get("core"));
             //Get a reference to the new core

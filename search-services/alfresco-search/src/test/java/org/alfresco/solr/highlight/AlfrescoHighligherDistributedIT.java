@@ -18,52 +18,154 @@
  */
 package org.alfresco.solr.highlight;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.alfresco.solr.AlfrescoSolrUtils.ancestors;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
+import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
+import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
+import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
+import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.solr.AbstractAlfrescoDistributedIT;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.util.LuceneTestCase;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.AclChangeSet;
+import org.alfresco.solr.client.AclReaders;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.StringPropertyValue;
+import org.alfresco.solr.client.Transaction;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.TermQuery;
 import org.apache.solr.SolrTestCaseJ4;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.params.HighlightParams;
 import org.apache.solr.handler.component.AlfrescoSolrHighlighter;
 import org.apache.solr.handler.component.HighlightComponent;
 import org.apache.solr.highlight.SolrHighlighter;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.List;
+
 /**
- * Tests Alfresco-specific logic.
+ * This Highlighter Integration test is marked has been marked as ignored.
+ * While working on the SolrContentStore removal epic (SEARCH-1687) and specifically one of its subtasks (SEARCH-1693)
+ * we found this test completely commented. After refactoring the Alfresco Highlighter we tried to re-enable the test method
+ * and we found a major incompatibility between the response returned from Solr and the Solrj "javabin" writer used
+ * for interacting with Solr.
+ *
+ * The default Solr highlighting section appears like this (using the XML response writer):
+ *
+ * <pre>
+ *  &lt;lst name="_DEFAULT_!8000016f66a1a298!8000016f66a1a29e">
+ *      &lt;arr name="name">
+ *          &lt;str>some very &lt;em&gt;long&lt;/em&gt; name&lt;/str>
+ *      &lt;/arr>
+ *      &lt;arr name="title">
+ *          &lt;str>This the &lt;em&gt;long&lt;/em&gt; french version of of the&lt;/str>
+ *          &lt;str>This the &lt;em&gt;long&lt;/em&gt; english version of the&lt;/str>
+ *      &lt;/arr>
+ *  &lt;/lst>
+ *  ... (other highlighting snippets belonging to different documents)
+ * </pre>
+ *
+ * As you can see, for each document, there's a "lst" section where the name attribute contains the Solr document ID.
+ * Within that section, we have one array for each attribute ("name" and "title" in the example above) which contains
+ * the highlighting snippets.
+ *
+ * Following that structure, the "javabin" (default) response writer of Solrj assumes there can be only array members
+ * within each document highlight section and a consequence of that it casts the NamedList entry value as a List (the
+ * following is an extract from QueryResponse.java):
+ *
+ * <pre>
+ *   private void extractHighlightingInfo( NamedList<Object> info )
+ *   {
+ *     _highlighting = new HashMap<>();
+ *     for( Map.Entry<String, Object> doc : info ) {
+ *       Map<String,List<String>> fieldMap = new HashMap<>();
+ *       _highlighting.put( doc.getKey(), fieldMap );
+ *
+ *       NamedList<List<String>> fnl = (NamedList<List<String>>)doc.getValue();
+ *       for( Map.Entry<String, List<String>> field : fnl ) {
+ *         fieldMap.put( field.getKey(), field.getValue() );
+ *       }
+ *     }
+ *   }
+ * </pre>
+ *
+ * The AlfrescoHighlighter adds within that section an additional element which consists of the document DBID.
+ *
+ * <pre>
+ *  &lt;lst name="_DEFAULT_!8000016f66a1a298!8000016f66a1a29e">
+ *      &lt;str name="DBID">1577974866590&lt;/str>
+ *      &lt;arr name="name">
+ *          &lt;str>some very &lt;em&gt;long&lt;/em&gt; name&lt;/str>
+ *      &lt;/arr>
+ *      &lt;arr name="title">
+ *          &lt;str>This the &lt;em&gt;long&lt;/em&gt; french version of of the&lt;/str>
+ *          &lt;str>This the &lt;em&gt;long&lt;/em&gt; english version of the&lt;/str>
+ *      &lt;/arr>
+ *  &lt;/lst>
+ * </pre>
+ *
+ * Unfortunately that additional element is not an array so at the end, if we query Solr
+ *
+ * <ul>
+ *     <li>using Solrj</li>
+ *     <li>with highlighting enabled</li>
+ *     <li>with "javabin" response writer (which is the default)</li>
+ * </ul>
+ *
+ * a ClassCastException is thrown:
+ *
+ * <pre>
+ *  java.lang.ClassCastException: class java.lang.String cannot be cast to class java.util.List
+ * </pre>
+ *
+ * @see <a href="https://issues.alfresco.com/jira/browse/SEARCH-2033">SEARCH-2033</a>
  */
+@Ignore
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class AlfrescoHighligherDistributedIT extends AbstractAlfrescoDistributedIT
 {
-    private static Log logger = LogFactory.getLog(AlfrescoHighligherDistributedIT.class);
-    
-    @BeforeClass
-    private static void initData() throws Throwable
-    {
-        initSingleSolrServer("AlfrescoHighligherDistributedTest", DEFAULT_CORE_PROPS);
-    }
+    //@BeforeClass
+//    public static void initData() throws Throwable
+//    {
+//        initSolrServers(2, AlfrescoHighligherDistributedIT.class.getSimpleName(), DEFAULT_CORE_PROPS);
+//    }
 
-    @AfterClass
-    private static void destroyData()
-    {
-        dismissSolrServers();
-    }
-    
+    //@AfterClass
+//    public static void destroyData()
+//    {
+//        dismissSolrServers();
+//    }
+
+//    public void makeSureHighlightingIsProperlyConfigured()
+//    {
+//        SolrHighlighter highlighter = HighlightComponent.getHighlighter(defaultCore);
+//        assertTrue(
+//                "Wrong highlighter: " + highlighter.getClass(),
+//                highlighter instanceof AlfrescoSolrHighlighter);
+//    }
+
+    @Ignore
     @Test
-    public void testHighlight() throws Exception {
-
-        logger.info("######### Starting highlighter test ###########");
-        SolrHighlighter highlighter = HighlightComponent.getHighlighter(defaultCore);
-        assertTrue("wrong highlighter: " + highlighter.getClass(), highlighter instanceof AlfrescoSolrHighlighter);
-/**
+    public void testHighlight() throws Exception
+    {
         AclChangeSet aclChangeSet = getAclChangeSet(1);
         Acl acl = getAcl(aclChangeSet);
 
-        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, list("mike"), list("mike"), null);
+        AclReaders aclReaders = getAclReaders(aclChangeSet, acl, singletonList("mike"), singletonList("mike"), null);
 
-        indexAclChangeSet(aclChangeSet, list(acl), list(aclReaders));
+        indexAclChangeSet(aclChangeSet, singletonList(acl), singletonList(aclReaders));
 
         //First create a transaction.
         Transaction foldertxn = getTransaction(0, 1);
@@ -85,36 +187,32 @@ public class AlfrescoHighligherDistributedIT extends AbstractAlfrescoDistributed
         fileMetaData2.getProperties().put(ContentModel.PROP_NAME, new StringPropertyValue("some name"));
         fileMetaData2.getProperties().put(ContentModel.PROP_TITLE, new StringPropertyValue("title2"));
 
-        String LONG_TEXT = "this is some long text.  It has the word long in many places.  In fact, it has long on some different fragments.  " +
+        String LONG_TEXT = "this is some long text.  " +
+                "It has the word long in many places.  " +
+                "In fact, it has long on some different fragments.  " +
                 "Let us see what happens to long in this case.";
 
-        List<String> content = Arrays.asList(LONG_TEXT, LONG_TEXT);
+        List<String> content = asList(LONG_TEXT, LONG_TEXT);
 
-        //Index the transaction, nodes, and nodeMetaDatas.
-        indexTransaction(foldertxn, list(folderNode), list(folderMetaData));
+        indexTransaction(foldertxn, singletonList(folderNode), singletonList(folderMetaData));
         indexTransaction(txn,
-                list(fileNode, fileNode2),
-                list(fileMetaData, fileMetaData2),
+                asList(fileNode, fileNode2),
+                asList(fileMetaData, fileMetaData2),
                 content);
-        logger.info("######### Waiting for Doc Count ###########");
+
         waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_OWNER, "mike")), 3, 80000);
-        waitForDocCount(new TermQuery(new Term(ContentModel.PROP_TITLE.toString(), "title1")), 1, 500);
-        waitForDocCount(new TermQuery(new Term(ContentModel.PROP_DESCRIPTION.toString(), "mydesc")), 1, 500);
 
         //name, title, description, content
         //up to 3 matches in the content  (needs to be big enough)
-        QueryResponse response = query(jetty.getDefaultClient(), false,
+        QueryResponse response = query(getDefaultTestClient(), true,
                 "{\"locales\":[\"en\"], \"authorities\": [\"mike\"], \"tenants\": [ \"\" ]}",
-                params( "q", ContentModel.PROP_NAME.toString()+":some very long name",
+                params( "q", "name:some very long name",
                         "qt", "/afts", "start", "0", "rows", "5",
                         HighlightParams.HIGHLIGHT, "true",
-                        HighlightParams.FIELDS, "",
+                        HighlightParams.FIELDS, "name",
                         HighlightParams.SNIPPETS, String.valueOf(4),
                         HighlightParams.FRAGSIZE, String.valueOf(40)));
 
         assertTrue(response.getResults().getNumFound() > 0);
-
- **/
     }
-
 }

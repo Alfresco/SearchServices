@@ -37,7 +37,6 @@ import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.SolrKeyResourceLoader;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.alfresco.solr.client.SOLRAPIClientFactory;
-import org.alfresco.solr.content.SolrContentStore;
 import org.alfresco.solr.tracker.AclTracker;
 import org.alfresco.solr.tracker.CascadeTracker;
 import org.alfresco.solr.tracker.CommitTracker;
@@ -115,8 +114,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
                     AlfrescoSolrDataModel.getInstance().getDictionaryService(CMISStrictDictionaryService.DEFAULT),
                     AlfrescoSolrDataModel.getInstance().getNamespaceDAO());
 
-        SolrContentStore contentStore = admin.getSolrContentStore();
-        SolrInformationServer informationServer = new SolrInformationServer(admin, core, repositoryClient, contentStore);
+        SolrInformationServer informationServer = new SolrInformationServer(admin, core, repositoryClient);
         coreProperties.putAll(informationServer.getProps());
         admin.getInformationServers().put(core.getName(), informationServer);
 
@@ -164,7 +162,6 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
 
         boolean trackersHaveBeenEnabled = Boolean.parseBoolean(coreProperties.getProperty("enable.alfresco.tracking", "true"));
         boolean owningCoreIsSlave = isSlaveModeEnabledFor(core);
-        contentStore.toggleReadOnlyMode(owningCoreIsSlave);
 
         if (trackerRegistry.hasTrackersForCore(core.getName()))
         {
@@ -421,6 +418,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
      * @param core the hosting {@link SolrCore} instance.
      * @return true if the content store must be set in read only mode, false otherwise.
      */
+    @SuppressWarnings("rawtypes")
     boolean isSlaveModeEnabledFor(SolrCore core)
     {
         Predicate<PluginInfo> onlyReplicationHandler =

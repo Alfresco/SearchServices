@@ -19,7 +19,6 @@
 package org.alfresco.solr.tracker;
 
 import org.alfresco.repo.index.shard.ShardMethodEnum;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -32,31 +31,29 @@ import java.util.Properties;
  */
 
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedDateQuarterAlfrescoSolrTrackerIT extends DistributedDateAbstractSolrTrackerIT
 {
-
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
-        initSolrServers(6, "DistributedDateQuarterAlfrescoSolrTrackerTest", getShardMethod());
+        initSolrServers(6, getSimpleClassName(), getShardMethod());
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }
     
     @Override
-    protected void assertCorrect(int numNodes) throws Exception {
+    protected void assertCorrect(int numNodes) throws Exception
+    {
         //We should expect roughly 25% on each of the 4 cores
         int shardHits = assertNodesPerShardGreaterThan((int)((numNodes)*.22), true);
         //We have 6 shards but we are sharding by quarter so only 4 of the shards should be used.
         assertEquals(4, shardHits);
     }
 
-    
     protected static Properties getShardMethod()
     {
         Properties prop = new Properties();

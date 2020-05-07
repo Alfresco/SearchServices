@@ -56,13 +56,15 @@ public class SlaveCoreStatePublisher extends CoreStatePublisher
 
 
     // Share run and write locks across all SlaveCoreStatePublisher threads
-    private static Map<String, Semaphore> RUN_LOCK_BY_CORE = new ConcurrentHashMap<>();
-    private static Map<String, Semaphore> WRITE_LOCK_BY_CORE = new ConcurrentHashMap<>();
+    private static final Map<String, Semaphore> RUN_LOCK_BY_CORE = new ConcurrentHashMap<>();
+    private static final Map<String, Semaphore> WRITE_LOCK_BY_CORE = new ConcurrentHashMap<>();
+
     @Override
     public Semaphore getWriteLock()
     {
         return WRITE_LOCK_BY_CORE.get(coreName);
     }
+
     @Override
     public Semaphore getRunLock()
     {

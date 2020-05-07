@@ -20,7 +20,7 @@ import java.util.Set;
 
 public class SolrResponsesComparator
 {
-    private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     
     protected int flags;
     
@@ -42,7 +42,7 @@ public class SolrResponsesComparator
      * Puts default values for handle
      */
     public void putHandleDefaults() {
-        handle.put("explain", SKIPVAL);
+        handle.put("[explain]", SKIPVAL);
         handle.put("timestamp", SKIPVAL);
         handle.put("score", SKIPVAL);
         handle.put("wt", SKIP);
@@ -66,7 +66,7 @@ public class SolrResponsesComparator
         String cmp = compare(a.getResponse(), b.getResponse(), flags, handle);
         if (cmp != null)
         {
-            log.error("Mismatched responses:\n" + a + "\n" + b);
+            LOGGER.error("Mismatched responses:\n" + a + "\n" + b);
             Assert.fail(cmp);
         }
     }

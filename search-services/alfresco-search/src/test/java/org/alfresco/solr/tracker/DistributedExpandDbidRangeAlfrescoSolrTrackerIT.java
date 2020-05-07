@@ -32,7 +32,6 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.LegacyNumericRangeQuery;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.response.SolrQueryResponse;
@@ -41,6 +40,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -60,17 +60,22 @@ import static org.alfresco.solr.AlfrescoSolrUtils.list;
  * @author Joel
  */
 @SolrTestCaseJ4.SuppressSSL
-@LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
 public class DistributedExpandDbidRangeAlfrescoSolrTrackerIT extends AbstractAlfrescoDistributedIT
 {
     @BeforeClass
-    private static void initData() throws Throwable
+    public static void initData() throws Throwable
     {
-        initSolrServers(2, "DistributedExpandDbidRangeAlfrescoSolrTrackerIT", getShardMethod());
+        initSolrServers(2, getSimpleClassName(), getShardMethod());
+
+        // In this test we don't load any data so the test methods starts immediately after the BeforeClass.
+        // The sleep below is required because in order to allow a proper and complete core load. Without sleeping a bit,
+        // the test method would execute when trackers are not yet registered. If the tracker registry is empty then the
+        // instance is supposed to be a slave, and slaves don't provide the "rangeCheck" endpoint tested by this test case.
+        Thread.sleep(10000);
     }
 
     @AfterClass
-    private static void destroyData()
+    public static void destroyData()
     {
         dismissSolrServers();
     }
@@ -83,16 +88,16 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerIT extends AbstractAlf
         int numAcls = 250;
         AclChangeSet bulkAclChangeSet = getAclChangeSet(numAcls);
 
-        List<Acl> bulkAcls = new ArrayList();
-        List<AclReaders> bulkAclReaders = new ArrayList();
+        List<Acl> bulkAcls = new ArrayList<>();
+        List<AclReaders> bulkAclReaders = new ArrayList<>();
 
         for(int i=0; i<numAcls; i++) {
             Acl bulkAcl = getAcl(bulkAclChangeSet);
             bulkAcls.add(bulkAcl);
             bulkAclReaders.add(getAclReaders(bulkAclChangeSet,
                 bulkAcl,
-                list("joel"+bulkAcl.getId()),
-                list("phil"+bulkAcl.getId()),
+                Collections.singletonList("joel"+bulkAcl.getId()),
+                    Collections.singletonList("phil"+bulkAcl.getId()),
                 null));
         }
 
@@ -118,7 +123,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerIT extends AbstractAlf
         assertEquals((long)values0.get("minDbid"), 0);
         assertEquals((long)values0.get("maxDbid"), 0);
         assertEquals((long)values0.get("expand"), 0);
-        assertEquals((boolean)values0.get("expanded"), false);
+        assertFalse((boolean) values0.get("expanded"));
 
         System.out.println("RANGECHECK0:"+values0);
 
@@ -133,11 +138,11 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerIT extends AbstractAlf
         assertEquals((long)values1.get("minDbid"), 0);
         assertEquals((long)values1.get("maxDbid"), 0);
         assertEquals((long)values1.get("expand"), 0);
-        assertEquals((boolean)values1.get("expanded"), false);
+        assertFalse((boolean) values1.get("expanded"));
 
         int numNodes = 25;
-        List<Node> nodes = new ArrayList();
-        List<NodeMetaData> nodeMetaDatas = new ArrayList();
+        List<Node> nodes = new ArrayList<>();
+        List<NodeMetaData> nodeMetaDatas = new ArrayList<>();
 
         Transaction bigTxn = getTransaction(0, numNodes);
 
@@ -163,7 +168,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerIT extends AbstractAlf
         assertEquals((long)values0.get("minDbid"), 0);
         assertEquals((long) values0.get("maxDbid"), 24);
         assertEquals((long) values0.get("expand"), 0);
-        assertEquals((boolean) values0.get("expanded"), false);
+        assertFalse((boolean) values0.get("expanded"));
 
         System.out.println("_RANGECHECK0:" + values0);
 
@@ -175,15 +180,11 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerIT extends AbstractAlf
         assertEquals((long)values0.get("minDbid"), 0);
         assertEquals((long) values1.get("maxDbid"), 0);
         assertEquals((long) values1.get("expand"), 0);
-        assertEquals((boolean) values1.get("expanded"), false);
-
-        System.out.println("_RANGECHECK1:" + values1);
-
-
+        assertFalse((boolean) values1.get("expanded"));
 
         numNodes = 26;
-        nodes = new ArrayList();
-        nodeMetaDatas = new ArrayList();
+        nodes = new ArrayList<>();
+        nodeMetaDatas = new ArrayList<>();
 
         bigTxn = getTransaction(0, numNodes);
 
@@ -209,7 +210,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerIT extends AbstractAlf
         assertEquals((long) values0.get("maxDbid"), 60);
         assertEquals((double) values0.get("density"), .85, 0.0);
         assertEquals((long) values0.get("expand"), 17);
-        assertEquals((boolean) values0.get("expanded"), false);
+        assertFalse((boolean) values0.get("expanded"));
 
         System.out.println("_RANGECHECK0:" + values0);
 
@@ -221,13 +222,13 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerIT extends AbstractAlf
         assertEquals((long)values0.get("minDbid"), 0);
         assertEquals((long) values1.get("maxDbid"), 0);
         assertEquals((long) values1.get("expand"), 0);
-        assertEquals((boolean) values1.get("expanded"), false);
+        assertFalse((boolean) values1.get("expanded"));
 
         System.out.println("_RANGECHECK1:" + values1);
 
         numNodes = 5;
-        nodes = new ArrayList();
-        nodeMetaDatas = new ArrayList();
+        nodes = new ArrayList<>();
+        nodeMetaDatas = new ArrayList<>();
 
         bigTxn = getTransaction(0, numNodes);
 
@@ -253,7 +254,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerIT extends AbstractAlf
         assertEquals((long) values0.get("maxDbid"), 76);
         assertEquals((double) values0.get("density"), 0.7368421052631579, 0.0);
         assertEquals((long) values0.get("expand"), -1);
-        assertEquals((boolean) values0.get("expanded"), false);
+        assertFalse((boolean) values0.get("expanded"));
 
         SolrQueryResponse expandResponse = expand(0, 35);
         NamedList expandValues = expandResponse.getValues();
@@ -274,11 +275,11 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerIT extends AbstractAlf
         assertEquals((long)values0.get("minDbid"), 0);
         assertEquals((long) values1.get("maxDbid"), 0);
         assertEquals((long) values1.get("expand"), 0);
-        assertEquals((boolean) values1.get("expanded"), false);
+        assertFalse((boolean) values1.get("expanded"));
 
         numNodes = 5;
-        nodes = new ArrayList();
-        nodeMetaDatas = new ArrayList();
+        nodes = new ArrayList<>();
+        nodeMetaDatas = new ArrayList<>();
 
         bigTxn = getTransaction(0, numNodes);
 
@@ -303,7 +304,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerIT extends AbstractAlf
         assertEquals((long) values0.get("maxDbid"), 76);
         assertEquals((double) values0.get("density"), 0.7368421052631579, 0.0);
         assertEquals((long) values0.get("expand"), -1);
-        assertEquals((boolean) values0.get("expanded"), false);
+        assertFalse((boolean) values0.get("expanded"));
 
         response1 = rangeCheck(1);
         values1 = response1.getValues();
@@ -315,11 +316,11 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerIT extends AbstractAlf
         assertEquals((long)values1.get("minDbid"), 100);
         assertEquals((long) values1.get("maxDbid"), 104);
         assertEquals((long) values1.get("expand"), 0);
-        assertEquals((boolean) values1.get("expanded"), false);
+        assertFalse((boolean) values1.get("expanded"));
 
         numNodes = 35;
-        nodes = new ArrayList();
-        nodeMetaDatas = new ArrayList();
+        nodes = new ArrayList<>();
+        nodeMetaDatas = new ArrayList<>();
 
         bigTxn = getTransaction(0, numNodes);
 
@@ -344,7 +345,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerIT extends AbstractAlf
         assertEquals((long) values0.get("maxDbid"), 76);
         assertEquals((double) values0.get("density"), 0.7368421052631579, 0.0);
         assertEquals((long) values0.get("expand"), -1);
-        assertEquals((boolean) values0.get("expanded"), false);
+        assertFalse((boolean) values0.get("expanded"));
 
         response1 = rangeCheck(1);
         values1 = response1.getValues();
@@ -358,7 +359,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerIT extends AbstractAlf
         assertEquals((long) values1.get("maxDbid"), 154);
         assertEquals((double) values1.get("density"), 0.7407407407407407, 0.0);
         assertEquals((long) values1.get("expand"), 35);
-        assertEquals((boolean) values1.get("expanded"), false);
+        assertFalse((boolean) values1.get("expanded"));
 
 
         //expand shard1 by 20
@@ -375,8 +376,6 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerIT extends AbstractAlf
 
         response1 = rangeCheck(1);
         values1 = response1.getValues();
-        System.out.println("_RANGECHECK1:" + values1);
-        //{start=100,end=235,nodeCount=40,maxDbid=154,density=0.7407407407407407,expand=-1,expanded=true}
 
         assertEquals((long) values1.get("start"), 100);
         assertEquals((long) values1.get("end"), 235);
@@ -385,11 +384,11 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerIT extends AbstractAlf
         assertEquals((long) values1.get("maxDbid"), 154);
         assertEquals((double) values1.get("density"),0.7407407407407407, 0.0);
         assertEquals((long) values1.get("expand"), -1);
-        assertEquals((boolean) values1.get("expanded"), true);
+        assertTrue((boolean) values1.get("expanded"));
 
         numNodes = 3;
-        nodes = new ArrayList();
-        nodeMetaDatas = new ArrayList();
+        nodes = new ArrayList<>();
+        nodeMetaDatas = new ArrayList<>();
 
         bigTxn = getTransaction(0, numNodes);
 
@@ -417,7 +416,7 @@ public class DistributedExpandDbidRangeAlfrescoSolrTrackerIT extends AbstractAlf
         assertEquals((long) values1.get("maxDbid"), 232);
         assertEquals((double) values1.get("density"), 0.32575757575757575, 0.0);
         assertEquals((long) values1.get("expand"), -1);
-        assertEquals((boolean) values1.get("expanded"), true);
+        assertTrue((boolean) values1.get("expanded"));
     }
 
     protected static Properties getShardMethod()

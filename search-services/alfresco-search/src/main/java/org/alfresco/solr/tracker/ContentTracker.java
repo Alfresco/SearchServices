@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-    package org.alfresco.solr.tracker;
+package org.alfresco.solr.tracker;
 
 import com.google.common.collect.Lists;
-import org.alfresco.solr.AlfrescoSolrDataModel.TenantAclIdDbId;
+import org.alfresco.solr.AlfrescoSolrDataModel.TenantDbId;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.slf4j.Logger;
@@ -33,6 +33,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Semaphore;
 
+import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
+
 /**
  * This tracker queries for docs with unclean content, and then updates them.
  * Similar to org.alfresco.repo.search.impl.lucene.ADMLuceneIndexerImpl
@@ -41,18 +43,16 @@ import java.util.concurrent.Semaphore;
  */
 public class ContentTracker extends AbstractTracker implements Tracker
 {
-
     protected final static Logger LOGGER = LoggerFactory.getLogger(ContentTracker.class);
 
-    private static int DEFAULT_CONTENT_UPDATE_BATCH_SIZE = 2000;
     private static final int DEFAULT_CONTENT_TRACKER_MAX_PARALLELISM = 32;
 
     private int contentTrackerParallelism;
     private int contentUpdateBatchSize;
     
     // Share run and write locks across all ContentTracker threads
-    private static Map<String, Semaphore> RUN_LOCK_BY_CORE = new ConcurrentHashMap<>();
-    private static Map<String, Semaphore> WRITE_LOCK_BY_CORE = new ConcurrentHashMap<>();
+    private static final Map<String, Semaphore> RUN_LOCK_BY_CORE = new ConcurrentHashMap<>();
+    private static final Map<String, Semaphore> WRITE_LOCK_BY_CORE = new ConcurrentHashMap<>();
     private ForkJoinPool forkJoinPool;
 
     @Override
@@ -60,20 +60,24 @@ public class ContentTracker extends AbstractTracker implements Tracker
     {
         return WRITE_LOCK_BY_CORE.get(coreName);
     }
+
     @Override
     public Semaphore getRunLock()
     {
         return RUN_LOCK_BY_CORE.get(coreName);
     }
 
-    public ContentTracker(Properties p, SOLRAPIClient client, String coreName,
-                InformationServer informationServer)
+    public ContentTracker(Properties p, SOLRAPIClient client, String coreName, InformationServer informationServer)
     {
         super(p, client, coreName, informationServer, Tracker.Type.CONTENT);
+        int DEFAULT_CONTENT_UPDATE_BATCH_SIZE = 2000;
+
         contentUpdateBatchSize = Integer.parseInt(p.getProperty("alfresco.contentUpdateBatchSize",
                 String.valueOf(DEFAULT_CONTENT_UPDATE_BATCH_SIZE)));
+
         contentTrackerParallelism = Integer.parseInt(p.getProperty("alfresco.contentTrackerMaxParallelism",
                 String.valueOf(DEFAULT_CONTENT_TRACKER_MAX_PARALLELISM)));
+
         forkJoinPool = new ForkJoinPool(contentTrackerParallelism);
 
         RUN_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
@@ -88,29 +92,29 @@ public class ContentTracker extends AbstractTracker implements Tracker
     @Override
     protected void doTrack(String iterationId) throws Exception
     {
-        
-        try 
+        try
         {
             long startElapsed = System.nanoTime();
 
             checkShutdown();
-            long totalDocs = 0l;
+            long totalDocs = 0L;
             checkShutdown();
-            while (true) {
+            while (true)
+            {
                 try
                 {
                     getWriteLock().acquire();
 
-                    List<TenantAclIdDbId> docs = this.infoSrv.getDocsWithUncleanContent();
-                    if (docs.size() == 0) {
+                    List<TenantDbId> docs = notNullOrEmpty(this.infoSrv.getDocsWithUncleanContent());
+                    if (docs.isEmpty())
+                    {
+                        LOGGER.trace("No unclean document has been detected in the current ContentTracker cycle.");
                         break;
                     }
 
-                    List<List<TenantAclIdDbId>> docBatches = Lists.partition(docs, contentUpdateBatchSize);
-                    for (List<TenantAclIdDbId> batch : docBatches) {
-
-
-
+                    List<List<TenantDbId>> docBatches = Lists.partition(docs, contentUpdateBatchSize);
+                    for (List<TenantDbId> batch : docBatches)
+                    {
                         Integer processedDocuments = forkJoinPool.submit(() ->
                                 // Parallel task here, for example
                                 batch.parallelStream().map(doc -> {
@@ -124,7 +128,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
                         trackerStats.addElapsedContentTime(processedDocuments, endElapsed - startElapsed);
                         startElapsed = endElapsed;
 
-                    };
+                    }
 
                     totalDocs += docs.size();
                     checkShutdown();
@@ -136,7 +140,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
             }
 
             LOGGER.info("{}-[CORE {}] Total number of docs with content updated: {} ", Thread.currentThread().getId(), coreName, totalDocs);
-            
+
         }
         catch(Exception e)
         {
@@ -144,15 +148,18 @@ public class ContentTracker extends AbstractTracker implements Tracker
         }
     }
 
-    public boolean hasMaintenance() {
+    public boolean hasMaintenance()
+    {
         return false;
     }
 
-    public void maintenance() {
-        return;
+    public void maintenance()
+    {
+        // Nothing to be done here
     }
 
-    public void invalidateState() {
+    public void invalidateState()
+    {
         super.invalidateState();
         this.infoSrv.setCleanContentTxnFloor(-1);
     }
@@ -160,11 +167,11 @@ public class ContentTracker extends AbstractTracker implements Tracker
     class ContentIndexWorkerRunnable extends AbstractWorker
     {
         InformationServer infoServer;
-        TenantAclIdDbId doc;
+        TenantDbId docRef;
 
-        ContentIndexWorkerRunnable(TenantAclIdDbId doc, InformationServer infoServer)
+        ContentIndexWorkerRunnable(TenantDbId doc, InformationServer infoServer)
         {
-            this.doc = doc;
+            this.docRef = doc;
             this.infoServer = infoServer;
         }
 
@@ -172,7 +179,8 @@ public class ContentTracker extends AbstractTracker implements Tracker
         protected void doWork() throws Exception
         {
             checkShutdown();
-            this.infoServer.updateContentToIndexAndCache(doc.dbId, doc.tenant);
+
+            infoServer.updateContent(docRef);
         }
         
         @Override

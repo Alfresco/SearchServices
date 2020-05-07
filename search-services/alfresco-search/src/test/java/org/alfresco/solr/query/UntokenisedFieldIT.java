@@ -49,7 +49,7 @@ public class UntokenisedFieldIT extends AbstractAlfrescoSolrIT
     public void setup() throws Exception
     {
         initAlfrescoCore("schema.xml");
-        assertU(adoc("id", "1", 
+        assertU(adoc("id", "1",
                 nodeRefS, nodeRef,
                 nodeRefM, nodeRef, 
                 nodeRefMD, nodeRef, 
@@ -59,7 +59,7 @@ public class UntokenisedFieldIT extends AbstractAlfrescoSolrIT
                 categoryMultiField, categoryValue,
                 categoryMultiDocField, categoryValue,
                 categorySingleDocField, categoryValue,
-                "_version_","1"
+                "_version_","0"
                 ));
         assertU(commit());
     }

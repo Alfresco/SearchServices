@@ -31,6 +31,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.client.PropertyValue;
 import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.dataload.TestDataProvider;
+import org.apache.solr.SolrTestCaseJ4;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -39,6 +40,7 @@ import org.junit.Test;
  *
  * @author msuzuki
  */
+@SolrTestCaseJ4.SuppressSSL
 public class AFTSDisjunctionIT extends AbstractRequestHandlerIT
 {
     @BeforeClass
