@@ -42,11 +42,7 @@ import org.slf4j.LoggerFactory;
 public class DocValueDocTransformer extends DocTransformer
 {
     protected final static Logger log = LoggerFactory.getLogger(DocValueDocTransformer.class);
-    
-    ResultContext context;
 
-   
-    
     /* (non-Javadoc)
      * @see org.apache.solr.response.transform.DocTransformer#getName()
      */

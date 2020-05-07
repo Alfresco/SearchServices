@@ -37,10 +37,6 @@ import org.apache.lucene.search.Weight;
  */
 public class SolrContainerScorer extends Scorer
 {
-    // Unused
-    Weight weight;
-
-  
     SolrContainerScorerDocIdSetIterator iterator;
     
 

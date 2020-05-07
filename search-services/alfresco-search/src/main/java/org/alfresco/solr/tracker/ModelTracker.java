@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -47,6 +49,8 @@ import org.alfresco.solr.client.SOLRAPIClient;
 import org.alfresco.solr.config.ConfigUtil;
 import org.apache.solr.core.SolrResourceLoader;
 import org.json.JSONException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @startuml
@@ -82,6 +86,7 @@ import org.json.JSONException;
  */
 public class ModelTracker extends AbstractTracker implements Tracker
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ModelTracker.class);
 
     private final Set<StoreRef> indexedStores = new HashSet<>();
     private final Set<StoreRef> ignoredStores = new HashSet<>();
@@ -100,19 +105,36 @@ public class ModelTracker extends AbstractTracker implements Tracker
     private volatile boolean hasModels = false;
     private File alfrescoModelDir;
 
+    // Share run and write locks across all ModelTracker threads
+    private static Map<String, Semaphore> RUN_LOCK_BY_CORE = new ConcurrentHashMap<>();
+    private static Map<String, Semaphore> WRITE_LOCK_BY_CORE = new ConcurrentHashMap<>();
+    @Override
+    public Semaphore getWriteLock()
+    {
+        return WRITE_LOCK_BY_CORE.get(coreName);
+    }
+    @Override
+    public Semaphore getRunLock()
+    {
+        return RUN_LOCK_BY_CORE.get(coreName);
+    }
+
     public ModelTracker(String solrHome, Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer)
     {
         super(p, client, coreName, informationServer, Tracker.Type.MODEL);
         String normalSolrHome = SolrResourceLoader.normalizeDir(solrHome);
         alfrescoModelDir = new File(ConfigUtil.locateProperty("solr.model.dir", normalSolrHome+"alfrescoModels"));
-        logger.info("Alfresco Model dir " + alfrescoModelDir);
+        LOGGER.info("Alfresco Model dir {}", alfrescoModelDir);
         if (!alfrescoModelDir.exists())
         {
             alfrescoModelDir.mkdir();
         }
 
         loadPersistedModels();
+
+        RUN_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
+        WRITE_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
     }
 
     @Override
@@ -197,7 +219,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
         int registeredSearcherCount = this.infoSrv.getRegisteredSearcherCount();
         if (registeredSearcherCount >= getMaxLiveSearchers())
         {
-            logger.info(".... skipping tracking registered searcher count = " + registeredSearcherCount);
+            LOGGER.info(".... skipping tracking registered searcher count = {}", registeredSearcherCount);
             return;
         }
 
@@ -268,7 +290,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
         }
         catch (Throwable t)
         {
-            logger.error("Model tracking failed for core: "+ coreName, t);
+            LOGGER.error("Model tracking failed for core: {}", coreName, t);
         }
 
     }
@@ -534,7 +556,7 @@ public class ModelTracker extends AbstractTracker implements Tracker
             {
                 loadedModels.add(modelName);
             }
-            logger.info("Loading model " + model.getName());
+            LOGGER.info("Loading model {}", model.getName());
         }
     }
 

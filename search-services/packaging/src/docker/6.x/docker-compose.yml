@@ -70,6 +70,8 @@ services:
       - ALFRESCO_SECURE_COMMS=none
       #Enable Spellcheck by setting to true
       - ENABLE_SPELLCHECK=${SEARCH_ENABLE_SPELLCHECK}
+      #Disable cascade tracking by setting to true, default false - as cascade tracking is enabled.
+      - DISABLE_CASCADE_TRACKING=${DISABLE_CASCADE_TRACKING}
     ports:
       - 8083:8983 #Browser port
 
