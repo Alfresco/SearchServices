@@ -5472,6 +5472,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             throw new RuntimeException("Error analyzing multiTerm term: " + part, e);
         }
     }
+    
+    private boolean analyzeRangeTerms = true;
 
     protected Query newRangeQuery(String field, String part1, String part2, boolean startInclusive, boolean endInclusive) {
         final BytesRef start;
@@ -5480,13 +5482,13 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         if (part1 == null) {
             start = null;
         } else {
-            start = getAnalyzeRangeTerms() ? analyzeMultitermTerm(field, part1) : new BytesRef(part1);
+            start = analyzeRangeTerms ? analyzeMultitermTerm(field, part1) : new BytesRef(part1);
         }
 
         if (part2 == null) {
             end = null;
         } else {
-            end = getAnalyzeRangeTerms() ? analyzeMultitermTerm(field, part2) : new BytesRef(part2);
+            end = analyzeRangeTerms ? analyzeMultitermTerm(field, part2) : new BytesRef(part2);
         }
 
         final TermRangeQuery query = new TermRangeQuery(field, start, end, startInclusive, endInclusive);

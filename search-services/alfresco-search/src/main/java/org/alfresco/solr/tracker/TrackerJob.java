@@ -18,7 +18,6 @@
  */
 package org.alfresco.solr.tracker;
 
-import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -29,12 +28,8 @@ import org.slf4j.LoggerFactory;
  * Generic Solr tracker job, allowing Quartz to initiate an index update from
  * a {@link Tracker} regardless of specific implementation.
  * 
- * Concurrent execution is disallowed, as no parallel work can be done when 
- * indexing contents from the repository.
- * 
  * @author Matt Ward
  */
-@DisallowConcurrentExecution
 public class TrackerJob implements Job
 {
     public static final String JOBDATA_TRACKER_KEY = "TRACKER";

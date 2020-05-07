@@ -6,6 +6,7 @@
 		<query value="SELECT * FROM tas:document" expectedResults="4" />
 		<query value="SELECT * FROM tas:folder WHERE IN_FOLDER('NODE_REF[siteId]')" expectedResults="2" />
 		<query value="SELECT * FROM tas:document WHERE IN_FOLDER('NODE_REF[siteId]')" expectedResults="1" />
+		<query value="SELECT * FROM tas:document WHERE IN_TREE('NODE_REF[siteId]')" expectedResults="4" />
 		<query value="SELECT * FROM cmis:document WHERE cmis:objectTypeId = 'D:tas:document'" expectedResults="4" />
 		<query value="SELECT * FROM cmis:document WHERE cmis:objectTypeId &lt;&gt; 'D:tas:document' AND cmis:name LIKE 'standard%'" expectedResults="2" />
 		<query value="SELECT * FROM cmis:document WHERE cmis:objectTypeId IN ('D:tas:document') AND cmis:name LIKE 'tas%'" expectedResults="4" />

@@ -18,8 +18,6 @@
  */
 package org.alfresco.solr.tracker;
 
-import static java.util.Arrays.asList;
-
 import static org.alfresco.solr.AlfrescoSolrUtils.ancestors;
 import static org.alfresco.solr.AlfrescoSolrUtils.createGUID;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
@@ -355,11 +353,13 @@ public class AlfrescoSolrTrackerIT extends AbstractAlfrescoSolrIT
 
         logger.info("#################### Passed Fifteenth Test ##############################");
 
-        // Change the aclReaders
-        aclReaders.setReaders(asList("andy"));
+
+        List<String> readers = aclReaders.getReaders();
+        readers.set(0, "andy"); // Change the aclReader
         indexAclId(acl.getId());
 
-        aclReaders2.setReaders(asList("ice"));
+        List<String> readers2 = aclReaders2.getReaders();
+        readers2.set(0, "ice"); // Change the aclReader
         reindexAclId(acl2.getId());
 
 
@@ -382,9 +382,8 @@ public class AlfrescoSolrTrackerIT extends AbstractAlfrescoSolrIT
 
         logger.info("#################### Passed Seventeenth Test ##############################");
 
-        // Change the aclReaders
-        aclReaders.setReaders(asList("alan"));
-        aclReaders2.setReaders(asList("paul"));
+        readers.set(0, "alan"); // Change the aclReader
+        readers2.set(0, "paul"); // Change the aclReader
 
         reindexAclChangeSetId(aclChangeSet.getId()); //This should replace "andy" and "ice" with "alan" and "paul"
 

@@ -25,9 +25,6 @@
  */
 package org.alfresco.solr.client;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -36,7 +33,7 @@ import java.util.List;
  */
 public class AclChangeSets
 {
-    private final List<AclChangeSet> aclChangeSets;
+    private List<AclChangeSet> aclChangeSets;
     
     private Long maxChangeSetCommitTime;
     
@@ -44,26 +41,14 @@ public class AclChangeSets
     
     AclChangeSets(List<AclChangeSet> aclChangeSets, Long maxChangeSetCommitTime, Long maxChangeSetId)
     {
-        this.aclChangeSets = (aclChangeSets == null ? null : new ArrayList<>(aclChangeSets));
+        this.aclChangeSets = aclChangeSets;
         this.maxChangeSetCommitTime = maxChangeSetCommitTime;
         this.maxChangeSetId = maxChangeSetId;
     }
 
-    public AclChangeSets(List<AclChangeSet> aclChangeSets)
-    {
-        this.aclChangeSets = aclChangeSets;
-        if (!aclChangeSets.isEmpty())
-        {
-            this.maxChangeSetCommitTime = aclChangeSets.stream()
-                    .max(Comparator.comparing(AclChangeSet::getCommitTimeMs)).get().getCommitTimeMs();
-            this.maxChangeSetId = aclChangeSets.stream()
-                    .max(Comparator.comparing(AclChangeSet::getId)).get().getId();
-        }
-    }
-
     public List<AclChangeSet> getAclChangeSets()
     {
-        return Collections.unmodifiableList(aclChangeSets);
+        return aclChangeSets;
     }
 
     public Long getMaxChangeSetCommitTime()

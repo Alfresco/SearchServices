@@ -25,7 +25,6 @@
  */
 package org.alfresco.solr.client;
 
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -45,18 +44,6 @@ public class Transactions
         this.transactions = transactions;
         this.maxTxnCommitTime = maxTxnCommitTime;
         this.maxTxnId = maxTxnId;
-    }
-    
-    public Transactions(List<Transaction> transactions)
-    {
-        this.transactions = transactions;
-        if (!transactions.isEmpty())
-        {
-            this.maxTxnCommitTime = transactions.stream()
-                    .max(Comparator.comparing(Transaction::getCommitTimeMs)).get().getCommitTimeMs();
-            this.maxTxnId = transactions.stream()
-                    .max(Comparator.comparing(Transaction::getId)).get().getId();
-        }
     }
 
     public List<Transaction> getTransactions()

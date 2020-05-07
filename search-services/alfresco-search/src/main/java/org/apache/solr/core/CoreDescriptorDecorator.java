@@ -43,7 +43,7 @@ public class CoreDescriptorDecorator
     
     private static String SECURE_COMMS_PROPERTY =  "alfresco.secureComms";
 
-    public static final ImmutableList<String> SUBSTITUTABLE_PROPERTIES_SECURE =
+    public static ImmutableList<String> substitutablePropertiesSecure = 
             ImmutableList.of(
                     "alfresco.host",
                     "alfresco.port",
@@ -59,7 +59,7 @@ public class CoreDescriptorDecorator
                     "alfresco.encryption.ssl.keystore.provider",
                     "alfresco.encryption.ssl.truststore.type");
 
-    public static final ImmutableList<String> SUBSTITUTABLE_PROPERTIES_NONE =
+    public static ImmutableList<String> substitutablePropertiesNone = 
             ImmutableList.of(
                     "alfresco.host",
                     "alfresco.port",
@@ -74,11 +74,11 @@ public class CoreDescriptorDecorator
         String comms = ConfigUtil.locateProperty(SECURE_COMMS_PROPERTY, "none");
         if (comms.equals("https"))
         {
-        	coreProperties = SUBSTITUTABLE_PROPERTIES_SECURE;
+        	coreProperties = substitutablePropertiesSecure;
         }
         else 
         {
-        	coreProperties = SUBSTITUTABLE_PROPERTIES_NONE;
+        	coreProperties = substitutablePropertiesNone;
         }
         
         try

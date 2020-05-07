@@ -9,7 +9,6 @@ package org.alfresco.test.search.functional.searchServices.search;
 
 import org.alfresco.rest.model.RestNodeAssociationModelCollection;
 import org.alfresco.rest.model.RestNodeChildAssociationModel;
-import org.alfresco.search.TestGroup;
 import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.alfresco.utility.data.CustomObjectTypeProperties;
 import org.alfresco.utility.model.FileModel;
@@ -53,7 +52,7 @@ public class SearchSecondaryAssociationTest extends AbstractE2EFunctionalTest
         waitForMetadataIndexing(file1.getName(), true);
     }
     
-    @Test(priority = 1, groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
+    @Test(priority = 1)
     public void testSearchPathForSecondaryAssociation() throws Exception
     {
         String queryPathFolder1 = "PATH:\"/app:company_home/st:sites/cm:" + testSite.getTitle() +

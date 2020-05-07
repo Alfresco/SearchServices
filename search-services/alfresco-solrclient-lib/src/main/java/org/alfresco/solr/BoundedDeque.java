@@ -38,7 +38,7 @@ public class BoundedDeque<T> implements Iterable<T>
     public BoundedDeque(int max)
     {
         this.max = max;
-        this.deque = new LinkedBlockingDeque<T>();
+        setDeque(new LinkedBlockingDeque<T>());
     }
 
     /**
@@ -46,21 +46,21 @@ public class BoundedDeque<T> implements Iterable<T>
      */
     public int size()
     {
-        return deque.size();
+        return getDeque().size();
     }
 
     public void add(T add)
     {
-        while (deque.size() > (max - 1))
+        while (getDeque().size() > (max - 1))
         {
-            deque.removeLast();
+            getDeque().removeLast();
         }
-        deque.addFirst(add);
+        getDeque().addFirst(add);
     }
 
     public T getLast()
     {
-        return deque.getFirst();
+        return getDeque().getFirst();
     }
 
     /*
@@ -70,17 +70,17 @@ public class BoundedDeque<T> implements Iterable<T>
     @Override
     public Iterator<T> iterator()
     {
-        return deque.iterator();
+        return getDeque().iterator();
     }
 
-    /** Get a copy of the deque. */
     public LinkedBlockingDeque<T> getDeque()
     {
-        return new LinkedBlockingDeque(deque);
+        return deque;
     }
 
     public void setDeque(LinkedBlockingDeque<T> deque)
     {
-        this.deque = new LinkedBlockingDeque(deque);
+        this.deque = deque;
     }
+
 }

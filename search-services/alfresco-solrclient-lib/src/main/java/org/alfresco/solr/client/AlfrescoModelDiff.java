@@ -36,10 +36,10 @@ import org.alfresco.service.namespace.QName;
  */
 public class AlfrescoModelDiff
 {
-    public enum TYPE
+    public static enum TYPE
     {
         NEW, CHANGED, REMOVED;
-    }
+    };
     
     private QName modelName;
     private TYPE type;
@@ -74,8 +74,7 @@ public class AlfrescoModelDiff
     {
         return newChecksum;
     }
-
-    @Override
+    
     public boolean equals(Object other)
     {
         if(this == other)
@@ -92,9 +91,8 @@ public class AlfrescoModelDiff
         		diff.getOldChecksum().equals(getOldChecksum()) &&
         		diff.getNewChecksum().equals(getNewChecksum()));
     }
-
-    @Override
-    public int hashCode()
+    
+    public int hashcode()
     {
     	int result = 17;
         result = 31 * result + getModelName().hashCode();

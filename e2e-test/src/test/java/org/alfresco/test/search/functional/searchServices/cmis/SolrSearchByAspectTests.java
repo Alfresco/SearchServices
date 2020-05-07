@@ -1,6 +1,5 @@
 package org.alfresco.test.search.functional.searchServices.cmis;
 
-import org.alfresco.search.TestGroup;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.data.CustomObjectTypeProperties;
 import org.alfresco.utility.data.provider.XMLDataConfig;
@@ -132,18 +131,6 @@ public class SolrSearchByAspectTests extends AbstractCmisE2ETest
     @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
     @XMLDataConfig(file = "src/test/resources/testdata/search-by-aspect.xml")
     public void executeSearchByAspect(QueryModel query) throws Exception
-    {
-        String currentQuery = query.getValue()
-                .replace("NODE_REF[f1]", tasFolder1.getNodeRef())
-                .replace("NODE_REF[s1]", siteDoclibNodeRef);
-
-        cmisApi.authenticateUser(testUser);
-        Assert.assertTrue(waitForIndexing(currentQuery, query.getResults()), String.format("Result count not as expected for query: %s", currentQuery));
-    }
-    
-    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
-    @XMLDataConfig(file = "src/test/resources/testdata/search-by-aspect-in-tree.xml")
-    public void executeSearchByAspectInTree(QueryModel query) throws Exception
     {
         String currentQuery = query.getValue()
                 .replace("NODE_REF[f1]", tasFolder1.getNodeRef())

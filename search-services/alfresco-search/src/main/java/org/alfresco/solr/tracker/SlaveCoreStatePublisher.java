@@ -26,14 +26,9 @@ import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.TrackerState;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.apache.commons.codec.EncoderException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Semaphore;
 
 /**
  * Despite belonging to the Tracker ecosystem, this component is actually a publisher, which periodically informs
@@ -52,25 +47,6 @@ import java.util.concurrent.Semaphore;
  */
 public class SlaveCoreStatePublisher extends CoreStatePublisher
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SlaveCoreStatePublisher.class);
-
-
-    // Share run and write locks across all SlaveCoreStatePublisher threads
-    private static final Map<String, Semaphore> RUN_LOCK_BY_CORE = new ConcurrentHashMap<>();
-    private static final Map<String, Semaphore> WRITE_LOCK_BY_CORE = new ConcurrentHashMap<>();
-
-    @Override
-    public Semaphore getWriteLock()
-    {
-        return WRITE_LOCK_BY_CORE.get(coreName);
-    }
-
-    @Override
-    public Semaphore getRunLock()
-    {
-        return RUN_LOCK_BY_CORE.get(coreName);
-    }
-
     public SlaveCoreStatePublisher(
             boolean isMaster,
             Properties coreProperties,
@@ -79,9 +55,6 @@ public class SlaveCoreStatePublisher extends CoreStatePublisher
             SolrInformationServer informationServer)
     {
         super(isMaster, coreProperties, repositoryClient, name, informationServer, NODE_STATE_PUBLISHER);
-
-        RUN_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
-        WRITE_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
     }
 
     @Override
@@ -94,7 +67,7 @@ public class SlaveCoreStatePublisher extends CoreStatePublisher
         }
         catch (EncoderException | IOException | AuthenticationException exception )
         {
-            LOGGER.error("Unable to publish this node state. " +
+            logger.error("Unable to publish this node state. " +
                     "A failure condition has been met during the outbound subscription message encoding process. " +
                     "See the stacktrace below for further details.", exception);
         }

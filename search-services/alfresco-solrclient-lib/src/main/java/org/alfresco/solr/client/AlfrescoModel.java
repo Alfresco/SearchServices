@@ -52,8 +52,7 @@ public class AlfrescoModel
     {
         return checksum;
     }
-
-    @Override
+    
     public boolean equals(Object other)
     {
         if (this == other)
@@ -71,8 +70,7 @@ public class AlfrescoModel
         		checksum.equals(model.getChecksum()));
     }
 
-    @Override
-    public int hashCode()
+    public int hashcode()
     {
     	int result = 17;
         result = 31 * result + model.hashCode();

@@ -99,7 +99,7 @@ public class DefaultTrackerPoolFactory implements TrackerPoolFactory
             {
             case "AclTracker":
                 corePoolSize = parseConfig("alfresco.acl.tracker.corePoolSize", p, corePoolSize);
-                maximumPoolSize = parseConfig("alfresco.acl.tracker.maximumPoolSize", p, maximumPoolSize);
+                 maximumPoolSize = parseConfig("alfresco.acl.tracker.maximumPoolSize", p, maximumPoolSize);
                 keepAliveTime = parseConfig("alfresco.acl.tracker.keepAliveTime", p, keepAliveTime);
                 threadPriority = parseConfig("alfresco.acl.tracker.threadPriority", p, threadPriority);
                 threadDaemon = parseConfigBoolean("alfresco.acl.tracker.threadDaemon", p);

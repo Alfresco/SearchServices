@@ -18,8 +18,6 @@
  */
 package org.alfresco.solr;
 
-import static java.util.Collections.unmodifiableList;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -796,7 +794,8 @@ public class AlfrescoSolrDataModel implements QueryConstants
             fieldName = getStoredTextField(propertyName);
         }
 
-        indexedField.addField(fieldName, false, false);
+        FieldInstance field = new FieldInstance(fieldName, false, false);
+        indexedField.getFields().add(field);
     }
 
     /*
@@ -1437,7 +1436,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
         public List<FieldInstance> getFields()
         {
-            return unmodifiableList(fields);
+            return fields;
         }
 
         public void addField(String prefix, boolean localised, boolean sort)

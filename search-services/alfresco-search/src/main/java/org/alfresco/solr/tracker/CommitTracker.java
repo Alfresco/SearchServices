@@ -23,11 +23,8 @@ import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.alfresco.solr.InformationServer;
@@ -52,21 +49,7 @@ public class CommitTracker extends AbstractTracker
     private Optional<CascadeTracker> cascadeTracker = empty();
     private AtomicInteger rollbackCount = new AtomicInteger(0);
 
-    protected final static Logger LOGGER = LoggerFactory.getLogger(CommitTracker.class);
-    
-    // Share run and write locks across all CommitTracker threads
-    private static Map<String, Semaphore> RUN_LOCK_BY_CORE = new ConcurrentHashMap<>();
-    private static Map<String, Semaphore> WRITE_LOCK_BY_CORE = new ConcurrentHashMap<>();
-    @Override
-    public Semaphore getWriteLock()
-    {
-        return WRITE_LOCK_BY_CORE.get(coreName);
-    }
-    @Override
-    public Semaphore getRunLock()
-    {
-        return RUN_LOCK_BY_CORE.get(coreName);
-    }
+    protected final static Logger log = LoggerFactory.getLogger(CommitTracker.class);
 
     /**
      * Default constructor, for testing.
@@ -100,9 +83,6 @@ public class CommitTracker extends AbstractTracker
         commitInterval = Long.parseLong(p.getProperty("alfresco.commitInterval", "60000")); // Default: commit once per minute
         newSearcherInterval = Integer.parseInt(p.getProperty("alfresco.newSearcherInterval", "120000")); // Default: Open searchers every two minutes
         lastSearcherOpened = lastCommit = System.currentTimeMillis();
-        
-        RUN_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
-        WRITE_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
     }
 
     public boolean hasMaintenance() throws Exception
@@ -214,17 +194,17 @@ public class CommitTracker extends AbstractTracker
             // Log reasons why the rollback is performed
             if (aclTracker.getRollbackCausedBy() != null)
             {
-                LOGGER.warn("Rollback performed due to ACL Tracker error", aclTracker.getRollbackCausedBy());                
+                log.warn("Rollback performed due to ACL Tracker error", aclTracker.getRollbackCausedBy());                
             }
             if (metadataTracker.getRollbackCausedBy() != null)
             {
-                LOGGER.warn("Rollback performed due to Metadata Tracker error", metadataTracker.getRollbackCausedBy());
+                log.warn("Rollback performed due to Metadata Tracker error", metadataTracker.getRollbackCausedBy());
             }
             
         }
         catch (Exception e)
         {
-            LOGGER.error("Rollback failed", e);
+            log.error("Rollback failed", e);
         }
         finally
         {

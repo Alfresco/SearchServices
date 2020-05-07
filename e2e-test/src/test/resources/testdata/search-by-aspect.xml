@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:noNamespaceSchemaLocation="https://gitlab.alfresco.com/tas/tas-namespaces/raw/master/input-test-data.xsd">
+
 	<queries>
 		<query value="SELECT * FROM tas:tasContentAspect where tas:TextPropertyAC IS NOT NULL" expectedResults="5" />
 		<query value="SELECT * FROM tas:tasContentAspect where tas:TextPropertyAC IS NULL" expectedResults="1" />
@@ -57,6 +58,27 @@
 		<query value="SELECT * FROM tas:tasFolderAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name ASC, cmis:lastModifiedBy DESC" expectedResults="2" />
 		<query value="SELECT * FROM tas:tasFolderAspect where IN_FOLDER('NODE_REF[f1]') ORDER BY cmis:name DESC, cmis:lastModifiedBy DESC" expectedResults="2" />
 		<query value="SELECT * FROM tas:tasFolderAspect where IN_FOLDER('NODE_REF[s1]')" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[f1]')" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[s1]')" expectedResults="6" />
+		<query value="SELECT * FROM cm:dublincore where IN_TREE('NODE_REF[f1]')" expectedResults="0" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[f1]')" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[s1]')" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[f1]') ORDER BY cmis:name ASC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[f1]') ORDER BY cmis:name DESC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[f1]') ORDER BY cmis:lastModificationDate ASC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[f1]') ORDER BY cmis:lastModificationDate DESC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[f1]') ORDER BY cmis:createdBy DESC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[f1]') ORDER BY cmis:createdBy ASC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[f1]') ORDER BY cmis:name ASC, cmis:lastModifiedBy DESC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[f1]') ORDER BY cmis:name DESC, cmis:lastModifiedBy DESC" expectedResults="2" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:name ASC" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:lastModificationDate ASC" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:createdBy ASC" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasFolderAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:name ASC, cmis:lastModifiedBy DESC" expectedResults="4" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:name ASC" expectedResults="6" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:lastModificationDate DESC" expectedResults="6" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:createdBy DESC" expectedResults="6" />
+		<query value="SELECT * FROM tas:tasContentAspect where IN_TREE('NODE_REF[s1]') ORDER BY cmis:name ASC, cmis:lastModifiedBy DESC" expectedResults="6" />
 		<query value="SELECT D.*, O.* FROM cmis:document as D JOIN tas:tasContentAspect AS O ON D.cmis:objectId = O.cmis:objectId" expectedResults="6" />
 		<query value="SELECT D.*, O.* FROM cmis:document as D JOIN tas:tasContentAspect AS O ON D.cmis:objectId = O.cmis:objectId WHERE O.tas:TextPropertyAC ='aspect content text file-2'" 
 			expectedResults="1" />

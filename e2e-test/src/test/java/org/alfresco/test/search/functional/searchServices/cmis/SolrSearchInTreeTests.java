@@ -1,6 +1,5 @@
 package org.alfresco.test.search.functional.searchServices.cmis;
 
-import org.alfresco.search.TestGroup;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.data.provider.XMLDataConfig;
 import org.alfresco.utility.data.provider.XMLTestDataProvider;
@@ -56,7 +55,7 @@ public class SolrSearchInTreeTests extends AbstractCmisE2ETest
         dataContent.deleteSite(testSite);
     }
     
-    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData", groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
+    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
     @XMLDataConfig(file = "src/test/resources/testdata/search-in-tree.xml")
     public void executeCMISQuery(QueryModel query) throws Exception
     {

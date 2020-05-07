@@ -29,7 +29,6 @@ import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.RestResultBucketsModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
-import org.alfresco.search.TestGroup;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -93,7 +92,7 @@ public class SearchAPATHTest extends AbstractSearchServicesE2ETest
      *}}
      *
      */
-    @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
+    @Test
     public void searchLevel0()
     {
         SearchRequest searchQuery = searchRequestWithAPATHFacet("name:*", "0");
@@ -109,7 +108,7 @@ public class SearchAPATHTest extends AbstractSearchServicesE2ETest
      * Test to test that the facet buckets are returned correctly for sub-level 1/
      * Test to search for a searchString, that's unique to the test run and hence stable for any environment
      */
-    @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
+    @Test
     public void searchLevel0andIncludeSubLevel1()
     {
         SearchRequest searchQuery = searchRequestWithAPATHFacet("name:" + unique_searchString, "1/");
@@ -121,7 +120,7 @@ public class SearchAPATHTest extends AbstractSearchServicesE2ETest
         getFirstBucket(response).assertThat().field("label").contains("1/");
     }
 
-    @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
+    @Test
     public void searchLevel2()
     {
         String queryString = "name:cars";

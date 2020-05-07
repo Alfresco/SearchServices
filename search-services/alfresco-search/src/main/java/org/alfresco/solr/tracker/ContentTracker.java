@@ -16,22 +16,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.solr.tracker;
-
-import com.google.common.collect.Lists;
-import org.alfresco.solr.AlfrescoSolrDataModel.TenantDbId;
-import org.alfresco.solr.InformationServer;
-import org.alfresco.solr.client.SOLRAPIClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+    package org.alfresco.solr.tracker;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.Semaphore;
+
+import org.alfresco.solr.AlfrescoSolrDataModel.TenantDbId;
+import org.alfresco.solr.InformationServer;
+import org.alfresco.solr.client.SOLRAPIClient;
 
 import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
 
@@ -43,45 +36,17 @@ import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
  */
 public class ContentTracker extends AbstractTracker implements Tracker
 {
-    protected final static Logger LOGGER = LoggerFactory.getLogger(ContentTracker.class);
-
-    private static final int DEFAULT_CONTENT_TRACKER_MAX_PARALLELISM = 32;
-
-    private int contentTrackerParallelism;
+    private int contentReadBatchSize;
     private int contentUpdateBatchSize;
     
-    // Share run and write locks across all ContentTracker threads
-    private static final Map<String, Semaphore> RUN_LOCK_BY_CORE = new ConcurrentHashMap<>();
-    private static final Map<String, Semaphore> WRITE_LOCK_BY_CORE = new ConcurrentHashMap<>();
-    private ForkJoinPool forkJoinPool;
 
-    @Override
-    public Semaphore getWriteLock()
-    {
-        return WRITE_LOCK_BY_CORE.get(coreName);
-    }
-
-    @Override
-    public Semaphore getRunLock()
-    {
-        return RUN_LOCK_BY_CORE.get(coreName);
-    }
-
-    public ContentTracker(Properties p, SOLRAPIClient client, String coreName, InformationServer informationServer)
+    public ContentTracker(Properties p, SOLRAPIClient client, String coreName,
+                InformationServer informationServer)
     {
         super(p, client, coreName, informationServer, Tracker.Type.CONTENT);
-        int DEFAULT_CONTENT_UPDATE_BATCH_SIZE = 2000;
-
-        contentUpdateBatchSize = Integer.parseInt(p.getProperty("alfresco.contentUpdateBatchSize",
-                String.valueOf(DEFAULT_CONTENT_UPDATE_BATCH_SIZE)));
-
-        contentTrackerParallelism = Integer.parseInt(p.getProperty("alfresco.contentTrackerMaxParallelism",
-                String.valueOf(DEFAULT_CONTENT_TRACKER_MAX_PARALLELISM)));
-
-        forkJoinPool = new ForkJoinPool(contentTrackerParallelism);
-
-        RUN_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
-        WRITE_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
+        contentReadBatchSize = Integer.parseInt(p.getProperty("alfresco.contentReadBatchSize", "100"));
+        contentUpdateBatchSize = Integer.parseInt(p.getProperty("alfresco.contentUpdateBatchSize", "1000"));
+        threadHandler = new ThreadHandler(p, coreName, "ContentTracker");
     }
     
     ContentTracker()
@@ -97,39 +62,51 @@ public class ContentTracker extends AbstractTracker implements Tracker
             long startElapsed = System.nanoTime();
 
             checkShutdown();
+            final int ROWS = contentReadBatchSize;
+            int start = 0;
             long totalDocs = 0L;
             checkShutdown();
             while (true)
             {
                 try
                 {
+
                     getWriteLock().acquire();
 
-                    List<TenantDbId> docs = notNullOrEmpty(this.infoSrv.getDocsWithUncleanContent());
+                    List<TenantDbId> docs = notNullOrEmpty(infoSrv.getDocsWithUncleanContent(start, ROWS));
                     if (docs.isEmpty())
                     {
-                        LOGGER.trace("No unclean document has been detected in the current ContentTracker cycle.");
+                        logger.debug("No unclean document has been detected in the current ContentTracker cycle.");
                         break;
                     }
 
-                    List<List<TenantDbId>> docBatches = Lists.partition(docs, contentUpdateBatchSize);
-                    for (List<TenantDbId> batch : docBatches)
+                    int docsUpdatedSinceLastCommit = 0;
+                    for (TenantDbId doc : docs)
                     {
-                        Integer processedDocuments = forkJoinPool.submit(() ->
-                                // Parallel task here, for example
-                                batch.parallelStream().map(doc -> {
-                                    ContentIndexWorkerRunnable ciwr = new ContentIndexWorkerRunnable(doc, infoSrv);
-                                    ciwr.run();
-                                    return 1;
-                                }).reduce(0, Integer::sum)
-                        ).get();
+                        ContentIndexWorkerRunnable ciwr = new ContentIndexWorkerRunnable(super.threadHandler, doc, infoSrv);
+                        super.threadHandler.scheduleTask(ciwr);
+                        docsUpdatedSinceLastCommit++;
 
-                        long endElapsed = System.nanoTime();
-                        trackerStats.addElapsedContentTime(processedDocuments, endElapsed - startElapsed);
-                        startElapsed = endElapsed;
+                        if (docsUpdatedSinceLastCommit >= contentUpdateBatchSize)
+                        {
+                            super.waitForAsynchronous();
+                            checkShutdown();
 
+                            long endElapsed = System.nanoTime();
+                            trackerStats.addElapsedContentTime(docsUpdatedSinceLastCommit, endElapsed - startElapsed);
+                            startElapsed = endElapsed;
+                            docsUpdatedSinceLastCommit = 0;
+                        }
                     }
 
+                    if (docsUpdatedSinceLastCommit > 0)
+                    {
+                        super.waitForAsynchronous();
+                        checkShutdown();
+                        //this.infoSrv.commit();
+                        long endElapsed = System.nanoTime();
+                        trackerStats.addElapsedContentTime(docsUpdatedSinceLastCommit, endElapsed - startElapsed);
+                    }
                     totalDocs += docs.size();
                     checkShutdown();
                 }
@@ -139,8 +116,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
                 }
             }
 
-            LOGGER.info("{}-[CORE {}] Total number of docs with content updated: {} ", Thread.currentThread().getId(), coreName, totalDocs);
-
+            logger.info("Total number of docs with content updated: {}", totalDocs);
         }
         catch(Exception e)
         {
@@ -164,14 +140,16 @@ public class ContentTracker extends AbstractTracker implements Tracker
         this.infoSrv.setCleanContentTxnFloor(-1);
     }
 
-    class ContentIndexWorkerRunnable extends AbstractWorker
+    class ContentIndexWorkerRunnable extends AbstractWorkerRunnable
     {
         InformationServer infoServer;
         TenantDbId docRef;
 
-        ContentIndexWorkerRunnable(TenantDbId doc, InformationServer infoServer)
+        ContentIndexWorkerRunnable(QueueHandler queueHandler, TenantDbId docRef, InformationServer infoServer)
         {
-            this.docRef = doc;
+            super(queueHandler);
+
+            this.docRef = docRef;
             this.infoServer = infoServer;
         }
 
@@ -187,7 +165,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
         protected void onFail(Throwable failCausedBy)
         {
             // This will be redone in future tracking operations
-            LOGGER.warn("Content tracker failed due to {}", failCausedBy.getMessage(), failCausedBy);
+            log.warn("Content tracker failed due to {}", failCausedBy.getMessage(), failCausedBy);
         }
     }
 }

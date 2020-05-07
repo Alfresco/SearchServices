@@ -101,8 +101,4 @@ if [[ true == "$ENABLE_SPELLCHECK" ]]; then
    sed -i 's/#alfresco.suggestable.property/alfresco.suggestable.property/' ${PWD}/solrhome/conf/shared.properties
 fi
 
-if [[ true == "$DISABLE_CASCADE_TRACKING" ]]; then
-   sed -i 's/alfresco.cascade.tracker.enabled=true/alfresco.cascade.tracker.enabled=false/' ${PWD}/solrhome/conf/shared.properties
-fi
-
 bash -c "$@"

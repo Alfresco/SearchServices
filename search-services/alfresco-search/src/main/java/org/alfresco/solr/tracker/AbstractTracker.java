@@ -43,7 +43,8 @@ public abstract class AbstractTracker implements Tracker
     static final long TIME_STEP_32_DAYS_IN_MS = 1000 * 60 * 60 * 24 * 32L;
     static final long TIME_STEP_1_HR_IN_MS = 60 * 60 * 1000L;
     static final String SHARD_METHOD_DBID = "DB_ID";
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTracker.class);
+
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
     
     protected Properties props;    
     protected SOLRAPIClient client;
@@ -55,6 +56,9 @@ public abstract class AbstractTracker implements Tracker
     boolean runPostModelLoadInit = true;
     private int maxLiveSearchers;
     private volatile boolean shutdown = false;
+
+    private Semaphore runLock = new Semaphore(1, true);
+    private Semaphore writeLock = new Semaphore(1, true);
 
     protected volatile TrackerState state;
     protected int shardCount;
@@ -69,6 +73,11 @@ public abstract class AbstractTracker implements Tracker
     protected Throwable rollbackCausedBy;
     protected final Type type;
     protected final String trackerId;
+
+    /*
+     * A thread handler can be used by subclasses, but they have to intentionally instantiate it.
+     */
+    ThreadHandler threadHandler;
 
     /**
      * Default constructor, strictly for testing.
@@ -159,9 +168,9 @@ public abstract class AbstractTracker implements Tracker
     {
         String iterationId = "IT #" + System.currentTimeMillis();
 
-        if(getRunLock().availablePermits() == 0)
+        if(runLock.availablePermits() == 0)
         {
-            LOGGER.info("[{} / {} / {}] Tracker already registered.", coreName, trackerId, iterationId);
+            logger.info("[{} / {} / {}] Tracker already registered.", coreName, trackerId, iterationId);
             return;
         }
 
@@ -171,7 +180,7 @@ public abstract class AbstractTracker implements Tracker
             * The runLock ensures that for each tracker type (metadata, content, commit, cascade) only one tracker will
             * be running at a time.
             */
-            getRunLock().acquire();
+            runLock.acquire();
 
             if (state==null && Boolean.parseBoolean(System.getProperty("alfresco.test", "false")))
             {
@@ -182,7 +191,7 @@ public abstract class AbstractTracker implements Tracker
             {
                 this.state = getTrackerState();
 
-                LOGGER.debug("[{} / {} / {}]  Global Tracker State set to: {}", coreName, trackerId, iterationId, this.state.toString());
+                logger.debug("[{} / {} / {}]  Global Tracker State set to: {}", coreName, trackerId, iterationId, this.state.toString());
                 this.state.setRunning(true);
             }
             else
@@ -200,25 +209,28 @@ public abstract class AbstractTracker implements Tracker
             catch(IndexTrackingShutdownException t)
             {
                 setRollback(true, t);
-                LOGGER.info("[{} / {} / {}] Tracking cycle stopped. See the stacktrace below for further details.", coreName, trackerId, iterationId, t);
+                logger.info("[{} / {} / {}] Tracking cycle stopped. See the stacktrace below for further details.", coreName, trackerId, iterationId, t);
             }
             catch(Throwable t)
             {
                 setRollback(true, t);
                 if (t instanceof SocketTimeoutException || t instanceof ConnectException)
                 {
-                    LOGGER.warn("[{} / {} / {}] Tracking communication timed out. See the stacktrace below for further details.", coreName, trackerId, iterationId);
-                    LOGGER.debug("[{} / {} / {}] Stack trace", coreName, trackerId, iterationId, t);
+                    logger.warn("[{} / {} / {}] Tracking communication timed out. See the stacktrace below for further details.", coreName, trackerId, iterationId);
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("[{} / {} / {}] Stack trace", coreName, trackerId, iterationId, t);
+                    }
                 }
                 else
                 {
-                    LOGGER.error("[{} / {} / {}] Tracking failure. See the stacktrace below for further details.", coreName, trackerId, iterationId, t);
+                    logger.error("[{} / {} / {}] Tracking failure. See the stacktrace below for further details.", coreName, trackerId, iterationId, t);
                 }
             }
         }
         catch (InterruptedException e)
         {
-            LOGGER.error("[{} / {} / {}] Semaphore interruption. See the stacktrace below for further details.", coreName, trackerId, iterationId, e);
+            logger.error("[{} / {} / {}] Semaphore interruption. See the stacktrace below for further details.", coreName, trackerId, iterationId, e);
         }
         finally
         {
@@ -228,7 +240,7 @@ public abstract class AbstractTracker implements Tracker
                 state.setRunning(false);
                 state.setCheck(false);
             });
-            getRunLock().release();
+            runLock.release();
         }
     }
 
@@ -272,6 +284,30 @@ public abstract class AbstractTracker implements Tracker
         }
     }
 
+    /**
+     * Allows time for the scheduled asynchronous tasks to complete
+     */
+    synchronized void waitForAsynchronous()
+    {
+        AbstractWorkerRunnable currentRunnable = this.threadHandler.peekHeadReindexWorker();
+        while (currentRunnable != null)
+        {
+            checkShutdown();
+            synchronized (this)
+            {
+                try
+                {
+                    wait(100);
+                }
+                catch (InterruptedException e)
+                {
+                    // Nothing to be done here
+                }
+            }
+            currentRunnable = this.threadHandler.peekHeadReindexWorker();
+        }
+    }
+
     int getMaxLiveSearchers()
     {
         return maxLiveSearchers;
@@ -301,19 +337,21 @@ public abstract class AbstractTracker implements Tracker
     public void shutdown()
     {
         setShutdown(true);
+        if(this.threadHandler != null)
+        {
+            threadHandler.shutDownThreadPool();
+        }
     }
 
-    /**
-     * Trackers implementing this method should decide if the Write Lock is applied
-     * globally for every Tracker Thread (static) or locally for each running Thread
-     */
-    public abstract Semaphore getWriteLock();
+    public Semaphore getWriteLock()
+    {
+        return this.writeLock;
+    }
 
-    /**
-     * Trackers implementing this method should decide if the Run Lock is applied
-     * globally for every Tracker Thread (static) or locally for each running Thread
-     */
-    public abstract Semaphore getRunLock();
+    Semaphore getRunLock()
+    {
+        return this.runLock;
+    }
 
     public Properties getProps()
     {
