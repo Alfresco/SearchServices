@@ -20,13 +20,22 @@ package org.alfresco.solr.tracker;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
+import com.google.common.collect.Lists;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
@@ -56,8 +65,11 @@ public class AclTracker extends AbstractTracker
 {
     protected final static Logger LOGGER = LoggerFactory.getLogger(AclTracker.class);
 
-    private static final int DEFAULT_CHANGE_SET_ACLS_BATCH_SIZE = 100;
-    private static final int DEFAULT_ACL_BATCH_SIZE = 10;
+    private static final int DEFAULT_CHANGE_SET_ACLS_BATCH_SIZE = 2000;
+    private static final int DEFAULT_ACL_BATCH_SIZE = 100;
+    private static final int DEFAULT_ACL_TRACKER_MAX_PARALLELISM = 32;
+
+    private int aclTrackerParallelism;
 
     private int changeSetAclsBatchSize = DEFAULT_CHANGE_SET_ACLS_BATCH_SIZE;
     private int aclBatchSize = DEFAULT_ACL_BATCH_SIZE;
@@ -69,6 +81,23 @@ public class AclTracker extends AbstractTracker
     private ConcurrentLinkedQueue<Long> aclsToIndex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> aclsToPurge = new ConcurrentLinkedQueue<Long>();
     private DocRouter docRouter;
+
+    private ForkJoinPool forkJoinPool;
+
+    // Share run and write locks across all AclTracker threads
+    private static Map<String, Semaphore> RUN_LOCK_BY_CORE = new ConcurrentHashMap<>();
+    private static Map<String, Semaphore> WRITE_LOCK_BY_CORE = new ConcurrentHashMap<>();
+    @Override
+    public Semaphore getWriteLock()
+    {
+        return WRITE_LOCK_BY_CORE.get(coreName);
+    }
+    @Override
+    public Semaphore getRunLock()
+    {
+        return RUN_LOCK_BY_CORE.get(coreName);
+    }
+
     
     /**
      * Default constructor, for testing.
@@ -82,11 +111,18 @@ public class AclTracker extends AbstractTracker
                 String coreName, InformationServer informationServer)
     {
         super(p, client, coreName, informationServer, Tracker.Type.ACL);
-        changeSetAclsBatchSize = Integer.parseInt(p.getProperty("alfresco.changeSetAclsBatchSize", "100"));
-        aclBatchSize = Integer.parseInt(p.getProperty("alfresco.aclBatchSize", "10"));
+        changeSetAclsBatchSize = Integer.parseInt(p.getProperty("alfresco.changeSetAclsBatchSize",
+                String.valueOf(DEFAULT_CHANGE_SET_ACLS_BATCH_SIZE)));
+        aclBatchSize = Integer.parseInt(p.getProperty("alfresco.aclBatchSize", String.valueOf(DEFAULT_ACL_BATCH_SIZE)));
         shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
         docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
-        threadHandler = new ThreadHandler(p, coreName, "AclTracker");
+
+        aclTrackerParallelism = Integer.parseInt(p.getProperty("alfresco.aclTrackerMaxParallelism",
+                String.valueOf(DEFAULT_ACL_TRACKER_MAX_PARALLELISM)));
+        forkJoinPool = new ForkJoinPool(aclTrackerParallelism);
+
+        RUN_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
+        WRITE_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
     }
 
     @Override
@@ -239,7 +275,7 @@ public class AclTracker extends AbstractTracker
         }
     }
 
-    protected void purgeAclChangeSets() throws AuthenticationException, IOException, JSONException
+    protected void purgeAclChangeSets() throws IOException, JSONException
     {       
         while (aclChangeSetsToPurge.peek() != null)
         {
@@ -254,7 +290,7 @@ public class AclTracker extends AbstractTracker
 
     }
     
-    protected void purgeAcls() throws AuthenticationException, IOException, JSONException
+    protected void purgeAcls() throws IOException, JSONException
     {
         while (aclsToPurge.peek() != null)
         {
@@ -322,10 +358,6 @@ public class AclTracker extends AbstractTracker
     
     /**
      * Checks the first and last TX time
-     * @param state the state of this tracker
-     * @throws AuthenticationException
-     * @throws IOException
-     * @throws JSONException
      */
     private void checkRepoAndIndexConsistency(TrackerState state) throws AuthenticationException, IOException, JSONException
     {
@@ -342,13 +374,13 @@ public class AclTracker extends AbstractTracker
                 AclChangeSet firstChangeSet = firstChangeSets.getAclChangeSets().get(0);
                 long firstChangeSetCommitTime = firstChangeSet.getCommitTimeMs();
                 state.setLastGoodChangeSetCommitTimeInIndex(firstChangeSetCommitTime);
-                setLastChangeSetIdAndCommitTimeInTrackerState(firstChangeSets, state);
+                setLastChangeSetIdAndCommitTimeInTrackerState(firstChangeSets.getAclChangeSets(), state);
             }
         }
         
         if (!state.isCheckedFirstAclTransactionTime())
         {
-            firstChangeSets = client.getAclChangeSets(null, 0l, null, 2000L, 1);
+            firstChangeSets = client.getAclChangeSets(null, 0L, null, 2000L, 1);
             if (!firstChangeSets.getAclChangeSets().isEmpty())
             {
                 AclChangeSet firstAclChangeSet= firstChangeSets.getAclChangeSets().get(0);
@@ -381,10 +413,10 @@ public class AclTracker extends AbstractTracker
         {
             if (firstChangeSets == null)
             {
-                firstChangeSets = client.getAclChangeSets(null, 0l, null, 2000L, 1);
+                firstChangeSets = client.getAclChangeSets(null, 0L, null, 2000L, 1);
             }
 
-            setLastChangeSetIdAndCommitTimeInTrackerState(firstChangeSets, state);
+            setLastChangeSetIdAndCommitTimeInTrackerState(firstChangeSets.getAclChangeSets(), state);
             Long maxChangeSetCommitTimeInRepo = firstChangeSets.getMaxChangeSetCommitTime();
             Long maxChangeSetIdInRepo = firstChangeSets.getMaxChangeSetId();
             if (maxChangeSetCommitTimeInRepo != null && maxChangeSetIdInRepo != null)
@@ -464,7 +496,7 @@ public class AclTracker extends AbstractTracker
         }
         else
         {
-            HashSet<AclChangeSet> alreadyFound = new HashSet<AclChangeSet>(changeSetsFound.getDeque());
+            HashSet<AclChangeSet> alreadyFound = new HashSet<>(changeSetsFound.getDeque());
             for(AclChangeSet aclChangeSet : aclChangeSets.getAclChangeSets())
             {
                 if(!alreadyFound.contains(aclChangeSet))
@@ -499,7 +531,7 @@ public class AclTracker extends AbstractTracker
         }
 
         IOpenBitSet aclTxIdsInDb = infoSrv.getOpenBitSetInstance();
-        Long lastAclTxCommitTime = Long.valueOf(firstChangeSetCommitTimex);
+        long lastAclTxCommitTime = firstChangeSetCommitTimex;
         if (fromTime != null)
         {
             lastAclTxCommitTime = fromTime;
@@ -509,7 +541,7 @@ public class AclTracker extends AbstractTracker
         Long minAclTxId = null;
         long endTime = System.currentTimeMillis() + infoSrv.getHoleRetention();
         AclChangeSets aclTransactions;
-        BoundedDeque<AclChangeSet> changeSetsFound = new  BoundedDeque<AclChangeSet>(100);
+        BoundedDeque<AclChangeSet> changeSetsFound = new  BoundedDeque<>(100);
         DO: do
         {
             aclTransactions = getSomeAclChangeSets(changeSetsFound, lastAclTxCommitTime, TIME_STEP_1_HR_IN_MS, 2000, 
@@ -519,14 +551,14 @@ public class AclTracker extends AbstractTracker
                 // include
                 if (toTime != null)
                 {
-                    if (set.getCommitTimeMs() > toTime.longValue())
+                    if (set.getCommitTimeMs() > toTime)
                     {
                         break DO;
                     }
                 }
                 if (toAclTx != null)
                 {
-                    if (set.getId() > toAclTx.longValue())
+                    if (set.getId() > toAclTx)
                     {
                         break DO;
                     }
@@ -552,44 +584,11 @@ public class AclTracker extends AbstractTracker
         return this.infoSrv.reportAclTransactionsInIndex(minAclTxId, aclTxIdsInDb, maxAclTxId);
     }
 
-
-    public List<Node> getFullNodesForDbTransaction(Long txid)
-    {
-        try
-        {
-            GetNodesParameters gnp = new GetNodesParameters();
-            ArrayList<Long> txs = new ArrayList<Long>();
-            txs.add(txid);
-            gnp.setTransactionIds(txs);
-            gnp.setStoreProtocol(storeRef.getProtocol());
-            gnp.setStoreIdentifier(storeRef.getIdentifier());
-            return client.getNodes(gnp, Integer.MAX_VALUE);
-        }
-        catch (IOException e)
-        {
-            throw new AlfrescoRuntimeException("Failed to get nodes", e);
-        }
-        catch (JSONException e)
-        {
-            throw new AlfrescoRuntimeException("Failed to get nodes", e);
-        }
-        catch (AuthenticationException e)
-        {
-            throw new AlfrescoRuntimeException("Failed to get nodes", e);
-        }
-    }
-
-
-
-    /**
-     * @param acltxid Long
-     * @return List<Long>
-     **/
     public List<Long> getAclsForDbAclTransaction(Long acltxid)
     {
         try
         {
-            ArrayList<Long> answer = new ArrayList<Long>();
+            ArrayList<Long> answer = new ArrayList<>();
             AclChangeSets changeSet = client.getAclChangeSets(null, acltxid, null, acltxid+1, 1);
             List<Acl> acls = client.getAcls(changeSet.getAclChangeSets(), null, Integer.MAX_VALUE);
             for (Acl acl : acls)
@@ -598,15 +597,7 @@ public class AclTracker extends AbstractTracker
             }
             return answer;
         }
-        catch (IOException e)
-        {
-            throw new AlfrescoRuntimeException("Failed to get acls", e);
-        }
-        catch (JSONException e)
-        {
-            throw new AlfrescoRuntimeException("Failed to get acls", e);
-        }
-        catch (AuthenticationException e)
+        catch (IOException | JSONException | AuthenticationException e)
         {
             throw new AlfrescoRuntimeException("Failed to get acls", e);
         }
@@ -634,9 +625,14 @@ public class AclTracker extends AbstractTracker
     }
     
     /**
-     * @throws AuthenticationException
-     * @throws IOException
-     * @throws JSONException
+     * Every ACL Change Set contains a list of ACLs to be indexed.
+     * This method gets ACL Change Sets from Alfresco Repository to be indexed.
+     * 
+     * The indexing is performed in batches of ACL Change Sets and the Tracker Status
+     * is updated in batched of ACLs.
+     * 
+     * Tracker Status contains the Commit Time from the latest ACL Change Set indexed,
+     * so new operations can be retrieved from Repository starting with that time.
      */
     protected void trackAclChangeSets() throws AuthenticationException, IOException, JSONException
     {
@@ -646,9 +642,10 @@ public class AclTracker extends AbstractTracker
         boolean upToDate = false;
         AclChangeSets aclChangeSets;
         BoundedDeque<AclChangeSet> changeSetsFound = new BoundedDeque<AclChangeSet>(100);
-        HashSet<AclChangeSet> changeSetsIndexed = new LinkedHashSet<AclChangeSet>();
         long totalAclCount = 0;
-        int aclCount = 0;
+        int aclCount;
+        
+        LOGGER.info("{}-[CORE {}] <init> Tracking ACLs", Thread.currentThread().getId(), coreName);
         
         do
         {
@@ -664,12 +661,12 @@ public class AclTracker extends AbstractTracker
 
                 this.state = getTrackerState();
                 
-                Long fromCommitTime = getChangeSetFromCommitTime(changeSetsFound, state.getLastGoodChangeSetCommitTimeInIndex());
+                Long fromCommitTime = getChangeSetFromCommitTime(changeSetsFound,
+                        state.getLastChangeSetCommitTimeOnServer() == 0 ? state.getLastGoodChangeSetCommitTimeInIndex()
+                                : state.getLastChangeSetCommitTimeOnServer());
                 aclChangeSets = getSomeAclChangeSets(changeSetsFound, fromCommitTime, TIME_STEP_1_HR_IN_MS, 2000,
                         state.getTimeToStopIndexing());
                 
-                setLastChangeSetIdAndCommitTimeInTrackerState(aclChangeSets, state);
-
                 if (aclChangeSets.getAclChangeSets().size() > 0) 
                 {
                     LOGGER.info("{}-[CORE {}] Found {} ACL change sets after lastTxCommitTime {}, ACL Change Sets from {} to {}", 
@@ -686,90 +683,63 @@ public class AclTracker extends AbstractTracker
                             Thread.currentThread().getId(), coreName, fromCommitTime);
                 }
                 
-                ArrayList<AclChangeSet> changeSetBatch = new ArrayList<AclChangeSet>();
-                for (int i = 0; i < aclChangeSets.getAclChangeSets().size(); i++) 
-                {
-                    
-                    AclChangeSet changeSet = aclChangeSets.getAclChangeSets().get(i);
-                    
-                    boolean isInIndex = (changeSet.getCommitTimeMs() <= state.getLastIndexedChangeSetCommitTime() &&
-                                         infoSrv.aclChangeSetInIndex(changeSet.getId(), true));
-                    
-                    if (isInIndex) 
-                    {
-                        // Logging progress for large ACL Change Set tracking every 100 tracked ACLs
-                        if (LOGGER.isTraceEnabled()) 
-                        {
-                            LOGGER.trace("{}-[CORE {}] Tracking {} of {} ACL Change Sets. Change Set Id was already indexed: {}", 
-                                    Thread.currentThread().getId(), coreName, i + 1, aclChangeSets.getAclChangeSets().size(), changeSet.getId());
-                        }
-                        changeSetsFound.add(changeSet);
-                    } 
-                    else 
-                    {
-                        
-                        // Logging progress for ACL Change Set
-                        if (LOGGER.isTraceEnabled()) 
-                        {
-                            LOGGER.trace("{}-[CORE {}] Tracking {} of {} ACL Change Sets. Current Change Set Id to be indexed: {}", 
-                                    Thread.currentThread().getId(), coreName, i + 1, aclChangeSets.getAclChangeSets().size(), changeSet.getId());
-                        }
-
-                        // Make sure we do not go ahead of where we started - we will check the holes here
-                        // correctly next time
-                        if (changeSet.getCommitTimeMs() > state.getTimeToStopIndexing()) {
-                            upToDate = true;
-                            break;
-                        }
-
-                        changeSetBatch.add(changeSet);
-                        if (getAclCount(changeSetBatch) > changeSetAclsBatchSize) {
-                            aclCount += indexBatchOfChangeSets(changeSetBatch);
-                            totalAclCount += aclCount;
-
-                            for (AclChangeSet scheduled : changeSetBatch) {
-                                changeSetsFound.add(scheduled);
-                                changeSetsIndexed.add(scheduled);
+                // Ignore indexed ACL Change Sets
+                aclChangeSets = new AclChangeSets(aclChangeSets.getAclChangeSets().stream()
+                        .filter(changeSet -> {
+                            try
+                            {
+                                boolean isInIndex = (changeSet.getCommitTimeMs() <= state.getLastIndexedChangeSetCommitTime() &&
+                                        infoSrv.aclChangeSetInIndex(changeSet.getId(), true));
+                                if (LOGGER.isTraceEnabled()) 
+                                {
+                                    LOGGER.trace("{}-[CORE {}] Skipping change Set Id {} as it was already indexed", 
+                                            Thread.currentThread().getId(), coreName, changeSet.getId());
+                                }
+                                return !isInIndex;
                             }
-                            changeSetBatch.clear();
-                        }
-                    }
+                            catch (IOException e)
+                            {
+                                LOGGER.warn(
+                                        "{}-[CORE {}] Error catched while checking if ACL Change Set {} was in index",
+                                        Thread.currentThread().getId(), coreName, changeSet.getId(), e);
+                                return true;
+                            }
+                        })
+                        .collect(Collectors.toList()));
 
-                    if (aclCount > batchCount) {
-                        if (super.infoSrv.getRegisteredSearcherCount() < getMaxLiveSearchers()) {
-                            indexAclChangeSetAfterAsynchronous(changeSetsIndexed, state);
-                            long endElapsed = System.nanoTime();
-                            trackerStats.addElapsedAclTime(aclCount, endElapsed - startElapsed);
-                            startElapsed = endElapsed;
-                            aclCount = 0;
-                        }
-                    }
-                    checkShutdown();
-                }
 
-                if (!changeSetBatch.isEmpty()) {
-                    if (getAclCount(changeSetBatch) > 0) {
-                        aclCount += indexBatchOfChangeSets(changeSetBatch);
-                        totalAclCount += aclCount;
-                    }
 
-                    for (AclChangeSet scheduled : changeSetBatch) {
-                        changeSetsFound.add(scheduled);
-                        changeSetsIndexed.add(scheduled);
-                    }
-                    changeSetBatch.clear();
-                }
 
-                if(changeSetsIndexed.size() > 0)
+                // Make sure we do not go ahead of where we started - we will check the holes here
+                // correctly next time
+                if (aclChangeSets.getAclChangeSets().stream().anyMatch(changeSet -> changeSet.getCommitTimeMs() > state.getTimeToStopIndexing()))
                 {
-                    indexAclChangeSetAfterAsynchronous(changeSetsIndexed, state);
+                    break;
+                }
+
+                final AtomicInteger counter = new AtomicInteger();
+                Collection<List<AclChangeSet>> changeSetBatches = aclChangeSets.getAclChangeSets().stream()
+                        .collect(Collectors.groupingBy(it -> counter.getAndAdd(it.getAclCount()) / changeSetAclsBatchSize)).values();
+
+
+                for (List<AclChangeSet> changeSetBatch : changeSetBatches)
+                {
+                    aclCount = indexBatchOfChangeSets(changeSetBatch);
+                    for (AclChangeSet indexed : changeSetBatch)
+                    {
+                        changeSetsFound.add(indexed);
+                    }
+                    // Update last committed transactions
+                    setLastChangeSetIdAndCommitTimeInTrackerState(changeSetBatch, state);
+                    indexAclChangeSetAfterWorker(changeSetBatch, state);
+
                     long endElapsed = System.nanoTime();
                     trackerStats.addElapsedAclTime(aclCount, endElapsed-startElapsed);
                     startElapsed = endElapsed;
-                    aclCount = 0;
                 }
+
             }
-            catch(InterruptedException e)
+            catch(InterruptedException | ExecutionException e)
             {
                 throw new IOException(e);
             }
@@ -781,32 +751,39 @@ public class AclTracker extends AbstractTracker
         }
         while ((aclChangeSets.getAclChangeSets().size() > 0) && (upToDate == false));
         
-        LOGGER.info("{}-[CORE {}] Tracked {} ACLs", Thread.currentThread().getId(), coreName, totalAclCount);
-
+        LOGGER.info("{}-[CORE {}] <end> Tracked {} ACLs", Thread.currentThread().getId(), coreName, totalAclCount);
+        
     }
 
-    private void setLastChangeSetIdAndCommitTimeInTrackerState(AclChangeSets aclChangeSets, TrackerState state)
+    private void setLastChangeSetIdAndCommitTimeInTrackerState(List<AclChangeSet> aclChangeSets, TrackerState state)
     {
-        Long maxChangeSetCommitTime = aclChangeSets.getMaxChangeSetCommitTime();
-        if(maxChangeSetCommitTime != null)
+        
+        if (!aclChangeSets.isEmpty())
         {
-            state.setLastChangeSetCommitTimeOnServer(maxChangeSetCommitTime);
+            Long maxChangeSetCommitTime = aclChangeSets.stream().max(Comparator.comparing(AclChangeSet::getCommitTimeMs)).get().getCommitTimeMs();
+            if(maxChangeSetCommitTime != null)
+            {
+                state.setLastChangeSetCommitTimeOnServer(maxChangeSetCommitTime);
+            }
+    
+            Long maxChangeSetId = aclChangeSets.stream().max(Comparator.comparing(AclChangeSet::getId)).get().getId();
+            if(maxChangeSetId != null)
+            {
+                state.setLastChangeSetIdOnServer(maxChangeSetId);
+            }
         }
-
-        Long maxChangeSetId = aclChangeSets.getMaxChangeSetId();
-        if(maxChangeSetId != null)
-        {
-            state.setLastChangeSetIdOnServer(maxChangeSetId);
-        }
+        
     }
 
-    private void indexAclChangeSetAfterAsynchronous(HashSet<AclChangeSet> changeSetsIndexed, TrackerState state)
+    /**
+     * Index ACL Change Set transaction after ACLs has been indexed by the worker
+     */
+    private void indexAclChangeSetAfterWorker(Collection<AclChangeSet> changeSetsIndexed, TrackerState state)
                 throws IOException
     {
-        waitForAsynchronous();
         for (AclChangeSet set : changeSetsIndexed)
         {
-            super.infoSrv.indexAclTransaction(set, true);
+            infoSrv.indexAclTransaction(set, true);
             // Acl change sets are ordered by commit time and tie-broken by id
             if (set.getCommitTimeMs() > state.getLastIndexedChangeSetCommitTime()
                     || set.getCommitTimeMs() == state.getLastIndexedChangeSetCommitTime()
@@ -817,8 +794,6 @@ public class AclTracker extends AbstractTracker
             }
             trackerStats.addChangeSetAcls(set.getAclCount());
         }
-        changeSetsIndexed.clear();
-        //super.infoSrv.commit();
     }
 
     private int getAclCount(List<AclChangeSet> changeSetBatch)
@@ -831,19 +806,20 @@ public class AclTracker extends AbstractTracker
         return count;
     }
 
-    private int indexBatchOfChangeSets(List<AclChangeSet> changeSetBatch) throws AuthenticationException, IOException, JSONException
-    {
-        int aclCount = 0;
-        ArrayList<AclChangeSet> nonEmptyChangeSets = new ArrayList<AclChangeSet>(changeSetBatch.size());
-        for (AclChangeSet set : changeSetBatch)
-        {
-            if (set.getAclCount() > 0)
-            {
-                nonEmptyChangeSets.add(set);
-            }
-        }
+    /**
+     * Index ACLs from ACL Change Sets contained in changeSetBatch
+     * When total ACL indexed count is greater than the specified for a single execution
+     * (maxAclsPerExecution), no more ACL Change Sets are processed.
+     * 
+     * @param changeSetBatch List of ACL Change Sets to be indexed
+     * @return List of ACL Change Set indexed and Count of ACL indexed
+     */
+    private int indexBatchOfChangeSets(List<AclChangeSet> changeSetBatch) throws AuthenticationException, IOException, JSONException, ExecutionException, InterruptedException {
+        // Exclude ACL Change Set with no ACLs inside
+        List<AclChangeSet> nonEmptyChangeSets = changeSetBatch.stream()
+                .filter(set -> set.getAclCount() > 0)
+                .collect(Collectors.toList());
 
-        ArrayList<Acl> aclBatch = new ArrayList<Acl>();
         List<Acl> acls = client.getAcls(nonEmptyChangeSets, null, Integer.MAX_VALUE);
         
         if (LOGGER.isDebugEnabled())
@@ -851,40 +827,27 @@ public class AclTracker extends AbstractTracker
             LOGGER.debug("{}-[CORE {}] Found {} Acls from Acl Change Sets: {}", Thread.currentThread().getId(),
                     coreName, acls.size(), nonEmptyChangeSets);
         }
+        
+        List<List<Acl>> aclBatches = Lists.partition(acls, aclBatchSize);
 
-        for (Acl acl : acls)
-        {
-            if (LOGGER.isTraceEnabled())
-            {
-                LOGGER.trace("{}-[CORE {}] Adding ACL {} to scheduled indexing job", Thread.currentThread().getId(),
-                        coreName, acl.toString());
-            }
-            aclBatch.add(acl);
-            if (aclBatch.size() > aclBatchSize)
-            {
-                aclCount += aclBatch.size();
-                AclIndexWorkerRunnable aiwr = new AclIndexWorkerRunnable(this.threadHandler, aclBatch);
-                this.threadHandler.scheduleTask(aiwr);
-                aclBatch = new ArrayList<Acl>();
-            }
-        }
-        if (aclBatch.size() > 0)
-        {
-            aclCount += aclBatch.size();
-            AclIndexWorkerRunnable aiwr = new AclIndexWorkerRunnable(this.threadHandler, aclBatch);
-            this.threadHandler.scheduleTask(aiwr);
-            aclBatch = new ArrayList<Acl>();
-        }
-        return aclCount;
+        return forkJoinPool.submit(() ->
+                aclBatches.parallelStream().map(batch -> {
+                    new AclIndexWorker(batch).run();
+                    return batch.size();
+                }).reduce(0, Integer::sum)
+        ).get();
     }
 
-    class AclIndexWorkerRunnable extends AbstractWorkerRunnable
+
+    /**
+     * ACL Indexer
+     */
+    class AclIndexWorker extends AbstractWorker
     {
         List<Acl> acls;
 
-        AclIndexWorkerRunnable(QueueHandler queueHandler, List<Acl> acls)
+        AclIndexWorker(List<Acl> acls)
         {
-            super(queueHandler);
             this.acls = acls;
         }
 
@@ -907,7 +870,7 @@ public class AclTracker extends AbstractTracker
         
         private List<Acl> filterAcls(List<Acl> acls)
         {
-            ArrayList<Acl> filteredList = new ArrayList<Acl>(acls.size());  
+            ArrayList<Acl> filteredList = new ArrayList<>(acls.size());
             for(Acl acl : acls)
             {
                 if(docRouter.routeAcl(shardCount, shardInstance, acl))

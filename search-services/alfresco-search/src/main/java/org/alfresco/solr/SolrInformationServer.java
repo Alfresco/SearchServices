@@ -20,6 +20,7 @@ package org.alfresco.solr;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLID;
 import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTXCOMMITTIME;
@@ -73,6 +74,9 @@ import static org.alfresco.solr.AlfrescoSolrDataModel.getAclChangeSetDocumentId;
 import static org.alfresco.solr.AlfrescoSolrDataModel.getAclDocumentId;
 import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
 import static org.alfresco.util.ISO8601DateFormat.isTimeComponentDefined;
+import static org.alfresco.service.cmr.security.AuthorityType.EVERYONE;
+import static org.alfresco.service.cmr.security.AuthorityType.GROUP;
+import static org.alfresco.service.cmr.security.AuthorityType.GUEST;
 
 import java.io.File;
 import java.io.IOException;
@@ -821,7 +825,7 @@ public class SolrInformationServer implements InformationServer
     }
 
     @Override
-    public List<TenantDbId> getDocsWithUncleanContent(int start, int rows) throws IOException
+    public List<TenantDbId> getDocsWithUncleanContent() throws IOException
     {
         RefCounted<SolrIndexSearcher> refCounted = null;
         try
@@ -846,7 +850,7 @@ public class SolrInformationServer implements InformationServer
             *  in current snapshot of the index.
             *
             *  The code below runs every two minutes and purges transactions from the
-            *  cleanContentCache that is more then 20 minutes old.
+            *  cleanContentCache that is more than 20 minutes old.
             *
             */
             long purgeTime = System.currentTimeMillis();
@@ -879,6 +883,9 @@ public class SolrInformationServer implements InformationServer
             DelegatingCollector delegatingCollector = new TxnCacheFilter(cleanContentCache); //Filter transactions that have already been processed.
             delegatingCollector.setLastDelegate(collector);
             searcher.search(documentsWithOutdatedContentQuery(), delegatingCollector);
+
+            LOGGER.debug("{}-[CORE {}] Processing {} documents with content to be indexed", Thread.currentThread().getId(), core.getName(), collector.getTotalHits());
+
 
             if(collector.getTotalHits() == 0)
             {
@@ -1670,11 +1677,11 @@ public class SolrInformationServer implements InformationServer
                 nmdp.setToNodeId(node.getId());
                 nmdp.setMaxResults(Integer.MAX_VALUE);
 
-                Collection<NodeMetaData> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
+                Optional<Collection<NodeMetaData>> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
 
-                if (nodeMetaDatas.isEmpty()) return;
+                if (nodeMetaDatas.isEmpty() || nodeMetaDatas.get().isEmpty()) return;
 
-                NodeMetaData nodeMetaData = nodeMetaDatas.iterator().next();
+                NodeMetaData nodeMetaData = nodeMetaDatas.get().iterator().next();
                 if (node.getTxnId() == Long.MAX_VALUE)
                 {
                     LOGGER.debug("Node {} index request is part of a re-index.", node.getId());
@@ -1813,8 +1820,8 @@ public class SolrInformationServer implements InformationServer
             nmdp.setIncludeTxnId(true);
             nmdp.setMaxResults(1);
             // Gets only one
-            Collection<NodeMetaData> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
-            allNodeMetaDatas.addAll(nodeMetaDatas);
+            Optional<Collection<NodeMetaData>> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
+            allNodeMetaDatas.addAll(nodeMetaDatas.orElse(Collections.emptyList()));
         }
 
         return allNodeMetaDatas;
@@ -1954,7 +1961,14 @@ public class SolrInformationServer implements InformationServer
                     nmdp.setIncludePaths(false);
                     nmdp.setIncludeParentAssociations(false);
                     nmdp.setMaxResults(Integer.MAX_VALUE);
-                    nodeMetaDatas.addAll(getNodesMetaDataFromRepository(nmdp));
+
+                    Optional<Collection<NodeMetaData>> nodesMetaDataFromRepository = getNodesMetaDataFromRepository(nmdp);
+                    if (nodesMetaDataFromRepository.isEmpty())
+                    {
+                        // Using exception for flow handling to jump to single node processing.
+                        throw new Exception("Error loading node metadata from repository for bulk delete.");
+                    }
+                    nodeMetaDatas.addAll(nodesMetaDataFromRepository.get());
                 }
 
                 for (NodeMetaData nodeMetaData : nodeMetaDatas)
@@ -1988,10 +2002,15 @@ public class SolrInformationServer implements InformationServer
 
                 // Fetches bulk metadata
                 nmdp.setMaxResults(Integer.MAX_VALUE);
-                Collection<NodeMetaData> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
+                Optional<Collection<NodeMetaData>> nodesMetaDataFromRepository = getNodesMetaDataFromRepository(nmdp);
+                if (nodesMetaDataFromRepository.isEmpty())
+                {
+                    // Using exception for flow handling to jump to single node processing.
+                    throw new Exception("Error loading node metadata from repository for bulk delete.");
+                }
                 
                 NEXT_NODE:
-                for (NodeMetaData nodeMetaData : nodeMetaDatas)
+                for (NodeMetaData nodeMetaData : nodesMetaDataFromRepository.get())
                 {
                     long start = System.nanoTime();
 
@@ -2236,7 +2255,7 @@ public class SolrInformationServer implements InformationServer
             dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
                     .stream()
                     .filter(field -> field.getField().startsWith("text@sd___@"))
-                    .forEach(field -> addStringProperty(valueHolder, field, value, locale, definition));
+                    .forEach(field -> addStringProperty(valueHolder, field, value, locale));
         } else
         {
             dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
@@ -2245,7 +2264,7 @@ public class SolrInformationServer implements InformationServer
                         {
                             setUnitOfTimeFields(valueHolder, field.getField(), value.getValue(), definition.getDataType());
                         }
-                        addStringProperty(valueHolder, field, value, locale, definition);
+                        addStringProperty(valueHolder, field, value, locale);
                     });
         }
     }
@@ -3247,17 +3266,10 @@ public class SolrInformationServer implements InformationServer
      */
     private String addTenantToAuthority(String authority, String tenant)
     {
-        switch (AuthorityType.getAuthorityType(authority))
+        AuthorityType authorityType = AuthorityType.getAuthorityType(authority);
+        if ((authorityType == GROUP || authorityType == EVERYONE || authorityType == GUEST) && !tenant.isEmpty())
         {
-            case GROUP:
-            case EVERYONE:
-            case GUEST:
-                if (tenant.length() != 0)
-                {
-                    return authority + "@" + tenant;
-                }
-            default:
-                break;
+            return authority + "@" + tenant;
         }
         return authority;
     }
@@ -3424,11 +3436,11 @@ public class SolrInformationServer implements InformationServer
             nmdp.setIncludeTxnId(true);
             nmdp.setMaxResults(1);
             // Gets only one
-            Collection<NodeMetaData> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
+            Optional<Collection<NodeMetaData>> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
 
-            if (!nodeMetaDatas.isEmpty())
+            if (nodeMetaDatas.isPresent() && !nodeMetaDatas.get().isEmpty())
             {
-                NodeMetaData nodeMetaData = nodeMetaDatas.iterator().next();
+                NodeMetaData nodeMetaData = nodeMetaDatas.get().iterator().next();
 
                 // Only cascade update nods we know can not have changed and must be in this shard
                 // Node in the current TX will be explicitly updated in the outer loop
@@ -3737,7 +3749,7 @@ public class SolrInformationServer implements InformationServer
         return "\u0000" + locale.getLanguage() + "\u0000" + property.getValue();
     }
 
-    private void addStringProperty(BiConsumer<String, Object> consumer, FieldInstance field, StringPropertyValue property, PropertyValue localeProperty, PropertyDefinition definition)
+    private void addStringProperty(BiConsumer<String, Object> consumer, FieldInstance field, StringPropertyValue property, PropertyValue localeProperty)
     {
         consumer.accept(field.getField(), field.isLocalised() ? getLocalisedValue(property, localeProperty) : property.getValue());
     }
@@ -3909,21 +3921,30 @@ public class SolrInformationServer implements InformationServer
         return nodeMetaData;
     }
 
-    private Collection<NodeMetaData> getNodesMetaDataFromRepository(NodeMetaDataParameters parameters)
+    /**
+     * Get the metadata for the specified nodes from the repository.
+     *
+     * @param parameters A parameters object containing either a list of nodes ({@link NodeMetaDataParameters#getNodeIds})
+     * or a node range ({@link NodeMetaDataParameters#getFromNodeId} and {@link NodeMetaDataParameters#getToNodeId}).
+     * @return Either the metadata returned by the repository, or null if there was a problem.
+     */
+    private Optional<Collection<NodeMetaData>> getNodesMetaDataFromRepository(NodeMetaDataParameters parameters)
     {
+        Collection<NodeMetaData> nodeMetaDataCollection = null;
         try
         {
-            return notNullOrEmpty(repositoryClient.getNodesMetaData(parameters));
+            return Optional.of(notNullOrEmpty(repositoryClient.getNodesMetaData(parameters)));
         }
         catch (JSONException exception)
         {
-            // Nothing to be done here: the exception has been already logged in repositoryClient
-            return Collections.emptyList();
+            // The exception has been already logged in repositoryClient and could be huge. Simply log a reference to it here.
+            LOGGER.debug("JSON exception swallowed by SolrInformationServer.");
+            return empty();
         }
         catch (Exception exception)
         {
             LOGGER.error("Unable to get nodes metadata from repository. See the stacktrace below for further details.", exception);
-            return Collections.emptyList();
+            return empty();
         }
     }
 }
