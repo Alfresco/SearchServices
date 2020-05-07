@@ -40,7 +40,7 @@ import org.apache.solr.common.params.SolrParams;
  */
 public class HandlerOfResources {
 
-    public static final List<String> DISALLOWED_SHARED_UPDATES = Arrays.asList("alfresco.identifier.property.",
+    protected static final List<String> DISALLOWED_SHARED_UPDATES = Arrays.asList("alfresco.identifier.property.",
             "alfresco.suggestable.property.",
             "alfresco.cross.locale.property.",
             "alfresco.cross.locale.datatype.");

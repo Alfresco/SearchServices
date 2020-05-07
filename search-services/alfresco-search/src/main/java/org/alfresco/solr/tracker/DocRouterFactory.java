@@ -18,6 +18,7 @@
  */
 package org.alfresco.solr.tracker;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,14 +45,15 @@ public class DocRouterFactory
                 LOGGER.info("Sharding via DB_ID");
                 return new DBIDRouter();
             case DB_ID_RANGE:
-                if(properties.containsKey(SHARD_RANGE_KEY))
+                if(!properties.containsKey(SHARD_RANGE_KEY))
                 {
-                    LOGGER.info("Sharding via DB_ID_RANGE");
-                    String[] pair =properties.getProperty(SHARD_RANGE_KEY).split("-");
-                    long start = Long.parseLong(pair[0]);
-                    long end = Long.parseLong(pair[1]);
-                    return new DBIDRangeRouter(start, end);
+                    throw new AlfrescoRuntimeException("DB_ID_RANGE sharding requires the " + SHARD_RANGE_KEY + " property to be set.");
                 }
+                LOGGER.info("Sharding via DB_ID_RANGE");
+                String[] pair = properties.getProperty(SHARD_RANGE_KEY).split("-");
+                long start = Long.parseLong(pair[0]);
+                long end = Long.parseLong(pair[1]);
+                return new DBIDRangeRouter(start, end);
             case ACL_ID:
                 LOGGER.info("Sharding via ACL_ID");
                 return new ACLIDMurmurRouter();

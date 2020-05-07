@@ -1,5 +1,6 @@
 package org.alfresco.solr.basics;
 
+import com.google.common.collect.Sets;
 import org.apache.solr.client.solrj.SolrResponse;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
@@ -12,8 +13,10 @@ import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandles;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class SolrResponsesComparator
 {
@@ -39,7 +42,7 @@ public class SolrResponsesComparator
      * Puts default values for handle
      */
     public void putHandleDefaults() {
-        handle.put("explain", SKIPVAL);
+        handle.put("[explain]", SKIPVAL);
         handle.put("timestamp", SKIPVAL);
         handle.put("score", SKIPVAL);
         handle.put("wt", SKIP);
@@ -51,6 +54,7 @@ public class SolrResponsesComparator
         handle.put("_version_", SKIP);
         handle.put("_original_parameters_", SKIP);
         handle.put("spellcheck-extras", SKIP); // No longer used can be removed in Solr 6.
+        handle.put("FIELDS", UNORDERED);
     }
     
 
@@ -85,27 +89,6 @@ public class SolrResponsesComparator
     
     public void compareResponses(QueryResponse a, QueryResponse b)
     {
-        if (System.getProperty("remove.version.field") != null)
-        {
-            // we don't care if one has a version and the other doesnt -
-            // control vs distrib
-            // TODO: this should prob be done by adding an ignore on _version_
-            // rather than mutating the responses?
-            if (a.getResults() != null)
-            {
-                for (SolrDocument doc : a.getResults())
-                {
-                    doc.removeFields("_version_");
-                }
-            }
-            if (b.getResults() != null)
-            {
-                for (SolrDocument doc : b.getResults())
-                {
-                    doc.removeFields("_version_");
-                }
-            }
-        }
         compareSolrResponses(a, b);
     }
     
@@ -233,6 +216,29 @@ public class SolrResponsesComparator
         return compare1(b, a, flags, handle);
     }
 
+    public static String compare(Set a, Set b, int flags, Map<String, Integer> handle)
+    {
+        String cmp;
+        cmp = compare1(a, b, flags, handle);
+        if (cmp != null)
+            return cmp;
+        return compare1(b, a, flags, handle);
+    }
+
+    private static String compare1(Set a, Set b, int flags, Map<String, Integer> handle) {
+        for (Object valA : a)
+        {
+            int flagsa = flags(handle, valA);
+            if ((flagsa & SKIP) != 0)
+                continue;
+            if (!b.contains(valA))
+            {
+                return "[" + valA + "]==null";
+            }
+        }
+        return null;
+    }
+
     public static String compare(SolrDocument a, SolrDocument b, int flags, Map<String, Integer> handle)
     {
         return compare(a.getFieldValuesMap(), b.getFieldValuesMap(), flags, handle);
@@ -315,10 +321,22 @@ public class SolrResponsesComparator
 
     public static String compare(Object[] a, Object[] b, int flags, Map<String, Integer> handle)
     {
+
+        boolean ordered = (flags & UNORDERED) == 0;
+
         if (a.length != b.length)
         {
             return ".length:" + a.length + "!=" + b.length;
         }
+
+        if (!ordered)
+        {
+            Set<Object> setA = Sets.newHashSet(a);
+            Set<Object> setB = Sets.newHashSet(b);
+            return compare(setA, setB, flags, handle);
+        }
+
+
         for (int i = 0; i < a.length; i++)
         {
             String cmp = compare(a[i], b[i], flags, handle);
@@ -327,6 +345,7 @@ public class SolrResponsesComparator
         }
         return null;
     }
+
 
     public static String compare(Object a, Object b, int flags, Map<String, Integer> handle)
     {

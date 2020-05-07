@@ -3,6 +3,7 @@ package org.alfresco.solr;
 import static org.alfresco.solr.AlfrescoSolrUtils.createCoreUsingTemplate;
 
 import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
+import com.carrotsearch.randomizedtesting.annotations.ThreadLeakLingering;
 import org.alfresco.solr.basics.RandomSupplier;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.apache.commons.io.FileUtils;

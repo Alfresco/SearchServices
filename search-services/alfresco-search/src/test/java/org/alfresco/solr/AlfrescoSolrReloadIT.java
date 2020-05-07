@@ -68,7 +68,7 @@ public class AlfrescoSolrReloadIT extends AbstractAlfrescoSolrIT
                 singletonList(acl),
                 singletonList(aclReaders));
 
-        int numNodes = 1;
+        int numNodes = 1000;
         List<Node> nodes = new ArrayList<>();
         List<NodeMetaData> nodeMetaDatas = new ArrayList<>();
 

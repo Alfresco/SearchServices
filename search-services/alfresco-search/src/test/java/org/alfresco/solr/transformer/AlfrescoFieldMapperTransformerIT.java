@@ -18,6 +18,7 @@
  */
 package org.alfresco.solr.transformer;
 
+import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -81,7 +82,7 @@ public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistribute
     {
         putHandleDefaults();
         //Test 1: Running a simple query without invoking AlfrescoFieldMapperTransformer, expected to see id,DBID and _version_
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts"));
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts", "sort", "id asc"));
         assertNotNull(resp);
         SolrDocumentList results = resp.getResults();
         assertEquals("Expecting 5 rows",5, results.size());
@@ -107,7 +108,7 @@ public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistribute
         putHandleDefaults();
         
         //Test 2: Running simple query with AlfrescoFieldMapperTransformer, expected to see all fields returned
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","*,[fmap]"));
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","*,[fmap]", "sort", "id asc"));
         SolrDocument docWithAllFields = resp.getResults().get(0);
         assertTrue(docWithAllFields.size() > 3);
 
@@ -129,7 +130,7 @@ public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistribute
         putHandleDefaults();
 
         //Test 3: Running simple query with AlfrescoFieldMapperTransformer, expected to see selected fields returned
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","id,DBID,[fmap]"));
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","id,DBID,[fmap]", "sort", "id asc"));
 
         assertNotNull(resp);
         SolrDocument docWithRequestedFields = resp.getResults().get(0);
@@ -144,7 +145,7 @@ public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistribute
         putHandleDefaults();
         
         //Test 4: Running simple query with fmapDocTransformer on non default fields, expected to see selected fields returned
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","id, cm_title,[fmap]"));
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","id, cm_title,[fmap]", "sort", "id asc"));
 
         assertNotNull(resp);
         SolrDocument docWithRequestedFields3 = resp.getResults().get(0);
@@ -159,7 +160,7 @@ public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistribute
     {
         putHandleDefaults();
 
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","id, cm_title,[fmap], [fmap]"));
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","id, cm_title,[fmap], [fmap]", "sort", "id asc"));
 
         assertNotNull(resp);
         SolrDocument docWithRequestedFields3 = resp.getResults().get(0);
@@ -174,7 +175,7 @@ public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistribute
     {
         putHandleDefaults();
 
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_name, score, [fmap]"));
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_name, score, [fmap]", "sort", "id asc"));
         assertNotNull(resp);
         SolrDocumentList results = resp.getResults();
         SolrDocument docWithAllFields = results.get(0);
@@ -189,7 +190,7 @@ public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistribute
     {
         putHandleDefaults();
 
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_title, cm_created, DBID, score, [fmap]"));
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_title, cm_created, DBID, score, [fmap]", "sort", "id asc"));
         assertNotNull(resp);
         SolrDocumentList results = resp.getResults();
         SolrDocument docWithAllFields = results.get(0);
@@ -205,7 +206,7 @@ public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistribute
     {
         putHandleDefaults();
 
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm?title, *name, [fmap]"));
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm?title, *name, [fmap]", "sort", "id asc"));
         assertNotNull(resp);
         SolrDocumentList results = resp.getResults();
         SolrDocument docWithAllFields = results.get(0);
@@ -220,7 +221,7 @@ public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistribute
     {
         putHandleDefaults();
 
-        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_title, [explain], [fmap]"));
+        QueryResponse resp = query(getDefaultTestClient(), true, ALFRESCO_JSON, params("q", "*", "qt", "/afts", "shards.qt", "/afts","fl","cm_title, [explain], [fmap]", "sort", "id asc"));
         assertNotNull(resp);
         SolrDocumentList results = resp.getResults();
         SolrDocument docWithAllFields = results.get(0);
