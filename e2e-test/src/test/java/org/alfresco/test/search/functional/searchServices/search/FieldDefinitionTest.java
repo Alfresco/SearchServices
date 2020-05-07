@@ -105,13 +105,17 @@ public class FieldDefinitionTest extends AbstractSearchServicesE2ETest {
 	    restClient.assertStatusCodeIs(HttpStatus.OK);
 	    Assert.assertEquals(response.getPagination().getCount(), 1);
 	    
-	    response = queryAsUser(testUser, "allfieldtypes_textFree:\"text\"");
+	    response = queryAsUser(testUser, "allfieldtypes_textFree:text");
 	    restClient.assertStatusCodeIs(HttpStatus.OK);
 	    Assert.assertEquals(response.getPagination().getCount(), 1);
 	    
 	    response = queryAsUser(testUser, "allfieldtypes_textFree:\"definition test\"");
 	    restClient.assertStatusCodeIs(HttpStatus.OK);
 	    Assert.assertEquals(response.getPagination().getCount(), 1);
+	    
+	    response = queryAsUser(testUser, "allfieldtypes_textPatternMany:definition");
+		restClient.assertStatusCodeIs(HttpStatus.OK);
+		Assert.assertEquals(response.getPagination().getCount(), 1);
 	}
 	
 	// A test to test a non tokenised text field in the solr schema
@@ -122,7 +126,7 @@ public class FieldDefinitionTest extends AbstractSearchServicesE2ETest {
 	    restClient.assertStatusCodeIs(HttpStatus.OK);
 	    Assert.assertEquals(response.getPagination().getCount(), 1);
 	    
-	    response = queryAsUser(testUser, "allfieldtypes_textLOVWhole:\"text\"");
+	    response = queryAsUser(testUser, "allfieldtypes_textLOVWhole:text");
 	    restClient.assertStatusCodeIs(HttpStatus.OK);
 	    Assert.assertEquals(response.getPagination().getCount(), 0);
 	    
@@ -139,11 +143,15 @@ public class FieldDefinitionTest extends AbstractSearchServicesE2ETest {
 		restClient.assertStatusCodeIs(HttpStatus.OK);
 		Assert.assertEquals(response.getPagination().getCount(), 1);
 		
-		response = queryAsUser(testUser, "allfieldtypes_textPatternMany:\"mltext\"");
+		response = queryAsUser(testUser, "allfieldtypes_textPatternMany:mltext");
 		restClient.assertStatusCodeIs(HttpStatus.OK);
 		Assert.assertEquals(response.getPagination().getCount(), 1);
 		
 		response = queryAsUser(testUser, "allfieldtypes_textPatternMany:\"field definition\"");
+		restClient.assertStatusCodeIs(HttpStatus.OK);
+		Assert.assertEquals(response.getPagination().getCount(), 1);
+		
+		response = queryAsUser(testUser, "allfieldtypes_textPatternMany:field");
 		restClient.assertStatusCodeIs(HttpStatus.OK);
 		Assert.assertEquals(response.getPagination().getCount(), 1);
 	}
@@ -156,7 +164,7 @@ public class FieldDefinitionTest extends AbstractSearchServicesE2ETest {
 		restClient.assertStatusCodeIs(HttpStatus.OK);
 		Assert.assertEquals(response.getPagination().getCount(), 1);
 		
-		response = queryAsUser(testUser, "allfieldtypes_mltextLOVWhole:\"mltext\"");
+		response = queryAsUser(testUser, "allfieldtypes_mltextLOVWhole:mltext");
 		restClient.assertStatusCodeIs(HttpStatus.OK);
 		Assert.assertEquals(response.getPagination().getCount(), 0);
 		
