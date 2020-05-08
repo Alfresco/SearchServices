@@ -1096,15 +1096,15 @@
     <dynamicField name="period@s_@*"        type="oldStandardAnalysis" sortMissingLast="true" />
 
     <!-- Single + doc values value wildcard matches -->
-    <dynamicField name="int@sd@*"           type="int" stored="true" docValues="true" />
-    <dynamicField name="long@sd@*"          type="long" stored="true" docValues="true" />
-    <dynamicField name="float@sd@*"         type="float" stored="true" docValues="true" />
-    <dynamicField name="double@sd@*"        type="double" stored="true" docValues="true" />
-    <dynamicField name="date@sd@*"          type="date" stored="true" docValues="true" />
-    <dynamicField name="datetime@sd@*"      type="date" stored="true" docValues="true" />
-    <dynamicField name="boolean@sd@*"       type="identifier" stored="true" docValues="true" />
-    <dynamicField name="category@sd@*"      type="identifier" stored="true" docValues="true" />
-    <dynamicField name="noderef@sd@*"       type="identifier" stored="true" docValues="true" />
+    <dynamicField name="int@sd@*"           type="int" stored="false" docValues="true" />
+    <dynamicField name="long@sd@*"          type="long" stored="false" docValues="true" />
+    <dynamicField name="float@sd@*"         type="float" stored="false" docValues="true" />
+    <dynamicField name="double@sd@*"        type="double" stored="false" docValues="true" />
+    <dynamicField name="date@sd@*"          type="date" stored="false" docValues="true" />
+    <dynamicField name="datetime@sd@*"      type="date" stored="false" docValues="true" />
+    <dynamicField name="boolean@sd@*"       type="identifier" stored="false" docValues="true" />
+    <dynamicField name="category@sd@*"      type="identifier" stored="false" docValues="true" />
+    <dynamicField name="noderef@sd@*"       type="identifier" stored="false" docValues="true" />
 
     <!-- Multi - value indexed  -->
     <dynamicField name="any@m_@*" type="oldStandardAnalysis" multiValued="true" />
@@ -1131,7 +1131,7 @@
     <dynamicField name="float@md@*" type="floats" docValues="true" />
     <dynamicField name="double@md@*" type="doubles" docValues="true" />
     <dynamicField name="date@md@*" type="dates" docValues="true" />
-    <dynamicField name="datetime@md@*" type="dates" stored="true" docValues="true" />
+    <dynamicField name="datetime@md@*" type="dates" stored="false" docValues="true" />
     <dynamicField name="boolean@md@*" type="identifiers" docValues="true" sortMissingLast="true"/>
     <dynamicField name="category@md@*" type="identifiers" docValues="true" sortMissingLast="true"/>
     <dynamicField name="noderef@md@*" type="identifiers" docValues="true" sortMissingLast="true"/>
