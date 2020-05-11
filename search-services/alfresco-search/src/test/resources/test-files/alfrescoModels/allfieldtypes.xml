@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model xmlns="http://www.alfresco.org/model/dictionary/1.0" name="allfieldtypes:allfieldtypes">
+    <author>Administrator</author>
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+    </imports>
+    <namespaces>
+        <namespace uri="allfieldtypes" prefix="allfieldtypes"/>
+    </namespaces>
+    <data-types/>
+    <constraints/>
+    <types/>
+    <aspects>
+        <aspect name="allfieldtypes:text">
+            <title>text</title>
+            <properties>
+                <property name="allfieldtypes:mltextLOVPartial">
+                    <title>mltextLOVPartial</title>
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>BOTH</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+                <property name="allfieldtypes:textPatternUnique">
+                    <title>textPatternUnique</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>FALSE</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+                <property name="allfieldtypes:mltextFree">
+                    <title>mltextFree</title>
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+                <property name="allfieldtypes:textLOVPartial">
+                    <title>textLOVPartial</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>BOTH</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+                <property name="allfieldtypes:mltextPatternUnique">
+                    <title>mltextPatternUnique</title>
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>FALSE</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+                <property name="allfieldtypes:mltextPatternMany">
+                    <title>mltextPatternMany</title>
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>BOTH</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+                <property name="allfieldtypes:textLOVWhole">
+                    <title>textLOVWhole</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>FALSE</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+                <property name="allfieldtypes:mltextNone">
+                    <title>mltextNone</title>
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="false">
+                        <tokenised>TRUE</tokenised>
+                    </index>
+                </property>
+                <property name="allfieldtypes:textNone">
+                    <title>textNone</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="false">
+                        <tokenised>TRUE</tokenised>
+                    </index>
+                </property>
+                <property name="allfieldtypes:textFree">
+                    <title>textFree</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>TRUE</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+                <property name="allfieldtypes:mltextLOVWhole">
+                    <title>mltextLOVWhole</title>
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>FALSE</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
+                <property name="allfieldtypes:textPatternMany">
+                    <title>textPatternMany</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>BOTH</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </aspect>
+    </aspects>
+</model>
