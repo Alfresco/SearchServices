@@ -24,12 +24,9 @@ import org.apache.lucene.index.IndexReaderContext;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermContext;
-import org.apache.lucene.search.CollectionStatistics;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermStatistics;
 import org.apache.lucene.search.Weight;
-import org.apache.lucene.search.similarities.TFIDFSimilarity;
 import org.apache.solr.search.SolrIndexSearcher;
 
 /**
@@ -41,37 +38,29 @@ public abstract class AbstractAuthorityQueryWeight extends Weight
 {
     protected Query query;
     protected SolrIndexSearcher searcher;
-    protected TFIDFSimilarity similarity;
     protected float value;
-    protected float idf;
-    protected float queryNorm;
-    protected float queryWeight;
-    protected Explanation idfExp;
     protected boolean needsScores;
     
     public AbstractAuthorityQueryWeight(SolrIndexSearcher searcher, boolean needsScores, Query query, String authTermName, String authTermText) throws IOException
     {
     	super(query);
         this.searcher = searcher;
-        //this.similarity = (TFIDFSimilarity) searcher.getSimilarity(true);
-        CollectionStatistics collectionStats = searcher.collectionStatistics(authTermName);
+        searcher.collectionStatistics(authTermName);
         final IndexReaderContext context = searcher.getTopReaderContext();
         final Term term = new Term(authTermName, authTermText);
         final TermContext termContext = TermContext.build(context, term);
-        TermStatistics termStats = searcher.termStatistics(term, termContext);
-        //idfExp = similarity.idfExplain(collectionStats, termStats);
-        //idf = idfExp.getValue();
+        searcher.termStatistics(term, termContext);
         this.needsScores = needsScores;
     }
     
     @Override
-    public Explanation explain(LeafReaderContext context, int doc) throws IOException
+    public Explanation explain(LeafReaderContext context, int doc)
     {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public float getValueForNormalization() throws IOException
+    public float getValueForNormalization()
     {
         return sumOfSquaredWeights();
     }
@@ -79,15 +68,10 @@ public abstract class AbstractAuthorityQueryWeight extends Weight
     @Override
     public void normalize(float queryNorm, float topLevelBoost)
     {
-        //this.queryNorm = queryNorm;
-        //queryWeight *= queryNorm;                   // normalize query weight
-        //value = queryWeight * idf;                  // idf for document
     }
     
-    protected float sumOfSquaredWeights() throws IOException
+    protected float sumOfSquaredWeights()
     {
-        //queryWeight = idf;       // compute query weight
-        //return queryWeight * queryWeight;           // square it
         return 0;
     }
 }
