@@ -18,6 +18,7 @@
       <test.exclude />
       <test.include />
       <jackson.databind.version>2.7.7</jackson.databind.version>
+      <licenseName>community</licenseName>
    </properties>
    <build>
       <plugins>
