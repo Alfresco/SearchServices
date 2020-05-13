@@ -35,6 +35,7 @@
       <!-- Solr startup scripts do not work with any Java version higher than 9 so the scripts have been patched -->
       <solr.zip>https://artifacts.alfresco.com/nexus/content/repositories/public/org/apache/solr/solr/solr-${solr.version}/solr-solr-${solr.version}.zip</solr.zip>
       <solr.directory>${project.build.directory}/solr-${solr.version}</solr.directory>
+      <licenseName>enterprise</licenseName>
    </properties>
    <modules>
       <module>search-services</module>
@@ -70,6 +71,41 @@
                <runOrder>alphabetical</runOrder>
             </configuration>
          </plugin>
+        <plugin>
+           <groupId>org.codehaus.mojo</groupId>
+             <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+                    <organizationName>Alfresco Software Limited</organizationName>
+                    <failOnMissingHeader>true</failOnMissingHeader>
+                    <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+                    <licenseResolver>classpath://alfresco</licenseResolver>
+                    <licenseName>${licenseName}</licenseName>
+                    <roots>
+                        <root>src</root>
+                    </roots>
+                    <includes>
+                        <include>**/*.java</include>
+                        <include>**/*.jsp</include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>check-licenses</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>check-file-header</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.alfresco</groupId>
+                        <artifactId>alfresco-license-headers</artifactId>
+                        <version>1.0</version>
+                    </dependency>
+                </dependencies>
+        </plugin>
       </plugins>
    </build>
    <dependencies>
