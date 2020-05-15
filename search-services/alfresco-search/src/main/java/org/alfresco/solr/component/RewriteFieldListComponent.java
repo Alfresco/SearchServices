@@ -18,10 +18,7 @@
  */
 package org.alfresco.solr.component;
 
-import static java.util.Optional.ofNullable;
-
 import org.alfresco.solr.AlfrescoSolrDataModel;
-import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.handler.component.ResponseBuilder;
@@ -35,13 +32,17 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.Optional.ofNullable;
+
+/**
+ * @Author elia
+ */
+
 /**
  * Transform the fieldlist depending on the use of cached transformer:
  * [cached] -> add to the field list the translations of the fiels to the internal schema notation
  * otherwise -> modify the field list in order to contains a subset of the following fields:
  * 		id, DBID, _version_ and score
- *
- * @author eporciani
  */
 public class RewriteFieldListComponent extends SearchComponent {
 
@@ -85,7 +86,7 @@ public class RewriteFieldListComponent extends SearchComponent {
                 fieldListSet.addAll(defaultNonCachedFields);
             }
 
-            params.set(CommonParams.FL, String.join(",", fieldListSet));
+            params.set("fl", String.join(",", fieldListSet));
         }
         else
         {
@@ -96,7 +97,8 @@ public class RewriteFieldListComponent extends SearchComponent {
             else
             {
                 fieldListSet.addAll(solrReturnFields.getLuceneFieldNames().stream()
-                        .map( field -> AlfrescoSolrDataModel.getInstance().mapStoredProperty(field, req))
+                        .map( field -> AlfrescoSolrDataModel.getInstance()
+                                                .mapStoredProperty(field, req))
                         .filter(Objects::nonNull)
                         .map(schemaFieldName -> schemaFieldName.chars()
                                 .mapToObj(c -> (char) c)
@@ -106,7 +108,7 @@ public class RewriteFieldListComponent extends SearchComponent {
                         .collect(Collectors.toSet()));
             }
 
-            params.add(CommonParams.FL, String.join(",", fieldListSet));
+            params.add("fl", String.join(",", fieldListSet));
         }
 
         // This is added for filtering the fields in the cached transformer.

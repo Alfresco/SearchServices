@@ -108,6 +108,12 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import static java.util.Optional.ofNullable;
+import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_DAY_FIELD_SUFFIX;
+import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_HOUR_FIELD_SUFFIX;
+import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_MINUTE_FIELD_SUFFIX;
+import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_MONTH_FIELD_SUFFIX;
+import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_SECOND_FIELD_SUFFIX;
+import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_YEAR_FIELD_SUFFIX;
 
 /**
  * @author Andy
@@ -1027,6 +1033,12 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     }
 
+    public String getDateDerivedFIeld(QName propertyQName)
+    {
+        PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
+        return "part@sd@" + propertyDefinition.getName().toString();
+    }
+
 
     /**
      * Get all the field names into which we must copy the source data
@@ -1626,27 +1638,45 @@ public class AlfrescoSolrDataModel implements QueryConstants
             }
         }
 
-        if (propertyDef == null || propertyDef.getName() == null){
+        if (propertyDef == null || propertyDef.getName() == null)
+        {
             return mapNonPropertyFields(luceneField);
         }
 
-        if (propertyDef.getName().equals(DataTypeDefinition.TEXT))
+        if ((propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME)
+                || propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE) &&
+                !isDerivedDateField(fieldNameAndEnding.getSecond())))
         {
-            return getStoredTextField(propertyDef.getName());
+            return getDateDerivedFIeld(propertyDef.getName()) + fieldNameAndEnding.getSecond();
         }
-        else if (propertyDef.getName().equals(DataTypeDefinition.MLTEXT))
+        else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT))
         {
-            return getStoredMLTextField(propertyDef.getName());
+            return getStoredTextField(propertyDef.getName()) + fieldNameAndEnding.getSecond();
         }
-        else if (propertyDef.getName().equals(DataTypeDefinition.CONTENT))
+        else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
         {
-            return getStoredContentField(propertyDef.getName());
+            return getStoredMLTextField(propertyDef.getName()) + fieldNameAndEnding.getSecond();
+        }
+        else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
+        {
+            return getStoredContentField(propertyDef.getName()) + fieldNameAndEnding.getSecond();
         }
         else
         {
-            return mapAlfrescoField(FieldUse.FTS, 0, fieldNameAndEnding, luceneField, propertyDef);
+            return mapAlfrescoField(FieldUse.FTS, 0, fieldNameAndEnding, luceneField, propertyDef)
+                    + fieldNameAndEnding.getSecond();
         }
     }
+
+    public boolean isDerivedDateField(String suffix) {
+        return Set.of(UNIT_OF_TIME_YEAR_FIELD_SUFFIX,
+                UNIT_OF_TIME_MONTH_FIELD_SUFFIX,
+                UNIT_OF_TIME_DAY_FIELD_SUFFIX,
+                UNIT_OF_TIME_HOUR_FIELD_SUFFIX,
+                UNIT_OF_TIME_MINUTE_FIELD_SUFFIX,
+                UNIT_OF_TIME_SECOND_FIELD_SUFFIX).contains(suffix);
+    }
+
 
     public String  mapProperty(String  potentialProperty,  FieldUse fieldUse, SolrQueryRequest req, int position)
     {

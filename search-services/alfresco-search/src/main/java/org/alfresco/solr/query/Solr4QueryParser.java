@@ -4217,6 +4217,17 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             }
 
         }
+        else if (AlfrescoSolrDataModel.getInstance().isDerivedDateField(fieldNameAndEnding.getSecond()))
+        {
+            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE)
+             || propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME )))
+            {
+                return subQueryBuilder.getQuery(
+                        AlfrescoSolrDataModel.getInstance()
+                                .getDateDerivedFIeld(propertyQName) + fieldNameAndEnding.getSecond(),
+                        queryText, analysisMode, luceneFunction);
+            }
+        }
 
         // Already in expanded form
 
