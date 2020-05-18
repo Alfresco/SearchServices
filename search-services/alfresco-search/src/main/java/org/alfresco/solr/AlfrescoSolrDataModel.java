@@ -1033,7 +1033,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     }
 
-    public String getDateDerivedFIeld(QName propertyQName)
+    public String getDateDerivedField(QName propertyQName)
     {
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
         return "part@sd@" + propertyDefinition.getName().toString();
@@ -1644,10 +1644,10 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
 
         if ((propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME)
-                || propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE) &&
-                !isDerivedDateField(fieldNameAndEnding.getSecond())))
+                || propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE)) &&
+                isDerivedDateField(fieldNameAndEnding.getSecond()))
         {
-            return getDateDerivedFIeld(propertyDef.getName()) + fieldNameAndEnding.getSecond();
+            return getDateDerivedField(propertyDef.getName()) + fieldNameAndEnding.getSecond();
         }
         else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT))
         {
