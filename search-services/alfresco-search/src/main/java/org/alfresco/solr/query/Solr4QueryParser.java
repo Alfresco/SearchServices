@@ -4204,7 +4204,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 return subQueryBuilder
                         .getQuery(
                                 AlfrescoSolrDataModel.getInstance()
-                                        .getQueryableFields(propertyQName, ContentFieldType.TRANSFORMATION_TIME,
+                                        .getQueryableFields(propertyQName,  ContentFieldType.TRANSFORMATION_TIME,
                                                 FieldUse.ID)
                                         .getFields().get(0).getField(),
                                 queryText, analysisMode, luceneFunction);
@@ -4232,7 +4232,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             {
                 return subQueryBuilder.getQuery(
                         AlfrescoSolrDataModel.getInstance()
-                                .getDateDerivedField(propertyQName) + fieldNameAndEnding.getSecond(),
+                                .getDateDerivedField(propertyQName, fieldNameAndEnding.getSecond()),
                         queryText, analysisMode, luceneFunction);
             }
         }

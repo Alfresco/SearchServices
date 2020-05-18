@@ -954,8 +954,12 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
     }
 
-
     public String getStoredTextField(QName propertyQName)
+    {
+        return getStoredTextField(propertyQName, null);
+    }
+
+    public String getStoredTextField(QName propertyQName, String suffix)
     {
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
 
@@ -981,11 +985,21 @@ public class AlfrescoSolrDataModel implements QueryConstants
         sb.append("@");
         sb.append(propertyDefinition.getName().toString());
 
+        if (suffix != null)
+        {
+            sb.append(suffix);
+        }
+
         return sb.toString();
 
     }
 
     public String getStoredMLTextField(QName propertyQName)
+    {
+        return getStoredMLTextField(propertyQName, null);
+    }
+
+    public String getStoredMLTextField(QName propertyQName, String suffix)
     {
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
 
@@ -1009,11 +1023,21 @@ public class AlfrescoSolrDataModel implements QueryConstants
         sb.append("@");
         sb.append(propertyDefinition.getName().toString());
 
+        if (suffix != null)
+        {
+            sb.append(suffix);
+        }
+
         return sb.toString();
 
     }
 
     public String getStoredContentField(QName propertyQName)
+    {
+        return getStoredContentField(propertyQName, null);
+    }
+
+    public String getStoredContentField(QName propertyQName, String suffix)
     {
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
 
@@ -1037,14 +1061,19 @@ public class AlfrescoSolrDataModel implements QueryConstants
         sb.append("@");
         sb.append(propertyDefinition.getName().toString());
 
+        if (suffix != null)
+        {
+            sb.append(suffix);
+        }
+
         return sb.toString();
 
     }
 
-    public String getDateDerivedField(QName propertyQName)
+    public String getDateDerivedField(QName propertyQName, String suffix)
     {
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
-        return "part@sd@" + propertyDefinition.getName().toString();
+        return "part@sd@" + propertyDefinition.getName().toString() + suffix;
     }
 
 
@@ -1655,19 +1684,19 @@ public class AlfrescoSolrDataModel implements QueryConstants
                 || propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE)) &&
                 isDerivedDateField(fieldNameAndEnding.getSecond()))
         {
-            return getDateDerivedField(propertyDef.getName()) + fieldNameAndEnding.getSecond();
+            return getDateDerivedField(propertyDef.getName(), fieldNameAndEnding.getSecond());
         }
         else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT))
         {
-            return getStoredTextField(propertyDef.getName()) + fieldNameAndEnding.getSecond();
+            return getStoredTextField(propertyDef.getName(), fieldNameAndEnding.getSecond());
         }
         else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
         {
-            return getStoredMLTextField(propertyDef.getName()) + fieldNameAndEnding.getSecond();
+            return getStoredMLTextField(propertyDef.getName(), fieldNameAndEnding.getSecond());
         }
         else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
         {
-            return getStoredContentField(propertyDef.getName()) + fieldNameAndEnding.getSecond();
+            return getStoredContentField(propertyDef.getName(), fieldNameAndEnding.getSecond());
         }
         else
         {
