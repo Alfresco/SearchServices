@@ -2300,56 +2300,64 @@ public class SolrInformationServer implements InformationServer
 
         for (Entry<QName, PropertyValue> property : properties.entrySet())
         {
+            
             QName propertyQName =  property.getKey();
-            document.addField(FIELD_PROPERTIES, propertyQName.toString());
-            document.addField(FIELD_PROPERTIES, propertyQName.getPrefixString());
-
-            PropertyValue value = property.getValue();
-            if(value != null)
+            
+            // Skip adding Alfresco Fields declared as indexed="false" to SOLR Schema
+            if (dataModel.getPropertyDefinition(propertyQName).isIndexed())
             {
-                if (value instanceof StringPropertyValue)
+            
+                document.addField(FIELD_PROPERTIES, propertyQName.toString());
+                document.addField(FIELD_PROPERTIES, propertyQName.getPrefixString());
+    
+                PropertyValue value = property.getValue();
+                if(value != null)
                 {
-                    stringProperty(propertyQName, (StringPropertyValue) value, properties.get(ContentModel.PROP_LOCALE), setAndCollect);
-                }
-                else if (value instanceof MLTextPropertyValue)
-                {
-                    mltextProperty(propertyQName,(MLTextPropertyValue) value, setAndCollect);
-                }
-                else if (value instanceof ContentPropertyValue)
-                {
-                    addContentProperty(setAndCollect, document, propertyQName, (ContentPropertyValue) value, contentIndexingIsEnabled);
-                }
-                else if (value instanceof MultiPropertyValue)
-                {
-                    MultiPropertyValue typedValue = (MultiPropertyValue) value;
-                    AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
-                    clearFields(
-                            document,
-                            dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
-                                .stream()
-                                .map(FieldInstance::getField)
-                                .collect(Collectors.toList()));
-
-                    for (PropertyValue singleValue : typedValue.getValues())
+                    if (value instanceof StringPropertyValue)
                     {
-                        if (singleValue instanceof StringPropertyValue)
+                        stringProperty(propertyQName, (StringPropertyValue) value, properties.get(ContentModel.PROP_LOCALE), setAndCollect);
+                    }
+                    else if (value instanceof MLTextPropertyValue)
+                    {
+                        mltextProperty(propertyQName,(MLTextPropertyValue) value, setAndCollect);
+                    }
+                    else if (value instanceof ContentPropertyValue)
+                    {
+                        addContentProperty(setAndCollect, document, propertyQName, (ContentPropertyValue) value, contentIndexingIsEnabled);
+                    }
+                    else if (value instanceof MultiPropertyValue)
+                    {
+                        MultiPropertyValue typedValue = (MultiPropertyValue) value;
+                        AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
+                        clearFields(
+                                document,
+                                dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
+                                    .stream()
+                                    .map(FieldInstance::getField)
+                                    .collect(Collectors.toList()));
+    
+                        for (PropertyValue singleValue : typedValue.getValues())
                         {
-                            stringProperty(propertyQName, (StringPropertyValue) singleValue, properties.get(ContentModel.PROP_LOCALE), addAndCollect);
-                        }
-                        else if (singleValue instanceof MLTextPropertyValue)
-                        {
-                            mltextProperty(propertyQName,(MLTextPropertyValue) singleValue, addAndCollect);
-                        }
-                        else if (singleValue instanceof ContentPropertyValue)
-                        {
-                            addContentProperty(addAndCollect, document, propertyQName, (ContentPropertyValue) singleValue, contentIndexingIsEnabled);
+                            if (singleValue instanceof StringPropertyValue)
+                            {
+                                stringProperty(propertyQName, (StringPropertyValue) singleValue, properties.get(ContentModel.PROP_LOCALE), addAndCollect);
+                            }
+                            else if (singleValue instanceof MLTextPropertyValue)
+                            {
+                                mltextProperty(propertyQName,(MLTextPropertyValue) singleValue, addAndCollect);
+                            }
+                            else if (singleValue instanceof ContentPropertyValue)
+                            {
+                                addContentProperty(addAndCollect, document, propertyQName, (ContentPropertyValue) singleValue, contentIndexingIsEnabled);
+                            }
                         }
                     }
                 }
-            }
-            else
-            {
-                document.addField(FIELD_NULLPROPERTIES, propertyQName.toString());
+                else
+                {
+                    document.addField(FIELD_NULLPROPERTIES, propertyQName.toString());
+                }
+                
             }
         }
     }
