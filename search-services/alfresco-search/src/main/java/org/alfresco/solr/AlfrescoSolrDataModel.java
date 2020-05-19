@@ -1,21 +1,29 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
- *
- * This file is part of Alfresco
- *
+ * #%L
+ * Alfresco Search Services
+ * %%
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
+ * provided under the following open source license terms:
+ * 
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
  */
+
 package org.alfresco.solr;
 
 import static java.util.Collections.unmodifiableList;
@@ -946,8 +954,12 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
     }
 
-
     public String getStoredTextField(QName propertyQName)
+    {
+        return getStoredTextField(propertyQName, null);
+    }
+
+    public String getStoredTextField(QName propertyQName, String suffix)
     {
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
 
@@ -973,11 +985,21 @@ public class AlfrescoSolrDataModel implements QueryConstants
         sb.append("@");
         sb.append(propertyDefinition.getName().toString());
 
+        if (suffix != null)
+        {
+            sb.append(suffix);
+        }
+
         return sb.toString();
 
     }
 
     public String getStoredMLTextField(QName propertyQName)
+    {
+        return getStoredMLTextField(propertyQName, null);
+    }
+
+    public String getStoredMLTextField(QName propertyQName, String suffix)
     {
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
 
@@ -1001,11 +1023,21 @@ public class AlfrescoSolrDataModel implements QueryConstants
         sb.append("@");
         sb.append(propertyDefinition.getName().toString());
 
+        if (suffix != null)
+        {
+            sb.append(suffix);
+        }
+
         return sb.toString();
 
     }
 
     public String getStoredContentField(QName propertyQName)
+    {
+        return getStoredContentField(propertyQName, null);
+    }
+
+    public String getStoredContentField(QName propertyQName, String suffix)
     {
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
 
@@ -1029,14 +1061,19 @@ public class AlfrescoSolrDataModel implements QueryConstants
         sb.append("@");
         sb.append(propertyDefinition.getName().toString());
 
+        if (suffix != null)
+        {
+            sb.append(suffix);
+        }
+
         return sb.toString();
 
     }
 
-    public String getDateDerivedField(QName propertyQName)
+    public String getDateDerivedField(QName propertyQName, String suffix)
     {
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
-        return "part@sd@" + propertyDefinition.getName().toString();
+        return "part@sd@" + propertyDefinition.getName().toString() + suffix;
     }
 
 
@@ -1647,19 +1684,19 @@ public class AlfrescoSolrDataModel implements QueryConstants
                 || propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE)) &&
                 isDerivedDateField(fieldNameAndEnding.getSecond()))
         {
-            return getDateDerivedField(propertyDef.getName()) + fieldNameAndEnding.getSecond();
+            return getDateDerivedField(propertyDef.getName(), fieldNameAndEnding.getSecond());
         }
         else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT))
         {
-            return getStoredTextField(propertyDef.getName()) + fieldNameAndEnding.getSecond();
+            return getStoredTextField(propertyDef.getName(), fieldNameAndEnding.getSecond());
         }
         else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
         {
-            return getStoredMLTextField(propertyDef.getName()) + fieldNameAndEnding.getSecond();
+            return getStoredMLTextField(propertyDef.getName(), fieldNameAndEnding.getSecond());
         }
         else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
         {
-            return getStoredContentField(propertyDef.getName()) + fieldNameAndEnding.getSecond();
+            return getStoredContentField(propertyDef.getName(), fieldNameAndEnding.getSecond());
         }
         else
         {
