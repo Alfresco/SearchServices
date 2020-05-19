@@ -170,7 +170,13 @@ public class AlfrescoSolrDataModel implements QueryConstants
     public static final String CONTENT_S_LOCALE_PREFIX = "content@s__locale@";
 
     static final String PART_FIELDNAME_PREFIX = "part@sd@";
-
+    static final Set<String> DATE_PART_SUFFIXES =
+            Set.of(UNIT_OF_TIME_YEAR_FIELD_SUFFIX,
+                UNIT_OF_TIME_MONTH_FIELD_SUFFIX,
+                UNIT_OF_TIME_DAY_FIELD_SUFFIX,
+                UNIT_OF_TIME_HOUR_FIELD_SUFFIX,
+                UNIT_OF_TIME_MINUTE_FIELD_SUFFIX,
+                UNIT_OF_TIME_SECOND_FIELD_SUFFIX);
     /**
      * Infix used for denoting a primitive single valued field with no doc values enabled
      *
@@ -1706,12 +1712,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
     }
 
     public boolean isDerivedDateField(String suffix) {
-        return Set.of(UNIT_OF_TIME_YEAR_FIELD_SUFFIX,
-                UNIT_OF_TIME_MONTH_FIELD_SUFFIX,
-                UNIT_OF_TIME_DAY_FIELD_SUFFIX,
-                UNIT_OF_TIME_HOUR_FIELD_SUFFIX,
-                UNIT_OF_TIME_MINUTE_FIELD_SUFFIX,
-                UNIT_OF_TIME_SECOND_FIELD_SUFFIX).contains(suffix);
+        return DATE_PART_SUFFIXES.contains(suffix);
     }
 
 
