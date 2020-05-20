@@ -2302,9 +2302,10 @@ public class SolrInformationServer implements InformationServer
         {
             
             QName propertyQName =  property.getKey();
+            PropertyDefinition propertyDefinition = dataModel.getPropertyDefinition(propertyQName);
             
             // Skip adding Alfresco Fields declared as indexed="false" to SOLR Schema
-            if (dataModel.getPropertyDefinition(propertyQName).isIndexed())
+            if (propertyDefinition != null && propertyDefinition.isIndexed())
             {
             
                 document.addField(FIELD_PROPERTIES, propertyQName.toString());
@@ -2358,6 +2359,12 @@ public class SolrInformationServer implements InformationServer
                     document.addField(FIELD_NULLPROPERTIES, propertyQName.toString());
                 }
                 
+            }
+            else
+            {
+                LOGGER.debug("Field '" + propertyQName + "' has not been indexed "
+                        + (propertyDefinition != null ? "as property definition is not found."
+                                : "as it has been declared as not indexable in the Content Model."));
             }
         }
     }
