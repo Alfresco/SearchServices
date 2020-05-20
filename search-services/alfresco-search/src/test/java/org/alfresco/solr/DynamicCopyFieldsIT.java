@@ -389,40 +389,6 @@ public class DynamicCopyFieldsIT extends AbstractAlfrescoDistributedIT {
 
     /**
      * Test correct fields are generated:
-     * Properties (mltext):
-     *      index=disable
-     */
-    @Test
-    @Ignore("index enable=false is ignored")
-    public void mltextNoneGeneratedFieldsTest()
-    {
-        HashSet<String> fieldModifiers = fieldMap.get(MLTEXT_NONE);
-        assertAllMultiValue(fieldModifiers);
-        Set<DynamicFieldType> dynamicFieldsTypes = fieldModifiers.stream()
-                .map(this::modifierToDynamicFieldType)
-                .collect(Collectors.toSet());
-        Assert.assertEquals(Set.of(DynamicFieldType.STORED), dynamicFieldsTypes);
-    }
-
-    /**
-     * Test correct fields are generated:
-     * Properties (text):
-     *      index=disable
-     */
-    @Test
-    @Ignore("index enable=false is ignored")
-    public void textNoneGeneratedFieldsTest()
-    {
-        HashSet<String> fieldModifiers = fieldMap.get(TEXT_NONE);
-        assertAllSingleValue(fieldModifiers);
-        Set<DynamicFieldType> dynamicFieldsTypes = fieldModifiers.stream()
-                .map(this::modifierToDynamicFieldType)
-                .collect(Collectors.toSet());
-        Assert.assertEquals(Set.of(DynamicFieldType.STORED), dynamicFieldsTypes);
-    }
-
-    /**
-     * Test correct fields are generated:
      * Properties (text):
      *      indexed=TRUE
      *      facetable=FALSE
