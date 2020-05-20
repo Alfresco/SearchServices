@@ -375,7 +375,6 @@ public class DynamicCopyFieldsIT extends AbstractAlfrescoDistributedIT {
     @Test
     public void textLOVWholeGeneratedFieldsTest()
     {
-        Assert.assertFalse();
         HashSet<String> fieldModifiers = fieldMap.get(TEXT_LOVWHOLE);
         assertAllSingleValue(fieldModifiers);
         Set<DynamicFieldType> dynamicFieldsTypes = fieldModifiers.stream()
@@ -411,6 +410,7 @@ public class DynamicCopyFieldsIT extends AbstractAlfrescoDistributedIT {
      *      index=disable
      */
     @Test
+    @Ignore("index enable=false is ignored")
     public void textNoneGeneratedFieldsTest()
     {
         HashSet<String> fieldModifiers = fieldMap.get(TEXT_NONE);
