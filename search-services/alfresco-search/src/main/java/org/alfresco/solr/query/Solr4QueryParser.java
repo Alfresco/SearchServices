@@ -52,7 +52,7 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoAnalyzerWrapper;
 import org.alfresco.solr.AlfrescoSolrDataModel;
-import org.alfresco.solr.AlfrescoSolrDataModel.ContentFieldType;
+import org.alfresco.solr.AlfrescoSolrDataModel.SpecializedFieldType;
 import org.alfresco.solr.AlfrescoSolrDataModel.FieldInstance;
 import org.alfresco.solr.AlfrescoSolrDataModel.FieldUse;
 import org.alfresco.solr.AlfrescoSolrDataModel.IndexedField;
@@ -3064,22 +3064,22 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                     {
                     case FIELD_SIZE_SUFFIX:
                         solrField = AlfrescoSolrDataModel.getInstance()
-                                .getQueryableFields(propertyDef.getName(), ContentFieldType.SIZE, FieldUse.ID)
+                                .getQueryableFields(propertyDef.getName(), SpecializedFieldType.CONTENT_SIZE, FieldUse.ID)
                                 .getFields().get(0).getField();
                         break;
                     case FIELD_MIMETYPE_SUFFIX:
                         solrField = AlfrescoSolrDataModel.getInstance()
-                                .getQueryableFields(propertyDef.getName(), ContentFieldType.MIMETYPE, FieldUse.ID)
+                                .getQueryableFields(propertyDef.getName(), SpecializedFieldType.CONTENT_MIMETYPE, FieldUse.ID)
                                 .getFields().get(0).getField();
                         break;
                     case FIELD_ENCODING_SUFFIX:
                         solrField = AlfrescoSolrDataModel.getInstance()
-                                .getQueryableFields(propertyDef.getName(), ContentFieldType.ENCODING, FieldUse.ID)
+                                .getQueryableFields(propertyDef.getName(), SpecializedFieldType.CONTENT_ENCODING, FieldUse.ID)
                                 .getFields().get(0).getField();
                         break;
                     case FIELD_LOCALE_SUFFIX:
                         solrField = AlfrescoSolrDataModel.getInstance()
-                                .getQueryableFields(propertyDef.getName(), ContentFieldType.LOCALE, FieldUse.ID)
+                                .getQueryableFields(propertyDef.getName(), SpecializedFieldType.CONTENT_LOCALE, FieldUse.ID)
                                 .getFields().get(0).getField();
                         break;
                     }
@@ -3119,61 +3119,44 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                         || propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE)) &&
                         !AlfrescoSolrDataModel.getInstance().isDerivedDateField(fieldNameAndEnding.getSecond()))
                 {
-                    if (AlfrescoSolrDataModel.getInstance().isDerivedDateField(fieldNameAndEnding.getSecond()))
-                    {
+                    Pair<Date, Integer> dateAndResolution1 = parseDateString(part1);
+                    Pair<Date, Integer> dateAndResolution2 = parseDateString(part2);
 
-                    }
-                    else
+                    BooleanQuery.Builder bQuery = new BooleanQuery.Builder();
+                    IndexedField indexedField = AlfrescoSolrDataModel.getInstance()
+                            .getQueryableFields(propertyDef.getName(), null, FieldUse.ID);
+                    for (FieldInstance instance : indexedField.getFields())
                     {
-                        Pair<Date, Integer> dateAndResolution1 = parseDateString(part1);
-                        Pair<Date, Integer> dateAndResolution2 = parseDateString(part2);
-
-                        BooleanQuery.Builder bQuery = new BooleanQuery.Builder();
-                        IndexedField indexedField = AlfrescoSolrDataModel.getInstance()
-                                .getQueryableFields(propertyDef.getName(), null, FieldUse.ID);
-                        for (FieldInstance instance : indexedField.getFields())
+                        String start = dateAndResolution1 == null ? part1
+                                : (includeLower ? getDateStart(dateAndResolution1) : getDateEnd(dateAndResolution1));
+                        String end = dateAndResolution2 == null ? part2
+                                : (includeUpper ? getDateEnd(dateAndResolution2) : getDateStart(dateAndResolution2));
+                        if (start.equals("*"))
                         {
-                            String start = dateAndResolution1 == null ? part1
-                                    : (includeLower ? getDateStart(dateAndResolution1) : getDateEnd(dateAndResolution1));
-                            String end = dateAndResolution2 == null ? part2
-                                    : (includeUpper ? getDateEnd(dateAndResolution2) : getDateStart(dateAndResolution2));
-                            if (start.equals("*"))
-                            {
-                                start = null;
-                            }
-                            if (end.equals("*"))
-                            {
-                                end = null;
-                            }
-
-                            SchemaField sf = schema.getField(instance.getField());
-
-                            Query query = sf.getType().getRangeQuery(null, sf, start, end, includeLower, includeUpper);
-                            if (query != null)
-                            {
-                                bQuery.add(query, Occur.SHOULD);
-                            }
+                            start = null;
                         }
-                        return bQuery.build();
-                    }
+                        if (end.equals("*"))
+                        {
+                            end = null;
+                        }
 
+                        SchemaField sf = schema.getField(instance.getField());
+
+                        Query query = sf.getType().getRangeQuery(null, sf, start, end, includeLower, includeUpper);
+                        if (query != null)
+                        {
+                            bQuery.add(query, Occur.SHOULD);
+                        }
+                    }
+                    return bQuery.build();
                 }
                 else
                 {
-
-                    String solrField;
-
-                    if ((propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME)
-                            || propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE)) &&
-                            AlfrescoSolrDataModel.getInstance().isDerivedDateField(fieldNameAndEnding.getSecond()))
-                    {
-                        solrField = AlfrescoSolrDataModel.getInstance().getDateDerivedField(propertyDef.getName(), fieldNameAndEnding.getSecond());
-                    }
-                    else
-                    {
-                        solrField = AlfrescoSolrDataModel.getInstance()
-                                .getQueryableFields(propertyDef.getName(), null, FieldUse.ID).getFields().get(0).getField();
-                    }
+                    String solrField = AlfrescoSolrDataModel.getInstance()
+                            .getQueryableFields(propertyDef.getName(),
+                                    AlfrescoSolrDataModel.getInstance().getTextField(fieldNameAndEnding.getSecond()),
+                                    FieldUse.ID)
+                            .getFields().get(0).getField();
 
                     String start = null;
                     try
@@ -4165,98 +4148,13 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             }
         }
 
-        // Mime type
-        if (fieldNameAndEnding.getSecond().equals(FIELD_MIMETYPE_SUFFIX))
+        if (fieldNameAndEnding.getSecond() != null && propertyDef != null)
         {
-            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
-            {
-                return subQueryBuilder.getQuery(AlfrescoSolrDataModel.getInstance()
-                        .getQueryableFields(propertyQName, ContentFieldType.MIMETYPE, FieldUse.ID).getFields().get(0)
-                        .getField(), queryText, analysisMode, luceneFunction);
-            }
-
-        } else if (fieldNameAndEnding.getSecond().equals(FIELD_SIZE_SUFFIX))
-        {
-            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
-            {
-                return subQueryBuilder.getQuery(AlfrescoSolrDataModel.getInstance()
-                        .getQueryableFields(propertyQName, ContentFieldType.SIZE, FieldUse.ID).getFields().get(0)
-                        .getField(), queryText, analysisMode, luceneFunction);
-
-            }
-
-        } else if (fieldNameAndEnding.getSecond().equals(FIELD_LOCALE_SUFFIX))
-        {
-            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
-            {
-                return subQueryBuilder.getQuery(AlfrescoSolrDataModel.getInstance()
-                        .getQueryableFields(propertyQName, ContentFieldType.LOCALE, FieldUse.ID).getFields().get(0)
-                        .getField(), queryText, analysisMode, luceneFunction);
-
-            }
-
-        } else if (fieldNameAndEnding.getSecond().equals(FIELD_ENCODING_SUFFIX))
-        {
-            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
-            {
-                return subQueryBuilder.getQuery(AlfrescoSolrDataModel.getInstance()
-                        .getQueryableFields(propertyQName, ContentFieldType.ENCODING, FieldUse.ID).getFields().get(0)
-                        .getField(), queryText, analysisMode, luceneFunction);
-
-            }
-
-        } else if (fieldNameAndEnding.getSecond().equals(FIELD_TRANSFORMATION_STATUS_SUFFIX))
-        {
-            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
-            {
-                return subQueryBuilder
-                        .getQuery(
-                                AlfrescoSolrDataModel.getInstance()
-                                        .getQueryableFields(propertyQName, ContentFieldType.TRANSFORMATION_STATUS,
-                                                FieldUse.ID)
-                                        .getFields().get(0).getField(),
-                                queryText, analysisMode, luceneFunction);
-
-            }
-
-        } else if (fieldNameAndEnding.getSecond().equals(FIELD_TRANSFORMATION_TIME_SUFFIX))
-        {
-            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
-            {
-                return subQueryBuilder
-                        .getQuery(
-                                AlfrescoSolrDataModel.getInstance()
-                                        .getQueryableFields(propertyQName,  ContentFieldType.TRANSFORMATION_TIME,
-                                                FieldUse.ID)
-                                        .getFields().get(0).getField(),
-                                queryText, analysisMode, luceneFunction);
-
-            }
-
-        } else if (fieldNameAndEnding.getSecond().equals(FIELD_TRANSFORMATION_EXCEPTION_SUFFIX))
-        {
-            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
-            {
-                return subQueryBuilder.getQuery(
-                        AlfrescoSolrDataModel.getInstance()
-                                .getQueryableFields(propertyQName, ContentFieldType.TRANSFORMATION_EXCEPTION,
-                                        FieldUse.ID)
-                                .getFields().get(0).getField(),
-                        queryText, analysisMode, luceneFunction);
-
-            }
-
-        }
-        else if (AlfrescoSolrDataModel.getInstance().isDerivedDateField(fieldNameAndEnding.getSecond()))
-        {
-            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE)
-             || propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME )))
-            {
-                return subQueryBuilder.getQuery(
-                        AlfrescoSolrDataModel.getInstance()
-                                .getDateDerivedField(propertyQName, fieldNameAndEnding.getSecond()),
-                        queryText, analysisMode, luceneFunction);
-            }
+            return subQueryBuilder.getQuery(AlfrescoSolrDataModel.getInstance()
+                    .getQueryableFields(propertyQName,
+                            AlfrescoSolrDataModel.getInstance().getTextField(fieldNameAndEnding.getSecond()),
+                            FieldUse.ID).getFields().get(0)
+                    .getField(), queryText, analysisMode, luceneFunction);
         }
 
         // Already in expanded form
@@ -5535,6 +5433,4 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_REWRITE);
         return query;
     }
-
-
 }

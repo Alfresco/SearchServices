@@ -155,16 +155,22 @@ public class AlfrescoSolrDataModel implements QueryConstants
         HIGHLIGHT
     }
 
-    public enum ContentFieldType
+    public enum SpecializedFieldType
     {
-        DOCID,
-        SIZE,
-        LOCALE,
-        MIMETYPE,
-        ENCODING,
+        CONTENT_DOCID,
+        CONTENT_SIZE,
+        CONTENT_LOCALE,
+        CONTENT_MIMETYPE,
+        CONTENT_ENCODING,
         TRANSFORMATION_STATUS,
         TRANSFORMATION_TIME,
-        TRANSFORMATION_EXCEPTION
+        TRANSFORMATION_EXCEPTION,
+        UNIT_OF_TIME_SECOND,
+        UNIT_OF_TIME_MINUTE,
+        UNIT_OF_TIME_HOUR,
+        UNIT_OF_TIME_DAY,
+        UNIT_OF_TIME_MONTH,
+        UNIT_OF_TIME_YEAR
     }
 
     public static final String CONTENT_S_LOCALE_PREFIX = "content@s__locale@";
@@ -615,7 +621,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         return dictionaryComponent;
     }
 
-    public IndexedField getIndexedFieldForContentPropertyMetadata(QName propertyQName, ContentFieldType type)
+    public IndexedField getIndexedFieldForSpecializedPropertyMetadata(QName propertyQName, SpecializedFieldType type)
     {
         IndexedField indexedField = new IndexedField();
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
@@ -640,19 +646,19 @@ public class AlfrescoSolrDataModel implements QueryConstants
             builder.append('_');
             switch (type)
             {
-                case DOCID:
+                case CONTENT_DOCID:
                     builder.append("docid");
                     break;
-                case ENCODING:
+                case CONTENT_ENCODING:
                     builder.append("encoding");
                     break;
-                case LOCALE:
+                case CONTENT_LOCALE:
                     builder.append("locale");
                     break;
-                case MIMETYPE:
+                case CONTENT_MIMETYPE:
                     builder.append("mimetype");
                     break;
-                case SIZE:
+                case CONTENT_SIZE:
                     builder.append("size");
                     break;
                 case TRANSFORMATION_EXCEPTION:
@@ -667,21 +673,30 @@ public class AlfrescoSolrDataModel implements QueryConstants
                 default:
                     break;
             }
+
             builder.append('@');
             builder.append(propertyQName);
             indexedField.addField(builder.toString(), false, false);
-
+        }
+        else if (dataTypeDefinition.getName().equals(DataTypeDefinition.DATE) ||
+                dataTypeDefinition.getName().equals(DataTypeDefinition.DATETIME))
+        {
+            String dateDerivedSuffix = getDateDerivedSuffix(type);
+            if (dateDerivedSuffix != null)
+            {
+                indexedField.addField(getDateDerivedField(propertyQName, dateDerivedSuffix), false, true);
+            }
         }
         return indexedField;
 
     }
 
 
-    public IndexedField getQueryableFields(QName propertyQName,  ContentFieldType type, FieldUse fieldUse)
+    public IndexedField getQueryableFields(QName propertyQName, SpecializedFieldType type, FieldUse fieldUse)
     {
         if(type != null)
         {
-            return getIndexedFieldForContentPropertyMetadata(propertyQName, type);
+            return getIndexedFieldForSpecializedPropertyMetadata(propertyQName, type);
         }
 
         IndexedField indexedField = new IndexedField();
@@ -1080,6 +1095,27 @@ public class AlfrescoSolrDataModel implements QueryConstants
     {
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
         return "part@sd@" + propertyDefinition.getName().toString() + suffix;
+    }
+
+    public String getDateDerivedSuffix(SpecializedFieldType type)
+    {
+        switch (type)
+        {
+            case UNIT_OF_TIME_SECOND:
+                return UNIT_OF_TIME_SECOND_FIELD_SUFFIX;
+            case UNIT_OF_TIME_MINUTE:
+                return UNIT_OF_TIME_MINUTE_FIELD_SUFFIX;
+            case UNIT_OF_TIME_HOUR:
+                return UNIT_OF_TIME_HOUR_FIELD_SUFFIX;
+            case UNIT_OF_TIME_DAY:
+                return UNIT_OF_TIME_DAY_FIELD_SUFFIX;
+            case UNIT_OF_TIME_MONTH:
+                return UNIT_OF_TIME_MONTH_FIELD_SUFFIX;
+            case UNIT_OF_TIME_YEAR:
+                return UNIT_OF_TIME_YEAR_FIELD_SUFFIX;
+            default:
+                return null;
+        }
     }
 
 
@@ -1803,20 +1839,32 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     /**
      * @param ending String
-     * @return ContentFieldType
+     * @return SpecializedFieldType
      */
-    public ContentFieldType getTextField(String ending)
+    public SpecializedFieldType getTextField(String ending)
     {
         switch(ending)
         {
             case FIELD_MIMETYPE_SUFFIX:
-                return ContentFieldType.MIMETYPE;
+                return SpecializedFieldType.CONTENT_MIMETYPE;
             case FIELD_SIZE_SUFFIX:
-                return ContentFieldType.SIZE;
+                return SpecializedFieldType.CONTENT_SIZE;
             case FIELD_LOCALE_SUFFIX:
-                return ContentFieldType.LOCALE;
+                return SpecializedFieldType.CONTENT_LOCALE;
             case FIELD_ENCODING_SUFFIX:
-                return ContentFieldType.ENCODING;
+                return SpecializedFieldType.CONTENT_ENCODING;
+            case UNIT_OF_TIME_SECOND_FIELD_SUFFIX:
+                return SpecializedFieldType.UNIT_OF_TIME_SECOND;
+            case UNIT_OF_TIME_MINUTE_FIELD_SUFFIX:
+                return SpecializedFieldType.UNIT_OF_TIME_MINUTE;
+            case UNIT_OF_TIME_HOUR_FIELD_SUFFIX:
+                return SpecializedFieldType.UNIT_OF_TIME_HOUR;
+            case UNIT_OF_TIME_DAY_FIELD_SUFFIX:
+                return SpecializedFieldType.UNIT_OF_TIME_DAY;
+            case UNIT_OF_TIME_MONTH_FIELD_SUFFIX:
+                return SpecializedFieldType.UNIT_OF_TIME_MONTH;
+            case UNIT_OF_TIME_YEAR_FIELD_SUFFIX:
+                return SpecializedFieldType.UNIT_OF_TIME_YEAR;
             case FIELD_TRANSFORMATION_STATUS_SUFFIX:
             case FIELD_TRANSFORMATION_TIME_SUFFIX:
             case FIELD_TRANSFORMATION_EXCEPTION_SUFFIX:
