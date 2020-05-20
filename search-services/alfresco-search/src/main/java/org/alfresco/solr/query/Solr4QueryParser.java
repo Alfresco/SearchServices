@@ -3115,43 +3115,65 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 {
                     return buildTextMLTextOrContentRange(field, part1, part2, includeLower, includeUpper, analysisMode,
                             expandedFieldName, propertyDef, tokenisationMode);
-                } else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME)
-                        || propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE))
+                } else if ((propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME)
+                        || propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE)) &&
+                        !AlfrescoSolrDataModel.getInstance().isDerivedDateField(fieldNameAndEnding.getSecond()))
                 {
-                    Pair<Date, Integer> dateAndResolution1 = parseDateString(part1);
-                    Pair<Date, Integer> dateAndResolution2 = parseDateString(part2);
-
-                    BooleanQuery.Builder bQuery = new BooleanQuery.Builder();
-                    IndexedField indexedField = AlfrescoSolrDataModel.getInstance()
-                            .getQueryableFields(propertyDef.getName(), null, FieldUse.ID);
-                    for (FieldInstance instance : indexedField.getFields())
+                    if (AlfrescoSolrDataModel.getInstance().isDerivedDateField(fieldNameAndEnding.getSecond()))
                     {
-                        String start = dateAndResolution1 == null ? part1
-                                : (includeLower ? getDateStart(dateAndResolution1) : getDateEnd(dateAndResolution1));
-                        String end = dateAndResolution2 == null ? part2
-                                : (includeUpper ? getDateEnd(dateAndResolution2) : getDateStart(dateAndResolution2));
-                        if (start.equals("*"))
-                        {
-                            start = null;
-                        }
-                        if (end.equals("*"))
-                        {
-                            end = null;
-                        }
 
-                        SchemaField sf = schema.getField(instance.getField());
-
-                        Query query = sf.getType().getRangeQuery(null, sf, start, end, includeLower, includeUpper);
-                        if (query != null)
-                        {
-                            bQuery.add(query, Occur.SHOULD);
-                        }
                     }
-                    return bQuery.build();
-                } else
+                    else
+                    {
+                        Pair<Date, Integer> dateAndResolution1 = parseDateString(part1);
+                        Pair<Date, Integer> dateAndResolution2 = parseDateString(part2);
+
+                        BooleanQuery.Builder bQuery = new BooleanQuery.Builder();
+                        IndexedField indexedField = AlfrescoSolrDataModel.getInstance()
+                                .getQueryableFields(propertyDef.getName(), null, FieldUse.ID);
+                        for (FieldInstance instance : indexedField.getFields())
+                        {
+                            String start = dateAndResolution1 == null ? part1
+                                    : (includeLower ? getDateStart(dateAndResolution1) : getDateEnd(dateAndResolution1));
+                            String end = dateAndResolution2 == null ? part2
+                                    : (includeUpper ? getDateEnd(dateAndResolution2) : getDateStart(dateAndResolution2));
+                            if (start.equals("*"))
+                            {
+                                start = null;
+                            }
+                            if (end.equals("*"))
+                            {
+                                end = null;
+                            }
+
+                            SchemaField sf = schema.getField(instance.getField());
+
+                            Query query = sf.getType().getRangeQuery(null, sf, start, end, includeLower, includeUpper);
+                            if (query != null)
+                            {
+                                bQuery.add(query, Occur.SHOULD);
+                            }
+                        }
+                        return bQuery.build();
+                    }
+
+                }
+                else
                 {
-                    String solrField = AlfrescoSolrDataModel.getInstance()
-                            .getQueryableFields(propertyDef.getName(), null, FieldUse.ID).getFields().get(0).getField();
+
+                    String solrField;
+
+                    if ((propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME)
+                            || propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE)) &&
+                            AlfrescoSolrDataModel.getInstance().isDerivedDateField(fieldNameAndEnding.getSecond()))
+                    {
+                        solrField = AlfrescoSolrDataModel.getInstance().getDateDerivedField(propertyDef.getName(), fieldNameAndEnding.getSecond());
+                    }
+                    else
+                    {
+                        solrField = AlfrescoSolrDataModel.getInstance()
+                                .getQueryableFields(propertyDef.getName(), null, FieldUse.ID).getFields().get(0).getField();
+                    }
 
                     String start = null;
                     try
