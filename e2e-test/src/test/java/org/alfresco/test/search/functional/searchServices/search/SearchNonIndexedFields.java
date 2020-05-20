@@ -129,7 +129,7 @@ public class SearchNonIndexedFields extends AbstractE2EFunctionalTest
         
         Assert.assertTrue(bodyResponse.contains("{http://www.alfresco.org/model/index/1.0}indexed"), 
                 "Expecting index:indexed field to be present in SOLR Schema");
-        Assert.assertTrue(!bodyResponse.contains("{http://www.alfresco.org/model/index/1.0}nonIndexed"), 
+        Assert.assertFalse(bodyResponse.contains("{http://www.alfresco.org/model/index/1.0}nonIndexed"), 
                 "Expecting index:nonIndexed field NOT to be present in SOLR Schema");
 
     }
