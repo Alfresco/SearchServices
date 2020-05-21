@@ -4148,13 +4148,98 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             }
         }
 
-        if (fieldNameAndEnding.getSecond() != null && propertyDef != null)
+        // Mime type
+        if (fieldNameAndEnding.getSecond().equals(FIELD_MIMETYPE_SUFFIX))
         {
-            return subQueryBuilder.getQuery(AlfrescoSolrDataModel.getInstance()
-                    .getQueryableFields(propertyQName,
-                            AlfrescoSolrDataModel.getInstance().getTextField(fieldNameAndEnding.getSecond()),
-                            FieldUse.ID).getFields().get(0)
-                    .getField(), queryText, analysisMode, luceneFunction);
+            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
+            {
+                return subQueryBuilder.getQuery(AlfrescoSolrDataModel.getInstance()
+                        .getQueryableFields(propertyQName, SpecializedFieldType.CONTENT_MIMETYPE, FieldUse.ID).getFields().get(0)
+                        .getField(), queryText, analysisMode, luceneFunction);
+            }
+
+        } else if (fieldNameAndEnding.getSecond().equals(FIELD_SIZE_SUFFIX))
+        {
+            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
+            {
+                return subQueryBuilder.getQuery(AlfrescoSolrDataModel.getInstance()
+                        .getQueryableFields(propertyQName, SpecializedFieldType.CONTENT_SIZE, FieldUse.ID).getFields().get(0)
+                        .getField(), queryText, analysisMode, luceneFunction);
+
+            }
+
+        } else if (fieldNameAndEnding.getSecond().equals(FIELD_LOCALE_SUFFIX))
+        {
+            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
+            {
+                return subQueryBuilder.getQuery(AlfrescoSolrDataModel.getInstance()
+                        .getQueryableFields(propertyQName, SpecializedFieldType.CONTENT_LOCALE, FieldUse.ID).getFields().get(0)
+                        .getField(), queryText, analysisMode, luceneFunction);
+
+            }
+
+        } else if (fieldNameAndEnding.getSecond().equals(FIELD_ENCODING_SUFFIX))
+        {
+            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
+            {
+                return subQueryBuilder.getQuery(AlfrescoSolrDataModel.getInstance()
+                        .getQueryableFields(propertyQName, SpecializedFieldType.CONTENT_ENCODING, FieldUse.ID).getFields().get(0)
+                        .getField(), queryText, analysisMode, luceneFunction);
+
+            }
+
+        } else if (fieldNameAndEnding.getSecond().equals(FIELD_TRANSFORMATION_STATUS_SUFFIX))
+        {
+            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
+            {
+                return subQueryBuilder
+                        .getQuery(
+                                AlfrescoSolrDataModel.getInstance()
+                                        .getQueryableFields(propertyQName, SpecializedFieldType.TRANSFORMATION_STATUS,
+                                                FieldUse.ID)
+                                        .getFields().get(0).getField(),
+                                queryText, analysisMode, luceneFunction);
+
+            }
+
+        } else if (fieldNameAndEnding.getSecond().equals(FIELD_TRANSFORMATION_TIME_SUFFIX))
+        {
+            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
+            {
+                return subQueryBuilder
+                        .getQuery(
+                                AlfrescoSolrDataModel.getInstance()
+                                        .getQueryableFields(propertyQName,  SpecializedFieldType.TRANSFORMATION_TIME,
+                                                FieldUse.ID)
+                                        .getFields().get(0).getField(),
+                                queryText, analysisMode, luceneFunction);
+
+            }
+
+        } else if (fieldNameAndEnding.getSecond().equals(FIELD_TRANSFORMATION_EXCEPTION_SUFFIX))
+        {
+            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT)))
+            {
+                return subQueryBuilder.getQuery(
+                        AlfrescoSolrDataModel.getInstance()
+                                .getQueryableFields(propertyQName, SpecializedFieldType.TRANSFORMATION_EXCEPTION,
+                                        FieldUse.ID)
+                                .getFields().get(0).getField(),
+                        queryText, analysisMode, luceneFunction);
+
+            }
+
+        }
+        else if (AlfrescoSolrDataModel.getInstance().isDerivedDateField(fieldNameAndEnding.getSecond()))
+        {
+            if ((propertyDef != null) && (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE)
+             || propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME )))
+            {
+                return subQueryBuilder.getQuery(
+                        AlfrescoSolrDataModel.getInstance()
+                                .getDateDerivedField(propertyQName, fieldNameAndEnding.getSecond()),
+                        queryText, analysisMode, luceneFunction);
+            }
         }
 
         // Already in expanded form
