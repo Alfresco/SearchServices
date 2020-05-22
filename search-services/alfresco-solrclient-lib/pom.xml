@@ -22,7 +22,7 @@
     </distributionManagement>
 
     <properties>
-        <dependency.alfresco-data-model.version>search-2166-2</dependency.alfresco-data-model.version>
+        <dependency.alfresco-data-model.version>8.115</dependency.alfresco-data-model.version>
         <dependency.jackson.version>2.10.3</dependency.jackson.version>
     </properties>
 
