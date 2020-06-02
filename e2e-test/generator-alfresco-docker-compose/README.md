@@ -17,8 +17,10 @@ $ tree generators/app/templates/
 │   ├── .env
 │   ├── docker-compose-ce.yml
 │   └── docker-compose-ee.yml
-├── empty
-│   └── empty
+├── latest
+│   ├── .env
+│   ├── docker-compose-ce.yml
+│   └── docker-compose-ee.yml├── empty
 ├── images
 │   ├── alfresco
 │   │   ├── Dockerfile
@@ -42,7 +44,7 @@ $ tree generators/app/templates/
 │   │       └── sharding-share-config-custom.xml
 │   └── zeppelin
 │       └── Dockerfile
-└── keystores
+└── keystores :: 6.x / 7.x
     ├── alfresco
     ├── client
     ├── solr
@@ -50,8 +52,8 @@ $ tree generators/app/templates/
 ```
 
 * `.env` includes default values for Docker Compose environment variables
-* `docker-compose-ce.yml` is the base Docker Compose Template for Alfresco Community deployment (for ACS 6.2 and ACS 6.1)
-* `docker-compose-ee.yml` is the base Docker Compose Template for Alfresco Enterprise deployment (for ACS 6.2 and ACS 6.1)
+* `docker-compose-ce.yml` is the base Docker Compose Template for Alfresco Community deployment (for latest, ACS 6.2 and ACS 6.1)
+* `docker-compose-ee.yml` is the base Docker Compose Template for Alfresco Enterprise deployment (for latest, ACS 6.2 and ACS 6.1)
 * `alfresco` includes a Dockerfile template to start Alfresco Repository
   * `model` includes a default content model (Sharding Explicit Routing or empty). This `empty` file is required for Dockerfile to work, so it should not be deleted.
 * `share` includes a Dockerfile template to start Share Web Application
@@ -59,7 +61,7 @@ $ tree generators/app/templates/
 * `search` includes a Dockerfile template to start Search Services and Insight Engine
 * `config` includes configuration for HTTP Web Proxy (NGINX)
 * `zeppelin` includes a Dockerfile template to start Zeppelin with SSL
-* `keystores` includes every truststore and keystore required for SSL configuration
+* `keystores` includes every truststore and keystore required for SSL configuration. Included different stores for ACS 6.x and ACS 7.x, as there were changes between this versions
 
 
 ## Installation
@@ -80,15 +82,17 @@ $ yo alfresco-docker-compose
 
 ## ACS Version
 
-Currently supported ACS Versions are `6.2` and `6.1`
+Currently supported ACS Versions are `latest`, `6.2` and `6.1`
 
 This is the first choice to be selected when the generator is executed.
 
 ```
 ? Which ACS version do you want to use?
   6.1
-❯ 6.2
+  6.2
+❯ latest
 ```
+
 ## AGS Version
 
 Currently supported AGS Version is `latest` (based in ACS 6.1).
@@ -197,7 +201,7 @@ $ yo alfresco-docker-compose --acsVersion=6.2 --alfrescoVersion=community --http
 
 **Parameter names reference**
 
-`--acsVersion`: default 6.2, but could be set to 6.1
+`--acsVersion`: default latest, but could be set to 6.2 or 6.1
 `--ags:`: only available when acsVersion=6.1
 `--alfrescoVersion`: community or enterprise
 `--httpMode`: http or https
