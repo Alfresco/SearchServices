@@ -3826,7 +3826,7 @@ public class SolrInformationServer implements InformationServer
     {
         try
         {
-            String fieldNamePrefix = dataModel.destructuredDateTimePartFieldNamePrefix(sourceFieldName, dataType);
+            String fieldNamePrefix = dataModel.destructuredDateTimePartFieldNamePrefix(sourceFieldName);
             ZonedDateTime dateTime = ZonedDateTime.parse(value, DateTimeFormatter.ISO_ZONED_DATE_TIME);
             consumer.accept(fieldNamePrefix + UNIT_OF_TIME_YEAR_FIELD_SUFFIX, dateTime.getYear());
             consumer.accept(fieldNamePrefix + UNIT_OF_TIME_MONTH_FIELD_SUFFIX, dateTime.getMonth().getValue());
@@ -3953,7 +3953,6 @@ public class SolrInformationServer implements InformationServer
      */
     private Optional<Collection<NodeMetaData>> getNodesMetaDataFromRepository(NodeMetaDataParameters parameters)
     {
-        Collection<NodeMetaData> nodeMetaDataCollection = null;
         try
         {
             return Optional.of(notNullOrEmpty(repositoryClient.getNodesMetaData(parameters)));

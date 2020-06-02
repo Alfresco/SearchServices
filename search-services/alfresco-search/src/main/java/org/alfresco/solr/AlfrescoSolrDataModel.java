@@ -185,15 +185,11 @@ public class AlfrescoSolrDataModel implements QueryConstants
                 UNIT_OF_TIME_SECOND_FIELD_SUFFIX);
     /**
      * Infix used for denoting a primitive single valued field with no doc values enabled
-     *
-     * @see #getFieldForText
      */
     private static final String SINGLE_VALUE_WITHOUT_DOC_VALUES_MARKER = "@s_@";
 
     /**
      * Infix used for denoting a primitive single valued field with no doc values enabled
-     *
-     * @see #getFieldForText
      */
     private static final String SINGLE_VALUE_WITH_DOC_VALUES_MARKER = "@sd@";
 
@@ -209,26 +205,22 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     private final static AlfrescoSolrDataModel INSTANCE = new AlfrescoSolrDataModel();
 
-    private TenantService tenantService;
+    private final TenantService tenantService;
 
-    private NamespaceDAO namespaceDAO;
+    private final NamespaceDAO namespaceDAO;
 
-    private DictionaryDAOImpl dictionaryDAO;
+    private final DictionaryDAOImpl dictionaryDAO;
 
-    private Map<String,DictionaryComponent> dictionaryServices;
+    private final Map<String,DictionaryComponent> dictionaryServices;
 
-    private Map<DictionaryKey,CMISAbstractDictionaryService> cmisDictionaryServices;
+    private final Map<DictionaryKey,CMISAbstractDictionaryService> cmisDictionaryServices;
 
-    private Map<String, Set<String>> modelErrors = new HashMap<>();
-
-    private Set<QName> suggestableProperties = new HashSet<>();
-
-    private Set<QName> crossLocaleSearchDataTypes = new HashSet<>();
-
-    private Set<QName> crossLocaleSearchProperties = new HashSet<>();
-
-    private Set<QName> identifierProperties = new HashSet<>();
-    private ThreadPoolExecutor threadPool;
+    private final Map<String, Set<String>> modelErrors = new HashMap<>();
+    private final Set<QName> suggestableProperties = new HashSet<>();
+    private final Set<QName> crossLocaleSearchDataTypes = new HashSet<>();
+    private final Set<QName> crossLocaleSearchProperties = new HashSet<>();
+    private final Set<QName> identifierProperties = new HashSet<>();
+    private final ThreadPoolExecutor threadPool;
 
     public void close() {
         threadPool.shutdown();
@@ -678,8 +670,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
             builder.append(propertyQName);
             indexedField.addField(builder.toString(), false, false);
         }
-        else if (dataTypeDefinition.getName().equals(DataTypeDefinition.DATE) ||
-                dataTypeDefinition.getName().equals(DataTypeDefinition.DATETIME))
+        else if (isDateOrDatetime(dataTypeDefinition))
         {
             String dateDerivedSuffix = getDateDerivedSuffix(type);
             if (dateDerivedSuffix != null)
@@ -754,225 +745,6 @@ public class AlfrescoSolrDataModel implements QueryConstants
             indexedField.addField(getFieldForNonText(propertyDefinition), false, false);
         }
         return indexedField;
-    }
-
-    /*
-     * Adds best completion fields in order of preference
-     */
-    private void addCompletionFields(PropertyDefinition propertyDefinition, IndexedField indexedField)
-    {
-        if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
-        {
-            if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
-            {
-                indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
-            }
-            else
-            {
-                indexedField.addField(getFieldForText(true, true, false, propertyDefinition), false, false);
-            }
-        }
-        else if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE))
-        {
-            if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
-            {
-                indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
-            }
-            else
-            {
-                indexedField.addField(getFieldForText(true, true, false, propertyDefinition), false, false);
-            }
-        }
-        else if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE))
-        {
-            indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
-        }
-    }
-
-    /*
-     * Adds best fts fields in order of preference
-     */
-
-    private void addFullTextSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
-    {
-        if (((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE)
-                || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
-                && !isIdentifierTextProperty(propertyDefinition.getName()))
-        {
-            indexedField.addField(getFieldForText(true, true, false, propertyDefinition), true, false);
-            if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
-            {
-                indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
-            }
-        }
-        else
-        {
-            indexedField.addField(getFieldForText(true, false, false, propertyDefinition), true, false);
-            indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
-        }
-    }
-
-    private void addHighlightSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
-    {
-        QName propertyName = propertyDefinition.getName();
-        QName propertyDataTypeQName = propertyDefinition.getDataType().getName();
-        String fieldName;
-
-        if(propertyDataTypeQName.equals(DataTypeDefinition.MLTEXT))
-        {
-            fieldName = getStoredMLTextField(propertyName);
-        }
-        else if(propertyDataTypeQName.equals(DataTypeDefinition.CONTENT))
-        {
-            fieldName = getStoredContentField(propertyName);
-        }
-        else
-        {
-            fieldName = getStoredTextField(propertyName);
-        }
-
-        indexedField.addField(fieldName, false, false);
-    }
-
-    /*
-     * Adds best identifier fields in order of preference
-     */
-    private void addIdentifierSearchFields(PropertyDefinition propertyDefinition, IndexedField indexedField)
-    {
-        if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
-                || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
-        {
-
-            indexedField.addField(getFieldForText(true, false, false, propertyDefinition), true, false);
-            indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
-        }
-        else
-        {
-            indexedField.addField(getFieldForText(true, true, false, propertyDefinition), true, false);
-            if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
-            {
-                indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
-            }
-        }
-    }
-
-    /*
-     * Adds best identifier fields in order of preference
-     */
-    private void addFacetSearchFields(PropertyDefinition propertyDefinition, IndexedField indexedField)
-    {
-        if(propertyDefinition.getDataType().getName().equals(DataTypeDefinition.TEXT))
-        {
-            if (!isIdentifierTextProperty(propertyDefinition.getName()))
-            {
-                if(propertyDefinition.getFacetable() == Facetable.TRUE)
-                {
-                    indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
-                }
-            }
-        }
-
-
-        if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
-                || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH)
-                || isIdentifierTextProperty(propertyDefinition.getName()))
-        {
-
-            indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
-        }
-        else
-        {
-            if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
-            {
-                indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
-            }
-            else
-            {
-                indexedField.addField(getFieldForText(true, true, false, propertyDefinition), false, false);
-            }
-        }
-    }
-
-    private void addMultiSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
-    {
-        if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
-                || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH)
-                || isIdentifierTextProperty(propertyDefinition.getName()))
-        {
-
-            indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
-        }
-        else
-        {
-            if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
-            {
-                indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
-            }
-            else
-            {
-                indexedField.addField(getFieldForText(true, true, false, propertyDefinition), false, false);
-            }
-        }
-    }
-
-    private void addStatsSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
-    {
-        addFacetSearchFields(propertyDefinition, indexedField);
-    }
-
-    private void addSortSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
-    {
-        // Can only order on single valued fields
-        DataTypeDefinition dataTypeDefinition = propertyDefinition.getDataType();
-        if(dataTypeDefinition.getName().equals(DataTypeDefinition.TEXT))
-        {
-            if(!propertyDefinition.isMultiValued())
-            {
-                if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
-                        || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
-                {
-                    indexedField.addField(getFieldForText(false, false, true, propertyDefinition), false, true);
-                }
-                else if (isIdentifierTextProperty(propertyDefinition.getName()))
-                {
-                    indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
-                }
-                else
-                {
-                    if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
-                    {
-                        indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
-                    }
-                    else
-                    {
-                        indexedField.addField(getFieldForText(true, true, false, propertyDefinition), false, false);
-                    }
-                }
-            }
-        }
-
-        if(dataTypeDefinition.getName().equals(DataTypeDefinition.MLTEXT))
-        {
-            if(!propertyDefinition.isMultiValued())
-            {
-                if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
-                        || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
-                {
-                    indexedField.addField(getFieldForText(false, false, true, propertyDefinition), false, true);
-                }
-                else
-                {
-                    if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
-                    {
-                        indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
-                    }
-                    else
-                    {
-                        indexedField.addField(getFieldForText(true, true, false, propertyDefinition), false, false);
-                    }
-                }
-            }
-        }
     }
 
     public String getStoredTextField(QName propertyQName)
@@ -1265,43 +1037,6 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
     }
 
-    private boolean isPrimitive(DataTypeDefinition dataType)
-    {
-        if(dataType.getName().equals(DataTypeDefinition.INT))
-        {
-            return true;
-        }
-        else if(dataType.getName().equals(DataTypeDefinition.LONG))
-        {
-            return true;
-        }
-        else if(dataType.getName().equals(DataTypeDefinition.FLOAT))
-        {
-            return true;
-        }
-        else if(dataType.getName().equals(DataTypeDefinition.DOUBLE))
-        {
-            return true;
-        }
-        else if(dataType.getName().equals(DataTypeDefinition.DATE))
-        {
-            return true;
-        }
-        else if(dataType.getName().equals(DataTypeDefinition.DATETIME))
-        {
-            return true;
-        }
-        else if(dataType.getName().equals(DataTypeDefinition.BOOLEAN))
-        {
-            return true;
-        }
-        else if(dataType.getName().equals(DataTypeDefinition.CATEGORY))
-        {
-            return true;
-        }
-        else return dataType.getName().equals(DataTypeDefinition.NODE_REF);
-    }
-
     public String getFieldForNonText(PropertyDefinition propertyDefinition)
     {
         StringBuilder builder = new StringBuilder();
@@ -1386,30 +1121,6 @@ public class AlfrescoSolrDataModel implements QueryConstants
     {
         modelErrors.remove(getM2Model(modelQName).getName());
         dictionaryDAO.removeModel(modelQName);
-    }
-
-    private Set<String> validateModel(M2Model model)
-    {
-        try
-        {
-            dictionaryDAO.getCompiledModel(QName.createQName(model.getName(), namespaceDAO));
-        }
-        catch (DictionaryException | NamespaceException exception)
-        {
-            // No model to diff
-            return Collections.emptySet();
-        }
-
-        // namespace unknown - no model
-        List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModelIgnoringConstraints(model);
-        return modelDiffs.stream()
-                .filter(diff -> diff.getDiffType().equals(M2ModelDiff.DIFF_UPDATED))
-                .map(diff ->
-                        String.format("Model not updated: %s Failed to validate model update - found non-incrementally updated %s '%s'",
-                                model.getName(),
-                                diff.getElementType(),
-                                diff.getElementName()))
-                .collect(Collectors.toSet());
     }
 
     M2Model getM2Model(QName modelQName)
@@ -1722,9 +1433,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
             return mapNonPropertyFields(luceneField);
         }
 
-        if ((propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME)
-                || propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE)) &&
-                isDerivedDateField(fieldNameAndEnding.getSecond()))
+        if (isDateOrDatetime(propertyDef.getDataType()) && isDerivedDateField(fieldNameAndEnding.getSecond()))
         {
             return getDateDerivedField(propertyDef.getName(), fieldNameAndEnding.getSecond());
         }
@@ -1747,10 +1456,10 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
     }
 
-    public boolean isDerivedDateField(String suffix) {
+    public boolean isDerivedDateField(String suffix)
+    {
         return DATE_PART_SUFFIXES.contains(suffix);
     }
-
 
     public String  mapProperty(String  potentialProperty,  FieldUse fieldUse, SolrQueryRequest req, int position)
     {
@@ -1791,35 +1500,6 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
         String solrSortField;
         solrSortField = mapAlfrescoField(fieldUse, position, fieldNameAndEnding, luceneField, propertyDef);
-        return solrSortField;
-    }
-
-    private String mapAlfrescoField(FieldUse fieldUse, int position, Pair<String, String> fieldNameAndEnding, String luceneField, PropertyDefinition propertyDef) {
-        String solrSortField;
-        if(propertyDef != null)
-        {
-
-            IndexedField fields = AlfrescoSolrDataModel.getInstance().getQueryableFields(propertyDef.getName(), getTextField(fieldNameAndEnding.getSecond()), fieldUse);
-            if(fields.getFields().size() > 0)
-            {
-                if(fields.getFields().size() > position)
-                {
-                    solrSortField = fields.getFields().get(position).getField();
-                }
-                else
-                {
-                    solrSortField = fields.getFields().get(0).getField();
-                }
-            }
-            else
-            {
-                solrSortField = mapNonPropertyFields(luceneField);
-            }
-        }
-        else
-        {
-            solrSortField = mapNonPropertyFields(luceneField);
-        }
         return solrSortField;
     }
 
@@ -1886,10 +1566,9 @@ public class AlfrescoSolrDataModel implements QueryConstants
      * date or datetime (e.g. year, month, second, minute).
      *
      * @param sourceFieldName the date/datetime source field name.
-     * @param sourceDataTypeDefinition the datatype of the source field name (date or datetime)
      * @return the prefix that can be used for denoting a date or datetime part
      */
-    public String destructuredDateTimePartFieldNamePrefix(String sourceFieldName, DataTypeDefinition sourceDataTypeDefinition) {
+    public String destructuredDateTimePartFieldNamePrefix(String sourceFieldName) {
         // source field name example: datetime@sd@{http://www.alfresco.org/model/content/1.0}created
         // prefix: datetime
         String prefix = sourceFieldName.substring(0, sourceFieldName.indexOf("@"));
@@ -1902,5 +1581,297 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
         return sourceFieldName.replace(sourceFieldNamePrefixWithoutDocValues, PART_FIELDNAME_PREFIX)
                 .replace(sourceFieldNamePrefixWithDocValues, PART_FIELDNAME_PREFIX);
+    }
+
+    private boolean isDateOrDatetime(DataTypeDefinition dataType)
+    {
+        return dataType.getName().equals(DataTypeDefinition.DATE) ||
+                dataType.getName().equals(DataTypeDefinition.DATETIME);
+    }
+
+    private boolean isPrimitive(DataTypeDefinition dataType)
+    {
+        QName name = dataType.getName();
+        return name.equals(DataTypeDefinition.INT)
+                || name.equals(DataTypeDefinition.LONG)
+                || name.equals(DataTypeDefinition.FLOAT)
+                || name.equals(DataTypeDefinition.DOUBLE)
+                || isDateOrDatetime(dataType)
+                || name.equals(DataTypeDefinition.BOOLEAN)
+                || name.equals(DataTypeDefinition.CATEGORY)
+                || name.equals(DataTypeDefinition.NODE_REF);
+    }
+
+    private String mapAlfrescoField(FieldUse fieldUse, int position, Pair<String, String> fieldNameAndEnding, String luceneField, PropertyDefinition propertyDef)
+    {
+        String solrSortField;
+        if(propertyDef != null)
+        {
+
+            IndexedField fields = AlfrescoSolrDataModel.getInstance().getQueryableFields(propertyDef.getName(), getTextField(fieldNameAndEnding.getSecond()), fieldUse);
+            if(fields.getFields().size() > 0)
+            {
+                if(fields.getFields().size() > position)
+                {
+                    solrSortField = fields.getFields().get(position).getField();
+                }
+                else
+                {
+                    solrSortField = fields.getFields().get(0).getField();
+                }
+            }
+            else
+            {
+                solrSortField = mapNonPropertyFields(luceneField);
+            }
+        }
+        else
+        {
+            solrSortField = mapNonPropertyFields(luceneField);
+        }
+        return solrSortField;
+    }
+
+    private Set<String> validateModel(M2Model model)
+    {
+        try
+        {
+            dictionaryDAO.getCompiledModel(QName.createQName(model.getName(), namespaceDAO));
+        }
+        catch (DictionaryException | NamespaceException exception)
+        {
+            // No model to diff
+            return Collections.emptySet();
+        }
+
+        // namespace unknown - no model
+        List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModelIgnoringConstraints(model);
+        return modelDiffs.stream()
+                .filter(diff -> diff.getDiffType().equals(M2ModelDiff.DIFF_UPDATED))
+                .map(diff ->
+                        String.format("Model not updated: %s Failed to validate model update - found non-incrementally updated %s '%s'",
+                                model.getName(),
+                                diff.getElementType(),
+                                diff.getElementName()))
+                .collect(Collectors.toSet());
+    }
+
+    /*
+     * Adds best completion fields in order of preference
+     */
+    private void addCompletionFields(PropertyDefinition propertyDefinition, IndexedField indexedField)
+    {
+        if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
+        {
+            if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
+            {
+                indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
+            }
+            else
+            {
+                indexedField.addField(getFieldForText(true, true, false, propertyDefinition), false, false);
+            }
+        }
+        else if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE))
+        {
+            if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
+            {
+                indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
+            }
+            else
+            {
+                indexedField.addField(getFieldForText(true, true, false, propertyDefinition), false, false);
+            }
+        }
+        else if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE))
+        {
+            indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
+        }
+    }
+
+    /*
+     * Adds best fts fields in order of preference
+     */
+
+    private void addFullTextSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
+    {
+        if (((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE)
+                || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
+                && !isIdentifierTextProperty(propertyDefinition.getName()))
+        {
+            indexedField.addField(getFieldForText(true, true, false, propertyDefinition), true, false);
+            if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
+            {
+                indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
+            }
+        }
+        else
+        {
+            indexedField.addField(getFieldForText(true, false, false, propertyDefinition), true, false);
+            indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
+        }
+    }
+
+    private void addHighlightSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
+    {
+        QName propertyName = propertyDefinition.getName();
+        QName propertyDataTypeQName = propertyDefinition.getDataType().getName();
+        String fieldName;
+
+        if(propertyDataTypeQName.equals(DataTypeDefinition.MLTEXT))
+        {
+            fieldName = getStoredMLTextField(propertyName);
+        }
+        else if(propertyDataTypeQName.equals(DataTypeDefinition.CONTENT))
+        {
+            fieldName = getStoredContentField(propertyName);
+        }
+        else
+        {
+            fieldName = getStoredTextField(propertyName);
+        }
+
+        indexedField.addField(fieldName, false, false);
+    }
+
+    /*
+     * Adds best identifier fields in order of preference
+     */
+    private void addIdentifierSearchFields(PropertyDefinition propertyDefinition, IndexedField indexedField)
+    {
+        if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
+                || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
+        {
+
+            indexedField.addField(getFieldForText(true, false, false, propertyDefinition), true, false);
+            indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
+        }
+        else
+        {
+            indexedField.addField(getFieldForText(true, true, false, propertyDefinition), true, false);
+            if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
+            {
+                indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
+            }
+        }
+    }
+
+    /*
+     * Adds best identifier fields in order of preference
+     */
+    private void addFacetSearchFields(PropertyDefinition propertyDefinition, IndexedField indexedField)
+    {
+        if(propertyDefinition.getDataType().getName().equals(DataTypeDefinition.TEXT))
+        {
+            if (!isIdentifierTextProperty(propertyDefinition.getName()))
+            {
+                if(propertyDefinition.getFacetable() == Facetable.TRUE)
+                {
+                    indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
+                }
+            }
+        }
+
+
+        if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
+                || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH)
+                || isIdentifierTextProperty(propertyDefinition.getName()))
+        {
+
+            indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
+        }
+        else
+        {
+            if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
+            {
+                indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
+            }
+            else
+            {
+                indexedField.addField(getFieldForText(true, true, false, propertyDefinition), false, false);
+            }
+        }
+    }
+
+    private void addMultiSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
+    {
+        if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
+                || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH)
+                || isIdentifierTextProperty(propertyDefinition.getName()))
+        {
+
+            indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
+        }
+        else
+        {
+            if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
+            {
+                indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
+            }
+            else
+            {
+                indexedField.addField(getFieldForText(true, true, false, propertyDefinition), false, false);
+            }
+        }
+    }
+
+    private void addStatsSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
+    {
+        addFacetSearchFields(propertyDefinition, indexedField);
+    }
+
+    private void addSortSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
+    {
+        // Can only order on single valued fields
+        DataTypeDefinition dataTypeDefinition = propertyDefinition.getDataType();
+        if(dataTypeDefinition.getName().equals(DataTypeDefinition.TEXT))
+        {
+            if(!propertyDefinition.isMultiValued())
+            {
+                if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
+                        || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
+                {
+                    indexedField.addField(getFieldForText(false, false, true, propertyDefinition), false, true);
+                }
+                else if (isIdentifierTextProperty(propertyDefinition.getName()))
+                {
+                    indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
+                }
+                else
+                {
+                    if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
+                    {
+                        indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
+                    }
+                    else
+                    {
+                        indexedField.addField(getFieldForText(true, true, false, propertyDefinition), false, false);
+                    }
+                }
+            }
+        }
+
+        if(dataTypeDefinition.getName().equals(DataTypeDefinition.MLTEXT))
+        {
+            if(!propertyDefinition.isMultiValued())
+            {
+                if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
+                        || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
+                {
+                    indexedField.addField(getFieldForText(false, false, true, propertyDefinition), false, true);
+                }
+                else
+                {
+                    if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
+                    {
+                        indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
+                    }
+                    else
+                    {
+                        indexedField.addField(getFieldForText(true, true, false, propertyDefinition), false, false);
+                    }
+                }
+            }
+        }
     }
 }
