@@ -92,10 +92,10 @@ public class CascadeTracker extends AbstractTracker implements Tracker
     {
         super(p, client, coreName, informationServer, Tracker.Type.CASCADE);
 
-        cascadeTrackerParallelism = Integer.parseInt(p.getProperty("alfresco.cascadeTrackerMaxParallelism",
+        cascadeTrackerParallelism = Integer.parseInt(p.getProperty("alfresco.cascade.tracker.maxParallelism",
                 String.valueOf(DEFAULT_CASCADE_TRACKER_MAX_PARALLELISM)));
 
-        cascadeBatchSize = Integer.parseInt(p.getProperty("alfresco.cascadeNodeBatchSize",
+        cascadeBatchSize = Integer.parseInt(p.getProperty("alfresco.cascade.tracker.nodeBatchSize",
                 String.valueOf(DEFAULT_CASCADE_NODE_BATCH_SIZE)));;
 
         forkJoinPool = new ForkJoinPool(cascadeTrackerParallelism);
