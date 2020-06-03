@@ -77,8 +77,6 @@ public class DistributedCascadeTrackerIT extends AbstractAlfrescoDistributedIT
     private final String pathChild1 = "pathChild2";
 
 
-    private final int timeout = 100000;
-
     @Before
     public void initData() throws Throwable
     {
@@ -139,7 +137,7 @@ public class DistributedCascadeTrackerIT extends AbstractAlfrescoDistributedIT
          */
         indexParentFolderWithCascade();
 
-        waitForDocCount(params("qt", "/afts", "q", "PATH:" + cascadingFirstChild), 1, timeout);
+        waitForDocCount(params("qt", "/afts", "q", "PATH:" + cascadingFirstChild), 1, INDEX_TIMEOUT);
 
         // Check if the path is updated for both the nodes
         assertShardCount(0, params("qt", "/afts", "q", "PATH:" + cascadingFirstChild), 1);
@@ -184,7 +182,7 @@ public class DistributedCascadeTrackerIT extends AbstractAlfrescoDistributedIT
         /*
          * Get sure the nodes are indexed correctly in the shards
          */
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 3, timeout);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 3, INDEX_TIMEOUT);
         assertShardCount(0, new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 2);
         assertShardCount(1, new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 1);
     }

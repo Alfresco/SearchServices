@@ -1621,7 +1621,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         {
             // Gets Metadata health and fixes any problems
             MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-            IndexHealthReport indexHealthReport = metadataTracker.checkIndex(null, null, null, null);
+            IndexHealthReport indexHealthReport = metadataTracker.checkIndex(null, null, null);
             IOpenBitSet toReindex = indexHealthReport.getTxInIndexButNotInDb();
             toReindex.or(indexHealthReport.getDuplicatedTxInIndex());
             toReindex.or(indexHealthReport.getMissingTxFromIndex());
@@ -1636,7 +1636,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
             // Gets the Acl health and fixes any problems
             AclTracker aclTracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-            indexHealthReport = aclTracker.checkIndex(null, null, null, null);
+            indexHealthReport = aclTracker.checkIndex(null, null, null);
             toReindex = indexHealthReport.getAclTxInIndexButNotInDb();
             toReindex.or(indexHealthReport.getDuplicatedAclTxInIndex());
             toReindex.or(indexHealthReport.getMissingAclTxFromIndex());

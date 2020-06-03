@@ -135,18 +135,17 @@ public class AlfrescoSolrUtils
      */
     public static Transaction getTransaction(int deletes, int updates)
     {
-        long txnCommitTime = System.currentTimeMillis();
-        Transaction transaction = new Transaction();
-        transaction.setCommitTimeMs(txnCommitTime);
-        transaction.setId(generateId());
-        transaction.setDeletes(deletes);
-        transaction.setUpdates(updates);
-        return transaction;
+        return getTransaction(deletes, updates, generateId());
     }
 
     public static Transaction getTransaction(int deletes, int updates, long id)
     {
-        long txnCommitTime = System.currentTimeMillis();
+        return getTransaction(deletes, updates, id, System.currentTimeMillis());
+    }
+
+    public static Transaction getTransaction(int deletes, int updates, long id, long timestamp)
+    {
+        long txnCommitTime = timestamp;
         Transaction transaction = new Transaction();
         transaction.setCommitTimeMs(txnCommitTime);
         transaction.setId(id);
@@ -309,6 +308,7 @@ public class AlfrescoSolrUtils
         Acl acl = new Acl(aclChangeSet.getId(), aclId);
         return acl;
     }
+
     /**
      * Get an AclChangeSet
      * @param aclCount
@@ -316,14 +316,17 @@ public class AlfrescoSolrUtils
      */
     public static AclChangeSet getAclChangeSet(int aclCount)
     {
-        AclChangeSet aclChangeSet = new AclChangeSet(generateId(), System.currentTimeMillis(), aclCount);
-        return aclChangeSet;
+        return new AclChangeSet(generateId(), System.currentTimeMillis(), aclCount);
     }
 
     public static AclChangeSet getAclChangeSet(int aclCount, long id)
     {
-        AclChangeSet aclChangeSet = new AclChangeSet(id, System.currentTimeMillis(), aclCount);
-        return aclChangeSet;
+        return new AclChangeSet(id, System.currentTimeMillis(), aclCount);
+    }
+
+    public static AclChangeSet getAclChangeSet(int aclCount, long id, long timestamp)
+    {
+        return new AclChangeSet(id, timestamp, aclCount);
     }
 
     private static AtomicLong id = new AtomicLong(System.currentTimeMillis());

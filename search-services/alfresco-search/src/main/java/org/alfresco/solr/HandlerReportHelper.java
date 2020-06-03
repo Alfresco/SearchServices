@@ -157,7 +157,7 @@ class HandlerReportHelper
         {
             // ACL
             AclTracker aclTracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-            IndexHealthReport aclReport = aclTracker.checkIndex(toTx, toAclTx, fromTime, toTime);
+            IndexHealthReport aclReport = aclTracker.checkIndex(toAclTx, fromTime, toTime);
             NamedList<Object> ihr = new SimpleOrderedMap<>();
             ihr.add("DB acl transaction count", aclReport.getDbAclTransactionCount());
             ihr.add("Count of duplicated acl transactions in the index", aclReport.getDuplicatedAclTxInIndex()
@@ -187,7 +187,7 @@ class HandlerReportHelper
 
             // Metadata
             MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-            IndexHealthReport metaReport = metadataTracker.checkIndex(toTx, toAclTx, fromTime, toTime);
+            IndexHealthReport metaReport = metadataTracker.checkIndex(toTx, fromTime, toTime);
             ihr.add("DB transaction count", metaReport.getDbTransactionCount());
             ihr.add("Count of duplicated transactions in the index", metaReport.getDuplicatedTxInIndex()
                     .cardinality());

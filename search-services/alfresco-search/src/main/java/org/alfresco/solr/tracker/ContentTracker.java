@@ -83,7 +83,7 @@ public class ContentTracker extends AbstractTracker implements Tracker
         contentUpdateBatchSize = Integer.parseInt(p.getProperty("alfresco.contentUpdateBatchSize",
                 String.valueOf(DEFAULT_CONTENT_UPDATE_BATCH_SIZE)));
 
-        contentTrackerParallelism = Integer.parseInt(p.getProperty("alfresco.contentTrackerMaxParallelism",
+        contentTrackerParallelism = Integer.parseInt(p.getProperty("alfresco.content.tracker.maxParallelism",
                 String.valueOf(DEFAULT_CONTENT_TRACKER_MAX_PARALLELISM)));
 
         forkJoinPool = new ForkJoinPool(contentTrackerParallelism);
