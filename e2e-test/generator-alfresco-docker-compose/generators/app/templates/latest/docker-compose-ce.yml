@@ -32,19 +32,12 @@ services:
                 -Dmessaging.broker.url=\"failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true\"
                 -Ddeployment.method=DOCKER_COMPOSE
 
-                -Dlocal.transform.service.enabled=true
-                -DlocalTransform.pdfrenderer.url=http://alfresco-pdf-renderer:8090/
-                -DlocalTransform.imagemagick.url=http://imagemagick:8090/
-                -DlocalTransform.libreoffice.url=http://libreoffice:8090/
-                -DlocalTransform.tika.url=http://tika:8090/
-                -DlocalTransform.misc.url=http://transform-misc:8090/
-
-                -Dlegacy.transform.service.enabled=true
-                -Dalfresco-pdf-renderer.url=http://alfresco-pdf-renderer:8090/
-                -Djodconverter.url=http://libreoffice:8090/
-                -Dimg.url=http://imagemagick:8090/
-                -Dtika.url=http://tika:8090/
-                -Dtransform.misc.url=http://transform-misc:8090/
+                -DlocalTransform.core-aio.url=http://transform-core-aio:8090/
+                -Dalfresco-pdf-renderer.url=http://transform-core-aio:8090/
+                -Djodconverter.url=http://transform-core-aio:8090/
+                -Dimg.url=http://transform-core-aio:8090/
+                -Dtika.url=http://transform-core-aio:8090/
+                -Dtransform.misc.url=http://transform-core-aio:8090/
 
                 -Dcsrf.filter.enabled=false
                 -Dalfresco.restApi.basicAuthScheme=true
@@ -140,45 +133,13 @@ services:
             - ./keystores/solr:/opt/<%=searchPath%>/keystore <% } %>
     <% } %>
 
-    alfresco-pdf-renderer:
-        image: alfresco/alfresco-pdf-renderer:${TRANSFORMER_TAG}
-        mem_limit: 1g
+    transform-core-aio:
+        image: alfresco/alfresco-transform-core-aio:${TRANSFORM_CORE_AIO_TAG}
+        mem_limit: 1536m
         environment:
-            JAVA_OPTS: " -Xms256m -Xmx512m"
+            JAVA_OPTS: " -Xms256m -Xmx1536m"
         ports:
             - 8090:8090
-
-    imagemagick:
-        image: alfresco/alfresco-imagemagick:${TRANSFORMER_TAG}
-        mem_limit: 1g
-        environment:
-            JAVA_OPTS: " -Xms256m -Xmx512m"
-        ports:
-            - 8091:8090
-
-    libreoffice:
-        image: alfresco/alfresco-libreoffice:${TRANSFORMER_TAG}
-        mem_limit: 1g
-        environment:
-            JAVA_OPTS: " -Xms256m -Xmx512m"
-        ports:
-            - 8092:8090
-
-    tika:
-        image: alfresco/alfresco-tika:${TRANSFORMER_TAG}
-        mem_limit: 1g
-        environment:
-            JAVA_OPTS: " -Xms256m -Xmx512m"
-        ports:
-            - 8093:8090
-
-    transform-misc:
-        image: alfresco/alfresco-transform-misc:${TRANSFORMER_TAG}
-        mem_limit: 1g
-        environment:
-            JAVA_OPTS: " -Xms256m -Xmx512m"
-        ports:
-            - 8094:8090
 
     share:
         build:
@@ -211,7 +172,7 @@ services:
 
     activemq:
         image: alfresco/alfresco-activemq:${ACTIVE_MQ_TAG}
-        mem_limit: 512m
+        mem_limit: 1g
         ports:
             - 8161:8161 # Web Console
             - 5672:5672 # AMQP

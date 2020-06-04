@@ -31,6 +31,14 @@ services:
                 -Dmessaging.broker.url=\"failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true\"
                 -Ddeployment.method=DOCKER_COMPOSE
 
+                -Dmetadata-keystore.password=mp6yc0UD9e
+                -Dmetadata-keystore.aliases=metadata
+                -Dmetadata-keystore.metadata.password=mp6yc0UD9e
+                -Dmetadata-keystore.metadata.algorithm=AES <% if (httpMode == 'https') { %>
+                -Dencryption.keystore.type=pkcs12 
+                -Dencryption.cipherAlgorithm=AES/CBC/PKCS5Padding
+                -Dencryption.keyAlgorithm=AES <% } %>      
+
                 -Dtransform.service.enabled=true
                 -Dtransform.service.url=http://transform-router:8095
                 -Dsfs.url=http://shared-file-store:8099/
@@ -44,6 +52,15 @@ services:
                 -Dcsrf.filter.enabled=false
                 -Dalfresco.restApi.basicAuthScheme=true
                 -Xms1500m -Xmx1500m
+                <% if (httpMode == 'https') { %>
+                -Dssl-keystore.password=kT9X6oe68t
+                -Dssl-keystore.aliases=ssl-alfresco-ca,ssl-repo
+                -Dssl-keystore.ssl-alfresco-ca.password=kT9X6oe68t
+                -Dssl-keystore.ssl-repo.password=kT9X6oe68t
+                -Dssl-truststore.password=kT9X6oe68t 
+                -Dssl-truststore.aliases=alfresco-ca,ssl-repo-client
+                -Dssl-truststore.alfresco-ca.password=kT9X6oe68t
+                -Dssl-truststore.ssl-repo-client.password=kT9X6oe68t <% } %>
                 " <% if (httpMode == 'https') { %>
         ports:
             - 8443:8443
@@ -59,7 +76,8 @@ services:
             ALFRESCO_HOSTNAME: alfresco
             ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
             TRUSTSTORE_TYPE: JCEKS
-            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication) { %>
+            KEYSTORE_TYPE: JCEKS 
+            PASSWORDS_AS_ENV_VARS: "true" <% } %> <% if (replication) { %>
             ENABLE_MASTER: "true"
             ENABLE_SLAVE: "false" <% } %> <% if (sharding == 'true') { %>
             ENABLE_SHARDING: "true"
@@ -84,22 +102,31 @@ services:
             #Create the default alfresco and archive cores
             SOLR_CREATE_ALFRESCO_DEFAULTS: "alfresco,archive"
             SOLR_JAVA_MEM: "-Xms1g -Xmx1g" <% if (httpMode == 'https') { %>
-            SOLR_SSL_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.truststore"
+            SOLR_SSL_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.truststore"
             SOLR_SSL_TRUST_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_TRUST_STORE_TYPE: "JCEKS"
-            SOLR_SSL_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
+            SOLR_SSL_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.keystore"
             SOLR_SSL_KEY_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_KEY_STORE_TYPE: "JCEKS"
             SOLR_SSL_NEED_CLIENT_AUTH: "true" <% if (sharding == 'true') { %>
-            SOLR_SSL_CLIENT_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
+            SOLR_SSL_CLIENT_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.keystore"
             SOLR_SSL_CLIENT_KEY_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_CLIENT_KEY_STORE_TYPE: "JCEKS"
-            SOLR_SSL_CLIENT_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
+            SOLR_SSL_CLIENT_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.keystore"
             SOLR_SSL_CLIENT_TRUST_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_CLIENT_TRUST_STORE_TYPE: "JCEKS" <% } %>
             SOLR_OPTS: "
                 -Dsolr.ssl.checkPeerName=false
                 -Dsolr.allow.unsafe.resourceloading=true
+                -Dssl-keystore.password=kT9X6oe68t
+                -Dssl-keystore.aliases=ssl-alfresco-ca,ssl-repo-client
+                -Dssl-keystore.ssl-alfresco-ca.password=kT9X6oe68t
+                -Dssl-keystore.ssl-repo-client.password=kT9X6oe68t
+                -Dssl-truststore.password=kT9X6oe68t
+                -Dssl-truststore.aliases=ssl-alfresco-ca,ssl-repo,ssl-repo-client
+                -Dssl-truststore.ssl-alfresco-ca.password=kT9X6oe68t
+                -Dssl-truststore.ssl-repo.password=kT9X6oe68t
+                -Dssl-truststore.ssl-repo-client.password=kT9X6oe68t      
             " <% } %>
         ports:
             - 8083:8983 <% if (httpMode == 'https') { %>
@@ -116,7 +143,8 @@ services:
             ALFRESCO_HOSTNAME: alfresco
             ALFRESCO_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
             TRUSTSTORE_TYPE: JCEKS
-            KEYSTORE_TYPE: JCEKS <% } %> <% if (replication) { %>
+            KEYSTORE_TYPE: JCEKS 
+            PASSWORDS_AS_ENV_VARS: "true"  <% } %> <% if (replication) { %>
             ENABLE_MASTER: <% if (replication == 'master-master') { %>"true"<% } else { %>"false"<% } %>
             ENABLE_SLAVE: <% if (replication == 'master-master') { %>"false"<% } else { %>"true"<% } %>
             MASTER_HOST: solr6 <% } %> <% if (sharding == 'true') { %>
@@ -142,22 +170,31 @@ services:
             #Create the default alfresco and archive cores
             SOLR_CREATE_ALFRESCO_DEFAULTS: "alfresco,archive"
             SOLR_JAVA_MEM: "-Xms1g -Xmx1g" <% if (httpMode == 'https') { %>
-            SOLR_SSL_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.truststore"
+            SOLR_SSL_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.truststore"
             SOLR_SSL_TRUST_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_TRUST_STORE_TYPE: "JCEKS"
-            SOLR_SSL_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
+            SOLR_SSL_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.keystore"
             SOLR_SSL_KEY_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_KEY_STORE_TYPE: "JCEKS"
             SOLR_SSL_NEED_CLIENT_AUTH: "true" <% if (sharding == 'true') { %>
-            SOLR_SSL_CLIENT_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
+            SOLR_SSL_CLIENT_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.keystore"
             SOLR_SSL_CLIENT_KEY_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_CLIENT_KEY_STORE_TYPE: "JCEKS"
-            SOLR_SSL_CLIENT_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
+            SOLR_SSL_CLIENT_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.keystore"
             SOLR_SSL_CLIENT_TRUST_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_CLIENT_TRUST_STORE_TYPE: "JCEKS" <% } %>
             SOLR_OPTS: "
                 -Dsolr.ssl.checkPeerName=false
                 -Dsolr.allow.unsafe.resourceloading=true
+                -Dssl-keystore.password=kT9X6oe68t
+                -Dssl-keystore.aliases=ssl-alfresco-ca,ssl-repo-client
+                -Dssl-keystore.ssl-alfresco-ca.password=kT9X6oe68t
+                -Dssl-keystore.ssl-repo-client.password=kT9X6oe68t
+                -Dssl-truststore.password=kT9X6oe68t
+                -Dssl-truststore.aliases=ssl-alfresco-ca,ssl-repo,ssl-repo-client
+                -Dssl-truststore.ssl-alfresco-ca.password=kT9X6oe68t
+                -Dssl-truststore.ssl-repo.password=kT9X6oe68t
+                -Dssl-truststore.ssl-repo-client.password=kT9X6oe68t
             " <% } %>
         ports:
             - 8084:8983  <% if (httpMode == 'https') { %>
