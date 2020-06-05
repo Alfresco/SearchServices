@@ -138,8 +138,9 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     public enum FieldUse
     {
-        FTS,          // Term/Phrase/Range/Fuzzy/Prefix/Proximity/Wild
-        ID,           // Exact/ExactRange - Comparison, In, Upper, Lower
+        FTS,          // Term/Phrase/Range/Fuzzy/Prefix/Proximity
+        ID,           // ExactRange - Comparison, In, Upper, Lower, Wildcard
+        EXACT,        // Exact
         FACET,        // Field, Range, Query
         MULTI_FACET,  // Text fields will require cross language support to avoid tokenisation for facets
         STATS,        // Stats
@@ -701,6 +702,9 @@ public class AlfrescoSolrDataModel implements QueryConstants
                 case ID:
                     addIdentifierSearchFields(propertyDefinition, indexedField);
                     break;
+                case EXACT:
+                    addExactSearchFields(propertyDefinition, indexedField);
+                    break;    
                 case MULTI_FACET:
                     addMultiSearchFields(propertyDefinition, indexedField);
                     break;
@@ -808,9 +812,10 @@ public class AlfrescoSolrDataModel implements QueryConstants
     }
 
     /*
-     * Adds best identifier fields in order of preference
+     * If the untokenised version is available, go for it.
+     * If not it takes the tokenised versions available.
      */
-    private void addIdentifierSearchFields(PropertyDefinition propertyDefinition, IndexedField indexedField)
+    private void addIdentifierSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
     {
         if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
                 || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
@@ -825,6 +830,30 @@ public class AlfrescoSolrDataModel implements QueryConstants
             if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
             {
                 indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
+            }
+        }
+    }
+
+    /*
+     * If only the untokenised version is available, go for it.
+     * If not it takes the tokenised cross locale version.
+     */
+    private void addExactSearchFields(PropertyDefinition propertyDefinition, IndexedField indexedField)
+    {
+        if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
+                || !(propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
+        {
+
+            indexedField.addField(getFieldForText(true, false, false, propertyDefinition), true, false);
+            indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
+        }
+        else
+        {
+            if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
+            {
+                indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
+            } else{
+                throw new UnsupportedOperationException("Exact Term search is not supported unless you configure the field <"+propertyDefinition.getName()+"> for cross locale search");
             }
         }
     }
