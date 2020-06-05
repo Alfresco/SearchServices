@@ -37,6 +37,9 @@ import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.IntStream.range;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 
 public abstract class AbstractRequestHandlerIT extends AbstractAlfrescoSolrIT
 {
@@ -52,6 +55,16 @@ public abstract class AbstractRequestHandlerIT extends AbstractAlfrescoSolrIT
         assertQ(areq(params("rows", "20", "qt", "/afts", "fq", "{!afts}AUTHORITY_FILTER_FROM_JSON", "q", query), json), "*[count(//doc)="+num+"]");
     }
 
+    void assertResponseException(String query, String exceptionMessage) {
+        try {
+            h.query(areq(params("rows", "20", "qt", "/afts", "q", query), null));
+            fail("No Exception Thrown");
+        } catch (Exception e) {
+            assertThat(e.getMessage(), is(exceptionMessage));
+        }
+       
+    }
+    
     void assertResponseCardinality(String query, int num)
     {
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", query), null), "*[count(//doc)="+num+"]");
