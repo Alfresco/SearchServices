@@ -116,6 +116,12 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import static java.util.Optional.ofNullable;
+import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_DAY_FIELD_SUFFIX;
+import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_HOUR_FIELD_SUFFIX;
+import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_MINUTE_FIELD_SUFFIX;
+import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_MONTH_FIELD_SUFFIX;
+import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_SECOND_FIELD_SUFFIX;
+import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_YEAR_FIELD_SUFFIX;
 
 /**
  * @author Andy
@@ -150,33 +156,41 @@ public class AlfrescoSolrDataModel implements QueryConstants
         HIGHLIGHT
     }
 
-    public enum ContentFieldType
+    public enum SpecializedFieldType
     {
-        DOCID,
-        SIZE,
-        LOCALE,
-        MIMETYPE,
-        ENCODING,
+        CONTENT_DOCID,
+        CONTENT_SIZE,
+        CONTENT_LOCALE,
+        CONTENT_MIMETYPE,
+        CONTENT_ENCODING,
         TRANSFORMATION_STATUS,
         TRANSFORMATION_TIME,
-        TRANSFORMATION_EXCEPTION
+        TRANSFORMATION_EXCEPTION,
+        UNIT_OF_TIME_SECOND,
+        UNIT_OF_TIME_MINUTE,
+        UNIT_OF_TIME_HOUR,
+        UNIT_OF_TIME_DAY,
+        UNIT_OF_TIME_MONTH,
+        UNIT_OF_TIME_YEAR
     }
 
     public static final String CONTENT_S_LOCALE_PREFIX = "content@s__locale@";
 
     static final String PART_FIELDNAME_PREFIX = "part@sd@";
-
+    static final Set<String> DATE_PART_SUFFIXES =
+            Set.of(UNIT_OF_TIME_YEAR_FIELD_SUFFIX,
+                UNIT_OF_TIME_MONTH_FIELD_SUFFIX,
+                UNIT_OF_TIME_DAY_FIELD_SUFFIX,
+                UNIT_OF_TIME_HOUR_FIELD_SUFFIX,
+                UNIT_OF_TIME_MINUTE_FIELD_SUFFIX,
+                UNIT_OF_TIME_SECOND_FIELD_SUFFIX);
     /**
      * Infix used for denoting a primitive single valued field with no doc values enabled
-     *
-     * @see #getFieldForText
      */
     private static final String SINGLE_VALUE_WITHOUT_DOC_VALUES_MARKER = "@s_@";
 
     /**
      * Infix used for denoting a primitive single valued field with no doc values enabled
-     *
-     * @see #getFieldForText
      */
     private static final String SINGLE_VALUE_WITH_DOC_VALUES_MARKER = "@sd@";
 
@@ -192,26 +206,22 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     private final static AlfrescoSolrDataModel INSTANCE = new AlfrescoSolrDataModel();
 
-    private TenantService tenantService;
+    private final TenantService tenantService;
 
-    private NamespaceDAO namespaceDAO;
+    private final NamespaceDAO namespaceDAO;
 
-    private DictionaryDAOImpl dictionaryDAO;
+    private final DictionaryDAOImpl dictionaryDAO;
 
-    private Map<String,DictionaryComponent> dictionaryServices;
+    private final Map<String,DictionaryComponent> dictionaryServices;
 
-    private Map<DictionaryKey,CMISAbstractDictionaryService> cmisDictionaryServices;
+    private final Map<DictionaryKey,CMISAbstractDictionaryService> cmisDictionaryServices;
 
-    private Map<String, Set<String>> modelErrors = new HashMap<>();
-
-    private Set<QName> suggestableProperties = new HashSet<>();
-
-    private Set<QName> crossLocaleSearchDataTypes = new HashSet<>();
-
-    private Set<QName> crossLocaleSearchProperties = new HashSet<>();
-
-    private Set<QName> identifierProperties = new HashSet<>();
-    private ThreadPoolExecutor threadPool;
+    private final Map<String, Set<String>> modelErrors = new HashMap<>();
+    private final Set<QName> suggestableProperties = new HashSet<>();
+    private final Set<QName> crossLocaleSearchDataTypes = new HashSet<>();
+    private final Set<QName> crossLocaleSearchProperties = new HashSet<>();
+    private final Set<QName> identifierProperties = new HashSet<>();
+    private final ThreadPoolExecutor threadPool;
 
     public void close() {
         threadPool.shutdown();
@@ -604,7 +614,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         return dictionaryComponent;
     }
 
-    public IndexedField getIndexedFieldForContentPropertyMetadata(QName propertyQName, ContentFieldType type)
+    public IndexedField getIndexedFieldForSpecializedPropertyMetadata(QName propertyQName, SpecializedFieldType type)
     {
         IndexedField indexedField = new IndexedField();
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
@@ -629,19 +639,19 @@ public class AlfrescoSolrDataModel implements QueryConstants
             builder.append('_');
             switch (type)
             {
-                case DOCID:
+                case CONTENT_DOCID:
                     builder.append("docid");
                     break;
-                case ENCODING:
+                case CONTENT_ENCODING:
                     builder.append("encoding");
                     break;
-                case LOCALE:
+                case CONTENT_LOCALE:
                     builder.append("locale");
                     break;
-                case MIMETYPE:
+                case CONTENT_MIMETYPE:
                     builder.append("mimetype");
                     break;
-                case SIZE:
+                case CONTENT_SIZE:
                     builder.append("size");
                     break;
                 case TRANSFORMATION_EXCEPTION:
@@ -656,21 +666,29 @@ public class AlfrescoSolrDataModel implements QueryConstants
                 default:
                     break;
             }
+
             builder.append('@');
             builder.append(propertyQName);
             indexedField.addField(builder.toString(), false, false);
-
+        }
+        else if (isDateOrDatetime(dataTypeDefinition))
+        {
+            String dateDerivedSuffix = getDateDerivedSuffix(type);
+            if (dateDerivedSuffix != null)
+            {
+                indexedField.addField(getDateDerivedField(propertyQName, dateDerivedSuffix), false, true);
+            }
         }
         return indexedField;
 
     }
 
 
-    public IndexedField getQueryableFields(QName propertyQName,  ContentFieldType type, FieldUse fieldUse)
+    public IndexedField getQueryableFields(QName propertyQName, SpecializedFieldType type, FieldUse fieldUse)
     {
         if(type != null)
         {
-            return getIndexedFieldForContentPropertyMetadata(propertyQName, type);
+            return getIndexedFieldForSpecializedPropertyMetadata(propertyQName, type);
         }
 
         IndexedField indexedField = new IndexedField();
@@ -704,7 +722,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
                     break;
                 case EXACT:
                     addExactSearchFields(propertyDefinition, indexedField);
-                    break;    
+                    break;
                 case MULTI_FACET:
                     addMultiSearchFields(propertyDefinition, indexedField);
                     break;
@@ -980,6 +998,11 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     public String getStoredTextField(QName propertyQName)
     {
+        return getStoredTextField(propertyQName, null);
+    }
+
+    public String getStoredTextField(QName propertyQName, String suffix)
+    {
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
 
         StringBuilder sb = new StringBuilder();
@@ -1004,11 +1027,21 @@ public class AlfrescoSolrDataModel implements QueryConstants
         sb.append("@");
         sb.append(propertyDefinition.getName().toString());
 
+        if (suffix != null)
+        {
+            sb.append(suffix);
+        }
+
         return sb.toString();
 
     }
 
     public String getStoredMLTextField(QName propertyQName)
+    {
+        return getStoredMLTextField(propertyQName, null);
+    }
+
+    public String getStoredMLTextField(QName propertyQName, String suffix)
     {
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
 
@@ -1032,11 +1065,21 @@ public class AlfrescoSolrDataModel implements QueryConstants
         sb.append("@");
         sb.append(propertyDefinition.getName().toString());
 
+        if (suffix != null)
+        {
+            sb.append(suffix);
+        }
+
         return sb.toString();
 
     }
 
     public String getStoredContentField(QName propertyQName)
+    {
+        return getStoredContentField(propertyQName, null);
+    }
+
+    public String getStoredContentField(QName propertyQName, String suffix)
     {
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
 
@@ -1060,8 +1103,40 @@ public class AlfrescoSolrDataModel implements QueryConstants
         sb.append("@");
         sb.append(propertyDefinition.getName().toString());
 
+        if (suffix != null)
+        {
+            sb.append(suffix);
+        }
+
         return sb.toString();
 
+    }
+
+    public String getDateDerivedField(QName propertyQName, String suffix)
+    {
+        PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
+        return "part@sd@" + propertyDefinition.getName().toString() + suffix;
+    }
+
+    public String getDateDerivedSuffix(SpecializedFieldType type)
+    {
+        switch (type)
+        {
+            case UNIT_OF_TIME_SECOND:
+                return UNIT_OF_TIME_SECOND_FIELD_SUFFIX;
+            case UNIT_OF_TIME_MINUTE:
+                return UNIT_OF_TIME_MINUTE_FIELD_SUFFIX;
+            case UNIT_OF_TIME_HOUR:
+                return UNIT_OF_TIME_HOUR_FIELD_SUFFIX;
+            case UNIT_OF_TIME_DAY:
+                return UNIT_OF_TIME_DAY_FIELD_SUFFIX;
+            case UNIT_OF_TIME_MONTH:
+                return UNIT_OF_TIME_MONTH_FIELD_SUFFIX;
+            case UNIT_OF_TIME_YEAR:
+                return UNIT_OF_TIME_YEAR_FIELD_SUFFIX;
+            default:
+                return null;
+        }
     }
 
 
@@ -1211,43 +1286,6 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
     }
 
-    private boolean isPrimitive(DataTypeDefinition dataType)
-    {
-        if(dataType.getName().equals(DataTypeDefinition.INT))
-        {
-            return true;
-        }
-        else if(dataType.getName().equals(DataTypeDefinition.LONG))
-        {
-            return true;
-        }
-        else if(dataType.getName().equals(DataTypeDefinition.FLOAT))
-        {
-            return true;
-        }
-        else if(dataType.getName().equals(DataTypeDefinition.DOUBLE))
-        {
-            return true;
-        }
-        else if(dataType.getName().equals(DataTypeDefinition.DATE))
-        {
-            return true;
-        }
-        else if(dataType.getName().equals(DataTypeDefinition.DATETIME))
-        {
-            return true;
-        }
-        else if(dataType.getName().equals(DataTypeDefinition.BOOLEAN))
-        {
-            return true;
-        }
-        else if(dataType.getName().equals(DataTypeDefinition.CATEGORY))
-        {
-            return true;
-        }
-        else return dataType.getName().equals(DataTypeDefinition.NODE_REF);
-    }
-
     public String getFieldForNonText(PropertyDefinition propertyDefinition)
     {
         StringBuilder builder = new StringBuilder();
@@ -1332,30 +1370,6 @@ public class AlfrescoSolrDataModel implements QueryConstants
     {
         modelErrors.remove(getM2Model(modelQName).getName());
         dictionaryDAO.removeModel(modelQName);
-    }
-
-    private Set<String> validateModel(M2Model model)
-    {
-        try
-        {
-            dictionaryDAO.getCompiledModel(QName.createQName(model.getName(), namespaceDAO));
-        }
-        catch (DictionaryException | NamespaceException exception)
-        {
-            // No model to diff
-            return Collections.emptySet();
-        }
-
-        // namespace unknown - no model
-        List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModelIgnoringConstraints(model);
-        return modelDiffs.stream()
-                .filter(diff -> diff.getDiffType().equals(M2ModelDiff.DIFF_UPDATED))
-                .map(diff ->
-                        String.format("Model not updated: %s Failed to validate model update - found non-incrementally updated %s '%s'",
-                                model.getName(),
-                                diff.getElementType(),
-                                diff.getElementName()))
-                .collect(Collectors.toSet());
     }
 
     M2Model getM2Model(QName modelQName)
@@ -1663,26 +1677,37 @@ public class AlfrescoSolrDataModel implements QueryConstants
             }
         }
 
-        if (propertyDef == null || propertyDef.getName() == null){
+        if (propertyDef == null || propertyDef.getName() == null)
+        {
             return mapNonPropertyFields(luceneField);
         }
 
-        if (propertyDef.getName().equals(DataTypeDefinition.TEXT))
+        if (isDateOrDatetime(propertyDef.getDataType()) && isDerivedDateField(fieldNameAndEnding.getSecond()))
         {
-            return getStoredTextField(propertyDef.getName());
+            return getDateDerivedField(propertyDef.getName(), fieldNameAndEnding.getSecond());
         }
-        else if (propertyDef.getName().equals(DataTypeDefinition.MLTEXT))
+        else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.TEXT))
         {
-            return getStoredMLTextField(propertyDef.getName());
+            return getStoredTextField(propertyDef.getName(), fieldNameAndEnding.getSecond());
         }
-        else if (propertyDef.getName().equals(DataTypeDefinition.CONTENT))
+        else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
         {
-            return getStoredContentField(propertyDef.getName());
+            return getStoredMLTextField(propertyDef.getName(), fieldNameAndEnding.getSecond());
+        }
+        else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.CONTENT))
+        {
+            return getStoredContentField(propertyDef.getName(), fieldNameAndEnding.getSecond());
         }
         else
         {
-            return mapAlfrescoField(FieldUse.FTS, 0, fieldNameAndEnding, luceneField, propertyDef);
+            return mapAlfrescoField(FieldUse.FTS, 0, fieldNameAndEnding, luceneField, propertyDef)
+                    + fieldNameAndEnding.getSecond();
         }
+    }
+
+    public boolean isDerivedDateField(String suffix)
+    {
+        return DATE_PART_SUFFIXES.contains(suffix);
     }
 
     public String  mapProperty(String  potentialProperty,  FieldUse fieldUse, SolrQueryRequest req, int position)
@@ -1727,7 +1752,107 @@ public class AlfrescoSolrDataModel implements QueryConstants
         return solrSortField;
     }
 
-    private String mapAlfrescoField(FieldUse fieldUse, int position, Pair<String, String> fieldNameAndEnding, String luceneField, PropertyDefinition propertyDef) {
+    public String mapNonPropertyFields(String queryField)
+    {
+        switch(queryField)
+        {
+            case "ID":
+                return "LID";
+            case "EXACTTYPE":
+                return "TYPE";
+            default:
+                return queryField;
+
+        }
+    }
+
+    /**
+     * @param ending String
+     * @return SpecializedFieldType
+     */
+    public SpecializedFieldType getTextField(String ending)
+    {
+        switch(ending)
+        {
+            case FIELD_MIMETYPE_SUFFIX:
+                return SpecializedFieldType.CONTENT_MIMETYPE;
+            case FIELD_SIZE_SUFFIX:
+                return SpecializedFieldType.CONTENT_SIZE;
+            case FIELD_LOCALE_SUFFIX:
+                return SpecializedFieldType.CONTENT_LOCALE;
+            case FIELD_ENCODING_SUFFIX:
+                return SpecializedFieldType.CONTENT_ENCODING;
+            case UNIT_OF_TIME_SECOND_FIELD_SUFFIX:
+                return SpecializedFieldType.UNIT_OF_TIME_SECOND;
+            case UNIT_OF_TIME_MINUTE_FIELD_SUFFIX:
+                return SpecializedFieldType.UNIT_OF_TIME_MINUTE;
+            case UNIT_OF_TIME_HOUR_FIELD_SUFFIX:
+                return SpecializedFieldType.UNIT_OF_TIME_HOUR;
+            case UNIT_OF_TIME_DAY_FIELD_SUFFIX:
+                return SpecializedFieldType.UNIT_OF_TIME_DAY;
+            case UNIT_OF_TIME_MONTH_FIELD_SUFFIX:
+                return SpecializedFieldType.UNIT_OF_TIME_MONTH;
+            case UNIT_OF_TIME_YEAR_FIELD_SUFFIX:
+                return SpecializedFieldType.UNIT_OF_TIME_YEAR;
+            case FIELD_TRANSFORMATION_STATUS_SUFFIX:
+            case FIELD_TRANSFORMATION_TIME_SUFFIX:
+            case FIELD_TRANSFORMATION_EXCEPTION_SUFFIX:
+            default:
+                return null;
+        }
+    }
+
+    public void setCMDefaultUri()
+    {
+        if(getNamespaceDAO().getURIs().contains(NamespaceService.CONTENT_MODEL_1_0_URI))
+        {
+            getNamespaceDAO().addPrefix("", NamespaceService.CONTENT_MODEL_1_0_URI);
+        }
+    }
+
+    /**
+     * Returns the prefix used for denoting a field which is meant to represent a constituent part of a
+     * date or datetime (e.g. year, month, second, minute).
+     *
+     * @param sourceFieldName the date/datetime source field name.
+     * @return the prefix that can be used for denoting a date or datetime part
+     */
+    public String destructuredDateTimePartFieldNamePrefix(String sourceFieldName) {
+        // source field name example: datetime@sd@{http://www.alfresco.org/model/content/1.0}created
+        // prefix: datetime
+        String prefix = sourceFieldName.substring(0, sourceFieldName.indexOf("@"));
+
+        // prefix, docValues disabled option: datetime@s_@
+        String sourceFieldNamePrefixWithoutDocValues = prefix + SINGLE_VALUE_WITHOUT_DOC_VALUES_MARKER;
+
+        // prefix, docValues enabled option: datetime@sd@
+        String sourceFieldNamePrefixWithDocValues = prefix + SINGLE_VALUE_WITH_DOC_VALUES_MARKER;
+
+        return sourceFieldName.replace(sourceFieldNamePrefixWithoutDocValues, PART_FIELDNAME_PREFIX)
+                .replace(sourceFieldNamePrefixWithDocValues, PART_FIELDNAME_PREFIX);
+    }
+
+    private boolean isDateOrDatetime(DataTypeDefinition dataType)
+    {
+        return dataType.getName().equals(DataTypeDefinition.DATE) ||
+                dataType.getName().equals(DataTypeDefinition.DATETIME);
+    }
+
+    private boolean isPrimitive(DataTypeDefinition dataType)
+    {
+        QName name = dataType.getName();
+        return name.equals(DataTypeDefinition.INT)
+                || name.equals(DataTypeDefinition.LONG)
+                || name.equals(DataTypeDefinition.FLOAT)
+                || name.equals(DataTypeDefinition.DOUBLE)
+                || isDateOrDatetime(dataType)
+                || name.equals(DataTypeDefinition.BOOLEAN)
+                || name.equals(DataTypeDefinition.CATEGORY)
+                || name.equals(DataTypeDefinition.NODE_REF);
+    }
+
+    private String mapAlfrescoField(FieldUse fieldUse, int position, Pair<String, String> fieldNameAndEnding, String luceneField, PropertyDefinition propertyDef)
+    {
         String solrSortField;
         if(propertyDef != null)
         {
@@ -1756,72 +1881,27 @@ public class AlfrescoSolrDataModel implements QueryConstants
         return solrSortField;
     }
 
-    public String mapNonPropertyFields(String queryField)
+    private Set<String> validateModel(M2Model model)
     {
-        switch(queryField)
+        try
         {
-            case "ID":
-                return "LID";
-            case "EXACTTYPE":
-                return "TYPE";
-            default:
-                return queryField;
-
+            dictionaryDAO.getCompiledModel(QName.createQName(model.getName(), namespaceDAO));
         }
-    }
-
-    /**
-     * @param ending String
-     * @return ContentFieldType
-     */
-    public ContentFieldType getTextField(String ending)
-    {
-        switch(ending)
+        catch (DictionaryException | NamespaceException exception)
         {
-            case FIELD_MIMETYPE_SUFFIX:
-                return ContentFieldType.MIMETYPE;
-            case FIELD_SIZE_SUFFIX:
-                return ContentFieldType.SIZE;
-            case FIELD_LOCALE_SUFFIX:
-                return ContentFieldType.LOCALE;
-            case FIELD_ENCODING_SUFFIX:
-                return ContentFieldType.ENCODING;
-            case FIELD_TRANSFORMATION_STATUS_SUFFIX:
-            case FIELD_TRANSFORMATION_TIME_SUFFIX:
-            case FIELD_TRANSFORMATION_EXCEPTION_SUFFIX:
-            default:
-                return null;
+            // No model to diff
+            return Collections.emptySet();
         }
-    }
 
-    public void setCMDefaultUri()
-    {
-        if(getNamespaceDAO().getURIs().contains(NamespaceService.CONTENT_MODEL_1_0_URI))
-        {
-            getNamespaceDAO().addPrefix("", NamespaceService.CONTENT_MODEL_1_0_URI);
-        }
-    }
-
-    /**
-     * Returns the prefix used for denoting a field which is meant to represent a constituent part of a
-     * date or datetime (e.g. year, month, second, minute).
-     *
-     * @param sourceFieldName the date/datetime source field name.
-     * @param sourceDataTypeDefinition the datatype of the source field name (date or datetime)
-     * @return the prefix that can be used for denoting a date or datetime part
-     */
-    public String destructuredDateTimePartFieldNamePrefix(String sourceFieldName, DataTypeDefinition sourceDataTypeDefinition) {
-        // source field name example: datetime@sd@{http://www.alfresco.org/model/content/1.0}created
-        // prefix: datetime
-        String prefix = sourceFieldName.substring(0, sourceFieldName.indexOf("@"));
-
-        // prefix, docValues disabled option: datetime@s_@
-        String sourceFieldNamePrefixWithoutDocValues = prefix + SINGLE_VALUE_WITHOUT_DOC_VALUES_MARKER;
-
-        // prefix, docValues enabled option: datetime@sd@
-        String sourceFieldNamePrefixWithDocValues = prefix + SINGLE_VALUE_WITH_DOC_VALUES_MARKER;
-
-        return sourceFieldName.replace(sourceFieldNamePrefixWithoutDocValues, PART_FIELDNAME_PREFIX)
-                .replace(sourceFieldNamePrefixWithDocValues, PART_FIELDNAME_PREFIX);
+        // namespace unknown - no model
+        List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModelIgnoringConstraints(model);
+        return modelDiffs.stream()
+                .filter(diff -> diff.getDiffType().equals(M2ModelDiff.DIFF_UPDATED))
+                .map(diff ->
+                        String.format("Model not updated: %s Failed to validate model update - found non-incrementally updated %s '%s'",
+                                model.getName(),
+                                diff.getElementType(),
+                                diff.getElementName()))
+                .collect(Collectors.toSet());
     }
 }
