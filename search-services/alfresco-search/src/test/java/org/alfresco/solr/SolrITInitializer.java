@@ -29,7 +29,6 @@ package org.alfresco.solr;
 import static org.alfresco.solr.AlfrescoSolrUtils.createCoreUsingTemplate;
 
 import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
-import com.carrotsearch.randomizedtesting.annotations.ThreadLeakLingering;
 import org.alfresco.solr.basics.RandomSupplier;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.apache.commons.io.FileUtils;
@@ -98,7 +97,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class SolrITInitializer extends SolrTestCaseJ4
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    
+    protected static final int DEFAULT_CONNECTION_TIMEOUT1 = DEFAULT_CONNECTION_TIMEOUT;
+    protected static final int CLIENT_SO_TIMEOUT = 90000;
+    protected final static int INDEX_TIMEOUT = 100000;
+
     private static AtomicInteger nodeCnt;
     protected static boolean useExplicitNodeNames;
 
@@ -115,8 +117,6 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
     //Standalone Tests
     protected static SolrCore defaultCore;
  
-    protected static final int clientConnectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
-    protected static final int clientSoTimeout = 90000;
 
     protected static final String id = "id";
 
@@ -501,8 +501,8 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         try
         {
             HttpSolrClient client = new HttpSolrClient(url);
-            client.setConnectionTimeout(clientConnectionTimeout);
-            client.setSoTimeout(clientSoTimeout);
+            client.setConnectionTimeout(DEFAULT_CONNECTION_TIMEOUT1);
+            client.setSoTimeout(CLIENT_SO_TIMEOUT);
             client.setDefaultMaxConnectionsPerHost(100);
             client.setMaxTotalConnections(100);
             return client;
