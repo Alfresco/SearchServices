@@ -40,7 +40,6 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.AlfrescoSolrDataModel;
-import org.alfresco.solr.BoundedDeque;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.NodeReport;
 import org.alfresco.solr.TrackerState;
@@ -199,11 +198,9 @@ public abstract class CoreStatePublisher extends AbstractTracker
 
         HashMap<String, String> propertyBag = new HashMap<>();
         propertyBag.put("coreName", coreName);
-
-        HashMap<String, String> extendedPropertyBag = new HashMap<>(propertyBag);
         updateShardProperty();
 
-        extendedPropertyBag.putAll(docRouter.getProperties(shardProperty));
+        propertyBag.putAll(docRouter.getProperties(shardProperty));
 
         return ShardStateBuilder.shardState()
                 .withMaster(isMaster)
@@ -212,7 +209,7 @@ public abstract class CoreStatePublisher extends AbstractTracker
                 .withLastIndexedChangeSetId(changeSetsTrackerState.getLastIndexedChangeSetId())
                 .withLastIndexedTxCommitTime(transactionsTrackerState.getLastIndexedTxCommitTime())
                 .withLastIndexedTxId(transactionsTrackerState.getLastIndexedTxId())
-                .withPropertyBag(extendedPropertyBag)
+                .withPropertyBag(propertyBag)
                     .withShardInstance()
                         .withBaseUrl(infoSrv.getBaseUrl())
                         .withPort(infoSrv.getPort())
@@ -225,11 +222,11 @@ public abstract class CoreStatePublisher extends AbstractTracker
                                 .withTemplate(shardTemplate)
                                 .withHasContent(transformContent)
                                 .withShardMethod(ShardMethodEnum.getShardMethod(shardMethod))
-                                .withPropertyBag(propertyBag)
                             .endFloc()
                         .endShard()
                     .endShardInstance()
                 .build();
+        
     }
 
     /**
