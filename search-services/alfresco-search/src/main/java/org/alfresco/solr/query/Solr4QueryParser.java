@@ -2348,8 +2348,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
             isShingled = true;
         }
 
-        boolean forceConjuncion = rerankPhase == RerankPhase.QUERY_PHASE;
-
+        boolean forceConjuncion = (rerankPhase == RerankPhase.QUERY_PHASE && !isExactTermSearch(analysisMode));
         if (list.size() == 0)
         {
             return null;
