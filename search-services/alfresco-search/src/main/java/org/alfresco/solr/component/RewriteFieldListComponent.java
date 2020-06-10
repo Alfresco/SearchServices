@@ -32,19 +32,15 @@ import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.handler.component.ResponseBuilder;
 import org.apache.solr.handler.component.SearchComponent;
 import org.apache.solr.request.SolrQueryRequest;
+import org.apache.solr.response.transform.DocTransformer;
 import org.apache.solr.search.SolrReturnFields;
 
-import java.io.IOException;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
-import static org.alfresco.solr.AlfrescoSolrDataModel.FieldUse.FACET;
-import static org.alfresco.solr.AlfrescoSolrDataModel.FieldUse.FTS;
-import static org.alfresco.solr.AlfrescoSolrDataModel.FieldUse.ID;
-import static org.alfresco.solr.AlfrescoSolrDataModel.FieldUse.SORT;
 
 /**
  * @Author elia
@@ -75,7 +71,7 @@ public class RewriteFieldListComponent extends SearchComponent {
         String originalFieldList = req.getParams().get("fl");
 
         boolean cacheTransformer = ofNullable(solrReturnFields.getTransformer())
-                .map(t -> t.getName())
+                .map(DocTransformer::getName)
                 .map(name -> name.contains("fmap"))
                 .orElse(false);
 
@@ -89,7 +85,7 @@ public class RewriteFieldListComponent extends SearchComponent {
             {
                 fieldListSet.addAll(solrReturnFields.getLuceneFieldNames()
                         .stream()
-                        .filter(field -> allowedNonCachedFields.contains(field))
+                        .filter(allowedNonCachedFields::contains)
                         .collect(Collectors.toSet()));
             }
 
@@ -98,7 +94,7 @@ public class RewriteFieldListComponent extends SearchComponent {
                 fieldListSet.addAll(defaultNonCachedFields);
             }
 
-            params.set("fl", fieldListSet.stream().collect(Collectors.joining(",")));
+            params.set("fl", String.join(",", fieldListSet));
         }
         else
         {
@@ -111,7 +107,7 @@ public class RewriteFieldListComponent extends SearchComponent {
                 fieldListSet.addAll(solrReturnFields.getLuceneFieldNames().stream()
                         .map( field -> AlfrescoSolrDataModel.getInstance()
                                                 .mapStoredProperty(field, req))
-                        .filter(schemaFieldName -> schemaFieldName != null)
+                        .filter(Objects::nonNull)
                         .map(schemaFieldName -> schemaFieldName.chars()
                                 .mapToObj(c -> (char) c)
                                 .map(c -> Character.isJavaIdentifierPart(c)? c : '?')
@@ -120,7 +116,7 @@ public class RewriteFieldListComponent extends SearchComponent {
                         .collect(Collectors.toSet()));
             }
 
-            params.add("fl", fieldListSet.stream().collect(Collectors.joining(",")));
+            params.add("fl", String.join(",", fieldListSet));
         }
 
         // This is added for filtering the fields in the cached transformer.
