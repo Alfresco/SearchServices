@@ -58,9 +58,9 @@ import java.util.concurrent.Semaphore;
  * @author Andrea Gazzarini
  * @since 1.5
  */
-public class SlaveCoreStatePublisher extends CoreStatePublisher
+public class NodeStatePublisher extends AbstractShardInformationPublisher
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SlaveCoreStatePublisher.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NodeStatePublisher.class);
 
 
     // Share run and write locks across all SlaveCoreStatePublisher threads
@@ -79,7 +79,7 @@ public class SlaveCoreStatePublisher extends CoreStatePublisher
         return RUN_LOCK_BY_CORE.get(coreName);
     }
 
-    public SlaveCoreStatePublisher(
+    public NodeStatePublisher(
             boolean isMaster,
             Properties coreProperties,
             SOLRAPIClient repositoryClient,
@@ -87,7 +87,6 @@ public class SlaveCoreStatePublisher extends CoreStatePublisher
             SolrInformationServer informationServer)
     {
         super(isMaster, coreProperties, repositoryClient, name, informationServer, NODE_STATE_PUBLISHER);
-
         RUN_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
         WRITE_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
     }
@@ -112,12 +111,6 @@ public class SlaveCoreStatePublisher extends CoreStatePublisher
     public void maintenance()
     {
         // Do nothing here
-    }
-
-    @Override
-    public boolean isOnMasterOrStandalone()
-    {
-        return false;
     }
 
     @Override

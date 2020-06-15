@@ -125,7 +125,7 @@ class HandlerReportHelper
         return nr;
     }
 
-    static NamedList<Object> buildNodeReport(CoreStatePublisher publisher, Long dbid) throws JSONException
+    static NamedList<Object> buildNodeReport(AbstractShardInformationPublisher publisher, Long dbid) throws JSONException
     {
         NodeReport nodeReport = publisher.checkNode(dbid);
 
@@ -248,7 +248,7 @@ class HandlerReportHelper
         NamedList<Object> coreSummary = new SimpleOrderedMap<>();
         coreSummary.addAll((SimpleOrderedMap<Object>) srv.getCoreStats());
 
-        SlaveCoreStatePublisher statePublisher = trackerRegistry.getTrackerForCore(cname, SlaveCoreStatePublisher.class);
+        NodeStatePublisher statePublisher = trackerRegistry.getTrackerForCore(cname, NodeStatePublisher.class);
         TrackerState trackerState = statePublisher.getTrackerState();
         long lastIndexTxCommitTime = trackerState.getLastIndexedTxCommitTime();
 

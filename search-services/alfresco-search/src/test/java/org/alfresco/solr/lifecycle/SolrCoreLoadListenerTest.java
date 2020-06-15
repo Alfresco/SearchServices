@@ -33,6 +33,7 @@ import static org.alfresco.solr.tracker.Tracker.Type.ACL;
 import static org.alfresco.solr.tracker.Tracker.Type.CASCADE;
 import static org.alfresco.solr.tracker.Tracker.Type.CONTENT;
 import static org.alfresco.solr.tracker.Tracker.Type.METADATA;
+import static org.alfresco.solr.tracker.Tracker.Type.NODE_STATE_PUBLISHER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -126,7 +127,7 @@ public class SolrCoreLoadListenerTest
         verify(scheduler).schedule(any(CascadeTracker.class), eq(coreName), same(coreProperties));
 
         Set<Type> trackerTypes = coreTrackers.stream().map(Tracker::getType).collect(Collectors.toSet());
-        assertEquals("Unexpected trackers found.", Set.of(ACL, CONTENT, METADATA, CASCADE), trackerTypes);
+        assertEquals("Unexpected trackers found.", Set.of(ACL, CONTENT, METADATA, NODE_STATE_PUBLISHER, CASCADE), trackerTypes);
     }
 
     @Test
@@ -147,7 +148,7 @@ public class SolrCoreLoadListenerTest
         verify(scheduler, never()).schedule(any(CascadeTracker.class), eq(coreName), same(coreProperties));
 
         Set<Type> trackerTypes = coreTrackers.stream().map(Tracker::getType).collect(Collectors.toSet());
-        assertEquals("Unexpected trackers found.", Set.of(ACL, CONTENT, METADATA), trackerTypes);
+        assertEquals("Unexpected trackers found.", Set.of(ACL, CONTENT, METADATA, NODE_STATE_PUBLISHER), trackerTypes);
     }
 
     @Test
