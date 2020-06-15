@@ -29,7 +29,6 @@ package org.alfresco.solr.tracker;
 import com.google.common.collect.Lists;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AuthenticationException;
-import org.alfresco.repo.index.shard.ShardState;
 import org.alfresco.solr.BoundedDeque;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.NodeReport;
@@ -69,7 +68,7 @@ import static org.alfresco.repo.index.shard.ShardMethodEnum.DB_ID_RANGE;
  * This tracks two things: transactions and metadata nodes
  * @author Ahmed Owian
  */
-public class MetadataTracker extends CoreStatePublisher implements Tracker
+public class MetadataTracker extends AbstractShardInformationPublisher implements Tracker
 {
     protected final static Logger LOGGER = LoggerFactory.getLogger(MetadataTracker.class);
 
@@ -142,26 +141,25 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
      */
     private Pair<Long, Long> minTxnIdRange;
 
-    public MetadataTracker(final boolean isMaster, Properties p, SOLRAPIClient client, String coreName,
+    public MetadataTracker(Properties p, SOLRAPIClient client, String coreName,
             InformationServer informationServer)
     {
-        this(isMaster, p, client, coreName, informationServer, false);
+        this(p, client, coreName, informationServer, false);
     }
 
     /**
      * MetadataTracker constructor
-     * 
-     * @param isMaster is true if SOLR instance is master, false otherwise
+     *
      * @param p includes SOLR core properties (from environment variables and properties file)
      * @param client Alfresco Repository http client
      * @param coreName Name of the SOLR Core (alfresco, archive)
      * @param informationServer SOLR Information Server
      * @param checkRepoServicesAvailability is true if Repo Services availability needs to be checked
      */
-    public MetadataTracker(final boolean isMaster, Properties p, SOLRAPIClient client, String coreName,
+    public MetadataTracker( Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer, boolean checkRepoServicesAvailability)
     {
-        super(isMaster, p, client, coreName, informationServer, Tracker.Type.METADATA);
+        super(true, p, client, coreName, informationServer, Tracker.Type.METADATA);
 
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize",
                 String.valueOf(DEFAULT_TRANSACTION_DOCS_BATCH_SIZE)));
@@ -736,8 +734,6 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 int maxResults, long endTime)
             throws AuthenticationException, IOException, JSONException, EncoderException, NoSuchMethodException
     {
-
-        ShardState shardstate = getShardState();
         
         Transactions transactions;
         // step forward in time until we find something or hit the time bound
@@ -749,14 +745,13 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                                           null,
                                           startTime + timeStep,
                                           null, 
-                                          maxResults, 
-                                          shardstate);
+                                          maxResults);
         }
 
         do
         {
             transactions = client.getTransactions(startTime, null, startTime + timeStep,
-                    null, maxResults, shardstate);
+                    null, maxResults);
             startTime += timeStep;
             
             // If no transactions are found, advance the time window to the next available transaction commit time
@@ -768,7 +763,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                     LOGGER.info("{}-[CORE {}] Advancing transactions from {} to {}",
                             Thread.currentThread().getId(), coreName, startTime, nextTxCommitTime);
                     transactions = client.getTransactions(nextTxCommitTime, null,
-                            nextTxCommitTime + timeStep, null, maxResults, shardstate);
+                            nextTxCommitTime + timeStep, null, maxResults);
                 }
             }
 
