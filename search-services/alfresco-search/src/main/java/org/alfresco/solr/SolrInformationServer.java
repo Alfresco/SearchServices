@@ -95,6 +95,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.IsoFields;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -381,6 +382,7 @@ public class SolrInformationServer implements InformationServer
 
     private static final String UNIT_OF_TIME_FIELD_INFIX = "_unit_of_time";
     public static final String UNIT_OF_TIME_YEAR_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_year";
+    public static final String UNIT_OF_TIME_QUARTER_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_quarter";
     public static final String UNIT_OF_TIME_MONTH_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_month";
     public static final String UNIT_OF_TIME_DAY_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_day";
     public static final String UNIT_OF_TIME_HOUR_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_hour";
@@ -2264,7 +2266,8 @@ public class SolrInformationServer implements InformationServer
                     .stream()
                     .filter(field -> field.getField().startsWith("text@sd___@"))
                     .forEach(field -> addStringProperty(valueHolder, field, value, locale));
-        } else
+        } 
+        else
         {
             dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
                     .forEach(field -> {
@@ -3806,6 +3809,7 @@ public class SolrInformationServer implements InformationServer
      *
      * <ul>
      *     <li>YEAR</li>
+     *     <li>QUARTER (1-4)</li>
      *     <li>MONTH (1-12)</li>
      *     <li>DAY (OF THE MONTH)</li>
      * </ul>
@@ -3828,7 +3832,9 @@ public class SolrInformationServer implements InformationServer
         {
             String fieldNamePrefix = dataModel.destructuredDateTimePartFieldNamePrefix(sourceFieldName);
             ZonedDateTime dateTime = ZonedDateTime.parse(value, DateTimeFormatter.ISO_ZONED_DATE_TIME);
+            
             consumer.accept(fieldNamePrefix + UNIT_OF_TIME_YEAR_FIELD_SUFFIX, dateTime.getYear());
+            consumer.accept(fieldNamePrefix + UNIT_OF_TIME_QUARTER_FIELD_SUFFIX, dateTime.get(IsoFields.QUARTER_OF_YEAR));
             consumer.accept(fieldNamePrefix + UNIT_OF_TIME_MONTH_FIELD_SUFFIX, dateTime.getMonth().getValue());
             consumer.accept(fieldNamePrefix + UNIT_OF_TIME_DAY_FIELD_SUFFIX, dateTime.getDayOfMonth());
 

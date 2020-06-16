@@ -121,6 +121,7 @@ import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_HOUR_FIELD_SU
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_MINUTE_FIELD_SUFFIX;
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_MONTH_FIELD_SUFFIX;
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_SECOND_FIELD_SUFFIX;
+import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_QUARTER_FIELD_SUFFIX;
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_YEAR_FIELD_SUFFIX;
 
 /**
@@ -171,6 +172,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         UNIT_OF_TIME_HOUR,
         UNIT_OF_TIME_DAY,
         UNIT_OF_TIME_MONTH,
+        UNIT_OF_TIME_QUARTER,
         UNIT_OF_TIME_YEAR
     }
 
@@ -179,6 +181,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
     static final String PART_FIELDNAME_PREFIX = "part@sd@";
     static final Set<String> DATE_PART_SUFFIXES =
             Set.of(UNIT_OF_TIME_YEAR_FIELD_SUFFIX,
+                UNIT_OF_TIME_QUARTER_FIELD_SUFFIX,
                 UNIT_OF_TIME_MONTH_FIELD_SUFFIX,
                 UNIT_OF_TIME_DAY_FIELD_SUFFIX,
                 UNIT_OF_TIME_HOUR_FIELD_SUFFIX,
@@ -1132,6 +1135,8 @@ public class AlfrescoSolrDataModel implements QueryConstants
                 return UNIT_OF_TIME_DAY_FIELD_SUFFIX;
             case UNIT_OF_TIME_MONTH:
                 return UNIT_OF_TIME_MONTH_FIELD_SUFFIX;
+            case UNIT_OF_TIME_QUARTER:
+                return UNIT_OF_TIME_QUARTER_FIELD_SUFFIX;
             case UNIT_OF_TIME_YEAR:
                 return UNIT_OF_TIME_YEAR_FIELD_SUFFIX;
             default:
@@ -1792,6 +1797,8 @@ public class AlfrescoSolrDataModel implements QueryConstants
                 return SpecializedFieldType.UNIT_OF_TIME_DAY;
             case UNIT_OF_TIME_MONTH_FIELD_SUFFIX:
                 return SpecializedFieldType.UNIT_OF_TIME_MONTH;
+            case UNIT_OF_TIME_QUARTER_FIELD_SUFFIX:
+                return SpecializedFieldType.UNIT_OF_TIME_QUARTER;
             case UNIT_OF_TIME_YEAR_FIELD_SUFFIX:
                 return SpecializedFieldType.UNIT_OF_TIME_YEAR;
             case FIELD_TRANSFORMATION_STATUS_SUFFIX:

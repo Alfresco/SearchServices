@@ -72,6 +72,7 @@ import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_HOUR_FIELD_SU
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_MINUTE_FIELD_SUFFIX;
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_MONTH_FIELD_SUFFIX;
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_SECOND_FIELD_SUFFIX;
+import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_QUARTER_FIELD_SUFFIX;
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_YEAR_FIELD_SUFFIX;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -168,6 +169,8 @@ public class SolrInformationServerTest
 
         assertEquals(1972,
                 unitOfTimeFieldValue(document, AlfrescoSolrDataModel.PART_FIELDNAME_PREFIX + fieldSuffix + UNIT_OF_TIME_YEAR_FIELD_SUFFIX));
+        assertEquals(3,
+                unitOfTimeFieldValue(document, AlfrescoSolrDataModel.PART_FIELDNAME_PREFIX + fieldSuffix + UNIT_OF_TIME_QUARTER_FIELD_SUFFIX));
         assertEquals(9,
                 unitOfTimeFieldValue(document, AlfrescoSolrDataModel.PART_FIELDNAME_PREFIX + fieldSuffix + UNIT_OF_TIME_MONTH_FIELD_SUFFIX));
         assertEquals(16,
@@ -196,6 +199,8 @@ public class SolrInformationServerTest
 
         assertEquals(1972,
                 unitOfTimeFieldValue(document, AlfrescoSolrDataModel.PART_FIELDNAME_PREFIX + fieldSuffix + UNIT_OF_TIME_YEAR_FIELD_SUFFIX));
+        assertEquals(3,
+                unitOfTimeFieldValue(document, AlfrescoSolrDataModel.PART_FIELDNAME_PREFIX + fieldSuffix + UNIT_OF_TIME_QUARTER_FIELD_SUFFIX));
         assertEquals(9,
                 unitOfTimeFieldValue(document, AlfrescoSolrDataModel.PART_FIELDNAME_PREFIX + fieldSuffix + UNIT_OF_TIME_MONTH_FIELD_SUFFIX));
         assertEquals(16,
