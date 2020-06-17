@@ -81,7 +81,7 @@ public class MetadataTrackerTest
         doReturn("workspace://SpacesStore").when(props).getProperty("alfresco.stores");
         when(srv.getTrackerStats()).thenReturn(trackerStats);
         String coreName = "theCoreName";
-        this.metadataTracker = spy(new MetadataTracker(true, props, repositoryClient, coreName, srv));
+        this.metadataTracker = spy(new MetadataTracker(props, repositoryClient, coreName, srv));
 
         ModelTracker modelTracker = mock(ModelTracker.class);
         when(modelTracker.hasModels()).thenReturn(true);

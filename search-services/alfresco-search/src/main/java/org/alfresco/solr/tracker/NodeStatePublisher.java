@@ -52,9 +52,9 @@ import java.util.Properties;
  * @author Andrea Gazzarini
  * @since 1.5
  */
-public class SlaveCoreStatePublisher extends CoreStatePublisher
+public class NodeStatePublisher extends AbstractShardInformationPublisher
 {
-    public SlaveCoreStatePublisher(
+    public NodeStatePublisher(
             boolean isMaster,
             Properties coreProperties,
             SOLRAPIClient repositoryClient,
@@ -69,6 +69,7 @@ public class SlaveCoreStatePublisher extends CoreStatePublisher
     {
         try
         {
+            checkShutdown();
             ShardState shardstate = getShardState();
             client.getTransactions(0L, null, 0L, null, 0, shardstate);
         }
@@ -84,12 +85,6 @@ public class SlaveCoreStatePublisher extends CoreStatePublisher
     public void maintenance()
     {
         // Do nothing here
-    }
-
-    @Override
-    public boolean isOnMasterOrStandalone()
-    {
-        return false;
     }
 
     @Override

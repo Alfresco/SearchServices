@@ -38,7 +38,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AuthenticationException;
-import org.alfresco.repo.index.shard.ShardState;
 import org.alfresco.solr.BoundedDeque;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.NodeReport;
@@ -60,7 +59,7 @@ import org.slf4j.LoggerFactory;
  * This tracks two things: transactions and metadata nodes
  * @author Ahmed Owian
  */
-public class MetadataTracker extends CoreStatePublisher implements Tracker
+public class MetadataTracker extends AbstractShardInformationPublisher implements Tracker
 {
     protected final static Logger log = LoggerFactory.getLogger(MetadataTracker.class);
     private static final int DEFAULT_TRANSACTION_DOCS_BATCH_SIZE = 100;
@@ -102,26 +101,25 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
      */
     private Pair<Long, Long> minTxnIdRange;
 
-    public MetadataTracker(final boolean isMaster, Properties p, SOLRAPIClient client, String coreName,
+    public MetadataTracker(Properties p, SOLRAPIClient client, String coreName,
             InformationServer informationServer)
     {
-        this(isMaster, p, client, coreName, informationServer, false);
+        this(p, client, coreName, informationServer, false);
     }
 
     /**
      * MetadataTracker constructor
-     * 
-     * @param isMaster is true if SOLR instance is master, false otherwise
+     *
      * @param p includes SOLR core properties (from environment variables and properties file)
      * @param client Alfresco Repository http client
      * @param coreName Name of the SOLR Core (alfresco, archive)
      * @param informationServer SOLR Information Server
      * @param checkRepoServicesAvailability is true if Repo Services availability needs to be checked
      */
-    public MetadataTracker(final boolean isMaster, Properties p, SOLRAPIClient client, String coreName,
+    public MetadataTracker( Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer, boolean checkRepoServicesAvailability)
     {
-        super(isMaster, p, client, coreName, informationServer, Tracker.Type.METADATA);
+        super(true, p, client, coreName, informationServer, Tracker.Type.METADATA);
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
@@ -351,7 +349,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                     log.error("Max Tx In Index: " + maxTxInIndex.getId() + ", In Repo: " + maxTxnIdInRepo);
                     log.error("Max Tx Commit Time In Index: " + maxTxInIndex.getCommitTimeMs() + ", In Repo: "
                             + maxTxnCommitTimeInRepo);
-                    log.error("SOLR has successfully connected to your repository  however the SOLR indexes and repository database do not match."); 
+                    log.error("SOLR has successfully connected to your repository  however the SOLR indexes and repository database do not match.");
                     log.error("If this is a new or rebuilt database your SOLR indexes also need to be re-built to match the database.");
                     log.error("You can also check your SOLR connection details in solrcore.properties.");
                     throw new AlfrescoRuntimeException("Last transaction found in index with incorrect timestamp");
@@ -662,29 +660,28 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     {
 
         long actualTimeStep = timeStep;
-
-        ShardState shardstate = getShardState();
         
         Transactions transactions;
         // step forward in time until we find something or hit the time bound
         // max id unbounded
         Long startTime = fromCommitTime == null  ? 0L : fromCommitTime;
         log.debug(String.format("#### %s MetadataTracker getSomeTransactions start time: %d end: %d",
-                  this.coreName, 
+                  this.coreName,
                   startTime,
                   endTime));
         if(startTime == 0)
         {
             return client.getTransactions(startTime,
                                           null,
-                                          startTime + actualTimeStep, 
+                                          startTime + actualTimeStep,
                                           null, 
-                                          maxResults, 
-                                          shardstate);
+                                          maxResults);
         }
+        
         do
         {
-            transactions = client.getTransactions(startTime, null, startTime + actualTimeStep, null, maxResults, shardstate);
+            transactions = client.getTransactions(startTime, null, startTime + timeStep,
+                    null, maxResults);
             startTime += actualTimeStep;
             
             // If no transactions are found, advance the time window to the next available transaction commit time
@@ -694,7 +691,8 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
                 if (nextTxCommitTime != -1)
                 {
                     log.info("Advancing transactions from {} to {}", startTime, nextTxCommitTime);
-                    transactions = client.getTransactions(nextTxCommitTime, null, nextTxCommitTime + actualTimeStep, null, maxResults, shardstate);
+                    transactions = client.getTransactions(nextTxCommitTime, null,
+                            nextTxCommitTime + timeStep, null, maxResults);
                 }
             }
 
@@ -708,14 +706,14 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
     protected void trackTransactions() throws AuthenticationException, IOException, JSONException, EncoderException
     {
         long startElapsed = System.nanoTime();
-        
+
         boolean upToDate = false;
         Transactions transactions;
         BoundedDeque<Transaction> txnsFound = new BoundedDeque<Transaction>(100);
-        HashSet<Transaction> txsIndexed = new LinkedHashSet<>(); 
+        HashSet<Transaction> txsIndexed = new LinkedHashSet<>();
         long totalUpdatedDocs = 0;
         int docCount = 0;
-        
+
         do
         {
             try
@@ -995,7 +993,7 @@ public class MetadataTracker extends CoreStatePublisher implements Tracker
 
         gnp.setCoreName(coreName);
         List<Node> nodes = client.getNodes(gnp, Integer.MAX_VALUE);
-        
+
         ArrayList<Node> nodeBatch = new ArrayList<>();
         for (Node node : nodes)
         {

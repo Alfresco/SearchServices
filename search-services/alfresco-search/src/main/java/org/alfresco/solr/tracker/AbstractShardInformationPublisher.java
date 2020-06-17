@@ -25,10 +25,6 @@
  */
 package org.alfresco.solr.tracker;
 
-import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
-import static org.alfresco.solr.tracker.DocRouterFactory.SHARD_KEY_KEY;
-
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.index.shard.ShardMethodEnum;
@@ -50,6 +46,10 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.Properties;
 
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
+import static org.alfresco.solr.tracker.DocRouterFactory.SHARD_KEY_KEY;
+
 /**
  * Superclass for all components which are able to inform Alfresco about the hosting node state.
  * This has been introduced in SEARCH-1752 for splitting the dual responsibility of the {@link org.alfresco.solr.tracker.MetadataTracker}.
@@ -60,7 +60,7 @@ import java.util.Properties;
  * @since 1.5
  * @see <a href="https://issues.alfresco.com/jira/browse/SEARCH-1752">SEARCH-1752</a>
  */
-public abstract class CoreStatePublisher extends AbstractTracker
+public abstract class AbstractShardInformationPublisher extends AbstractTracker
 {
     DocRouter docRouter;
     private final boolean isMaster;
@@ -71,7 +71,7 @@ public abstract class CoreStatePublisher extends AbstractTracker
     /** The property to use for determining the shard. */
     protected Optional<QName> shardProperty = Optional.empty();
 
-    CoreStatePublisher(
+    AbstractShardInformationPublisher(
             boolean isMaster,
             Properties p,
             SOLRAPIClient client,
@@ -89,7 +89,7 @@ public abstract class CoreStatePublisher extends AbstractTracker
         docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
     }
 
-    CoreStatePublisher(Type type)
+    AbstractShardInformationPublisher(Type type)
     {
         super(type);
         this.isMaster = false;
@@ -173,18 +173,8 @@ public abstract class CoreStatePublisher extends AbstractTracker
      * The {@link ShardState}, as the name suggests, encapsulates/stores the state of the shard which hosts this
      * {@link MetadataTracker} instance.
      *
-     * The {@link ShardState} is primarily used in two places:
-     *
-     * <ul>
-     *     <li>Transaction tracking: (see {@link MetadataTracker#getSomeTransactions(BoundedDeque, Long, long, int, long}): for pulling/tracking transactions from Alfresco</li>
-     *     <li>
-     *         DynamicSharding: the {@link MetadataTracker} is not running on a slave instances; in those cases a special
-     *         "tracker" ({@link SlaveCoreStatePublisher}) will be in charge to send the correspondin shard state to Alfresco.
-     *     </li>
-     * </ul>
-     *
      * @return the {@link ShardState} instance which stores the current state of the hosting shard.
-     * @see SlaveCoreStatePublisher
+     * @see NodeStatePublisher
      */
     ShardState getShardState()
     {
@@ -226,7 +216,7 @@ public abstract class CoreStatePublisher extends AbstractTracker
                         .endShard()
                     .endShardInstance()
                 .build();
-        
+
     }
 
     /**

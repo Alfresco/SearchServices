@@ -34,12 +34,12 @@ import org.alfresco.solr.client.SOLRAPIClientFactory;
 import org.alfresco.solr.config.ConfigUtil;
 import org.alfresco.solr.content.SolrContentStore;
 import org.alfresco.solr.tracker.AclTracker;
-import org.alfresco.solr.tracker.CoreStatePublisher;
+import org.alfresco.solr.tracker.AbstractShardInformationPublisher;
 import org.alfresco.solr.tracker.DBIDRangeRouter;
 import org.alfresco.solr.tracker.DocRouter;
 import org.alfresco.solr.tracker.IndexHealthReport;
 import org.alfresco.solr.tracker.MetadataTracker;
-import org.alfresco.solr.tracker.SlaveCoreStatePublisher;
+import org.alfresco.solr.tracker.NodeStatePublisher;
 import org.alfresco.solr.tracker.SolrTrackerScheduler;
 import org.alfresco.solr.tracker.Tracker;
 import org.alfresco.solr.tracker.TrackerRegistry;
@@ -1792,11 +1792,11 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * @param coreName the owning core name.
      * @return the component which is in charge to publish the core state.
      */
-    CoreStatePublisher coreStatePublisher(String coreName)
+    AbstractShardInformationPublisher coreStatePublisher(String coreName)
     {
         return ofNullable(trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class))
-                .map(CoreStatePublisher.class::cast)
-                .orElse(trackerRegistry.getTrackerForCore(coreName, SlaveCoreStatePublisher.class));
+                .map(AbstractShardInformationPublisher.class::cast)
+                .orElse(trackerRegistry.getTrackerForCore(coreName, NodeStatePublisher.class));
     }
 
     /**
