@@ -61,7 +61,7 @@ import org.alfresco.solr.tracker.DocRouter;
 import org.alfresco.solr.tracker.IndexHealthReport;
 import org.alfresco.solr.tracker.MetadataTracker;
 import org.alfresco.solr.tracker.PropertyRouter;
-import org.alfresco.solr.tracker.SlaveCoreStatePublisher;
+import org.alfresco.solr.tracker.NodeStatePublisher;
 import org.alfresco.solr.tracker.TrackerRegistry;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CoreAdminParams;
@@ -231,12 +231,12 @@ public class AlfrescoCoreAdminHandlerIT
     @Test
     public void coreIsSlave_thenCoreStatePublisherInstanceCorrespondsToSlaveCoreStatePublisher()
     {
-        SlaveCoreStatePublisher coreStatePublisher = mock(SlaveCoreStatePublisher.class);
+        NodeStatePublisher coreStateTracker = mock(NodeStatePublisher.class);
 
         when(trackerRegistry.getTrackerForCore(anyString(), eq(MetadataTracker.class))).thenReturn(null);
-        when(trackerRegistry.getTrackerForCore(anyString(), eq(SlaveCoreStatePublisher.class))).thenReturn(coreStatePublisher);
+        when(trackerRegistry.getTrackerForCore(anyString(), eq(NodeStatePublisher.class))).thenReturn(coreStateTracker);
 
-        assertSame(coreStatePublisher, alfrescoCoreAdminHandler.coreStatePublisher("ThisIsTheCoreName"));
+        assertSame(coreStateTracker, alfrescoCoreAdminHandler.coreStatePublisher("ThisIsTheCoreName"));
     }
 
     @Test

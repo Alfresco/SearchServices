@@ -132,7 +132,7 @@ public class SolrTrackerSchedulerTest
     {
         String exp = "0/4 * * * * ? *";
         props.put("alfresco.metadata.tracker.cron", exp);
-        MetadataTracker metadataTracker = new MetadataTracker(true, props, client, exp, informationServer);
+        MetadataTracker metadataTracker = new MetadataTracker(props, client, exp, informationServer);
         this.trackerScheduler.schedule(metadataTracker, CORE_NAME, props);
         verify(spiedQuartzScheduler).scheduleJob(any(JobDetail.class), any(Trigger.class));
         checkCronExpression(exp);

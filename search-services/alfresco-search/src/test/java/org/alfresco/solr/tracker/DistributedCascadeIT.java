@@ -141,6 +141,7 @@ public class DistributedCascadeIT extends AbstractAlfrescoDistributedIT
         indexParentFolderWithCascade();
 
         waitForDocCount(params("qt", "/afts", "q", "PATH:" + cascadingFirstChild), 1, timeout);
+        waitForDocCount(params("qt", "/afts", "q", "PATH:" + cascadingSecondChild), 1, timeout);
 
         // Check if the path is updated for both the nodes
         assertShardCount(0, params("qt", "/afts", "q", "PATH:" + cascadingFirstChild), 1);
