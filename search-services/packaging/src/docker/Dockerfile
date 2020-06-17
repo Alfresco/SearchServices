@@ -6,7 +6,6 @@ LABEL creator="Gethin James" maintainer="Alfresco Search Services Team"
 ENV DIST_DIR /opt/alfresco-search-services
 ENV SOLR_ZIP ${project.build.finalName}.zip
 ENV LANG C.UTF-8
-ENV OPENSSL_VERSION 1.0.2k-8.el7
 
 ARG USERNAME=solr
 ARG USERID=33007
@@ -26,7 +25,7 @@ RUN set -x \
         "${USERNAME}" \
    && yum update -y \
    && yum install -y unzip \
-   && yum install -y lsof ca-certificates openssl-$OPENSSL_VERSION \
+   && yum install -y lsof ca-certificates \
    && yum install -y wget \
    && yum clean all \
    && unzip "$SOLR_ZIP" -d /opt/ && rm "$SOLR_ZIP" \
