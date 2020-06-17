@@ -225,9 +225,10 @@ public abstract class AbstractTracker implements Tracker
                 }
             }
         }
-        catch (InterruptedException e)
+        catch (Exception exception)
         {
-            LOGGER.error("[{} / {} / {}] Semaphore interruption. See the stacktrace below for further details.", coreName, trackerId, iterationId, e);
+            LOGGER.error("[{} / {} / {}] Some problem was detected while resetting the Tracker State. See the stracktrace below for further details."
+                            , coreName, trackerId, iterationId, exception);
         }
         finally
         {
@@ -250,17 +251,10 @@ public abstract class AbstractTracker implements Tracker
         try
         {
             state.setRunning(false);
-        } catch (Exception ignore)
-        {
-            // Nothing to be done here.
-        }
-
-        try
-        {
             state.setCheck(false);
-        } catch (Exception ignore)
+        } catch (Exception exception)
         {
-            // Nothing to be done here.
+            LOGGER.error("Unable to properly turn off the TrackerState instance. See the stacktrace below for further details.", exception);
         }
     }
 
