@@ -32,6 +32,7 @@ import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
+import java.util.function.Consumer;
 
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.IndexTrackingShutdownException;
@@ -231,12 +232,35 @@ public abstract class AbstractTracker implements Tracker
         finally
         {
             infoSrv.unregisterTrackerThread();
-            ofNullable(state).ifPresent(tstate -> {
-                // During a rollback state is set to null.
-                state.setRunning(false);
-                state.setCheck(false);
-            });
+
+            ofNullable(state).ifPresent(this::turnOff);
+
             getRunLock().release();
+        }
+    }
+
+    /**
+     * At the end of the tracking method, the {@link TrackerState} should be turned off.
+     * However, during a rollback (that could be started by another tracker) the {@link TrackerState} instance
+     * could be set to null, even after passing a null check we could get a NPE.
+     * For that reason, this method turns off the tracker state and ignore any {@link NullPointerException} (actually
+     * any exception) that could be thrown.
+     */
+    private void turnOff(TrackerState state) {
+        try
+        {
+            state.setRunning(false);
+        } catch (Exception ignore)
+        {
+            // Nothing to be done here.
+        }
+
+        try
+        {
+            state.setCheck(false);
+        } catch (Exception ignore)
+        {
+            // Nothing to be done here.
         }
     }
 
