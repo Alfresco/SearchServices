@@ -91,6 +91,37 @@
                   <include>**/*.java</include>
                   <include>**/*.jsp</include>  
                </includes>
+               <!-- Classes derivated from SOLR Source code include the Apache License header -->
+               <excludes>
+                  <exclude>**/org/alfresco/solr/component/AsyncBuildSuggestComponent.java</exclude>
+                  <exclude>**/org/apache/solr/client/solrj/io/sql/ConnectionImpl.java</exclude>
+                  <exclude>**/org/apache/solr/client/solrj/io/sql/DatabaseMetaDataImpl.java</exclude>
+                  <exclude>**/org/apache/solr/client/solrj/io/sql/ResultSetImpl.java</exclude>
+                  <exclude>**/org/apache/solr/client/solrj/io/sql/StatementImpl.java</exclude>
+                  <exclude>**/org/alfresco/solr/handler/AlfrescoIndexFetcher.java</exclude>
+                  <exclude>**/org/alfresco/solr/handler/AlfrescoReplicationHandler.java</exclude>
+                  <exclude>**/org/alfresco/solr/handler/OldBackupDirectory.java</exclude>
+                  <exclude>**/org/alfresco/solr/handler/SnapShooter.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrAggregate.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrEnumerator.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrFilter.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrMethod.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrProject.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrRel.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrRules.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrSort.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrTable.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrTableScan.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrToEnumerableConverter.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrToEnumerableConverterRule.java</exclude>
+                  <exclude>**/org/alfresco/solr/stream/FacetStream.java</exclude>
+                  <exclude>**/org/alfresco/solr/stream/JDBCStream.java</exclude>
+                  <exclude>**/org/alfresco/solr/stream/JSONTupleStream.java</exclude>
+                  <exclude>**/org/alfresco/solr/stream/LimitStream.java</exclude>
+                  <exclude>**/org/alfresco/solr/stream/StatsStream.java</exclude>
+                  <exclude>**/org/alfresco/solr/stream/StreamHandler.java</exclude>
+                  <exclude>**/org/alfresco/solr/stream/TimeSeriesStream.java</exclude>
+               </excludes>
             </configuration>
             <executions>
                <execution>
