@@ -295,7 +295,8 @@ module.exports = class extends Generator {
 
     // Add resources for SSL configuration
     if (this.props.httpMode == 'https') {
-      var subfolder = this.props.acsVersion == 'latest' ? '7.x' : '6.x'
+      // Currently Community 'latest' only supports OLD keystores and trustores format
+      var subfolder = (this.props.acsVersion == 'latest' && this.props.alfrescoVersion == 'enterprise') ? '7.x' : '6.x'
       this.fs.copy(
         this.templatePath('keystores/' + subfolder + '/alfresco'),
         this.destinationPath('keystores/alfresco')
