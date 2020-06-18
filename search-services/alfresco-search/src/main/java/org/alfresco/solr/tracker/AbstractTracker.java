@@ -1,6 +1,6 @@
-/*-
+/*
  * #%L
- * Alfresco Solr Search
+ * Alfresco Search Services
  * %%
  * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
@@ -31,6 +31,7 @@ import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
+import java.util.function.Consumer;
 
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.IndexTrackingShutdownException;
@@ -231,19 +232,36 @@ public abstract class AbstractTracker implements Tracker
                 }
             }
         }
-        catch (InterruptedException e)
+        catch (Exception exception)
         {
-            logger.error("[{} / {} / {}] Semaphore interruption. See the stacktrace below for further details.", coreName, trackerId, iterationId, e);
+            logger.error("[{} / {} / {}] Some problem was detected while resetting the Tracker State. See the stracktrace below for further details."
+                            , coreName, trackerId, iterationId, exception);
         }
         finally
         {
             infoSrv.unregisterTrackerThread();
-            ofNullable(state).ifPresent(tstate -> {
-                // During a rollback state is set to null.
-                state.setRunning(false);
-                state.setCheck(false);
-            });
+
+            ofNullable(state).ifPresent(this::turnOff);
+
             runLock.release();
+        }
+    }
+
+    /**
+     * At the end of the tracking method, the {@link TrackerState} should be turned off.
+     * However, during a rollback (that could be started by another tracker) the {@link TrackerState} instance
+     * could be set to null, even after passing a null check we could get a NPE.
+     * For that reason, this method turns off the tracker state and ignore any {@link NullPointerException} (actually
+     * any exception) that could be thrown.
+     */
+    private void turnOff(TrackerState state) {
+        try
+        {
+            state.setRunning(false);
+            state.setCheck(false);
+        } catch (Exception exception)
+        {
+            logger.error("Unable to properly turn off the TrackerState instance. See the stacktrace below for further details.", exception);
         }
     }
 
