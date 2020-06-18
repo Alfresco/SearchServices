@@ -15,6 +15,24 @@ services:
             COMPRESS_CONTENT: "<%=gzip%>"
         mem_limit: 1800m
         environment:
+            JAVA_TOOL_OPTIONS: "
+                -Dmetadata-keystore.password=mp6yc0UD9e
+                -Dmetadata-keystore.aliases=metadata
+                -Dmetadata-keystore.metadata.password=mp6yc0UD9e
+                -Dmetadata-keystore.metadata.algorithm=AES            
+                <% if (httpMode == 'https') { %>
+                -Dencryption.keystore.type=pkcs12 
+                -Dencryption.cipherAlgorithm=AES/CBC/PKCS5Padding
+                -Dencryption.keyAlgorithm=AES
+                -Dssl-keystore.password=kT9X6oe68t
+                -Dssl-keystore.aliases=ssl-alfresco-ca,ssl-repo
+                -Dssl-keystore.ssl-alfresco-ca.password=kT9X6oe68t
+                -Dssl-keystore.ssl-repo.password=kT9X6oe68t
+                -Dssl-truststore.password=kT9X6oe68t 
+                -Dssl-truststore.aliases=alfresco-ca,ssl-repo-client
+                -Dssl-truststore.alfresco-ca.password=kT9X6oe68t
+                -Dssl-truststore.ssl-repo-client.password=kT9X6oe68t <% } %>
+            "
             JAVA_OPTS: "
                 -Ddb.driver=org.postgresql.Driver
                 -Ddb.username=alfresco
@@ -31,14 +49,6 @@ services:
                 -Dmessaging.broker.url=\"failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true\"
                 -Ddeployment.method=DOCKER_COMPOSE
 
-                -Dmetadata-keystore.password=mp6yc0UD9e
-                -Dmetadata-keystore.aliases=metadata
-                -Dmetadata-keystore.metadata.password=mp6yc0UD9e
-                -Dmetadata-keystore.metadata.algorithm=AES <% if (httpMode == 'https') { %>
-                -Dencryption.keystore.type=pkcs12 
-                -Dencryption.cipherAlgorithm=AES/CBC/PKCS5Padding
-                -Dencryption.keyAlgorithm=AES <% } %>      
-
                 -Dtransform.service.enabled=true
                 -Dtransform.service.url=http://transform-router:8095
                 -Dsfs.url=http://shared-file-store:8099/
@@ -52,15 +62,6 @@ services:
                 -Dcsrf.filter.enabled=false
                 -Dalfresco.restApi.basicAuthScheme=true
                 -Xms1500m -Xmx1500m
-                <% if (httpMode == 'https') { %>
-                -Dssl-keystore.password=kT9X6oe68t
-                -Dssl-keystore.aliases=ssl-alfresco-ca,ssl-repo
-                -Dssl-keystore.ssl-alfresco-ca.password=kT9X6oe68t
-                -Dssl-keystore.ssl-repo.password=kT9X6oe68t
-                -Dssl-truststore.password=kT9X6oe68t 
-                -Dssl-truststore.aliases=alfresco-ca,ssl-repo-client
-                -Dssl-truststore.alfresco-ca.password=kT9X6oe68t
-                -Dssl-truststore.ssl-repo-client.password=kT9X6oe68t <% } %>
                 " <% if (httpMode == 'https') { %>
         ports:
             - 8443:8443
@@ -115,9 +116,7 @@ services:
             SOLR_SSL_CLIENT_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.keystore"
             SOLR_SSL_CLIENT_TRUST_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_CLIENT_TRUST_STORE_TYPE: "JCEKS" <% } %>
-            SOLR_OPTS: "
-                -Dsolr.ssl.checkPeerName=false
-                -Dsolr.allow.unsafe.resourceloading=true
+            JAVA_TOOL_OPTIONS: "
                 -Dssl-keystore.password=kT9X6oe68t
                 -Dssl-keystore.aliases=ssl-alfresco-ca,ssl-repo-client
                 -Dssl-keystore.ssl-alfresco-ca.password=kT9X6oe68t
@@ -127,6 +126,10 @@ services:
                 -Dssl-truststore.ssl-alfresco-ca.password=kT9X6oe68t
                 -Dssl-truststore.ssl-repo.password=kT9X6oe68t
                 -Dssl-truststore.ssl-repo-client.password=kT9X6oe68t      
+            "
+            SOLR_OPTS: "
+                -Dsolr.ssl.checkPeerName=false
+                -Dsolr.allow.unsafe.resourceloading=true
             " <% } %>
         ports:
             - 8083:8983 <% if (httpMode == 'https') { %>
@@ -183,9 +186,7 @@ services:
             SOLR_SSL_CLIENT_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.keystore"
             SOLR_SSL_CLIENT_TRUST_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_CLIENT_TRUST_STORE_TYPE: "JCEKS" <% } %>
-            SOLR_OPTS: "
-                -Dsolr.ssl.checkPeerName=false
-                -Dsolr.allow.unsafe.resourceloading=true
+            JAVA_TOOL_OPTIONS: "
                 -Dssl-keystore.password=kT9X6oe68t
                 -Dssl-keystore.aliases=ssl-alfresco-ca,ssl-repo-client
                 -Dssl-keystore.ssl-alfresco-ca.password=kT9X6oe68t
@@ -194,7 +195,11 @@ services:
                 -Dssl-truststore.aliases=ssl-alfresco-ca,ssl-repo,ssl-repo-client
                 -Dssl-truststore.ssl-alfresco-ca.password=kT9X6oe68t
                 -Dssl-truststore.ssl-repo.password=kT9X6oe68t
-                -Dssl-truststore.ssl-repo-client.password=kT9X6oe68t
+                -Dssl-truststore.ssl-repo-client.password=kT9X6oe68t      
+            "
+            SOLR_OPTS: "
+                -Dsolr.ssl.checkPeerName=false
+                -Dsolr.allow.unsafe.resourceloading=true
             " <% } %>
         ports:
             - 8084:8983  <% if (httpMode == 'https') { %>
@@ -214,15 +219,17 @@ services:
             REPO_PROTOCOL: "https" <% } %>
             REPO_HOST: "alfresco"
             REPO_PORT: "<%=alfrescoPort%>" <% if (httpMode == 'https') { %>
+            JAVA_TOOL_OPTIONS: "
+                -Djavax.net.ssl.keyStore=/zeppelin/keystore/ssl-repo-client.keystore
+                -Djavax.net.ssl.keyStorePassword=kT9X6oe68t
+                -Djavax.net.ssl.keyStoreType=JCEKS
+                -Djavax.net.ssl.trustStore=/zeppelin/keystore/ssl-repo-client.truststore
+                -Djavax.net.ssl.trustStorePassword=kT9X6oe68t
+                -Djavax.net.ssl.trustStoreType=JCEKS
+            "
             JAVA_OPTS: "
                 -Dalfresco.enable.ssl=true
                 -Dsolr.ssl.checkPeerName=false
-                -Djavax.net.ssl.keyStore=/zeppelin/keystore/ssl.repo.client.keystore
-                -Djavax.net.ssl.keyStorePassword=kT9X6oe68t
-                -Djavax.net.ssl.keyStoreType=JCEKS
-                -Djavax.net.ssl.trustStore=/zeppelin/keystore/ssl.repo.client.truststore
-                -Djavax.net.ssl.trustStorePassword=kT9X6oe68t
-                -Djavax.net.ssl.trustStoreType=JCEKS
             " <% } %>
         ports:
             - 9090:9090 <% if (httpMode == 'https') { %>
