@@ -104,19 +104,19 @@ services:
             SOLR_CREATE_ALFRESCO_DEFAULTS: "alfresco,archive"
             SOLR_JAVA_MEM: "-Xms1g -Xmx1g" <% if (httpMode == 'https') { %>
             SOLR_SSL_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.truststore"
-            SOLR_SSL_TRUST_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_TRUST_STORE_TYPE: "JCEKS"
             SOLR_SSL_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.keystore"
-            SOLR_SSL_KEY_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_KEY_STORE_TYPE: "JCEKS"
             SOLR_SSL_NEED_CLIENT_AUTH: "true" <% if (sharding == 'true') { %>
             SOLR_SSL_CLIENT_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.keystore"
-            SOLR_SSL_CLIENT_KEY_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_CLIENT_KEY_STORE_TYPE: "JCEKS"
             SOLR_SSL_CLIENT_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.keystore"
-            SOLR_SSL_CLIENT_TRUST_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_CLIENT_TRUST_STORE_TYPE: "JCEKS" <% } %>
             JAVA_TOOL_OPTIONS: "
+                -Dsolr.jetty.truststore.password=kT9X6oe68t
+                -Dsolr.jetty.keystore.password=kT9X6oe68t <% if (sharding == 'true') { %>
+                -Djavax.net.ssl.keyStorePassword=kT9X6oe68t
+                -Djavax.net.ssl.trustStorePassword=kT9X6oe68t <% } %>
                 -Dssl-keystore.password=kT9X6oe68t
                 -Dssl-keystore.aliases=ssl-alfresco-ca,ssl-repo-client
                 -Dssl-keystore.ssl-alfresco-ca.password=kT9X6oe68t
@@ -174,19 +174,19 @@ services:
             SOLR_CREATE_ALFRESCO_DEFAULTS: "alfresco,archive"
             SOLR_JAVA_MEM: "-Xms1g -Xmx1g" <% if (httpMode == 'https') { %>
             SOLR_SSL_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.truststore"
-            SOLR_SSL_TRUST_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_TRUST_STORE_TYPE: "JCEKS"
             SOLR_SSL_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.keystore"
-            SOLR_SSL_KEY_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_KEY_STORE_TYPE: "JCEKS"
             SOLR_SSL_NEED_CLIENT_AUTH: "true" <% if (sharding == 'true') { %>
             SOLR_SSL_CLIENT_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.keystore"
-            SOLR_SSL_CLIENT_KEY_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_CLIENT_KEY_STORE_TYPE: "JCEKS"
             SOLR_SSL_CLIENT_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.keystore"
-            SOLR_SSL_CLIENT_TRUST_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_CLIENT_TRUST_STORE_TYPE: "JCEKS" <% } %>
             JAVA_TOOL_OPTIONS: "
+                -Dsolr.jetty.truststore.password=kT9X6oe68t
+                -Dsolr.jetty.keystore.password=kT9X6oe68t <% if (sharding == 'true') { %>
+                -Djavax.net.ssl.keyStorePassword=kT9X6oe68t
+                -Djavax.net.ssl.trustStorePassword=kT9X6oe68t <% } %>
                 -Dssl-keystore.password=kT9X6oe68t
                 -Dssl-keystore.aliases=ssl-alfresco-ca,ssl-repo-client
                 -Dssl-keystore.ssl-alfresco-ca.password=kT9X6oe68t
