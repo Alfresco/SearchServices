@@ -1,3 +1,8 @@
+# WARNING
+This project is *read-only* now, as it has been moved to GitHub.
+
+The new project is avaialable in https://github.com/Alfresco/InsightEngine
+
 ## Alfresco Search Services and Insight Engine
 
 This repository includes the source code for Alfresco Search Services and Insight Engine products.
