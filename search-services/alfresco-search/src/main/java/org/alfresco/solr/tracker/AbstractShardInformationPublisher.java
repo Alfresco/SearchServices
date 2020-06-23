@@ -85,12 +85,11 @@ public abstract class AbstractShardInformationPublisher extends AbstractTracker
     {
         super(p, client, coreName, informationServer, type);
         this.isMaster = isMaster;
-        shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
         shardKey = ofNullable(p.getProperty(SHARD_KEY_KEY));
 
         firstUpdateShardProperty();
 
-        docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
+        docRouter = DocRouterFactory.getRouter(p, shardMethod);
     }
 
     AbstractShardInformationPublisher(Type type)
@@ -215,7 +214,7 @@ public abstract class AbstractShardInformationPublisher extends AbstractTracker
                                 .withAddedStoreRef(storeRef)
                                 .withTemplate(shardTemplate)
                                 .withHasContent(transformContent)
-                                .withShardMethod(ShardMethodEnum.getShardMethod(shardMethod))
+                                .withShardMethod(shardMethod)
                             .endFloc()
                         .endShard()
                     .endShardInstance()

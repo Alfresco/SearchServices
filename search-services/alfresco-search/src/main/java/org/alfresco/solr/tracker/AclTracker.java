@@ -130,8 +130,7 @@ public class AclTracker extends AbstractTracker
                 String.valueOf(DEFAULT_CHANGE_SET_ACLS_BATCH_SIZE)));
         aclBatchSize = Integer.parseInt(p.getProperty("alfresco.aclBatchSize",
                 String.valueOf(DEFAULT_ACL_BATCH_SIZE)));
-        shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
-        docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
+        docRouter = DocRouterFactory.getRouter(p, shardMethod);
 
         aclTrackerParallelism = Integer.parseInt(p.getProperty("alfresco.acl.tracker.maxParallelism",
                 String.valueOf(DEFAULT_ACL_TRACKER_MAX_PARALLELISM)));
@@ -800,10 +799,10 @@ public class AclTracker extends AbstractTracker
         if (!aclChangeSets.isEmpty())
         {
             long maxChangeSetCommitTime =
-                    aclChangeSets.stream().max(Comparator.comparing(AclChangeSet::getCommitTimeMs)).get().getCommitTimeMs();
+                    aclChangeSets.stream().max(Comparator.comparing(AclChangeSet::getCommitTimeMs)).orElseThrow().getCommitTimeMs();
             state.setLastChangeSetCommitTimeOnServer(maxChangeSetCommitTime);
 
-            long maxChangeSetId = aclChangeSets.stream().max(Comparator.comparing(AclChangeSet::getId)).get().getId();
+            long maxChangeSetId = aclChangeSets.stream().max(Comparator.comparing(AclChangeSet::getId)).orElseThrow().getId();
             state.setLastChangeSetIdOnServer(maxChangeSetId);
         }
         

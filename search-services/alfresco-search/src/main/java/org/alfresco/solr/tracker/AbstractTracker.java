@@ -28,12 +28,15 @@ package org.alfresco.solr.tracker;
 
 import static java.util.Optional.ofNullable;
 
+import static org.alfresco.repo.index.shard.ShardMethodEnum.DB_ID;
+
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.function.Consumer;
 
+import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.IndexTrackingShutdownException;
 import org.alfresco.solr.InformationServer;
@@ -51,7 +54,6 @@ public abstract class AbstractTracker implements Tracker
 {
     static final long TIME_STEP_32_DAYS_IN_MS = 1000 * 60 * 60 * 24 * 32L;
     static final long TIME_STEP_1_HR_IN_MS = 60 * 60 * 1000L;
-    static final String SHARD_METHOD_DBID = "DB_ID";
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTracker.class);
     
     protected Properties props;    
@@ -68,7 +70,7 @@ public abstract class AbstractTracker implements Tracker
     protected volatile TrackerState state;
     protected int shardCount;
     protected int shardInstance;
-    String shardMethod;
+    ShardMethodEnum shardMethod;
     protected boolean transformContent;
     String shardTemplate;
     protected volatile boolean rollback;
@@ -101,7 +103,7 @@ public abstract class AbstractTracker implements Tracker
         
         shardCount =  Integer.parseInt(p.getProperty("shard.count", "1"));
         shardInstance =  Integer.parseInt(p.getProperty("shard.instance", "0"));
-        shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
+        shardMethod = ShardMethodEnum.getShardMethod(p.getProperty("shard.method", DB_ID.name()));
 
         shardTemplate =  p.getProperty("alfresco.template", "");
         
