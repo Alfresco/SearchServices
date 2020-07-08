@@ -1,7 +1,22 @@
 <settings>
     <servers>
         <server>
-            <id>alfresco-internal</id>
+            <id>alfresco-public-releases</id>
+            <username>${env.MAVEN_USERNAME}</username>
+            <password>${env.MAVEN_PASSWORD}</password>
+        </server>
+        <server>
+            <id>alfresco-public-snapshots</id>
+            <username>${env.MAVEN_USERNAME}</username>
+            <password>${env.MAVEN_PASSWORD}</password>
+        </server>
+        <server>
+            <id>alfresco-enterprise-releases</id>
+            <username>${env.MAVEN_USERNAME}</username>
+            <password>${env.MAVEN_PASSWORD}</password>
+        </server>
+        <server>
+            <id>alfresco-enterprise-snapshots</id>
             <username>${env.MAVEN_USERNAME}</username>
             <password>${env.MAVEN_PASSWORD}</password>
         </server>
