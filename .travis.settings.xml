@@ -20,5 +20,10 @@
             <username>${env.MAVEN_USERNAME}</username>
             <password>${env.MAVEN_PASSWORD}</password>
         </server>
+        <server>
+            <id>alfresco-internal-releases</id>
+            <username>${env.MAVEN_USERNAME}</username>
+            <password>${env.MAVEN_PASSWORD}</password>
+        </server>
     </servers>
 </settings>

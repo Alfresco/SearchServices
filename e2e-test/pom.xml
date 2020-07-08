@@ -150,5 +150,16 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+
+        <repository>
+            <id>alfresco-internal-releases</id>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/internal-releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
     </repositories>
 </project>
