@@ -20,8 +20,9 @@
             <username>${env.MAVEN_USERNAME}</username>
             <password>${env.MAVEN_PASSWORD}</password>
         </server>
+        <!-- TODO remove RM HF dependency from e2e tests -->
         <server>
-            <id>alfresco-internal-releases</id>
+            <id>alfresco-hotfix</id>
             <username>${env.MAVEN_USERNAME}</username>
             <password>${env.MAVEN_PASSWORD}</password>
         </server>

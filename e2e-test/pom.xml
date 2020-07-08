@@ -150,10 +150,9 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-
         <repository>
-            <id>alfresco-internal-releases</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/internal-releases</url>
+            <id>alfresco-hotfix</id>
+            <url>https://artifacts.alfresco.com/nexus/content/groups/hotfix</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
