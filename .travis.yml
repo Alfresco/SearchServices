@@ -31,7 +31,7 @@ before_install:
 
 jobs:
   include:
-    - stage: test
+    - stage: Tests
       name: "Unit tests"
       jdk: openjdk11
       install:
