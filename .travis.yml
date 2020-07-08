@@ -35,13 +35,13 @@ jobs:
       name: "Unit tests"
       jdk: openjdk11
       install:
-        - travis_retry travis_wait 40 mvn --batch-mode clean package -DskipTests
+        - travis_retry travis_wait 40 mvn --batch-mode -q clean package -DskipTests
       script:
         - travis_wait 60 mvn --batch-mode package -DfailIfNoTests=false -Dmaven.wagon.http.pool=false -Dtests.timezone=UTC -Dmaven.test.failure.ignore=true -pl '"!:search-analytics-e2e-test"'
     - name: "CMIS API tests"
       jdk: openjdk11
       install:
-        - travis_retry travis_wait 40 mvn --batch-mode clean package -DskipTests
+        - travis_retry travis_wait 40 mvn --batch-mode -q clean package -DskipTests
         - travis_retry travis_wait 40 docker build -t quay.io/alfresco/search-services:latest search-services/packaging/target/docker-resources
         - travis_retry travis_wait 40 docker build -t quay.io/alfresco/insight-engine:latest insight-engine/packaging/target/docker-resources
         - travis_retry travis_wait 40 docker build -t quay.io/alfresco/insight-zeppelin:latest insight-engine/alfresco-insight-zeppelin/target/docker-resources
