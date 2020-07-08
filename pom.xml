@@ -12,11 +12,11 @@
    <name>Alfresco Search And Insight Parent</name>
    <distributionManagement>
       <repository>
-         <id>alfresco-internal</id>
+         <id>alfresco-enterprise-releases</id>
          <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-releases/</url>
       </repository>
       <snapshotRepository>
-         <id>alfresco-internal-snapshots</id>
+         <id>alfresco-enterprise-snapshots</id>
          <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-snapshots/</url>
       </snapshotRepository>
    </distributionManagement>
