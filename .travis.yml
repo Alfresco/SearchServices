@@ -20,10 +20,10 @@ before_cache:
 #    - /release\/.*/
 
 stages:
-  - name: test
+  - name: Tests
     if: commit_message !~ /\[skip tests\]/
-  - release
-  - publish
+  - Release
+  - Publish
 
 # This should not be required on community build
 before_install:
