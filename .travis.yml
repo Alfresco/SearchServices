@@ -14,10 +14,10 @@ cache:
 before_cache:
   - rm -rf $HOME/.m2/repository/org/alfresco/*
 
-#branches:
-#  only:
-#    - master
-#    - /release\/.*/
+branches:
+  only:
+    - master
+    - /release\/.*/
 
 stages:
   - name: Tests
