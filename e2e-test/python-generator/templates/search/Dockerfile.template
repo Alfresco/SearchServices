@@ -1,0 +1,26 @@
+FROM ${SEARCH_IMAGE}
+
+# Create search_config_setup.sh if it does not exist (e.g. on SearchServices 1.2.x or earlier).
+USER root
+RUN touch $${DIST_DIR}/solr/bin/search_config_setup.sh \
+    && chown solr:solr $${DIST_DIR}/solr/bin/search_config_setup.sh
+USER solr
+
+RUN replacementPairs=(${SOLRCORE_REPLACEMENTS}); \
+    for replacementPair in $${replacementPairs[@]}; \
+    do \
+        sed -i '/^bash.*/i sed -i "'"s/$$replacementPair/g"'" $${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
+        $${DIST_DIR}/solr/bin/search_config_setup.sh; \
+    done; \
+    if [[ "${SOLRCORE_PROPERTIES}" != "" ]]; \
+    then \
+        sed -i '/^bash.*/i echo "\n${SOLRCORE_PROPERTIES}" >> $${DIST_DIR}/solrhome/templates/rerank/conf/solrcore.properties\n' \
+        $${DIST_DIR}/solr/bin/search_config_setup.sh; \
+    fi
+
+USER root
+RUN mkdir -p /opt/alfresco-search-services/keystore \
+    && chown -R solr:solr /opt/alfresco-search-services/keystore
+USER solr
+
+VOLUME ["/opt/alfresco-search-services/keystore"]
