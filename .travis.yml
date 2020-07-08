@@ -42,6 +42,7 @@ jobs:
       jdk: openjdk11
       install:
         - travis_retry travis_wait 60 mvn --batch-mode -q clean package -DskipTests
+        - docker login quay.io -u ${QUAY_USERNAME} -p ${QUAY_PASSWORD}
         - travis_retry travis_wait 40 docker build -t quay.io/alfresco/search-services:latest search-services/packaging/target/docker-resources
         - travis_retry travis_wait 40 docker build -t quay.io/alfresco/insight-engine:latest insight-engine/packaging/target/docker-resources
         - travis_retry travis_wait 40 docker build -t quay.io/alfresco/insight-zeppelin:latest insight-engine/alfresco-insight-zeppelin/target/docker-resources
