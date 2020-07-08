@@ -63,4 +63,4 @@ jobs:
         - ./e2e-test/helpers/start-alfresco.sh "e2e-test/target/docker-resources" "quay.io/alfresco/insight-engine:latest"
         - ./e2e-test/helpers/wait-service-to-start.sh
       script:
-        - travis_wait 60 mvn clean test -DsuiteXmlFile=src/test/resources/SearchSuite.xml -Dtest.exclude=Not_InsightEngine,CONFIG_Master_Slave,Not_Bamboo,AGS_302,CONFIG_Sharding_DB_ID_RANGE,CONFIG_Sharding -Dalfresco.server=localhost -Dalfresco.port=8081 -Dmaven.test.failure.ignore=true
+        - travis_wait 60 mvn clean test -f e2e-test/pom.xml -DsuiteXmlFile=src/test/resources/SearchSuite.xml -Dtest.exclude=Not_InsightEngine,CONFIG_Master_Slave,Not_Bamboo,AGS_302,CONFIG_Sharding_DB_ID_RANGE,CONFIG_Sharding -Dalfresco.server=localhost -Dalfresco.port=8081 -Dmaven.test.failure.ignore=true
