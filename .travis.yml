@@ -37,7 +37,7 @@ jobs:
       install:
         - travis_retry travis_wait 60 mvn --batch-mode -q clean package -DskipTests
       script:
-        - travis_wait 60 mvn --batch-mode test -DfailIfNoTests=false -Dtests.timezone=UTC -Dmaven.test.failure.ignore=true -pl '"!:search-analytics-e2e-test"'
+        - travis_wait 60 mvn --batch-mode package -DfailIfNoTests=false -Dtests.timezone=UTC -Dmaven.test.failure.ignore=true -pl '"!:search-analytics-e2e-test"'
     - name: "CMIS API tests"
       jdk: openjdk11
       install:
