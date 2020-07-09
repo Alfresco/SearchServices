@@ -83,3 +83,13 @@ jobs:
         - travis_retry travis_wait 60 mvn --batch-mode -q clean package -DskipTests
       script:
         - travis_wait 60 mvn -q verify -Dtest=foo -DfailIfNoTests=false -Dtests.timezone=UTC -Dmaven.test.failure.ignore=true -pl '"!:search-analytics-e2e-test"'
+    - name: "Build and verify Docker images"
+      jdk: openjdk11
+      install:
+        - travis_retry travis_wait 60 mvn --batch-mode -q clean package -DskipTests
+        - docker login quay.io -u ${QUAY_USERNAME} -p ${QUAY_PASSWORD}
+        - travis_retry travis_wait 40 docker build -t quay.io/alfresco/search-services:latest search-services/packaging/target/docker-resources
+        - travis_retry travis_wait 40 docker build -t quay.io/alfresco/insight-engine:latest insight-engine/packaging/target/docker-resources
+        - travis_retry travis_wait 40 docker build -t quay.io/alfresco/insight-zeppelin:latest insight-engine/alfresco-insight-zeppelin/target/docker-resources
+      script:
+        - travis_wait 60 ./scripts/test-image.sh "${TRAVIS_BUILD_DIR}" "search-services/packaging/target/docker-resources insight-engine/packaging/target/docker-resources insight-engine/alfresco-insight-zeppelin/target/docker-resources" "quay.io/alfresco/search-services quay.io/alfresco/insight-engine quay.io/alfresco/insight-zeppelin" "latest" "alfresco-search-services alfresco-insight-engine zeppelin"
