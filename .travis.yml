@@ -77,3 +77,9 @@ jobs:
         - ./e2e-test/helpers/wait-service-to-start.sh
       script:
         - travis_wait 60 mvn clean test -f e2e-test/pom.xml -DsuiteXmlFile=src/test/resources/InsightSuite.xml -Dtest.exclude=Not_InsightEngine,CONFIG_Master_Slave,Not_Bamboo,AGS_302,CONFIG_Sharding_DB_ID_RANGE,CONFIG_Sharding -Dalfresco.server=localhost -Dalfresco.port=8081 -Dmaven.test.failure.ignore=true
+    - name: "Integration tests"
+      jdk: openjdk11
+      install:
+        - travis_retry travis_wait 60 mvn --batch-mode -q clean package -DskipTests
+      script:
+        - travis_wait 60 mvn -q verify -Dtest=foo -DfailIfNoTests=false -Dtests.timezone=UTC -Dmaven.test.failure.ignore=true -pl '"!:search-analytics-e2e-test"'
