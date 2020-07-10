@@ -96,7 +96,7 @@ jobs:
         - mkdir -p whitesource_scan/search-services && unzip search-services/packaging/target/*.zip -d whitesource_scan/search-services
       script:
         - curl -LJO https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar
-        - java -jar wss-unified-agent.jar -apiKey ${WHITESOURCE_API_KEY} -productName SearchAndDiscovery -projectName SearchServices -projectVersion 2.0.0-SNAPSHOT -d ./whitesource_scan/search-services
+        - java -jar wss-unified-agent.jar -apiKey ${WHITESOURCE_API_KEY} -product "SearchAndDiscovery" -project "SearchServices" -projectVersion "2.0.0-SNAPSHOT" -d ./whitesource_scan/search-services
     - name: "Whitesource scan - Insight Engine"
       #TODO run only on release branches
       #if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request
@@ -106,7 +106,7 @@ jobs:
         - mkdir -p whitesource_scan/insight-engine && unzip insight-engine/packaging/target/*.zip -d whitesource_scan/insight-engine
       script:
         - curl -LJO https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar
-        - java -jar wss-unified-agent.jar -apiKey ${WHITESOURCE_API_KEY} -productName SearchAndDiscovery -projectName InsightEngine -projectVersion 2.0.0-SNAPSHOT -d ./whitesource_scan/insight-engine
+        - java -jar wss-unified-agent.jar -apiKey ${WHITESOURCE_API_KEY} -product "SearchAndDiscovery" -project "InsightEngine" -projectVersion "2.0.0-SNAPSHOT" -d ./whitesource_scan/insight-engine
     - name: "Whitesource scan - Zeppelin"
       #TODO run only on release branches
       #if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request
@@ -116,4 +116,4 @@ jobs:
         - mkdir -p whitesource_scan/insight-zeppelin && unzip alfresco-insight-zeppelin/packaging/target/*.zip -d whitesource_scan/insight-zeppelin
       script:
         - curl -LJO https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar
-        - java -jar wss-unified-agent.jar -apiKey ${WHITESOURCE_API_KEY} -productName SearchAndDiscovery -projectName InsightZeppelin -projectVersion 2.0.0-SNAPSHOT -d ./whitesource_scan/insight-zeppelin
+        - java -jar wss-unified-agent.jar -apiKey ${WHITESOURCE_API_KEY} -product "SearchAndDiscovery" -project "InsightZeppelin" -projectVersion "2.0.0-SNAPSHOT" -d ./whitesource_scan/insight-zeppelin
