@@ -43,9 +43,7 @@ jobs:
       install:
         - travis_retry travis_wait 60 mvn --batch-mode -q clean package -DskipTests
         - docker login quay.io -u ${QUAY_USERNAME} -p ${QUAY_PASSWORD}
-        - travis_retry travis_wait 40 docker build -t quay.io/alfresco/search-services:latest search-services/packaging/target/docker-resources
         - travis_retry travis_wait 40 docker build -t quay.io/alfresco/insight-engine:latest insight-engine/packaging/target/docker-resources
-        - travis_retry travis_wait 40 docker build -t quay.io/alfresco/insight-zeppelin:latest insight-engine/alfresco-insight-zeppelin/target/docker-resources
         - mkdir -p e2e-test/target/docker-resources && python e2e-test/python-generator/generator.py --alfresco=quay.io/alfresco/dev:acs-for-search --transformer=LegacyTransformers --search=quay.io/alfresco/insight-engine:latest --spellcheck --output=e2e-test/target/docker-resources
         - ./e2e-test/helpers/start-alfresco.sh "e2e-test/target/docker-resources" "quay.io/alfresco/insight-engine:latest"
         - ./e2e-test/helpers/wait-service-to-start.sh
@@ -56,9 +54,7 @@ jobs:
       install:
         - travis_retry travis_wait 60 mvn --batch-mode -q clean package -DskipTests
         - docker login quay.io -u ${QUAY_USERNAME} -p ${QUAY_PASSWORD}
-        - travis_retry travis_wait 40 docker build -t quay.io/alfresco/search-services:latest search-services/packaging/target/docker-resources
         - travis_retry travis_wait 40 docker build -t quay.io/alfresco/insight-engine:latest insight-engine/packaging/target/docker-resources
-        - travis_retry travis_wait 40 docker build -t quay.io/alfresco/insight-zeppelin:latest insight-engine/alfresco-insight-zeppelin/target/docker-resources
         - mkdir -p e2e-test/target/docker-resources && python e2e-test/python-generator/generator.py --alfresco=quay.io/alfresco/dev:acs-for-search --transformer=LegacyTransformers --search=quay.io/alfresco/insight-engine:latest --spellcheck --output=e2e-test/target/docker-resources
         - ./e2e-test/helpers/start-alfresco.sh "e2e-test/target/docker-resources" "quay.io/alfresco/insight-engine:latest"
         - ./e2e-test/helpers/wait-service-to-start.sh
@@ -69,9 +65,7 @@ jobs:
       install:
         - travis_retry travis_wait 60 mvn --batch-mode -q clean package -DskipTests
         - docker login quay.io -u ${QUAY_USERNAME} -p ${QUAY_PASSWORD}
-        - travis_retry travis_wait 40 docker build -t quay.io/alfresco/search-services:latest search-services/packaging/target/docker-resources
         - travis_retry travis_wait 40 docker build -t quay.io/alfresco/insight-engine:latest insight-engine/packaging/target/docker-resources
-        - travis_retry travis_wait 40 docker build -t quay.io/alfresco/insight-zeppelin:latest insight-engine/alfresco-insight-zeppelin/target/docker-resources
         - mkdir -p e2e-test/target/docker-resources && python e2e-test/python-generator/generator.py --alfresco=quay.io/alfresco/dev:acs-for-search --transformer=LegacyTransformers --search=quay.io/alfresco/insight-engine:latest --spellcheck --output=e2e-test/target/docker-resources
         - ./e2e-test/helpers/start-alfresco.sh "e2e-test/target/docker-resources" "quay.io/alfresco/insight-engine:latest"
         - ./e2e-test/helpers/wait-service-to-start.sh
