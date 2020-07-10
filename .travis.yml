@@ -87,3 +87,33 @@ jobs:
         - travis_retry travis_wait 40 docker build -t quay.io/alfresco/insight-zeppelin:latest insight-engine/alfresco-insight-zeppelin/target/docker-resources
       script:
         - travis_wait 60 ./scripts/test-image.sh "${TRAVIS_BUILD_DIR}" "search-services/packaging/target/docker-resources insight-engine/packaging/target/docker-resources insight-engine/alfresco-insight-zeppelin/target/docker-resources" "quay.io/alfresco/search-services quay.io/alfresco/insight-engine quay.io/alfresco/insight-zeppelin" "latest" "alfresco-search-services alfresco-insight-engine zeppelin"
+    - name: "Whitesource scan - Search Services"
+      #TODO run only on release branches
+      #if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request
+      jdk: openjdk11
+      install:
+        - travis_retry travis_wait 60 mvn --batch-mode -q clean package -DskipTests
+        - mkdir -p whitesource_scan/search-services && unzip search-services/packaging/target/*.zip -d whitesource_scan/search-services
+      script:
+        - curl -LJO https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar
+        - java -jar wss-unified-agent.jar -apiKey ${WHITESOURCE_API_KEY} -productName SearchAndDiscovery -projectName SearchServices -projectVersion 2.0.0-SNAPSHOT -d ./whitesource_scan/search-services
+    - name: "Whitesource scan - Insight Engine"
+      #TODO run only on release branches
+      #if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request
+      jdk: openjdk11
+      install:
+        - travis_retry travis_wait 60 mvn --batch-mode -q clean package -DskipTests
+        - mkdir -p whitesource_scan/insight-engine && unzip insight-engine/packaging/target/*.zip -d whitesource_scan/insight-engine
+      script:
+        - curl -LJO https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar
+        - java -jar wss-unified-agent.jar -apiKey ${WHITESOURCE_API_KEY} -productName SearchAndDiscovery -projectName InsightEngine -projectVersion 2.0.0-SNAPSHOT -d ./whitesource_scan/insight-engine
+    - name: "Whitesource scan - Zeppelin"
+      #TODO run only on release branches
+      #if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request
+      jdk: openjdk11
+      install:
+        - travis_retry travis_wait 60 mvn --batch-mode -q clean package -DskipTests
+        - mkdir -p whitesource_scan/insight-zeppelin && unzip alfresco-insight-zeppelin/packaging/target/*.zip -d whitesource_scan/insight-zeppelin
+      script:
+        - curl -LJO https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar
+        - java -jar wss-unified-agent.jar -apiKey ${WHITESOURCE_API_KEY} -productName SearchAndDiscovery -projectName InsightZeppelin -projectVersion 2.0.0-SNAPSHOT -d ./whitesource_scan/insight-zeppelin
