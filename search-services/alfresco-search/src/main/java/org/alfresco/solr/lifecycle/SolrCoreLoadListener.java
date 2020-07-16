@@ -1,21 +1,29 @@
 /*
- * Copyright (C) 2005-2019 Alfresco Software Limited.
- *
- * This file is part of Alfresco
- *
+ * #%L
+ * Alfresco Search Services
+ * %%
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
+ * provided under the following open source license terms:
+ * 
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
  */
+
 package org.alfresco.solr.lifecycle;
 
 import static java.util.Arrays.asList;
@@ -43,7 +51,7 @@ import org.alfresco.solr.tracker.CommitTracker;
 import org.alfresco.solr.tracker.ContentTracker;
 import org.alfresco.solr.tracker.MetadataTracker;
 import org.alfresco.solr.tracker.ModelTracker;
-import org.alfresco.solr.tracker.SlaveCoreStatePublisher;
+import org.alfresco.solr.tracker.NodeStatePublisher;
 import org.alfresco.solr.tracker.SolrTrackerScheduler;
 import org.alfresco.solr.tracker.Tracker;
 import org.alfresco.solr.tracker.TrackerRegistry;
@@ -182,7 +190,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
         {
             LOGGER.info("SearchServices Core Trackers have been explicitly disabled on core \"{}\" through \"enable.alfresco.tracking\" configuration property.", core.getName());
 
-            SlaveCoreStatePublisher statePublisher = new SlaveCoreStatePublisher(false, coreProperties, repositoryClient, core.getName(), informationServer);
+            NodeStatePublisher statePublisher = new NodeStatePublisher(false, coreProperties, repositoryClient, core.getName(), informationServer);
             trackerRegistry.register(core.getName(), statePublisher);
             scheduler.schedule(statePublisher, core.getName(), coreProperties);
             trackers.add(statePublisher);
@@ -197,7 +205,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
         {
             LOGGER.info("SearchServices Core Trackers have been disabled on core \"{}\" because it is a slave core.", core.getName());
 
-            SlaveCoreStatePublisher statePublisher = new SlaveCoreStatePublisher(false, coreProperties, repositoryClient, core.getName(), informationServer);
+            NodeStatePublisher statePublisher = new NodeStatePublisher(false, coreProperties, repositoryClient, core.getName(), informationServer);
             trackerRegistry.register(core.getName(), statePublisher);
             scheduler.schedule(statePublisher, core.getName(), coreProperties);
             trackers.add(statePublisher);
@@ -250,11 +258,20 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
 
         MetadataTracker metadataTracker =
                 registerAndSchedule(
-                    new MetadataTracker(true, props, repositoryClient, core.getName(), srv, true),
+                    new MetadataTracker(props, repositoryClient, core.getName(), srv, true),
                         core,
                         props,
                         trackerRegistry,
                         scheduler);
+
+        NodeStatePublisher coreStateTracker =
+                registerAndSchedule(
+                        new NodeStatePublisher(true, props, repositoryClient, core.getName(), srv),
+                        core,
+                        props,
+                        trackerRegistry,
+                        scheduler
+                );
 
         List<Tracker> trackers = new ArrayList<>();
 
@@ -275,7 +292,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
         //The ContentTracker will likely have the longest runs so put it first to ensure the MetadataTracker is not paused while
         //waiting for the ContentTracker to release it's lock.
         //The aclTracker will likely have the shortest runs so put it last.
-        trackers.addAll(asList(contentTracker, metadataTracker, aclTracker));
+        trackers.addAll(asList(contentTracker, metadataTracker, aclTracker, coreStateTracker));
         return trackers;
     }
 

@@ -1,21 +1,29 @@
 /*
- * Copyright (C) 2005-2019 Alfresco Software Limited.
- *
- * This file is part of Alfresco
- *
+ * #%L
+ * Alfresco Search Services
+ * %%
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
+ * provided under the following open source license terms:
+ * 
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
  */
+
 package org.alfresco.solr.tracker;
 
 import static org.alfresco.solr.tracker.Tracker.Type.NODE_STATE_PUBLISHER;
@@ -50,9 +58,9 @@ import java.util.concurrent.Semaphore;
  * @author Andrea Gazzarini
  * @since 1.5
  */
-public class SlaveCoreStatePublisher extends CoreStatePublisher
+public class NodeStatePublisher extends AbstractShardInformationPublisher
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SlaveCoreStatePublisher.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NodeStatePublisher.class);
 
 
     // Share run and write locks across all SlaveCoreStatePublisher threads
@@ -71,7 +79,7 @@ public class SlaveCoreStatePublisher extends CoreStatePublisher
         return RUN_LOCK_BY_CORE.get(coreName);
     }
 
-    public SlaveCoreStatePublisher(
+    public NodeStatePublisher(
             boolean isMaster,
             Properties coreProperties,
             SOLRAPIClient repositoryClient,
@@ -79,7 +87,6 @@ public class SlaveCoreStatePublisher extends CoreStatePublisher
             SolrInformationServer informationServer)
     {
         super(isMaster, coreProperties, repositoryClient, name, informationServer, NODE_STATE_PUBLISHER);
-
         RUN_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
         WRITE_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
     }
@@ -104,12 +111,6 @@ public class SlaveCoreStatePublisher extends CoreStatePublisher
     public void maintenance()
     {
         // Do nothing here
-    }
-
-    @Override
-    public boolean isOnMasterOrStandalone()
-    {
-        return false;
     }
 
     @Override

@@ -1,20 +1,27 @@
 /*
- * Copyright (C) 2005-2019 Alfresco Software Limited.
- *
- * This file is part of Alfresco
- *
+ * #%L
+ * Alfresco Search Services
+ * %%
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
+ * provided under the following open source license terms:
+ * 
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
  */
 
 package org.alfresco.solr;
@@ -65,6 +72,7 @@ import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_HOUR_FIELD_SU
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_MINUTE_FIELD_SUFFIX;
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_MONTH_FIELD_SUFFIX;
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_SECOND_FIELD_SUFFIX;
+import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_QUARTER_FIELD_SUFFIX;
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_YEAR_FIELD_SUFFIX;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -161,6 +169,8 @@ public class SolrInformationServerTest
 
         assertEquals(1972,
                 unitOfTimeFieldValue(document, AlfrescoSolrDataModel.PART_FIELDNAME_PREFIX + fieldSuffix + UNIT_OF_TIME_YEAR_FIELD_SUFFIX));
+        assertEquals(3,
+                unitOfTimeFieldValue(document, AlfrescoSolrDataModel.PART_FIELDNAME_PREFIX + fieldSuffix + UNIT_OF_TIME_QUARTER_FIELD_SUFFIX));
         assertEquals(9,
                 unitOfTimeFieldValue(document, AlfrescoSolrDataModel.PART_FIELDNAME_PREFIX + fieldSuffix + UNIT_OF_TIME_MONTH_FIELD_SUFFIX));
         assertEquals(16,
@@ -189,6 +199,8 @@ public class SolrInformationServerTest
 
         assertEquals(1972,
                 unitOfTimeFieldValue(document, AlfrescoSolrDataModel.PART_FIELDNAME_PREFIX + fieldSuffix + UNIT_OF_TIME_YEAR_FIELD_SUFFIX));
+        assertEquals(3,
+                unitOfTimeFieldValue(document, AlfrescoSolrDataModel.PART_FIELDNAME_PREFIX + fieldSuffix + UNIT_OF_TIME_QUARTER_FIELD_SUFFIX));
         assertEquals(9,
                 unitOfTimeFieldValue(document, AlfrescoSolrDataModel.PART_FIELDNAME_PREFIX + fieldSuffix + UNIT_OF_TIME_MONTH_FIELD_SUFFIX));
         assertEquals(16,

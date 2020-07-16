@@ -7,7 +7,7 @@ services:
         build:
           context: ./alfresco
           args:
-            ALFRESCO_TAG: ${ALFRESCO_TAG}
+            ALFRESCO_TAG: ${ALFRESCO_CE_TAG}
             SOLR_COMMS: <%=secureComms%> <% if (httpMode == 'https') { %>
             TRUSTSTORE_TYPE: JCEKS
             TRUSTSTORE_PASS: kT9X6oe68t
@@ -68,6 +68,7 @@ services:
             ENABLE_MASTER: "true"
             ENABLE_SLAVE: "false" <% } %>
             COMPRESS_CONTENT: "<%=gzip%>"
+            SEARCH_LOG_LEVEL: <%=searchLogLevel%>
         mem_limit: 1200m
         environment:
             #Solr needs to know how to register itself with Alfresco
@@ -141,7 +142,7 @@ services:
     <% } %>
 
     alfresco-pdf-renderer:
-        image: alfresco/alfresco-pdf-renderer:${PDF_RENDERER_TAG}
+        image: alfresco/alfresco-pdf-renderer:${TRANSFORMER_TAG}
         mem_limit: 1g
         environment:
             JAVA_OPTS: " -Xms256m -Xmx512m"
@@ -149,7 +150,7 @@ services:
             - 8090:8090
 
     imagemagick:
-        image: alfresco/alfresco-imagemagick:${IMAGE_MAGICK_TAG}
+        image: alfresco/alfresco-imagemagick:${TRANSFORMER_TAG}
         mem_limit: 1g
         environment:
             JAVA_OPTS: " -Xms256m -Xmx512m"
@@ -157,7 +158,7 @@ services:
             - 8091:8090
 
     libreoffice:
-        image: alfresco/alfresco-libreoffice:${LIBREOFFICE_TAG}
+        image: alfresco/alfresco-libreoffice:${TRANSFORMER_TAG}
         mem_limit: 1g
         environment:
             JAVA_OPTS: " -Xms256m -Xmx512m"
@@ -165,7 +166,7 @@ services:
             - 8092:8090
 
     tika:
-        image: alfresco/alfresco-tika:${TIKA_TAG}
+        image: alfresco/alfresco-tika:${TRANSFORMER_TAG}
         mem_limit: 1g
         environment:
             JAVA_OPTS: " -Xms256m -Xmx512m"
@@ -173,7 +174,7 @@ services:
             - 8093:8090
 
     transform-misc:
-        image: alfresco/alfresco-transform-misc:${TRANSFORM_MISC_TAG}
+        image: alfresco/alfresco-transform-misc:${TRANSFORMER_TAG}
         mem_limit: 1g
         environment:
             JAVA_OPTS: " -Xms256m -Xmx512m"

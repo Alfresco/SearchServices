@@ -1,21 +1,29 @@
 /*
- * Copyright (C) 2005-2019 Alfresco Software Limited.
- *
- * This file is part of Alfresco
- *
+ * #%L
+ * Alfresco Search Services
+ * %%
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
+ * provided under the following open source license terms:
+ * 
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
  */
+
 package org.alfresco.solr.tracker;
 
 import static java.util.Collections.singletonList;
@@ -68,8 +76,6 @@ public class DistributedCascadeTrackerIT extends AbstractAlfrescoDistributedIT
     private final String pathChild0 = "pathChild0";
     private final String pathChild1 = "pathChild2";
 
-
-    private final int timeout = 100000;
 
     @Before
     public void initData() throws Throwable
@@ -131,7 +137,8 @@ public class DistributedCascadeTrackerIT extends AbstractAlfrescoDistributedIT
          */
         indexParentFolderWithCascade();
 
-        waitForDocCount(params("qt", "/afts", "q", "PATH:" + cascadingFirstChild), 1, timeout);
+        waitForDocCount(params("qt", "/afts", "q", "PATH:" + cascadingFirstChild), 1, INDEX_TIMEOUT);
+        waitForDocCount(params("qt", "/afts", "q", "PATH:" + cascadingSecondChild), 1, INDEX_TIMEOUT);
 
         // Check if the path is updated for both the nodes
         assertShardCount(0, params("qt", "/afts", "q", "PATH:" + cascadingFirstChild), 1);
@@ -176,7 +183,7 @@ public class DistributedCascadeTrackerIT extends AbstractAlfrescoDistributedIT
         /*
          * Get sure the nodes are indexed correctly in the shards
          */
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 3, timeout);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 3, INDEX_TIMEOUT);
         assertShardCount(0, new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 2);
         assertShardCount(1, new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 1);
     }

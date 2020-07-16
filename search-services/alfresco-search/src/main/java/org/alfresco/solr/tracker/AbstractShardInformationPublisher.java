@@ -1,33 +1,30 @@
 /*
  * #%L
- * Alfresco Solr Client
+ * Alfresco Search Services
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software.
- * If the software was purchased under a paid Alfresco license, the terms of
- * the paid license agreement will prevail.  Otherwise, the software is
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
  * provided under the following open source license terms:
- *
+ * 
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.solr.tracker;
 
-import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
-import static org.alfresco.solr.tracker.DocRouterFactory.SHARD_KEY_KEY;
+package org.alfresco.solr.tracker;
 
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.repo.dictionary.NamespaceDAO;
@@ -40,7 +37,6 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.AlfrescoSolrDataModel;
-import org.alfresco.solr.BoundedDeque;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.NodeReport;
 import org.alfresco.solr.TrackerState;
@@ -53,6 +49,10 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.Properties;
 
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
+import static org.alfresco.solr.tracker.DocRouterFactory.SHARD_KEY_KEY;
+
 /**
  * Superclass for all components which are able to inform Alfresco about the hosting node state.
  * This has been introduced in SEARCH-1752 for splitting the dual responsibility of the {@link org.alfresco.solr.tracker.MetadataTracker}.
@@ -63,9 +63,9 @@ import java.util.Properties;
  * @since 1.5
  * @see <a href="https://issues.alfresco.com/jira/browse/SEARCH-1752">SEARCH-1752</a>
  */
-public abstract class CoreStatePublisher extends AbstractTracker
+public abstract class AbstractShardInformationPublisher extends AbstractTracker
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CoreStatePublisher.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractShardInformationPublisher.class);
     DocRouter docRouter;
     private final boolean isMaster;
 
@@ -75,7 +75,7 @@ public abstract class CoreStatePublisher extends AbstractTracker
     /** The property to use for determining the shard. */
     protected Optional<QName> shardProperty = Optional.empty();
 
-    CoreStatePublisher(
+    AbstractShardInformationPublisher(
             boolean isMaster,
             Properties p,
             SOLRAPIClient client,
@@ -85,15 +85,14 @@ public abstract class CoreStatePublisher extends AbstractTracker
     {
         super(p, client, coreName, informationServer, type);
         this.isMaster = isMaster;
-        shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
         shardKey = ofNullable(p.getProperty(SHARD_KEY_KEY));
 
         firstUpdateShardProperty();
 
-        docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
+        docRouter = DocRouterFactory.getRouter(p, shardMethod);
     }
 
-    CoreStatePublisher(Type type)
+    AbstractShardInformationPublisher(Type type)
     {
         super(type);
         this.isMaster = false;
@@ -177,18 +176,8 @@ public abstract class CoreStatePublisher extends AbstractTracker
      * The {@link ShardState}, as the name suggests, encapsulates/stores the state of the shard which hosts this
      * {@link MetadataTracker} instance.
      *
-     * The {@link ShardState} is primarily used in two places:
-     *
-     * <ul>
-     *     <li>Transaction tracking: (see {@link MetadataTracker#getSomeTransactions(BoundedDeque, Long, long, int, long}): for pulling/tracking transactions from Alfresco</li>
-     *     <li>
-     *         DynamicSharding: the {@link MetadataTracker} is not running on a slave instances; in those cases a special
-     *         "tracker" ({@link SlaveCoreStatePublisher}) will be in charge to send the correspondin shard state to Alfresco.
-     *     </li>
-     * </ul>
-     *
      * @return the {@link ShardState} instance which stores the current state of the hosting shard.
-     * @see SlaveCoreStatePublisher
+     * @see NodeStatePublisher
      */
     ShardState getShardState()
     {
@@ -202,11 +191,9 @@ public abstract class CoreStatePublisher extends AbstractTracker
 
         HashMap<String, String> propertyBag = new HashMap<>();
         propertyBag.put("coreName", coreName);
-
-        HashMap<String, String> extendedPropertyBag = new HashMap<>(propertyBag);
         updateShardProperty();
 
-        extendedPropertyBag.putAll(docRouter.getProperties(shardProperty));
+        propertyBag.putAll(docRouter.getProperties(shardProperty));
 
         return ShardStateBuilder.shardState()
                 .withMaster(isMaster)
@@ -215,7 +202,7 @@ public abstract class CoreStatePublisher extends AbstractTracker
                 .withLastIndexedChangeSetId(changeSetsTrackerState.getLastIndexedChangeSetId())
                 .withLastIndexedTxCommitTime(transactionsTrackerState.getLastIndexedTxCommitTime())
                 .withLastIndexedTxId(transactionsTrackerState.getLastIndexedTxId())
-                .withPropertyBag(extendedPropertyBag)
+                .withPropertyBag(propertyBag)
                     .withShardInstance()
                         .withBaseUrl(infoSrv.getBaseUrl())
                         .withPort(infoSrv.getPort())
@@ -227,12 +214,12 @@ public abstract class CoreStatePublisher extends AbstractTracker
                                 .withAddedStoreRef(storeRef)
                                 .withTemplate(shardTemplate)
                                 .withHasContent(transformContent)
-                                .withShardMethod(ShardMethodEnum.getShardMethod(shardMethod))
-                                .withPropertyBag(propertyBag)
+                                .withShardMethod(shardMethod)
                             .endFloc()
                         .endShard()
                     .endShardInstance()
                 .build();
+
     }
 
     /**

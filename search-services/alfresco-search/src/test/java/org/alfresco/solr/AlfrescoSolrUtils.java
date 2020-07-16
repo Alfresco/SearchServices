@@ -1,21 +1,29 @@
 /*
- * Copyright (C) 2005-2016 Alfresco Software Limited.
- *
- * This file is part of Alfresco
- *
+ * #%L
+ * Alfresco Search Services
+ * %%
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
+ * provided under the following open source license terms:
+ * 
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
  */
+
 package org.alfresco.solr;
 
 import static java.util.Optional.of;
@@ -127,18 +135,17 @@ public class AlfrescoSolrUtils
      */
     public static Transaction getTransaction(int deletes, int updates)
     {
-        long txnCommitTime = System.currentTimeMillis();
-        Transaction transaction = new Transaction();
-        transaction.setCommitTimeMs(txnCommitTime);
-        transaction.setId(generateId());
-        transaction.setDeletes(deletes);
-        transaction.setUpdates(updates);
-        return transaction;
+        return getTransaction(deletes, updates, generateId());
     }
 
     public static Transaction getTransaction(int deletes, int updates, long id)
     {
-        long txnCommitTime = System.currentTimeMillis();
+        return getTransaction(deletes, updates, id, System.currentTimeMillis());
+    }
+
+    public static Transaction getTransaction(int deletes, int updates, long id, long timestamp)
+    {
+        long txnCommitTime = timestamp;
         Transaction transaction = new Transaction();
         transaction.setCommitTimeMs(txnCommitTime);
         transaction.setId(id);
@@ -301,6 +308,7 @@ public class AlfrescoSolrUtils
         Acl acl = new Acl(aclChangeSet.getId(), aclId);
         return acl;
     }
+
     /**
      * Get an AclChangeSet
      * @param aclCount
@@ -308,14 +316,17 @@ public class AlfrescoSolrUtils
      */
     public static AclChangeSet getAclChangeSet(int aclCount)
     {
-        AclChangeSet aclChangeSet = new AclChangeSet(generateId(), System.currentTimeMillis(), aclCount);
-        return aclChangeSet;
+        return new AclChangeSet(generateId(), System.currentTimeMillis(), aclCount);
     }
 
     public static AclChangeSet getAclChangeSet(int aclCount, long id)
     {
-        AclChangeSet aclChangeSet = new AclChangeSet(id, System.currentTimeMillis(), aclCount);
-        return aclChangeSet;
+        return new AclChangeSet(id, System.currentTimeMillis(), aclCount);
+    }
+
+    public static AclChangeSet getAclChangeSet(int aclCount, long id, long timestamp)
+    {
+        return new AclChangeSet(id, timestamp, aclCount);
     }
 
     private static AtomicLong id = new AtomicLong(System.currentTimeMillis());

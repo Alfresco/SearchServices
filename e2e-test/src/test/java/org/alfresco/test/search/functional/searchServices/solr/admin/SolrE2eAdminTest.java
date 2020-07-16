@@ -1,22 +1,35 @@
 /*
- * Copyright (C) 2020 Alfresco Software Limited.
- * This file is part of Alfresco
+ * #%L
+ * Alfresco Search Services E2E Test
+ * %%
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
+ * provided under the following open source license terms:
+ * 
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
+ * 
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
  */
+
 package org.alfresco.test.search.functional.searchServices.solr.admin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.search.TestGroup;
@@ -592,55 +605,47 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
     }
     
     /**
-     * FIX for every core.
-     * @throws Exception
-     */
-    @Test(priority = 27, dependsOnMethods = "testPurge")
-    public void testFix() throws Exception
-    {
-        RestResponse response = restClient.withSolrAdminAPI().getAction("fix");
-        
-        checkResponseStatusOk(response);
-        
-        DEFAULT_CORE_NAMES.forEach(core -> {
-            List<String> txToReindex = response.getResponse().body().jsonPath().get("action." + core +".txToReindex");
-            Assert.assertTrue(txToReindex.size() >= 0, "Expected a list of transactions (or empty list) to be reindexed,");
-            List<String> aclToReindex = response.getResponse().body().jsonPath().get("action." + core + ".aclChangeSetToReindex");
-            Assert.assertTrue(aclToReindex.size() >= 0, "Expected a list of ACLs (or empty list) to be reindexed,");
-        });
-        
-        String actionStatus = response.getResponse().body().jsonPath().get("action.status");
-        Assert.assertEquals(actionStatus, "scheduled");
-    }
-    
-    /**
      * FIX for specific core.
-     * @throws Exception
+     * The test checks the response structure in order to make sure the expected sections are present.
+     *
+     * We are not testing the content of each section because due to the underlying E2E infrastructure, we cannot know
+     * in advance the transactions that will be scheduled for reindexing.
      */
     @Test(priority = 28)
-    public void testFixCore() throws Exception
+    public void testFixCore()
     {
         DEFAULT_CORE_NAMES.forEach(core -> {
-            
             try
             {
                 RestResponse response = restClient.withParams("core=" + core).withSolrAdminAPI().getAction("fix");
                 
                 checkResponseStatusOk(response);
                 
-                List<String> txToReindex = response.getResponse().body().jsonPath().get("action." + core +".txToReindex");
-                Assert.assertTrue(txToReindex.size() >= 0, "Expected a list of transactions (or empty list) to be reindexed,");
-                List<String> aclToReindex = response.getResponse().body().jsonPath().get("action." + core + ".aclChangeSetToReindex");
-                Assert.assertTrue(aclToReindex.size() >= 0, "Expected a list of ACLs (or empty list) to be reindexed,");
-                
+                Map<String, Object> txInIndexNotInDb = response.getResponse().body().jsonPath().get("action." + core +".txToReindex.txInIndexNotInDb");
+                Assert.assertNotNull(txInIndexNotInDb, "Expected a list of transactions (even empty) that are in index but not in the database to be reindexed,");
+
+                Map<String, Object> duplicatedTx = response.getResponse().body().jsonPath().get("action." + core +".txToReindex.duplicatedTxInIndex");
+                Assert.assertNotNull(duplicatedTx, "Expected a list of duplicated transactions (even empty) to be reindexed,");
+
+                Map<String, Object> missingTx = response.getResponse().body().jsonPath().get("action." + core +".txToReindex.missingTxInIndex");
+                Assert.assertNotNull(missingTx, "Expected a list of missing transactions (or empty list) to be reindexed,");
+
+                Map<String, Object> aclTxInIndexNotInDb = response.getResponse().body().jsonPath().get("action." + core + ".aclChangeSetToReindex.aclTxInIndexNotInDb");
+                Assert.assertNotNull(aclTxInIndexNotInDb, "Expected a list of ACLs (or empty list) to be reindexed,");
+
+                Map<String, Object> duplicatedAclTxInIndex = response.getResponse().body().jsonPath().get("action." + core + ".aclChangeSetToReindex.duplicatedAclTxInIndex");
+                Assert.assertNotNull(duplicatedAclTxInIndex, "Expected a list of ACLs (or empty list) to be reindexed,");
+
+                Map<String, Object> missingAclTxInIndex = response.getResponse().body().jsonPath().get("action." + core + ".aclChangeSetToReindex.missingAclTxInIndex");
+                Assert.assertNotNull(missingAclTxInIndex, "Expected a list of ACLs (or empty list) to be reindexed,");
+
                 String actionStatus = response.getResponse().body().jsonPath().get("action.status");
-                Assert.assertEquals(actionStatus, "scheduled");
+                Assert.assertEquals(actionStatus, "notScheduled");
             }
             catch (Exception e)
             {
                 throw new RuntimeException(e);
             }
-            
         });
     }
     

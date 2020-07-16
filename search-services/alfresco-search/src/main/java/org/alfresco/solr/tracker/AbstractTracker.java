@@ -1,30 +1,42 @@
 /*
- * Copyright (C) 2005-2019 Alfresco Software Limited.
- *
- * This file is part of Alfresco
- *
+ * #%L
+ * Alfresco Search Services
+ * %%
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
+ * provided under the following open source license terms:
+ * 
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
  */
+
 package org.alfresco.solr.tracker;
 
 import static java.util.Optional.ofNullable;
+
+import static org.alfresco.repo.index.shard.ShardMethodEnum.DB_ID;
 
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
+import java.util.function.Consumer;
 
+import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.IndexTrackingShutdownException;
 import org.alfresco.solr.InformationServer;
@@ -42,7 +54,6 @@ public abstract class AbstractTracker implements Tracker
 {
     static final long TIME_STEP_32_DAYS_IN_MS = 1000 * 60 * 60 * 24 * 32L;
     static final long TIME_STEP_1_HR_IN_MS = 60 * 60 * 1000L;
-    static final String SHARD_METHOD_DBID = "DB_ID";
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTracker.class);
     
     protected Properties props;    
@@ -59,7 +70,7 @@ public abstract class AbstractTracker implements Tracker
     protected volatile TrackerState state;
     protected int shardCount;
     protected int shardInstance;
-    String shardMethod;
+    ShardMethodEnum shardMethod;
     protected boolean transformContent;
     String shardTemplate;
     protected volatile boolean rollback;
@@ -92,7 +103,7 @@ public abstract class AbstractTracker implements Tracker
         
         shardCount =  Integer.parseInt(p.getProperty("shard.count", "1"));
         shardInstance =  Integer.parseInt(p.getProperty("shard.instance", "0"));
-        shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
+        shardMethod = ShardMethodEnum.getShardMethod(p.getProperty("shard.method", DB_ID.name()));
 
         shardTemplate =  p.getProperty("alfresco.template", "");
         
@@ -216,19 +227,36 @@ public abstract class AbstractTracker implements Tracker
                 }
             }
         }
-        catch (InterruptedException e)
+        catch (Exception exception)
         {
-            LOGGER.error("[{} / {} / {}] Semaphore interruption. See the stacktrace below for further details.", coreName, trackerId, iterationId, e);
+            LOGGER.error("[{} / {} / {}] Some problem was detected while resetting the Tracker State. See the stracktrace below for further details."
+                            , coreName, trackerId, iterationId, exception);
         }
         finally
         {
             infoSrv.unregisterTrackerThread();
-            ofNullable(state).ifPresent(tstate -> {
-                // During a rollback state is set to null.
-                state.setRunning(false);
-                state.setCheck(false);
-            });
+
+            ofNullable(state).ifPresent(this::turnOff);
+
             getRunLock().release();
+        }
+    }
+
+    /**
+     * At the end of the tracking method, the {@link TrackerState} should be turned off.
+     * However, during a rollback (that could be started by another tracker) the {@link TrackerState} instance
+     * could be set to null, even after passing a null check we could get a NPE.
+     * For that reason, this method turns off the tracker state and ignore any {@link NullPointerException} (actually
+     * any exception) that could be thrown.
+     */
+    private void turnOff(TrackerState state) {
+        try
+        {
+            state.setRunning(false);
+            state.setCheck(false);
+        } catch (Exception exception)
+        {
+            LOGGER.error("Unable to properly turn off the TrackerState instance. See the stacktrace below for further details.", exception);
         }
     }
 

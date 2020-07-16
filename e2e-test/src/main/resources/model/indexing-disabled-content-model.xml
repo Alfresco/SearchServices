@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model name="index:contentModel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+    <description>Indexed and Non Indexed field comparison</description>
+
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+    </imports>
+
+    <namespaces>
+        <namespace uri="http://www.alfresco.org/model/index/1.0" prefix="index"/>
+    </namespaces>
+
+    <types>
+        <type name="index:sample">
+            <title>Sample</title>
+            <parent>cm:content</parent>
+            <properties>
+                <property name="index:indexed">
+                    <type>d:text</type>
+                </property>
+                <property name="index:nonIndexed">
+                    <type>d:text</type>
+                    <index enabled="false" />
+                </property>
+            </properties>
+        </type>
+    </types>
+
+</model>

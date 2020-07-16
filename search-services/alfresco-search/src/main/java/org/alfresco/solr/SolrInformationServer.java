@@ -1,21 +1,29 @@
 /*
- * Copyright (C) 2020 Alfresco Software Limited.
- *
- * This file is part of Alfresco
- *
+ * #%L
+ * Alfresco Search Services
+ * %%
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
+ * provided under the following open source license terms:
+ * 
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
  */
+
 package org.alfresco.solr;
 
 import static java.util.Arrays.asList;
@@ -87,6 +95,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.IsoFields;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -372,12 +381,13 @@ public class SolrInformationServer implements InformationServer
     public static final String CASCADE_TRACKER_ENABLED = "alfresco.cascade.tracker.enabled";
 
     private static final String UNIT_OF_TIME_FIELD_INFIX = "_unit_of_time";
-    static final String UNIT_OF_TIME_YEAR_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_year";
-    static final String UNIT_OF_TIME_MONTH_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_month";
-    static final String UNIT_OF_TIME_DAY_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_day";
-    static final String UNIT_OF_TIME_HOUR_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_hour";
-    static final String UNIT_OF_TIME_MINUTE_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_minute";
-    static final String UNIT_OF_TIME_SECOND_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_second";
+    public static final String UNIT_OF_TIME_YEAR_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_year";
+    public static final String UNIT_OF_TIME_QUARTER_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_quarter";
+    public static final String UNIT_OF_TIME_MONTH_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_month";
+    public static final String UNIT_OF_TIME_DAY_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_day";
+    public static final String UNIT_OF_TIME_HOUR_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_hour";
+    public static final String UNIT_OF_TIME_MINUTE_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_minute";
+    public static final String UNIT_OF_TIME_SECOND_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_second";
 
     private final static Function<String, List<Object>> LAZY_EMPTY_MUTABLE_LIST = key -> new ArrayList<>();
 
@@ -2256,7 +2266,8 @@ public class SolrInformationServer implements InformationServer
                     .stream()
                     .filter(field -> field.getField().startsWith("text@sd___@"))
                     .forEach(field -> addStringProperty(valueHolder, field, value, locale));
-        } else
+        } 
+        else
         {
             dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
                     .forEach(field -> {
@@ -2292,56 +2303,71 @@ public class SolrInformationServer implements InformationServer
 
         for (Entry<QName, PropertyValue> property : properties.entrySet())
         {
+            
             QName propertyQName =  property.getKey();
-            document.addField(FIELD_PROPERTIES, propertyQName.toString());
-            document.addField(FIELD_PROPERTIES, propertyQName.getPrefixString());
-
-            PropertyValue value = property.getValue();
-            if(value != null)
+            PropertyDefinition propertyDefinition = dataModel.getPropertyDefinition(propertyQName);
+            
+            // Skip adding Alfresco Fields declared as indexed="false" to SOLR Schema
+            if (propertyDefinition != null && propertyDefinition.isIndexed())
             {
-                if (value instanceof StringPropertyValue)
+            
+                document.addField(FIELD_PROPERTIES, propertyQName.toString());
+                document.addField(FIELD_PROPERTIES, propertyQName.getPrefixString());
+    
+                PropertyValue value = property.getValue();
+                if(value != null)
                 {
-                    stringProperty(propertyQName, (StringPropertyValue) value, properties.get(ContentModel.PROP_LOCALE), setAndCollect);
-                }
-                else if (value instanceof MLTextPropertyValue)
-                {
-                    mltextProperty(propertyQName,(MLTextPropertyValue) value, setAndCollect);
-                }
-                else if (value instanceof ContentPropertyValue)
-                {
-                    addContentProperty(setAndCollect, document, propertyQName, (ContentPropertyValue) value, contentIndexingIsEnabled);
-                }
-                else if (value instanceof MultiPropertyValue)
-                {
-                    MultiPropertyValue typedValue = (MultiPropertyValue) value;
-                    AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
-                    clearFields(
-                            document,
-                            dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
-                                .stream()
-                                .map(FieldInstance::getField)
-                                .collect(Collectors.toList()));
-
-                    for (PropertyValue singleValue : typedValue.getValues())
+                    if (value instanceof StringPropertyValue)
                     {
-                        if (singleValue instanceof StringPropertyValue)
+                        stringProperty(propertyQName, (StringPropertyValue) value, properties.get(ContentModel.PROP_LOCALE), setAndCollect);
+                    }
+                    else if (value instanceof MLTextPropertyValue)
+                    {
+                        mltextProperty(propertyQName,(MLTextPropertyValue) value, setAndCollect);
+                    }
+                    else if (value instanceof ContentPropertyValue)
+                    {
+                        addContentProperty(setAndCollect, document, propertyQName, (ContentPropertyValue) value, contentIndexingIsEnabled);
+                    }
+                    else if (value instanceof MultiPropertyValue)
+                    {
+                        MultiPropertyValue typedValue = (MultiPropertyValue) value;
+                        AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
+                        clearFields(
+                                document,
+                                dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
+                                    .stream()
+                                    .map(FieldInstance::getField)
+                                    .collect(Collectors.toList()));
+    
+                        for (PropertyValue singleValue : typedValue.getValues())
                         {
-                            stringProperty(propertyQName, (StringPropertyValue) singleValue, properties.get(ContentModel.PROP_LOCALE), addAndCollect);
-                        }
-                        else if (singleValue instanceof MLTextPropertyValue)
-                        {
-                            mltextProperty(propertyQName,(MLTextPropertyValue) singleValue, addAndCollect);
-                        }
-                        else if (singleValue instanceof ContentPropertyValue)
-                        {
-                            addContentProperty(addAndCollect, document, propertyQName, (ContentPropertyValue) singleValue, contentIndexingIsEnabled);
+                            if (singleValue instanceof StringPropertyValue)
+                            {
+                                stringProperty(propertyQName, (StringPropertyValue) singleValue, properties.get(ContentModel.PROP_LOCALE), addAndCollect);
+                            }
+                            else if (singleValue instanceof MLTextPropertyValue)
+                            {
+                                mltextProperty(propertyQName,(MLTextPropertyValue) singleValue, addAndCollect);
+                            }
+                            else if (singleValue instanceof ContentPropertyValue)
+                            {
+                                addContentProperty(addAndCollect, document, propertyQName, (ContentPropertyValue) singleValue, contentIndexingIsEnabled);
+                            }
                         }
                     }
                 }
+                else
+                {
+                    document.addField(FIELD_NULLPROPERTIES, propertyQName.toString());
+                }
+                
             }
             else
             {
-                document.addField(FIELD_NULLPROPERTIES, propertyQName.toString());
+                LOGGER.debug("Field '" + propertyQName + "' has not been indexed "
+                        + (propertyDefinition != null ? "as property definition is not found."
+                                : "as it has been declared as not indexable in the Content Model."));
             }
         }
     }
@@ -2404,10 +2430,10 @@ public class SolrInformationServer implements InformationServer
     private void addContentPropertyMetadata(
             SolrInputDocument doc,
             QName propertyQName,
-            AlfrescoSolrDataModel.ContentFieldType type,
+            AlfrescoSolrDataModel.SpecializedFieldType type,
             GetTextContentResponse textContentResponse)
     {
-        IndexedField indexedField = dataModel.getIndexedFieldForContentPropertyMetadata(propertyQName, type);
+        IndexedField indexedField = dataModel.getIndexedFieldForSpecializedPropertyMetadata(propertyQName, type);
         for (FieldInstance fieldInstance : indexedField.getFields())
         {
             switch(type)
@@ -2432,27 +2458,27 @@ public class SolrInformationServer implements InformationServer
             BiConsumer<String, Object> consumer,
             QName propertyQName,
             ContentPropertyValue contentPropertyValue,
-            AlfrescoSolrDataModel.ContentFieldType type)
+            AlfrescoSolrDataModel.SpecializedFieldType type)
     {
         IndexedField indexedField =
-                AlfrescoSolrDataModel.getInstance().getIndexedFieldForContentPropertyMetadata(propertyQName, type);
+                AlfrescoSolrDataModel.getInstance().getIndexedFieldForSpecializedPropertyMetadata(propertyQName, type);
         for (FieldInstance fieldInstance : indexedField.getFields())
         {
             switch(type)
             {
-            case DOCID:
+            case CONTENT_DOCID:
                 consumer.accept(fieldInstance.getField(), contentPropertyValue.getId());
                 break;
-            case ENCODING:
+            case CONTENT_ENCODING:
                 consumer.accept(fieldInstance.getField(), contentPropertyValue.getEncoding());
                 break;
-            case LOCALE:
+            case CONTENT_LOCALE:
                 consumer.accept(fieldInstance.getField(), contentPropertyValue.getLocale().toString());
                 break;
-            case MIMETYPE:
+            case CONTENT_MIMETYPE:
                 consumer.accept(fieldInstance.getField(), contentPropertyValue.getMimetype());
                 break;
-            case SIZE:
+            case CONTENT_SIZE:
                 consumer.accept(fieldInstance.getField(), contentPropertyValue.getLength());
                 break;
                 // Skips the ones that require the text content response
@@ -2575,11 +2601,11 @@ public class SolrInformationServer implements InformationServer
             ContentPropertyValue propertyValue,
             boolean contentIndexingEnabled)
     {
-        addContentPropertyMetadata(consumer, propertyName, propertyValue, AlfrescoSolrDataModel.ContentFieldType.DOCID);
-        addContentPropertyMetadata(consumer, propertyName, propertyValue, AlfrescoSolrDataModel.ContentFieldType.SIZE);
-        addContentPropertyMetadata(consumer, propertyName, propertyValue, AlfrescoSolrDataModel.ContentFieldType.LOCALE);
-        addContentPropertyMetadata(consumer, propertyName, propertyValue, AlfrescoSolrDataModel.ContentFieldType.MIMETYPE);
-        addContentPropertyMetadata(consumer, propertyName, propertyValue, AlfrescoSolrDataModel.ContentFieldType.ENCODING);
+        addContentPropertyMetadata(consumer, propertyName, propertyValue, AlfrescoSolrDataModel.SpecializedFieldType.CONTENT_DOCID);
+        addContentPropertyMetadata(consumer, propertyName, propertyValue, AlfrescoSolrDataModel.SpecializedFieldType.CONTENT_SIZE);
+        addContentPropertyMetadata(consumer, propertyName, propertyValue, AlfrescoSolrDataModel.SpecializedFieldType.CONTENT_LOCALE);
+        addContentPropertyMetadata(consumer, propertyName, propertyValue, AlfrescoSolrDataModel.SpecializedFieldType.CONTENT_MIMETYPE);
+        addContentPropertyMetadata(consumer, propertyName, propertyValue, AlfrescoSolrDataModel.SpecializedFieldType.CONTENT_ENCODING);
 
         if (contentIndexingEnabled)
         {
@@ -2631,9 +2657,9 @@ public class SolrInformationServer implements InformationServer
 
         // Expensive call to be done with ContentTracker
         try (GetTextContentResponse response = repositoryClient.getTextContent(dbId, propertyQName, null)) {
-            addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_STATUS, response);
-            addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_EXCEPTION, response);
-            addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.ContentFieldType.TRANSFORMATION_TIME, response);
+            addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.SpecializedFieldType.TRANSFORMATION_STATUS, response);
+            addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.SpecializedFieldType.TRANSFORMATION_EXCEPTION, response);
+            addContentPropertyMetadata(doc, propertyQName, AlfrescoSolrDataModel.SpecializedFieldType.TRANSFORMATION_TIME, response);
 
             final String textContent = textContentFrom(response);
 
@@ -3609,7 +3635,7 @@ public class SolrInformationServer implements InformationServer
         return (NamedList) facetFields.get(field);
     }
 
-    private int getDocListSize(String query)
+    public int getDocListSize(String query)
     {
         try (SolrQueryRequest request = this.newSolrQueryRequest())
         {
@@ -3783,6 +3809,7 @@ public class SolrInformationServer implements InformationServer
      *
      * <ul>
      *     <li>YEAR</li>
+     *     <li>QUARTER (1-4)</li>
      *     <li>MONTH (1-12)</li>
      *     <li>DAY (OF THE MONTH)</li>
      * </ul>
@@ -3803,9 +3830,11 @@ public class SolrInformationServer implements InformationServer
     {
         try
         {
-            String fieldNamePrefix = dataModel.destructuredDateTimePartFieldNamePrefix(sourceFieldName, dataType);
+            String fieldNamePrefix = dataModel.destructuredDateTimePartFieldNamePrefix(sourceFieldName);
             ZonedDateTime dateTime = ZonedDateTime.parse(value, DateTimeFormatter.ISO_ZONED_DATE_TIME);
+            
             consumer.accept(fieldNamePrefix + UNIT_OF_TIME_YEAR_FIELD_SUFFIX, dateTime.getYear());
+            consumer.accept(fieldNamePrefix + UNIT_OF_TIME_QUARTER_FIELD_SUFFIX, dateTime.get(IsoFields.QUARTER_OF_YEAR));
             consumer.accept(fieldNamePrefix + UNIT_OF_TIME_MONTH_FIELD_SUFFIX, dateTime.getMonth().getValue());
             consumer.accept(fieldNamePrefix + UNIT_OF_TIME_DAY_FIELD_SUFFIX, dateTime.getDayOfMonth());
 
@@ -3930,7 +3959,6 @@ public class SolrInformationServer implements InformationServer
      */
     private Optional<Collection<NodeMetaData>> getNodesMetaDataFromRepository(NodeMetaDataParameters parameters)
     {
-        Collection<NodeMetaData> nodeMetaDataCollection = null;
         try
         {
             return Optional.of(notNullOrEmpty(repositoryClient.getNodesMetaData(parameters)));

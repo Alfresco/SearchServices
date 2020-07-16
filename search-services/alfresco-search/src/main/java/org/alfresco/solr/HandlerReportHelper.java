@@ -1,24 +1,29 @@
 /*
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
- *
- * This file is part of the Alfresco software.
- * If the software was purchased under a paid Alfresco license, the terms of
- * the paid license agreement will prevail.  Otherwise, the software is
+ * #%L
+ * Alfresco Search Services
+ * %%
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
  * provided under the following open source license terms:
- *
+ * 
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
  */
+
 package org.alfresco.solr;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -120,7 +125,7 @@ class HandlerReportHelper
         return nr;
     }
 
-    static NamedList<Object> buildNodeReport(CoreStatePublisher publisher, Long dbid) throws JSONException
+    static NamedList<Object> buildNodeReport(AbstractShardInformationPublisher publisher, Long dbid) throws JSONException
     {
         NodeReport nodeReport = publisher.checkNode(dbid);
 
@@ -152,7 +157,7 @@ class HandlerReportHelper
         {
             // ACL
             AclTracker aclTracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-            IndexHealthReport aclReport = aclTracker.checkIndex(toTx, toAclTx, fromTime, toTime);
+            IndexHealthReport aclReport = aclTracker.checkIndex(toAclTx, fromTime, toTime);
             NamedList<Object> ihr = new SimpleOrderedMap<>();
             ihr.add("DB acl transaction count", aclReport.getDbAclTransactionCount());
             ihr.add("Count of duplicated acl transactions in the index", aclReport.getDuplicatedAclTxInIndex()
@@ -182,7 +187,7 @@ class HandlerReportHelper
 
             // Metadata
             MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-            IndexHealthReport metaReport = metadataTracker.checkIndex(toTx, toAclTx, fromTime, toTime);
+            IndexHealthReport metaReport = metadataTracker.checkIndex(toTx, fromTime, toTime);
             ihr.add("DB transaction count", metaReport.getDbTransactionCount());
             ihr.add("Count of duplicated transactions in the index", metaReport.getDuplicatedTxInIndex()
                     .cardinality());
@@ -243,7 +248,7 @@ class HandlerReportHelper
         NamedList<Object> coreSummary = new SimpleOrderedMap<>();
         coreSummary.addAll((SimpleOrderedMap<Object>) srv.getCoreStats());
 
-        SlaveCoreStatePublisher statePublisher = trackerRegistry.getTrackerForCore(cname, SlaveCoreStatePublisher.class);
+        NodeStatePublisher statePublisher = trackerRegistry.getTrackerForCore(cname, NodeStatePublisher.class);
         TrackerState trackerState = statePublisher.getTrackerState();
         long lastIndexTxCommitTime = trackerState.getLastIndexedTxCommitTime();
 

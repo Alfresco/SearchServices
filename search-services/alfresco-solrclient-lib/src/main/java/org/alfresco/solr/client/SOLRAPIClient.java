@@ -1,8 +1,8 @@
 /*
  * #%L
- * Alfresco Solr Client
+ * Alfresco Search Services
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -23,6 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.solr.client;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -345,10 +346,12 @@ public class SOLRAPIClient
         }
     }
     
-    public Transactions getTransactions(Long fromCommitTime, Long minTxnId, Long toCommitTime, Long maxTxnId, int maxResults, ShardState shardState) throws AuthenticationException, IOException, JSONException, EncoderException
+    public Transactions getTransactions(Long fromCommitTime, Long minTxnId, Long toCommitTime,
+                                        Long maxTxnId, int maxResults, ShardState shardState)
+            throws AuthenticationException, IOException, JSONException, EncoderException
     {
         URLCodec encoder = new URLCodec();
-        
+
         StringBuilder url = new StringBuilder(GET_TRANSACTIONS_URL);
         StringBuilder args = new StringBuilder();
         if (fromCommitTime != null)
@@ -378,7 +381,7 @@ public class SOLRAPIClient
             args.append(encoder.encode("baseUrl")).append("=").append(encoder.encode(shardState.getShardInstance().getBaseUrl()));
             args.append("&").append(encoder.encode("hostName")).append("=").append(encoder.encode(shardState.getShardInstance().getHostName()));
             args.append("&").append(encoder.encode("template")).append("=").append(encoder.encode(shardState.getShardInstance().getShard().getFloc().getTemplate()));
-            
+
             for(String key : shardState.getShardInstance().getShard().getFloc().getPropertyBag().keySet())
             {
                 String value = shardState.getShardInstance().getShard().getFloc().getPropertyBag().get(key);
@@ -387,7 +390,7 @@ public class SOLRAPIClient
                     args.append("&").append(encoder.encode("floc.property."+key)).append("=").append(encoder.encode(value));
                 }
             }
-            
+
             for(String key : shardState.getPropertyBag().keySet())
             {
                 String value = shardState.getPropertyBag().get(key);
@@ -396,7 +399,7 @@ public class SOLRAPIClient
                     args.append("&").append(encoder.encode("state.property."+key)).append("=").append(encoder.encode(value));
                 }
             }
-            
+
             args.append("&").append(encoder.encode("instance")).append("=").append(encoder.encode("" + shardState.getShardInstance().getShard().getInstance()));
             args.append("&").append(encoder.encode("numberOfShards")).append("=").append(encoder.encode("" + shardState.getShardInstance().getShard().getFloc().getNumberOfShards()));
             args.append("&").append(encoder.encode("port")).append("=").append(encoder.encode("" + shardState.getShardInstance().getPort()));
@@ -412,13 +415,13 @@ public class SOLRAPIClient
             args.append("&").append(encoder.encode("isMaster")).append("=").append(encoder.encode("" + shardState.isMaster()));
             args.append("&").append(encoder.encode("hasContent")).append("=").append(encoder.encode("" + shardState.getShardInstance().getShard().getFloc().hasContent()));
             args.append("&").append(encoder.encode("shardMethod")).append("=").append(encoder.encode(shardState.getShardInstance().getShard().getFloc().getShardMethod().toString()));
-            
+
             args.append("&").append(encoder.encode("lastUpdated")).append("=").append(encoder.encode("" + shardState.getLastUpdated()));
             args.append("&").append(encoder.encode("lastIndexedChangeSetCommitTime")).append("=").append(encoder.encode("" + shardState.getLastIndexedChangeSetCommitTime()));
             args.append("&").append(encoder.encode("lastIndexedChangeSetId")).append("=").append(encoder.encode("" + shardState.getLastIndexedChangeSetId()));
             args.append("&").append(encoder.encode("lastIndexedTxCommitTime")).append("=").append(encoder.encode("" + shardState.getLastIndexedTxCommitTime()));
             args.append("&").append(encoder.encode("lastIndexedTxId")).append("=").append(encoder.encode("" + shardState.getLastIndexedTxId()));
-           
+
         }
         
         url.append(args);

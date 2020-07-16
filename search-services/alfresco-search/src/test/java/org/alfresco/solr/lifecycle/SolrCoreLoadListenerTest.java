@@ -1,21 +1,29 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
- *
- * This file is part of Alfresco
- *
+ * #%L
+ * Alfresco Search Services
+ * %%
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
+ * provided under the following open source license terms:
+ * 
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
  */
+
 package org.alfresco.solr.lifecycle;
 
 import static java.util.Arrays.asList;
@@ -25,6 +33,7 @@ import static org.alfresco.solr.tracker.Tracker.Type.ACL;
 import static org.alfresco.solr.tracker.Tracker.Type.CASCADE;
 import static org.alfresco.solr.tracker.Tracker.Type.CONTENT;
 import static org.alfresco.solr.tracker.Tracker.Type.METADATA;
+import static org.alfresco.solr.tracker.Tracker.Type.NODE_STATE_PUBLISHER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -118,7 +127,7 @@ public class SolrCoreLoadListenerTest
         verify(scheduler).schedule(any(CascadeTracker.class), eq(coreName), same(coreProperties));
 
         Set<Type> trackerTypes = coreTrackers.stream().map(Tracker::getType).collect(Collectors.toSet());
-        assertEquals("Unexpected trackers found.", Set.of(ACL, CONTENT, METADATA, CASCADE), trackerTypes);
+        assertEquals("Unexpected trackers found.", Set.of(ACL, CONTENT, METADATA, NODE_STATE_PUBLISHER, CASCADE), trackerTypes);
     }
 
     @Test
@@ -139,7 +148,7 @@ public class SolrCoreLoadListenerTest
         verify(scheduler, never()).schedule(any(CascadeTracker.class), eq(coreName), same(coreProperties));
 
         Set<Type> trackerTypes = coreTrackers.stream().map(Tracker::getType).collect(Collectors.toSet());
-        assertEquals("Unexpected trackers found.", Set.of(ACL, CONTENT, METADATA), trackerTypes);
+        assertEquals("Unexpected trackers found.", Set.of(ACL, CONTENT, METADATA, NODE_STATE_PUBLISHER), trackerTypes);
     }
 
     @Test

@@ -1,3 +1,29 @@
+/*
+ * #%L
+ * Alfresco Search Services
+ * %%
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
+ * provided under the following open source license terms:
+ * 
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
+
 package org.alfresco.solr.query.afts.requestHandler;
 
 import org.alfresco.solr.AbstractAlfrescoSolrIT;
@@ -11,6 +37,9 @@ import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.IntStream.range;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 
 public abstract class AbstractRequestHandlerIT extends AbstractAlfrescoSolrIT
 {
@@ -26,6 +55,16 @@ public abstract class AbstractRequestHandlerIT extends AbstractAlfrescoSolrIT
         assertQ(areq(params("rows", "20", "qt", "/afts", "fq", "{!afts}AUTHORITY_FILTER_FROM_JSON", "q", query), json), "*[count(//doc)="+num+"]");
     }
 
+    void assertResponseException(String query, String exceptionMessage) {
+        try {
+            h.query(areq(params("rows", "20", "qt", "/afts", "q", query), null));
+            fail("No Exception Thrown");
+        } catch (Exception e) {
+            assertThat(e.getMessage(), is(exceptionMessage));
+        }
+       
+    }
+    
     void assertResponseCardinality(String query, int num)
     {
         assertQ(areq(params("rows", "20", "qt", "/afts", "q", query), null), "*[count(//doc)="+num+"]");

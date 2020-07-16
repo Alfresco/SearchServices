@@ -21,9 +21,9 @@
       </snapshotRepository>
    </distributionManagement>
    <scm>
-      <connection>scm:git:https://git.alfresco.com/search_discovery/insightengine.git</connection>
-      <developerConnection>scm:git:https://git.alfresco.com/search_discovery/insightengine.git</developerConnection>
-      <url>https://git.alfresco.com/search_discovery/insightengine.git</url>
+      <connection>scm:git:ssh://git@github.com/Alfresco/InsightEngine.git</connection>
+      <developerConnection>scm:git:ssh://git@github.com/Alfresco/InsightEngine.git</developerConnection>
+      <url>scm:git:ssh://git@github.com/Alfresco/InsightEngine.git</url>
       <tag>HEAD</tag>
    </scm>
    <properties>
@@ -35,6 +35,8 @@
       <!-- Solr startup scripts do not work with any Java version higher than 9 so the scripts have been patched -->
       <solr.zip>https://artifacts.alfresco.com/nexus/content/repositories/public/org/apache/solr/solr/solr-${solr.version}/solr-solr-${solr.version}.zip</solr.zip>
       <solr.directory>${project.build.directory}/solr-${solr.version}</solr.directory>
+      <licenseName>enterprise</licenseName>
+      <license.update.dryrun>true</license.update.dryrun>
    </properties>
    <modules>
       <module>search-services</module>
@@ -69,6 +71,70 @@
             <configuration>
                <runOrder>alphabetical</runOrder>
             </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <configuration>
+               <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+               <organizationName>Alfresco Software Limited</organizationName>
+               <canUpdateCopyright>true</canUpdateCopyright>
+               <failOnMissingHeader>true</failOnMissingHeader>
+               <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+               <licenseResolver>classpath://alfresco</licenseResolver>
+               <licenseName>${licenseName}</licenseName>
+               <dryRun>${license.update.dryrun}</dryRun>
+               <roots>
+                  <root>src</root>
+               </roots>
+               <includes>
+                  <include>**/*.java</include>
+                  <include>**/*.jsp</include>
+               </includes>
+               <!-- Classes derivated from SOLR Source code include the Apache License header -->
+               <excludes>
+                  <exclude>**/org/alfresco/solr/component/AsyncBuildSuggestComponent.java</exclude>
+                  <exclude>**/org/apache/solr/client/solrj/io/sql/ConnectionImpl.java</exclude>
+                  <exclude>**/org/apache/solr/client/solrj/io/sql/DatabaseMetaDataImpl.java</exclude>
+                  <exclude>**/org/apache/solr/client/solrj/io/sql/ResultSetImpl.java</exclude>
+                  <exclude>**/org/apache/solr/client/solrj/io/sql/StatementImpl.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrAggregate.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrEnumerator.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrFilter.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrMethod.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrProject.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrRel.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrRules.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrSort.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrTable.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrTableScan.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrToEnumerableConverter.java</exclude>
+                  <exclude>**/org/alfresco/solr/sql/SolrToEnumerableConverterRule.java</exclude>
+                  <exclude>**/org/alfresco/solr/stream/FacetStream.java</exclude>
+                  <exclude>**/org/alfresco/solr/stream/JDBCStream.java</exclude>
+                  <exclude>**/org/alfresco/solr/stream/JSONTupleStream.java</exclude>
+                  <exclude>**/org/alfresco/solr/stream/LimitStream.java</exclude>
+                  <exclude>**/org/alfresco/solr/stream/StatsStream.java</exclude>
+                  <exclude>**/org/alfresco/solr/stream/StreamHandler.java</exclude>
+                  <exclude>**/org/alfresco/solr/stream/TimeSeriesStream.java</exclude>
+               </excludes>
+            </configuration>
+            <executions>
+               <execution>
+                  <id>check-licenses</id>
+                  <phase>compile</phase>
+                  <goals>
+                     <goal>update-file-header</goal>
+                  </goals>
+               </execution>
+            </executions>
+            <dependencies>
+               <dependency>
+                  <groupId>org.alfresco</groupId>
+                  <artifactId>alfresco-license-headers</artifactId>
+                  <version>1.0</version>
+               </dependency>
+            </dependencies>
          </plugin>
       </plugins>
    </build>

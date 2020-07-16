@@ -21,8 +21,8 @@ module.exports = class extends Generator {
         type: 'list',
         name: 'acsVersion',
         message: 'Which ACS version do you want to use?',
-        choices: [ "6.1", "6.2" ],
-        default: '6.2'
+        choices: [ '6.1', '6.2', 'latest' ],
+        default: 'latest'
       },
       {
         whenFunction: response => response.acsVersion == '6.1',
@@ -103,6 +103,19 @@ module.exports = class extends Generator {
         default: 'DB_ID'
       },
       {
+        type: 'list',
+        name: 'searchLogLevel',
+        message: 'What log level do you want to use for search?',
+        choices: [
+          "TRACE",
+          "DEBUG",
+          "INFO",
+          "WARN",
+          "ERROR"
+        ],
+        default: 'WARN'
+      },
+      {
         whenFunction: response => response.alfrescoVersion == 'enterprise',
         type: 'confirm',
         name: 'insightEngine',
@@ -143,10 +156,8 @@ module.exports = class extends Generator {
   // Generate boilerplate from "templates" folder
   writing() {
 
-    var dockerComposeTemplateDirectory = '6.2';
-    if (this.props.acsVersion.startsWith('6.1')) {
-      dockerComposeTemplateDirectory = '6.1';
-    }
+    // Set base template directory: 6.1, 6.2, latest
+    var dockerComposeTemplateDirectory = this.props.acsVersion;
 
     // Docker Compose environment variables values
     this.fs.copyTpl(
@@ -181,10 +192,10 @@ module.exports = class extends Generator {
       (this.props.alfrescoVersion == 'community' ?
         (this.props.ags ? 
           'alfresco/alfresco-governance-share-community' :
-          'alfresco/alfresco-share') :
+          'quay.io/alfresco/alfresco-share') :
         (this.props.ags ? 
           'quay.io/alfresco/alfresco-governance-share-enterprise':
-          'alfresco/alfresco-share'
+          'quay.io/alfresco/alfresco-share'
         )
       );
 
@@ -216,7 +227,8 @@ module.exports = class extends Generator {
         zeppelin: (this.props.zeppelin ? "true" : "false"),
         sharding: (this.props.sharding ? "true" : "false"),
         shardingMethod: (this.props.shardingMethod),
-        gzip: (this.props.gzip ? "true" : "false")
+        gzip: (this.props.gzip ? "true" : "false"),
+        searchLogLevel: this.props.searchLogLevel
       }
     );
 
@@ -297,21 +309,23 @@ module.exports = class extends Generator {
 
     // Add resources for SSL configuration
     if (this.props.httpMode == 'https') {
+      // Currently Community 'latest' only supports OLD keystores and trustores format
+      var subfolder = (this.props.acsVersion == 'latest' && this.props.alfrescoVersion == 'enterprise') ? '7.x' : '6.x'
       this.fs.copy(
-        this.templatePath('keystores/alfresco'),
+        this.templatePath('keystores/' + subfolder + '/alfresco'),
         this.destinationPath('keystores/alfresco')
       )
       this.fs.copy(
-        this.templatePath('keystores/solr'),
+        this.templatePath('keystores/' + subfolder + '/solr'),
         this.destinationPath('keystores/solr')
       )
       this.fs.copy(
-        this.templatePath('keystores/client'),
+        this.templatePath('keystores/' + subfolder + '/client'),
         this.destinationPath('keystores/client')
       )
       if (this.props.zeppelin == true) {
         this.fs.copy(
-          this.templatePath('keystores/zeppelin'),
+          this.templatePath('keystores/' + subfolder + '/zeppelin'),
           this.destinationPath('keystores/zeppelin')
         )
       }
