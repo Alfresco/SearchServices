@@ -103,6 +103,19 @@ module.exports = class extends Generator {
         default: 'DB_ID'
       },
       {
+        type: 'list',
+        name: 'searchLogLevel',
+        message: 'What log level do you want to use for search?',
+        choices: [
+          "TRACE",
+          "DEBUG",
+          "INFO",
+          "WARN",
+          "ERROR"
+        ],
+        default: 'WARN'
+      },
+      {
         whenFunction: response => response.alfrescoVersion == 'enterprise',
         type: 'confirm',
         name: 'insightEngine',
@@ -214,7 +227,8 @@ module.exports = class extends Generator {
         zeppelin: (this.props.zeppelin ? "true" : "false"),
         sharding: (this.props.sharding ? "true" : "false"),
         shardingMethod: (this.props.shardingMethod),
-        gzip: (this.props.gzip ? "true" : "false")
+        gzip: (this.props.gzip ? "true" : "false"),
+        searchLogLevel: this.props.searchLogLevel
       }
     );
 

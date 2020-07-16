@@ -68,6 +68,7 @@ services:
             ENABLE_MASTER: "true"
             ENABLE_SLAVE: "false" <% } %>
             COMPRESS_CONTENT: "<%=gzip%>"
+            SEARCH_LOG_LEVEL: <%=searchLogLevel%>
         mem_limit: 1200m
         environment:
             #Solr needs to know how to register itself with Alfresco

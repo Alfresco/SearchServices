@@ -270,7 +270,7 @@ $ docker build -t insightengine:develop .
 
 **Configuration**
 
-To pass an environment variable, it can be used the "-e" argument:
+The "-e" argument can be used to pass an environment variable:
 
 ```bash
 $ docker run -e SOLR_JAVA_MEM="-Xms4g -Xmx4g" -p 8983:8983 searchservices:develop
@@ -281,6 +281,20 @@ To pass several environment variables (e.g. SOLR\_ALFRESCO\_HOST, SOLR\_ALFRESCO
 ```bash
 $ docker run -e SOLR_ALFRESCO_HOST=localhost -e SOLR_ALFRESCO_PORT=8080 -p 8983:8983 searchservices:develop
 ```
+
+The following environment variables are supported:
+
+| Name | Format | Description |
+|------|--------|-------------|
+| SOLR_OPTS | "-Dparam=value ..." | Options to pass when starting the Java process. |
+| SOLR_HEAP | Memory amount (e.g. 2g) | The Java heap assigned to Solr. |
+| SOLR_JAVA_MEM | "-Xms... -Xmx..." | The exact memory settings for Solr. Note that SOLR_HEAP takes precedence over this. |
+| MAX_SOLR_RAM_PERCENTAGE | Integer | The percentage of available memory to assign to Solr. Note that SOLR_HEAP and SOLR_JAVA_MEM take precedence over this. |
+| SEARCH_LOG_LEVEL | ERROR, WARN, INFO, DEBUG or TRACE | The root logger level. |
+| ENABLE_SPELLCHECK | true or false | Whether spellchecking is enabled or not. |
+| DISABLE_CASCADE_TRACKING | true or false | Whether cascade tracking is enabled or not. Disabling cascade tracking will improve performance, but result in some feature loss (e.g. path queries). |
+| ALFRESCO_SECURE_COMMS | https or none | Whether communication with the repository is secured. See below. |
+| SOLR_SSL_... | --- | These variables are also used to configure SSL. See below. |
 
 **Using Mutual Auth TLS (SSL)**
 
