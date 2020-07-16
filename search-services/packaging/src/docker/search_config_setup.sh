@@ -9,6 +9,7 @@ SOLR_RERANK_CONFIG_FILE=$RERANK_TEMPLATE_PATH/solrconfig.xml
 SOLR_NORERANK_CONFIG_FILE=$NORERANK_TEMPLATE_PATH/solrconfig.xml
 SOLR_RERANK_CORE_FILE=$RERANK_TEMPLATE_PATH/solrcore.properties
 SOLR_NORERANK_CORE_FILE=$NORERANK_TEMPLATE_PATH/solrcore.properties
+LOG_PROPERTIES=$PWD/logs/log4j.properties
 
 if [[ $REPLICATION_TYPE == "master" ]]; then
 
@@ -97,6 +98,10 @@ fi
 
 if [[ true == "$ENABLE_SPELLCHECK" ]]; then
    sed -i 's/#alfresco.suggestable.property/alfresco.suggestable.property/' ${PWD}/solrhome/conf/shared.properties
+fi
+
+if [[ "${SEARCH_LOG_LEVEL}" != "" ]]; then
+   sed -i "s/log4j.rootLogger=WARN, file, CONSOLE/log4j.rootLogger=${SEARCH_LOG_LEVEL}, file, CONSOLE/" ${LOG_PROPERTIES}
 fi
 
 bash -c "$@"
