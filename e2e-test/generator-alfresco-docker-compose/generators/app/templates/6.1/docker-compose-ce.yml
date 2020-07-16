@@ -50,6 +50,7 @@ services:
             KEYSTORE_TYPE: JCEKS <% } %> <% if (replication) { %>
             ENABLE_MASTER: "true"
             ENABLE_SLAVE: "false" <% } %>
+            SEARCH_LOG_LEVEL: <%=searchLogLevel%>
         mem_limit: 1200m
         environment:
             #Solr needs to know how to register itself with Alfresco
