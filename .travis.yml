@@ -142,9 +142,9 @@ jobs:
         - travis_retry travis_wait 40 docker build -t quay.io/alfresco/insight-engine:$DEVELOPMENT_VERSION insight-engine/packaging/target/docker-resources
         - travis_retry travis_wait 40 docker build -t quay.io/alfresco/insight-zeppelin:$DEVELOPMENT_VERSION insight-engine/alfresco-insight-zeppelin/target/docker-resources
       script:
-        - docker push quay.io/alfresco/search-services:$DEVELOPMENT_VERSION
-        - docker push quay.io/alfresco/insight-engine:$DEVELOPMENT_VERSION
-        - docker push quay.io/alfresco/insight-zeppelin:$DEVELOPMENT_VERSION
+        - travis_retry docker push quay.io/alfresco/search-services:$DEVELOPMENT_VERSION
+        - travis_retry docker push quay.io/alfresco/insight-engine:$DEVELOPMENT_VERSION
+        - travis_retry docker push quay.io/alfresco/insight-zeppelin:$DEVELOPMENT_VERSION
     - name: Deploy "latest" to quay.io
       #TODO run only on master
       #if: fork = false AND (branch = master) AND type != pull_request
@@ -155,6 +155,6 @@ jobs:
         - travis_retry travis_wait 40 docker build -t quay.io/alfresco/insight-engine:latest insight-engine/packaging/target/docker-resources
         - travis_retry travis_wait 40 docker build -t quay.io/alfresco/insight-zeppelin:latest insight-engine/alfresco-insight-zeppelin/target/docker-resources
       script:
-        - docker push quay.io/alfresco/search-services:latest
-        - docker push quay.io/alfresco/insight-engine:latest
-        - docker push quay.io/alfresco/insight-zeppelin:latest
+        - travis_retry docker push quay.io/alfresco/search-services:latest
+        - travis_retry docker push quay.io/alfresco/insight-engine:latest
+        - travis_retry docker push quay.io/alfresco/insight-zeppelin:latest
