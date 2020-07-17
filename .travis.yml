@@ -132,7 +132,7 @@ jobs:
         - travis_retry travis_wait 60 mvn --batch-mode -q clean package -DskipTests
       script:
         - travis_wait 60 mvn --batch-mode deploy -DskipTests=true
-    - name: Deploy "$DEVELOPMENT_VERSION" to quay.io
+    - name: Deploy dev version to quay.io
       #TODO run only on release branches
       #if: fork = false AND ( branch =~ /release\/.*/) AND type != pull_request
       install:
