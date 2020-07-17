@@ -11,7 +11,7 @@
     </parent>
 
     <properties>
-        <dependency.alfresco-data-model.version>8.123</dependency.alfresco-data-model.version>
+        <dependency.alfresco-data-model.version>8.135</dependency.alfresco-data-model.version>
         <dependency.jackson.version>2.10.3</dependency.jackson.version>
     </properties>
 
@@ -56,7 +56,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.3.0</version>
+            <version>3.4.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>

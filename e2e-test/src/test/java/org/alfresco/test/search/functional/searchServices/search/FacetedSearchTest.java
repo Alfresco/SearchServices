@@ -283,7 +283,7 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
         model.assertThat().field("label").is("modifier");
         FacetFieldBucket bucket1 = model.getBuckets().get(0);
         bucket1.assertThat().field("label").is(testUser.getUsername());
-        bucket1.assertThat().field("display").is(testUser.getUsername() + " FirstName LN-" + testUser.getUsername());
+        bucket1.assertThat().field("display").is("FN-" + testUser.getUsername() + " LN-" + testUser.getUsername());
         bucket1.assertThat().field("filterQuery").is("modifier:\"" + testUser.getUsername() + "\"");
         bucket1.assertThat().field("count").is(1);
     }
@@ -328,7 +328,7 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
         model.assertThat().field("label").is("modifier");
         RestGenericBucketModel bucket1 = model.getBuckets().get(0);
         bucket1.assertThat().field("label").is(testUser.getUsername());
-        bucket1.assertThat().field("display").is(testUser.getUsername() + " FirstName LN-" + testUser.getUsername());
+        bucket1.assertThat().field("display").is("FN-" + testUser.getUsername() + " LN-" + testUser.getUsername());
         bucket1.assertThat().field("filterQuery").is("modifier:\"" + testUser.getUsername() + "\"");
         bucket1.assertThat().field("metrics").is("[{entry=null, type=count, value={count=1}}]");
     }
