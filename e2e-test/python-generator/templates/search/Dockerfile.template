@@ -23,4 +23,10 @@ RUN mkdir -p /opt/alfresco-search-services/keystore \
     && chown -R solr:solr /opt/alfresco-search-services/keystore
 USER solr
 
+# Set the search log level if requested.
+RUN if [ "${SEARCH_LOG_LEVEL}" != "" ] ; then \
+  sed -i '/^bash.*/i sed -i "'"s/log4j.rootLogger=WARN, file, CONSOLE/log4j.rootLogger=${SEARCH_LOG_LEVEL}, file, CONSOLE/g"'" $${DIST_DIR}/logs/log4j.properties\n' \
+  $${DIST_DIR}/solr/bin/search_config_setup.sh; \
+fi
+
 VOLUME ["/opt/alfresco-search-services/keystore"]
