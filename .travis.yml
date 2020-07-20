@@ -125,7 +125,7 @@ jobs:
         - curl -LJO https://github.com/whitesource/unified-agent-distribution/releases/latest/download/wss-unified-agent.jar
         - java -jar wss-unified-agent.jar -apiKey ${WHITESOURCE_API_KEY} -project "InsightZeppelin" -projectVersion "2.0.0-SNAPSHOT" -d ./whitesource_scan/insight-zeppelin
     - stage: Deploy
-      name: Deploy to Nexus
+      name: Deploy snapshots to Nexus
       #TODO run only on release branches and master
       #if: fork = false AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request
       install:
