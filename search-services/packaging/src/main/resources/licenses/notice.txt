@@ -108,7 +108,7 @@ jakarta.transaction-api-1.3.3.jar https://projects.eclipse.org/projects/ee4j.jta
 
 === BSD ===
 jibx-run-1.3.3.jar http://jibx.sourceforge.net/
-dom4j-2.1.1.jar https://github.com/dom4j/dom4j/blob/master/LICENSE
+dom4j-2.1.3.jar https://github.com/dom4j/dom4j/blob/master/LICENSE
 
 
 === Part of Apache Solr (Licenses listed separately) ===
