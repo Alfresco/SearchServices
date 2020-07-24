@@ -59,7 +59,7 @@ import org.slf4j.LoggerFactory;
  * This tracks two things: transactions and metadata nodes
  * @author Ahmed Owian
  */
-public class MetadataTracker extends AbstractShardInformationPublisher implements Tracker
+public class MetadataTracker extends ActivatableTracker
 {
     protected final static Logger log = LoggerFactory.getLogger(MetadataTracker.class);
     private static final int DEFAULT_TRANSACTION_DOCS_BATCH_SIZE = 100;
@@ -119,7 +119,7 @@ public class MetadataTracker extends AbstractShardInformationPublisher implement
     public MetadataTracker( Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer, boolean checkRepoServicesAvailability)
     {
-        super(true, p, client, coreName, informationServer, Tracker.Type.METADATA);
+        super(p, client, coreName, informationServer, Tracker.Type.METADATA);
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize", "100"));
         nodeBatchSize = Integer.parseInt(p.getProperty("alfresco.nodeBatchSize", "10"));
         threadHandler = new ThreadHandler(p, coreName, "MetadataTracker");
@@ -660,7 +660,7 @@ public class MetadataTracker extends AbstractShardInformationPublisher implement
     {
 
         long actualTimeStep = timeStep;
-        
+
         Transactions transactions;
         // step forward in time until we find something or hit the time bound
         // max id unbounded
@@ -677,7 +677,7 @@ public class MetadataTracker extends AbstractShardInformationPublisher implement
                                           null, 
                                           maxResults);
         }
-        
+
         do
         {
             transactions = client.getTransactions(startTime, null, startTime + timeStep,
@@ -1010,7 +1010,7 @@ public class MetadataTracker extends AbstractShardInformationPublisher implement
                 nodeBatch = new ArrayList<>();
             }
         }
-        
+
         if (nodeBatch.size() > 0)
         {
             nodeCount += nodeBatch.size();
@@ -1255,6 +1255,19 @@ public class MetadataTracker extends AbstractShardInformationPublisher implement
         transactionsToIndex.offer(txId);
     }
 
+    @Override
+    protected void clearScheduledMaintenanceWork()
+    {
+        logAndClear(transactionsToIndex, "Transactions to be indexed");
+        logAndClear(nodesToIndex, "Nodes to be indexed");
+
+        logAndClear(transactionsToReindex, "Transactions to be re-indexed");
+        logAndClear(nodesToReindex, "Nodes to be re-indexed");
+
+        logAndClear(transactionsToPurge, "Transactions to be purged");
+        logAndClear(nodesToPurge, "Nodes to be purged");
+    }
+
     public void addNodeToIndex(Long nodeId)
     {
         this.nodesToIndex.offer(nodeId);
@@ -1272,4 +1285,6 @@ public class MetadataTracker extends AbstractShardInformationPublisher implement
     {
         this.queriesToReindex.offer(query);
     }
+
+
 }

@@ -92,12 +92,13 @@ public class CommitTracker extends AbstractTracker
         lastSearcherOpened = lastCommit = System.currentTimeMillis();
     }
 
-    public boolean hasMaintenance() throws Exception
+    public boolean hasMaintenance()
     {
         return (metadataTracker.hasMaintenance() || aclTracker.hasMaintenance());
     }
 
-    public int getRollbackCount() {
+    public int getRollbackCount()
+    {
         return rollbackCount.get();
     }
 
@@ -114,7 +115,6 @@ public class CommitTracker extends AbstractTracker
         boolean commitNeeded = false;
         boolean openSearcherNeeded = false;
         boolean hasMaintenance = hasMaintenance();
-        //System.out.println("############# Commit Tracker doTrack()");
 
         if((currentTime - lastCommit) > commitInterval || hasMaintenance)
         {
@@ -131,8 +131,6 @@ public class CommitTracker extends AbstractTracker
            openSearcherNeeded = true;
         }
 
-        //System.out.println("############# Commit Tracker commit needed");
-
         try
         {
             metadataTracker.getWriteLock().acquire();
@@ -141,9 +139,8 @@ public class CommitTracker extends AbstractTracker
             aclTracker.getWriteLock().acquire();
             assert(aclTracker.getWriteLock().availablePermits() == 0);
 
-            //See if we need a rollback
-            if(metadataTracker.getRollback() || aclTracker.getRollback()) {
-
+            if(metadataTracker.getRollback() || aclTracker.getRollback())
+            {
                 /*
                 * The metadataTracker and aclTracker will return true if an unhandled exception has occurred during indexing.
                 *
@@ -154,33 +151,37 @@ public class CommitTracker extends AbstractTracker
                 * the index, rather then the in-memory state. This keeps the trackers in-sync with index if their work is
                 * rolled back.
                 */
-
                 doRollback();
                 return;
             }
 
-            if(hasMaintenance) {
+            // The disable-indexing command should happen while the commit tracker is here.
+            // In that case the (disable-indexing) command clears the maintenance work as much as possible,
+            // however, there's a chance that some work will be still executed: for that reason the check is repeated
+            // later (see below) and in case a rollback is executed
+            if (hasMaintenance)
+            {
                 maintenance();
             }
 
             infoSrv.flushContentStore();
-
-            //Do the commit opening the searcher if needed. This will commit all the work done by indexing trackers.
-            //This will return immediately and not wait for searchers to warm
-            //System.out.println("################### Commit:"+openSearcherNeeded);
-            boolean searcherOpened = infoSrv.commit(openSearcherNeeded);
-
-            lastCommit = currentTime;
-            if(searcherOpened) {
-                lastSearcherOpened = currentTime;
+            if (metadataTracker.isEnabled() && aclTracker.isEnabled())
+            {
+                boolean searcherOpened = infoSrv.commit(openSearcherNeeded);
+                lastCommit = currentTime;
+                if(searcherOpened)
+                {
+                    lastSearcherOpened = currentTime;
+                }
+            }
+            else
+            {
+                doRollback();
             }
         }
         finally
         {
-            //Release the lock on the metadata Tracker
             metadataTracker.getWriteLock().release();
-
-            //Release the lock on the aclTracker
             aclTracker.getWriteLock().release();
             //System.out.println("######## Commit Tracker Releasing Write Locks ########");
         }

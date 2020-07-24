@@ -25,33 +25,31 @@
  */
 package org.alfresco.solr.tracker;
 
-import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
-import org.alfresco.repo.dictionary.NamespaceDAO;
-import org.alfresco.repo.index.shard.ShardMethodEnum;
+import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.repo.index.shard.ShardState;
 import org.alfresco.repo.index.shard.ShardStateBuilder;
-import org.alfresco.repo.search.impl.QueryParserUtils;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
-import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.InformationServer;
-import org.alfresco.solr.NodeReport;
 import org.alfresco.solr.TrackerState;
 import org.alfresco.solr.client.SOLRAPIClient;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.codec.EncoderException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.Optional;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 
 import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
-import static org.alfresco.solr.tracker.DocRouterFactory.SHARD_KEY_KEY;
+import static org.alfresco.solr.tracker.Tracker.Type.NODE_STATE_PUBLISHER;
 
 /**
- * Superclass for all components which are able to inform Alfresco about the hosting node state.
+ * Despite belonging to the Tracker ecosystem, this component is actually a publisher, which periodically informs
+ * Alfresco about the state of the hosting core.
+ *
  * This has been introduced in SEARCH-1752 for splitting the dual responsibility of the {@link org.alfresco.solr.tracker.MetadataTracker}.
  * As consequence of that, this class contains only the members needed for obtaining a valid
  * {@link org.alfresco.repo.index.shard.ShardState} that can be periodically communicated to Alfresco.
@@ -60,113 +58,80 @@ import static org.alfresco.solr.tracker.DocRouterFactory.SHARD_KEY_KEY;
  * @since 1.5
  * @see <a href="https://issues.alfresco.com/jira/browse/SEARCH-1752">SEARCH-1752</a>
  */
-public abstract class AbstractShardInformationPublisher extends AbstractTracker
+public class ShardStatePublisher extends AbstractTracker
 {
-    DocRouter docRouter;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ShardStatePublisher.class);
+    private static final Map<String, Semaphore> RUN_LOCK_BY_CORE = new ConcurrentHashMap<>();
+    private static final Map<String, Semaphore> WRITE_LOCK_BY_CORE = new ConcurrentHashMap<>();
+
     private final boolean isMaster;
 
-    /** The string representation of the shard key. */
-    private Optional<String> shardKey;
-
-    /** The property to use for determining the shard. */
-    protected Optional<QName> shardProperty = Optional.empty();
-
-    AbstractShardInformationPublisher(
+    public ShardStatePublisher(
             boolean isMaster,
             Properties p,
             SOLRAPIClient client,
             String coreName,
-            InformationServer informationServer,
-            Type type)
+            InformationServer informationServer)
     {
-        super(p, client, coreName, informationServer, type);
+        super(p, client, coreName, informationServer, NODE_STATE_PUBLISHER);
+
         this.isMaster = isMaster;
-        shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
-        shardKey = ofNullable(p.getProperty(SHARD_KEY_KEY));
 
-        firstUpdateShardProperty();
-
-        docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
+        RUN_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
+        WRITE_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
     }
 
-    AbstractShardInformationPublisher(Type type)
+    @Override
+    protected void doTrack(String iterationId)
     {
-        super(type);
-        this.isMaster = false;
-    }
-
-    /**
-     * Returns information about the {@link org.alfresco.solr.client.Node} associated with the given dbid.
-     *
-     * @param dbid the node identifier.
-     * @return the {@link org.alfresco.solr.client.Node} associated with the given dbid.
-     */
-    public NodeReport checkNode(Long dbid)
-    {
-        NodeReport nodeReport = new NodeReport();
-        nodeReport.setDbid(dbid);
-
-        this.infoSrv.addCommonNodeReportInfo(nodeReport);
-
-        return nodeReport;
-    }
-
-    private void firstUpdateShardProperty()
-    {
-        shardKey.ifPresent( shardKeyName -> {
-            updateShardProperty();
-            if (shardProperty.isEmpty())
-            {
-                logger.warn("Sharding property {} was set to {}, but no such property was found.", SHARD_KEY_KEY, shardKeyName);
-            }
-        });
-    }
-
-    /**
-     * Set the shard property using the shard key.
-     */
-    void updateShardProperty()
-    {
-        shardKey.ifPresent(shardKeyName -> {
-            Optional<QName> updatedShardProperty = getShardProperty(shardKeyName);
-            if (!shardProperty.equals(updatedShardProperty))
-            {
-                if (updatedShardProperty.isEmpty())
-                {
-                    logger.warn("The model defining {} property has been disabled", shardKeyName);
-                }
-                else
-                {
-                    logger.info("New {} property found for {} ", SHARD_KEY_KEY, shardKeyName);
-                }
-            }
-            shardProperty = updatedShardProperty;
-        });
-    }
-
-    /**
-     * Given the field name, returns the name of the property definition.
-     * If the property definition is not found, Empty optional is returned.
-     *
-     * @param field the field name.
-     * @return the name of the associated property definition if present, Optional.Empty() otherwise
-     */
-    static Optional<QName> getShardProperty(String field)
-    {
-        if (StringUtils.isBlank(field))
+        try
         {
-            throw new IllegalArgumentException("Sharding property " + SHARD_KEY_KEY + " has not been set.");
+            ShardState shardstate = getShardState();
+            client.getTransactions(0L, null, 0L, null, 0, shardstate);
         }
+        catch (EncoderException | IOException | AuthenticationException exception )
+        {
+            LOGGER.error("Unable to publish this node state. " +
+                    "A failure condition has been met during the outbound subscription message encoding process. " +
+                    "See the stacktrace below for further details.", exception);
+        }
+    }
 
-        AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
-        NamespaceDAO namespaceDAO = dataModel.getNamespaceDAO();
-        DictionaryService dictionaryService = dataModel.getDictionaryService(CMISStrictDictionaryService.DEFAULT);
-        PropertyDefinition propertyDef = QueryParserUtils.matchPropertyDefinition("http://www.alfresco.org/model/content/1.0",
-                namespaceDAO,
-                dictionaryService,
-                field);
+    @Override
+    public void maintenance()
+    {
+        // Do nothing here
+    }
 
-        return ofNullable(propertyDef).map(PropertyDefinition::getName);
+    @Override
+    public boolean hasMaintenance()
+    {
+        return false;
+    }
+
+    /**
+     * When running in a slave mode, we need to recreate the tracker state every time.
+     * This because in that context we don't have any tracker updating the state (e.g. lastIndexedChangeSetCommitTime,
+     * lastIndexedChangeSetId)
+     *
+     * @return a new, fresh and up to date instance of {@link TrackerState}.
+     */
+    @Override
+    public TrackerState getTrackerState()
+    {
+        return infoSrv.getTrackerInitialState();
+    }
+
+    @Override
+    public Semaphore getWriteLock()
+    {
+        return WRITE_LOCK_BY_CORE.get(coreName);
+    }
+
+    @Override
+    public Semaphore getRunLock()
+    {
+        return RUN_LOCK_BY_CORE.get(coreName);
     }
 
     /**
@@ -174,7 +139,6 @@ public abstract class AbstractShardInformationPublisher extends AbstractTracker
      * {@link MetadataTracker} instance.
      *
      * @return the {@link ShardState} instance which stores the current state of the hosting shard.
-     * @see NodeStatePublisher
      */
     ShardState getShardState()
     {
@@ -211,22 +175,12 @@ public abstract class AbstractShardInformationPublisher extends AbstractTracker
                                 .withAddedStoreRef(storeRef)
                                 .withTemplate(shardTemplate)
                                 .withHasContent(transformContent)
-                                .withShardMethod(ShardMethodEnum.getShardMethod(shardMethod))
+                                .withShardMethod(shardMethod)
                             .endFloc()
                         .endShard()
                     .endShardInstance()
                 .build();
 
-    }
-
-    /**
-     * Returns the {@link DocRouter} instance in use on this node.
-     *
-     * @return the {@link DocRouter} instance in use on this node.
-     */
-    public DocRouter getDocRouter()
-    {
-        return this.docRouter;
     }
 
     /**

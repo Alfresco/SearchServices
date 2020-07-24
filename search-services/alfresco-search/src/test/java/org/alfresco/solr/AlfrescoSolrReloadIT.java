@@ -74,12 +74,12 @@ public class AlfrescoSolrReloadIT extends AbstractAlfrescoSolrIT
 
     @After
     public void clearQueue() throws Exception {
-        SOLRAPIQueueClient.nodeMetaDataMap.clear();
-        SOLRAPIQueueClient.transactionQueue.clear();
-        SOLRAPIQueueClient.aclChangeSetQueue.clear();
-        SOLRAPIQueueClient.aclReadersMap.clear();
-        SOLRAPIQueueClient.aclMap.clear();
-        SOLRAPIQueueClient.nodeMap.clear();
+        SOLRAPIQueueClient.NODE_META_DATA_MAP.clear();
+        SOLRAPIQueueClient.TRANSACTION_QUEUE.clear();
+        SOLRAPIQueueClient.ACL_CHANGE_SET_QUEUE.clear();
+        SOLRAPIQueueClient.ACL_READERS_MAP.clear();
+        SOLRAPIQueueClient.ACL_MAP.clear();
+        SOLRAPIQueueClient.NODE_MAP.clear();
     }
 
     @Test

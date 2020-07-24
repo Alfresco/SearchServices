@@ -47,14 +47,14 @@ import org.json.JSONException;
 
 public class SOLRAPIQueueClient extends SOLRAPIClient
 {
-    public static List<AclChangeSet> aclChangeSetQueue = Collections.synchronizedList(new ArrayList());
-    public static Map<Long, List<Acl>> aclMap = Collections.synchronizedMap(new HashMap());
-    public static Map<Long, AclReaders> aclReadersMap = Collections.synchronizedMap(new HashMap());
+    public static List<AclChangeSet> ACL_CHANGE_SET_QUEUE = Collections.synchronizedList(new ArrayList());
+    public static Map<Long, List<Acl>> ACL_MAP = Collections.synchronizedMap(new HashMap());
+    public static Map<Long, AclReaders> ACL_READERS_MAP = Collections.synchronizedMap(new HashMap());
 
-    public static List<Transaction> transactionQueue = Collections.synchronizedList(new ArrayList());
-    public static Map<Long, List<Node>> nodeMap = Collections.synchronizedMap(new HashMap());
-    public static Map<Long, NodeMetaData> nodeMetaDataMap = Collections.synchronizedMap(new HashMap());
-    public static Map<Long, String> nodeContentMap =  Collections.synchronizedMap(new HashMap());
+    public static List<Transaction> TRANSACTION_QUEUE = Collections.synchronizedList(new ArrayList());
+    public static Map<Long, List<Node>> NODE_MAP = Collections.synchronizedMap(new HashMap());
+    public static Map<Long, NodeMetaData> NODE_META_DATA_MAP = Collections.synchronizedMap(new HashMap());
+    public static Map<Long, String> NODE_CONTENT_MAP =  Collections.synchronizedMap(new HashMap());
 
     private static boolean throwException;
 
@@ -74,7 +74,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
         }
 
-        int size = aclChangeSetQueue.size();
+        int size = ACL_CHANGE_SET_QUEUE.size();
         long maxTime = 0L;
         long maxId = 0L;
 
@@ -83,7 +83,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
             List<AclChangeSet> aclChangeSetList = new ArrayList();
             for(int i=0; i<size; i++)
             {
-                AclChangeSet aclChangeSet = aclChangeSetQueue.get(i);
+                AclChangeSet aclChangeSet = ACL_CHANGE_SET_QUEUE.get(i);
                 if(aclChangeSet.getId() >= minAclChangeSetId && aclChangeSet.getId() < maxAclChangeSetId)
                 {
                     aclChangeSetList.add(aclChangeSet);
@@ -103,7 +103,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
 
         for(int i=0; i<size; i++)
         {
-            AclChangeSet aclChangeSet = aclChangeSetQueue.get(i);
+            AclChangeSet aclChangeSet = ACL_CHANGE_SET_QUEUE.get(i);
 
             if(aclChangeSet.getCommitTimeMs() < fromCommitTime)
             {
@@ -149,7 +149,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
         List<Acl> allAcls = new ArrayList();
         for(AclChangeSet aclChangeSet : aclChangeSets)
         {
-            List aclList = aclMap.get(aclChangeSet.getId());
+            List aclList = ACL_MAP.get(aclChangeSet.getId());
             allAcls.addAll(aclList);
         }
         return allAcls;
@@ -170,7 +170,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
         List<AclReaders> allAclReaders = new ArrayList();
         for(Acl acl : acls)
         {
-            AclReaders aclReaders = aclReadersMap.get(acl.getId());
+            AclReaders aclReaders = ACL_READERS_MAP.get(acl.getId());
             allAclReaders.add(aclReaders);
         }
         return allAclReaders;
@@ -210,7 +210,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
         }
 
-        int size = transactionQueue.size();
+        int size = TRANSACTION_QUEUE.size();
 
         long maxTime = 0L;
         long maxId = 0L;
@@ -221,7 +221,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
 
             for(int i=0; i<size; i++)
             {
-                Transaction txn = transactionQueue.get(i);
+                Transaction txn = TRANSACTION_QUEUE.get(i);
                 if(txn.getId() >= minTxnId && txn.getId() < maxTxnId)
                 {
                     transactionList.add(txn);
@@ -241,7 +241,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
 
         for(int i=0; i<size; i++)
         {
-            Transaction txn = transactionQueue.get(i);
+            Transaction txn = TRANSACTION_QUEUE.get(i);
             if(txn.getCommitTimeMs() < fromCommitTime)
             {
                 //We have moved beyond this transaction.
@@ -278,7 +278,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
         List<Node> allNodes = new ArrayList();
         for(long txnId : txnIds)
         {
-            List<Node> nodes = nodeMap.get(txnId);
+            List<Node> nodes = NODE_MAP.get(txnId);
             allNodes.addAll(nodes);
         }
 
@@ -296,13 +296,13 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
         List<Long> nodeIds = params.getNodeIds();
         if(nodeIds != null) {
             for (long nodeId : nodeIds) {
-                NodeMetaData fullNodeMetadata = nodeMetaDataMap.get(nodeId);
+                NodeMetaData fullNodeMetadata = NODE_META_DATA_MAP.get(nodeId);
                 NodeMetaData requestedMetadata = this.getOnlyRequestedMetadata(fullNodeMetadata, params);
                 resultNodeMetaDatas.add(requestedMetadata);
             }
         } else {
             Long fromId = params.getFromNodeId();
-            NodeMetaData fullNodeMetadata = nodeMetaDataMap.get(fromId);
+            NodeMetaData fullNodeMetadata = NODE_META_DATA_MAP.get(fromId);
             NodeMetaData requestedMetadata = this.getOnlyRequestedMetadata(fullNodeMetadata, params);
             resultNodeMetaDatas.add(requestedMetadata);
         }
@@ -386,8 +386,8 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
 
         //Just put the nodeId innto the content so we query for this in tests.
 
-        if(nodeContentMap.containsKey(nodeId)) {
-            return new GetTextContentResponse(new DummyResponse(nodeContentMap.get(nodeId)));
+        if(NODE_CONTENT_MAP.containsKey(nodeId)) {
+            return new GetTextContentResponse(new DummyResponse(NODE_CONTENT_MAP.get(nodeId)));
         }
 
         return new GetTextContentResponse(new DummyResponse("Hello world "+nodeId));

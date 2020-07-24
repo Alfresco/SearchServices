@@ -27,6 +27,7 @@ package org.alfresco.test.search.functional.searchServices.solr.admin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +37,8 @@ import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.springframework.context.annotation.Configuration;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import static java.util.Collections.emptyList;
 
 /**
  * End to end tests for SOLR Admin actions REST API, available from:
@@ -558,9 +561,11 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         RestResponse response = restClient.withParams("txid=" + txid).withSolrAdminAPI().getAction("purge");
         
         checkResponseStatusOk(response);
-        
-        String actionStatus = response.getResponse().body().jsonPath().get("action.status");
-        Assert.assertEquals(actionStatus, "scheduled");
+
+        DEFAULT_CORE_NAMES.forEach(core -> {
+            String actionStatus = response.getResponse().body().jsonPath().get("action." + core + ".status");
+            Assert.assertEquals(actionStatus, "scheduled");
+        });
     }
     
     /**
@@ -568,7 +573,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
      * @throws Exception
      */
     @Test(priority = 25)
-    public void testPurgeCore() throws Exception
+    public void testPurgeCore()
     {
         final Integer txid = 1;
         
@@ -580,7 +585,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
                 
                 checkResponseStatusOk(response);
                 
-                String actionStatus = response.getResponse().body().jsonPath().get("action.status");
+                String actionStatus = response.getResponse().body().jsonPath().get("action." + core + ".status");
                 Assert.assertEquals(actionStatus, "scheduled");
             }
             catch (Exception e)
@@ -601,9 +606,11 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         RestResponse response = restClient.withSolrAdminAPI().getAction("purge");
         
         checkResponseStatusOk(response);
-        
-        String actionStatus = response.getResponse().body().jsonPath().get("action.status");
-        Assert.assertEquals(actionStatus, "scheduled");
+
+        DEFAULT_CORE_NAMES.forEach(core -> {
+            String actionStatus = response.getResponse().body().jsonPath().get("action." + core + ".status");
+            Assert.assertEquals(actionStatus, "scheduled");
+        });
     }
     
     /**
@@ -663,9 +670,11 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         RestResponse response = restClient.withParams("txid=" + txid).withSolrAdminAPI().getAction("reindex");
         
         checkResponseStatusOk(response);
-        
-        String actionStatus = response.getResponse().body().jsonPath().get("action.status");
-        Assert.assertEquals(actionStatus, "scheduled");        
+
+        DEFAULT_CORE_NAMES.forEach(core -> {
+            String actionStatus = response.getResponse().body().jsonPath().get("action." + core + ".status");
+            Assert.assertEquals(actionStatus, "scheduled");
+        });
     }
     
     /**
@@ -673,7 +682,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
      * @throws Exception
      */
     @Test(priority = 30)
-    public void testReindexCore() throws Exception
+    public void testReindexCore()
     {
         Integer txid = 1;
         
@@ -685,7 +694,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
                 
                 checkResponseStatusOk(response);
                 
-                String actionStatus = response.getResponse().body().jsonPath().get("action.status");
+                String actionStatus = response.getResponse().body().jsonPath().get("action." + core + ".status");
                 Assert.assertEquals(actionStatus, "scheduled");
             }
             catch (Exception e)
@@ -707,12 +716,12 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         
         checkResponseStatusOk(response);
         
-        String actionStatus = response.getResponse().body().jsonPath().get("action.status");
-        Assert.assertEquals(actionStatus, "scheduled");
-        
         DEFAULT_CORE_NAMES.forEach(core -> {
-            List<String> errorNodeList = response.getResponse().body().jsonPath().get("action." + core);
-            Assert.assertEquals(errorNodeList, Arrays.asList(), "Expected no error nodes,");
+            String actionStatus = response.getResponse().body().jsonPath().get("action." + core + ".status");
+            Assert.assertEquals(actionStatus, "scheduled");
+
+            List<String> errorNodeList = response.getResponse().body().jsonPath().get("action." + core + "['Error Nodes']");
+            Assert.assertEquals(errorNodeList, emptyList(), "Expected no error nodes,");
         });
     }
     
@@ -721,7 +730,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
      * @throws Exception
      */
     @Test(priority = 32)
-    public void testRetryCore() throws Exception
+    public void testRetryCore()
     {
         DEFAULT_CORE_NAMES.forEach(core -> {
             
@@ -731,11 +740,11 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
                 
                 checkResponseStatusOk(response);
                 
-                String actionStatus = response.getResponse().body().jsonPath().get("action.status");
+                String actionStatus = response.getResponse().body().jsonPath().get("action." + core + ".status");
                 Assert.assertEquals(actionStatus, "scheduled");
                 
-                List<String> errorNodeList = response.getResponse().body().jsonPath().get("action." + core);
-                Assert.assertEquals(errorNodeList, Arrays.asList(), "Expected no error nodes,");
+                List<String> errorNodeList = response.getResponse().body().jsonPath().get("action." + core + "['Error Nodes']");
+                Assert.assertEquals(errorNodeList, emptyList(), "Expected no error nodes,");
             }
             catch (Exception e)
             {
@@ -757,9 +766,10 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         RestResponse response = restClient.withParams("txid=" + txid).withSolrAdminAPI().getAction("index");
         
         checkResponseStatusOk(response);
-        
-        String actionStatus = response.getResponse().body().jsonPath().get("action.status");
-        Assert.assertEquals(actionStatus, "scheduled");
+        DEFAULT_CORE_NAMES.forEach(core -> {
+            String actionStatus = response.getResponse().body().jsonPath().get("action." + core + ".status");
+            Assert.assertEquals(actionStatus, "scheduled");
+        });
     }
     
     /**
@@ -779,7 +789,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
                 
                 checkResponseStatusOk(response);
                 
-                String actionStatus = response.getResponse().body().jsonPath().get("action.status");
+                String actionStatus = response.getResponse().body().jsonPath().get("action." + core + ".status");
                 Assert.assertEquals(actionStatus, "scheduled");
             }
             catch (Exception e)

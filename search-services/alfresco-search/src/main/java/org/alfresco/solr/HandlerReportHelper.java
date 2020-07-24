@@ -124,7 +124,7 @@ class HandlerReportHelper
         return nr;
     }
 
-    static NamedList<Object> buildNodeReport(AbstractShardInformationPublisher publisher, Long dbid) throws JSONException
+    static NamedList<Object> buildNodeReport(ShardStatePublisher publisher, Long dbid) throws JSONException
     {
         NodeReport nodeReport = publisher.checkNode(dbid);
 
@@ -158,6 +158,7 @@ class HandlerReportHelper
             AclTracker aclTracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
             IndexHealthReport aclReport = aclTracker.checkIndex(toTx, toAclTx, fromTime, toTime);
             NamedList<Object> ihr = new SimpleOrderedMap<>();
+            ihr.add("ACL Tracker", (aclTracker.isEnabled() ? "enabled" : "disabled"));
             ihr.add("DB acl transaction count", aclReport.getDbAclTransactionCount());
             ihr.add("Count of duplicated acl transactions in the index", aclReport.getDuplicatedAclTxInIndex()
                     .cardinality());
@@ -186,7 +187,8 @@ class HandlerReportHelper
 
             // Metadata
             MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-            IndexHealthReport metaReport = metadataTracker.checkIndex(toTx, toAclTx, fromTime, toTime);
+            IndexHealthReport metaReport = metadataTracker.checkIndex(toTx, null, fromTime, toTime);
+            ihr.add("Metadata Tracker", (metadataTracker.isEnabled() ? "enabled" : "disabled"));
             ihr.add("DB transaction count", metaReport.getDbTransactionCount());
             ihr.add("Count of duplicated transactions in the index", metaReport.getDuplicatedTxInIndex()
                     .cardinality());
@@ -247,7 +249,7 @@ class HandlerReportHelper
         NamedList<Object> coreSummary = new SimpleOrderedMap<>();
         coreSummary.addAll((SimpleOrderedMap<Object>) srv.getCoreStats());
 
-        NodeStatePublisher statePublisher = trackerRegistry.getTrackerForCore(cname, NodeStatePublisher.class);
+        ShardStatePublisher statePublisher = trackerRegistry.getTrackerForCore(cname, ShardStatePublisher.class);
         TrackerState trackerState = statePublisher.getTrackerState();
         long lastIndexTxCommitTime = trackerState.getLastIndexedTxCommitTime();
 
@@ -428,17 +430,12 @@ class HandlerReportHelper
         long remainingContentTimeMillis = 0;
         srv.addFTSStatusCounts(ftsSummary);
         long cleanCount =
-                ofNullable(ftsSummary.get("Node count with FTSStatus Clean"))
+                ofNullable(ftsSummary.get("Node count whose content is in sync"))
                         .map(Number.class::cast)
                         .map(Number::longValue)
                         .orElse(0L);
         long dirtyCount =
-                ofNullable(ftsSummary.get("Node count with FTSStatus Dirty"))
-                        .map(Number.class::cast)
-                        .map(Number::longValue)
-                        .orElse(0L);
-        long newCount =
-                ofNullable(ftsSummary.get("Node count with FTSStatus New"))
+                ofNullable(ftsSummary.get("Node count whose content needs to be updated"))
                         .map(Number.class::cast)
                         .map(Number::longValue)
                         .orElse(0L);
@@ -449,12 +446,14 @@ class HandlerReportHelper
                         .map(Number::longValue)
                         .orElse(0L);
 
-        long contentYetToSee = nodesInIndex > 0 ? nodesToDo * (cleanCount + dirtyCount + newCount)/nodesInIndex  : 0;
-        if (dirtyCount + newCount + contentYetToSee > 0)
+
+
+        long contentYetToSee = nodesInIndex > 0 ? nodesToDo * (cleanCount + dirtyCount)/nodesInIndex  : 0;
+        if (dirtyCount + contentYetToSee > 0)
         {
             // We now use the elapsed time as seen by the single thread farming out alc indexing
             double meanContentElapsedIndexTime = srv.getTrackerStats().getMeanContentElapsedIndexTime();
-            remainingContentTimeMillis = (long) ((dirtyCount + newCount + contentYetToSee) * meanContentElapsedIndexTime);
+            remainingContentTimeMillis = (long) ((dirtyCount + contentYetToSee) * meanContentElapsedIndexTime);
         }
         now = new Date();
         end = new Date(now.getTime() + remainingContentTimeMillis);
@@ -484,6 +483,8 @@ class HandlerReportHelper
         }
 
         ContentTracker contentTrkr = trackerRegistry.getTrackerForCore(cname, ContentTracker.class);
+        CascadeTracker cascadeTracker = trackerRegistry.getTrackerForCore(cname, CascadeTracker.class);
+
         TrackerState contentTrkrState = contentTrkr.getTrackerState();
         // Leave ModelTracker out of this check, because it is common
         boolean aTrackerIsRunning = aclTrkrState.isRunning() || metadataTrkrState.isRunning()
@@ -496,6 +497,11 @@ class HandlerReportHelper
         coreSummary.add("ContentTracker Active", contentTrkrState.isRunning());
         coreSummary.add("MetadataTracker Active", metadataTrkrState.isRunning());
         coreSummary.add("AclTracker Active", aclTrkrState.isRunning());
+
+        coreSummary.add("ContentTracker Enabled", contentTrkr.isEnabled());
+        coreSummary.add("MetadataTracker Enabled", metaTrkr.isEnabled());
+        coreSummary.add("AclTracker Enabled", aclTrkr.isEnabled());
+        coreSummary.add("CascadeTracker Enabled", cascadeTracker.isEnabled());
 
         // TX
 
