@@ -61,6 +61,8 @@ public class TrackerState
 
     private volatile boolean running = false;
 
+    private boolean enabled;
+
     private volatile boolean checkedFirstTransactionTime = false;
     private volatile boolean checkedFirstAclTransactionTime = false;
     private volatile boolean checkedLastAclTransactionTime = false;
@@ -261,6 +263,14 @@ public class TrackerState
         this.timeBeforeWhichThereCanBeNoHoles = timeBeforeWhichThereCanBeNoHoles;
     }
 
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
     /*
      * (non-Javadoc)
      * @see java.lang.Object#toString()
@@ -284,6 +294,7 @@ public class TrackerState
                     + ", checkedLastTransactionTime=" + this.checkedLastTransactionTime
                     + ", checkedLastAclTransactionTime=" + this.checkedLastAclTransactionTime 
                     + ", check=" + check
+                    + ", enabled=" + enabled
                     + ", timeToStopIndexing=" + timeToStopIndexing 
                     + ", lastGoodChangeSetCommitTimeInIndex=" + lastGoodChangeSetCommitTimeInIndex 
                     + ", lastGoodTxCommitTimeInIndex=" + lastGoodTxCommitTimeInIndex 

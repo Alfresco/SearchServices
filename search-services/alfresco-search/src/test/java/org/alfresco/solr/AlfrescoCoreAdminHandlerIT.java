@@ -62,7 +62,7 @@ import org.alfresco.solr.tracker.DocRouter;
 import org.alfresco.solr.tracker.IndexHealthReport;
 import org.alfresco.solr.tracker.MetadataTracker;
 import org.alfresco.solr.tracker.PropertyRouter;
-import org.alfresco.solr.tracker.NodeStatePublisher;
+import org.alfresco.solr.tracker.ShardStatePublisher;
 import org.alfresco.solr.tracker.TrackerRegistry;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CoreAdminParams;
@@ -219,23 +219,22 @@ public class AlfrescoCoreAdminHandlerIT
     }
 
     @Test
-    public void coreIsMaster_thenCoreStatePublisherInstanceCorrespondsToMetadataTracker()
+    public void coreIsMaster_thenCoreStatePublisherInstanceCorrespondsToShardStatePublisher()
     {
-        MetadataTracker coreStatePublisher = mock(MetadataTracker.class);
+        ShardStatePublisher coreStatePublisher = mock(ShardStatePublisher.class);
 
-        when(trackerRegistry.getTrackerForCore(anyString(), eq(MetadataTracker.class)))
+        when(trackerRegistry.getTrackerForCore(anyString(), eq(ShardStatePublisher.class)))
                 .thenReturn(coreStatePublisher);
 
         assertSame(coreStatePublisher, alfrescoCoreAdminHandler.coreStatePublisher("ThisIsTheCoreName"));
     }
 
     @Test
-    public void coreIsSlave_thenCoreStatePublisherInstanceCorrespondsToSlaveCoreStatePublisher()
+    public void coreIsSlave_thenCoreStatePublisherInstanceCorrespondsToShardStatePublisher()
     {
-        NodeStatePublisher coreStateTracker = mock(NodeStatePublisher.class);
+        ShardStatePublisher coreStateTracker = mock(ShardStatePublisher.class);
 
-        when(trackerRegistry.getTrackerForCore(anyString(), eq(MetadataTracker.class))).thenReturn(null);
-        when(trackerRegistry.getTrackerForCore(anyString(), eq(NodeStatePublisher.class))).thenReturn(coreStateTracker);
+        when(trackerRegistry.getTrackerForCore(anyString(), eq(ShardStatePublisher.class))).thenReturn(coreStateTracker);
 
         assertSame(coreStateTracker, alfrescoCoreAdminHandler.coreStatePublisher("ThisIsTheCoreName"));
     }

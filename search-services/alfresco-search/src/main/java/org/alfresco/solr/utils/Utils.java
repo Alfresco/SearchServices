@@ -148,10 +148,19 @@ public abstract class Utils
      */
     public static boolean isNullOrEmpty(String value)
     {
-        return ofNullable(value)
-                .map(String::trim)
-                .map(String::isEmpty)
-                .orElse(true);
+        return value == null || value.trim().length() == 0;
+    }
+
+    /**
+     * Returns true if the input string is not null and it is not empty.
+     * Note whitespaces are not considered, so if a string contains only whitespaces, it is considered empty.
+     *
+     * @param value the input string.
+     * @return true if the input string is not null and it is not empty.
+     */
+    public static boolean isNotNullAndNotEmpty(String value)
+    {
+        return value != null && value.trim().length() != 0;
     }
 
     /**
