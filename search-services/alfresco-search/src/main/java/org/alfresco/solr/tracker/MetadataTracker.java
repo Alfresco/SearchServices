@@ -68,7 +68,7 @@ import static org.alfresco.repo.index.shard.ShardMethodEnum.DB_ID_RANGE;
  * This tracks two things: transactions and metadata nodes
  * @author Ahmed Owian
  */
-public class MetadataTracker extends AbstractShardInformationPublisher implements Tracker
+public class MetadataTracker extends ActivatableTracker
 {
     protected final static Logger LOGGER = LoggerFactory.getLogger(MetadataTracker.class);
 
@@ -101,8 +101,8 @@ public class MetadataTracker extends AbstractShardInformationPublisher implement
     private ForkJoinPool forkJoinPool;
 
     // Share run and write locks across all MetadataTracker threads
-    private static Map<String, Semaphore> RUN_LOCK_BY_CORE = new ConcurrentHashMap<>();
-    private static Map<String, Semaphore> WRITE_LOCK_BY_CORE = new ConcurrentHashMap<>();
+    private static final Map<String, Semaphore> RUN_LOCK_BY_CORE = new ConcurrentHashMap<>();
+    private static final Map<String, Semaphore> WRITE_LOCK_BY_CORE = new ConcurrentHashMap<>();
     @Override
     public Semaphore getWriteLock()
     {
@@ -119,7 +119,7 @@ public class MetadataTracker extends AbstractShardInformationPublisher implement
      * This service is used to find the next available transaction commit time from a given time,
      * so periods of time where no document updating is happening can be skipped while getting 
      * pending transactions list.
-     * 
+     *
      * {@link org.alfresco.solr.client.SOLRAPIClient#GET_NEXT_TX_COMMIT_TIME}
      */
     private boolean nextTxCommitTimeServiceAvailable = false;
@@ -127,8 +127,8 @@ public class MetadataTracker extends AbstractShardInformationPublisher implement
     /**
      * Check if txInteravlCommitTimeService is available in the repository.
      * This service returns the minimum and the maximum commit time for transactions in a node id range,
-     * so method sharding DB_ID_RANGE can skip transactions not relevant for the DB ID range. 
-     * 
+     * so method sharding DB_ID_RANGE can skip transactions not relevant for the DB ID range.
+     *
      * {@link org.alfresco.solr.client.SOLRAPIClient#GET_TX_INTERVAL_COMMIT_TIME}
      */
     private boolean txIntervalCommitTimeServiceAvailable = false;
@@ -159,7 +159,7 @@ public class MetadataTracker extends AbstractShardInformationPublisher implement
     public MetadataTracker( Properties p, SOLRAPIClient client, String coreName,
                 InformationServer informationServer, boolean checkRepoServicesAvailability)
     {
-        super(true, p, client, coreName, informationServer, Tracker.Type.METADATA);
+        super(p, client, coreName, informationServer, Tracker.Type.METADATA);
 
         transactionDocsBatchSize = Integer.parseInt(p.getProperty("alfresco.transactionDocsBatchSize",
                 String.valueOf(DEFAULT_TRANSACTION_DOCS_BATCH_SIZE)));
@@ -1319,6 +1319,19 @@ public class MetadataTracker extends AbstractShardInformationPublisher implement
         transactionsToIndex.offer(txId);
     }
 
+    @Override
+    protected void clearScheduledMaintenanceWork()
+    {
+        logAndClear(transactionsToIndex, "Transactions to be indexed");
+        logAndClear(nodesToIndex, "Nodes to be indexed");
+
+        logAndClear(transactionsToReindex, "Transactions to be re-indexed");
+        logAndClear(nodesToReindex, "Nodes to be re-indexed");
+
+        logAndClear(transactionsToPurge, "Transactions to be purged");
+        logAndClear(nodesToPurge, "Nodes to be purged");
+    }
+
     public void addNodeToIndex(Long nodeId)
     {
         this.nodesToIndex.offer(nodeId);
@@ -1333,4 +1346,6 @@ public class MetadataTracker extends AbstractShardInformationPublisher implement
     {
         this.queriesToReindex.offer(query);
     }
+
+
 }

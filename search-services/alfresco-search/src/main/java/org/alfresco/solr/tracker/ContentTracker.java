@@ -49,7 +49,7 @@ import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
  * 
  * @author Ahmed Owian
  */
-public class ContentTracker extends AbstractTracker implements Tracker
+public class ContentTracker extends ActivatableTracker
 {
     protected final static Logger LOGGER = LoggerFactory.getLogger(ContentTracker.class);
 
