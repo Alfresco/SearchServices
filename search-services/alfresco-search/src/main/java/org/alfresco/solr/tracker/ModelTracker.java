@@ -92,7 +92,7 @@ import org.slf4j.LoggerFactory;
  * deactivate ModelTracker
  * @enduml
  */
-public class ModelTracker extends AbstractTracker implements Tracker
+public class ModelTracker extends AbstractTracker
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ModelTracker.class);
 

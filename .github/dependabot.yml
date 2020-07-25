@@ -1,0 +1,42 @@
+# see https://docs.github.com/en/github/administering-a-repository/configuration-options-for-dependency-updates
+version: 2
+updates:
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "22:00"
+      timezone: "Europe/London"
+    ignore:
+      # Solr dependencies
+      - dependency-name: "org.apache.lucene:lucene-analyzers-common"
+      - dependency-name: "org.apache.solr:solr-core"
+      - dependency-name: "org.apache.solr:solr-analysis-extras"
+      - dependency-name: "org.apache.solr:solr-langid"
+      - dependency-name: "org.apache.solr:solr-clustering"
+      - dependency-name: "org.apache.solr:solr-test-framework"
+      - dependency-name: "org.apache.solr:solr-solrj"
+
+  - package-ecosystem: "docker"
+    directory: "search-services/packaging/src/docker/"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "22:00"
+      timezone: "Europe/London"
+
+  - package-ecosystem: "docker"
+    directory: "insight-engine/packaging/src/docker/"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "22:00"
+      timezone: "Europe/London"
+
+  - package-ecosystem: "docker"
+    directory: "insight-engine/alfresco-insight-zeppelin/src/docker/"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "22:00"
+      timezone: "Europe/London"
