@@ -102,7 +102,7 @@ public class RewriteFieldListComponent extends SearchComponent {
             {
                 fieldListSet.add("*");
             }
-            else
+            else if (solrReturnFields.getLuceneFieldNames() != null)
             {
                 fieldListSet.addAll(solrReturnFields.getLuceneFieldNames().stream()
                         .map( field -> AlfrescoSolrDataModel.getInstance()
