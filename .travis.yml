@@ -29,7 +29,7 @@ stages:
 env:
   global:
     # Release version has to start with real version (2.0.0-....) for the docker image to build successfully.
-    - RELEASE_VERSION=2.0.0-A2
+    - RELEASE_VERSION=2.0.0-A3
     - DEVELOPMENT_VERSION=2.0.0-SNAPSHOT
 
 # This should not be required on community build
@@ -158,3 +158,56 @@ jobs:
         - travis_retry docker push quay.io/alfresco/search-services:latest
         - travis_retry docker push quay.io/alfresco/insight-engine:latest
         - travis_retry docker push quay.io/alfresco/insight-zeppelin:latest
+    - name: "Release and Copy to S3 Staging Bucket"
+      stage: Release
+      # TODO release only on releasable branches
+#      if: fork = false AND (branch = master OR branch =~ /support\/.*/) AND type != pull_request AND commit_message =~ /\[release\]/
+      if: commit_message =~ /\[release\]/
+      install:
+        - travis_retry travis_wait 60 mvn --batch-mode -q clean package -DskipTests
+      script:
+        - travis_wait 60 mvn --batch-mode -DreleaseVersion=$RELEASE_VERSION -DdevelopmentVersion=$DEVELOPMENT_VERSION release:prepare release:perform -DskipTests "-Darguments=-DskipTests -Dadditionalparam=-Xdoclint:none"
+      deploy:
+        - provider: s3
+          access_key_id: ${AWS_STAGING_ACCESS_KEY}
+          secret_access_key: ${AWS_STAGING_SECRET_KEY}
+          region: "eu-west-1"
+          bucket: "alfresco-artefacts-staging"
+          glob: "alfresco-search-services-${RELEASE_VERSION}.zip"
+          upload_dir: "enterprise/SearchServices/${RELEASE_VERSION}"
+          skip_cleanup: true
+          acl: private
+          local_dir: "search-services/packaging/target"
+        - provider: s3
+          access_key_id: ${AWS_STAGING_ACCESS_KEY}
+          secret_access_key: ${AWS_STAGING_SECRET_KEY}
+          region: "eu-west-1"
+          bucket: "alfresco-artefacts-staging"
+          glob: "alfresco-insight-engine-distribution-${RELEASE_VERSION}.zip"
+          upload_dir: "enterprise/InsightEngine/${RELEASE_VERSION}"
+          skip_cleanup: true
+          acl: private
+          local_dir: "insight-engine/packaging/target"
+        - provider: s3
+          access_key_id: ${AWS_STAGING_ACCESS_KEY}
+          secret_access_key: ${AWS_STAGING_SECRET_KEY}
+          region: "eu-west-1"
+          bucket: "alfresco-artefacts-staging"
+          glob: "alfresco-insight-zeppelin-${RELEASE_VERSION}.zip"
+          upload_dir: "enterprise/InsightZeppelin/${RELEASE_VERSION}"
+          skip_cleanup: true
+          acl: private
+          local_dir: "insight-engine/alfresco-insight-zeppelin/target"
+    - name: Deploy release version to quay.io
+      #TODO run only on release branches
+      #if: fork = false AND ( branch =~ /release\/.*/) AND type != pull_request
+      install:
+        - travis_retry travis_wait 60 mvn --batch-mode -q clean package -DskipTests
+        - docker login quay.io -u ${QUAY_USERNAME} -p ${QUAY_PASSWORD}
+        - travis_retry travis_wait 40 docker build -t quay.io/alfresco/search-services:$RELEASE_VERSION search-services/packaging/target/docker-resources
+        - travis_retry travis_wait 40 docker build -t quay.io/alfresco/insight-engine:$RELEASE_VERSION insight-engine/packaging/target/docker-resources
+        - travis_retry travis_wait 40 docker build -t quay.io/alfresco/insight-zeppelin:$RELEASE_VERSION insight-engine/alfresco-insight-zeppelin/target/docker-resources
+      script:
+        - travis_retry docker push quay.io/alfresco/search-services:$RELEASE_VERSION
+        - travis_retry docker push quay.io/alfresco/insight-engine:$RELEASE_VERSION
+        - travis_retry docker push quay.io/alfresco/insight-zeppelin:$RELEASE_VERSION
