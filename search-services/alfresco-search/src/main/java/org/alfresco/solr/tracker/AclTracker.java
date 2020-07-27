@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory;
  * @author Matt Ward
  **/
 
-public class AclTracker extends AbstractTracker
+public class AclTracker extends ActivatableTracker
 {
     protected final static Logger LOGGER = LoggerFactory.getLogger(AclTracker.class);
 
@@ -361,6 +361,19 @@ public class AclTracker extends AbstractTracker
     public void addAclToPurge(Long aclToPurge)
     {
         aclsToPurge.offer(aclToPurge);
+    }
+
+    @Override
+    protected void clearScheduledMaintenanceWork()
+    {
+        logAndClear(aclChangeSetsToIndex, "ACL ChangeSets to be indexed");
+        logAndClear(aclsToIndex, "ACLs to be indexed");
+
+        logAndClear(aclChangeSetsToReindex, "ACL ChangeSets to be re-indexed");
+        logAndClear(aclsToReindex, "ACLs to be re-indexed");
+
+        logAndClear(aclChangeSetsToPurge, "ACL ChangeSets to be purged");
+        logAndClear(aclsToPurge, "ACLs to be purged");
     }
 
     protected void trackRepository() throws IOException, AuthenticationException, JSONException

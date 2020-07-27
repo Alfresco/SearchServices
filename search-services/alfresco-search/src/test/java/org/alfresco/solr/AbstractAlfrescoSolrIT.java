@@ -191,6 +191,16 @@ public abstract class AbstractAlfrescoSolrIT implements SolrTestFiles, AlfrescoS
         h.reload();
     }
 
+    protected void disableIndexing()
+    {
+        admin.actionDisableIndexing(new ModifiableSolrParams());
+    }
+
+    protected void enableIndexing()
+    {
+        admin.actionEnableIndexing(new ModifiableSolrParams());
+    }
+
     /**
      * @deprecated as testHarness is used
      * Get admin core handler
