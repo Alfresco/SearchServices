@@ -29,7 +29,6 @@ import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 
 import static org.alfresco.solr.SolrInformationServer.CASCADE_TRACKER_ENABLED;
-import static org.alfresco.solr.tracker.ActivatableTracker.INDEXING_ENABLED_PERSISTENT_FLAG_ACROSS_RELOADS;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,7 +46,6 @@ import org.alfresco.solr.client.SOLRAPIClient;
 import org.alfresco.solr.client.SOLRAPIClientFactory;
 import org.alfresco.solr.content.SolrContentStore;
 import org.alfresco.solr.tracker.AclTracker;
-import org.alfresco.solr.tracker.ActivatableTracker;
 import org.alfresco.solr.tracker.CascadeTracker;
 import org.alfresco.solr.tracker.CommitTracker;
 import org.alfresco.solr.tracker.ContentTracker;
@@ -292,21 +290,6 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
             trackers.add(cascadeTracker);
         }
 
-        boolean indexingHasBeenEnabled =
-                Boolean.parseBoolean(props.getProperty(INDEXING_ENABLED_PERSISTENT_FLAG_ACROSS_RELOADS, "true"));
-
-        if (indexingHasBeenEnabled)
-        {
-            trackers.stream().map(ActivatableTracker.class::cast).forEach(ActivatableTracker::enable);
-            LOGGER.info("SearchServices Core trackers (i.e. indexing) have been enabled.");
-        }
-        else
-        {
-            trackers.stream().map(ActivatableTracker.class::cast).forEach(ActivatableTracker::disable);
-            LOGGER.info("SearchServices Core trackers (i.e. indexing) have been disabled. That could happen if you " +
-                    "previously disabled the indexing on this core and then you reloaded it. If you want to enable indexing " +
-                    "please invoke the \"enable-indexing\" admin action.");
-        }
 
         //The CommitTracker will acquire these locks in order
         //The ContentTracker will likely have the longest runs so put it first to ensure the MetadataTracker is not paused while
