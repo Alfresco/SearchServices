@@ -124,8 +124,10 @@ bcmail-jdk15on-1.47.jar
 bcprov-jdk15on-1.47.jar
 boilerpipe-1.1.0.jar
 caffeine-2.4.0.jar
-calcite-core-1.12.0.jar
-calcite-linq4j-1.12.0.jar
+calcite-core-1.13.0.jar
+calcite-linq4j-1.13.0.jar
+avatica-core-1.13.0.jar
+avatica-metrics-1.13.0.jar
 carrot2-guava-18.0.jar
 carrot2-mini-3.15.0.jar
 commons-cli-1.2.jar
