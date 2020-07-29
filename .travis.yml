@@ -160,9 +160,9 @@ jobs:
         - travis_retry docker push quay.io/alfresco/insight-zeppelin:latest
     - name: "Release and Copy to S3 Staging Bucket"
       stage: Release
-      # TODO release only on releasable branches
+      # TODO release only on releasable branches and if the commit has "release" keyword
 #      if: fork = false AND (branch = master OR branch =~ /support\/.*/) AND type != pull_request AND commit_message =~ /\[release\]/
-      if: commit_message =~ /\[release\]/
+#      if: commit_message =~ /\[release\]/
       install:
         - travis_retry travis_wait 60 mvn --batch-mode -q clean package -DskipTests
       script:
@@ -199,8 +199,9 @@ jobs:
           acl: private
           local_dir: "insight-engine/alfresco-insight-zeppelin/target"
     - name: Deploy release version to quay.io
-      #TODO run only on release branches
+      #TODO run only on release branches and if the commit has "release" keyword
       #if: fork = false AND ( branch =~ /release\/.*/) AND type != pull_request
+      #if: commit_message =~ /\[release\]/
       install:
         - travis_retry travis_wait 60 mvn --batch-mode -q clean package -DskipTests
         - docker login quay.io -u ${QUAY_USERNAME} -p ${QUAY_PASSWORD}
