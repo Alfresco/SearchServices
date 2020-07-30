@@ -72,20 +72,13 @@ public abstract class ActivatableTracker extends AbstractTracker
     public final void disable()
     {
         clearScheduledMaintenanceWork();
-
-        if (isEnabled.compareAndSet(true, false))
-        {
+        if (isEnabled.compareAndSet(true, false)){
             if (state != null && state.isRunning())
             {
-                LOGGER.info("[{} / {} / {}] {} Tracker has been disabled (the change will be effective at the next tracking cycle) and set in rollback mode because it is running.", coreName, trackerId, state, type);
                 setRollback(true, null);
             }
-            LOGGER.info("[{} / {} / {}] {} Tracker has been disabled. The change will be effective at the next tracking cycle.", coreName, trackerId, state, type);
         }
-        else
-        {
-            LOGGER.warn("[{} / {} / {}] {} Tracker cannot be disabled because it is already in that state.", coreName, trackerId, state, type);
-        }
+        LOGGER.info("[{} / {} / {}] {} Tracker has been disabled.", coreName, trackerId, state, type);
     }
 
     /**
@@ -93,14 +86,8 @@ public abstract class ActivatableTracker extends AbstractTracker
      */
     public final void enable()
     {
-        if (isEnabled.compareAndSet(false, true))
-        {
-            LOGGER.info("[{} / {} / {}] {} Tracker has been enabled. The change will be effective at the next tracking cycle.", coreName, trackerId, state, type);
-        }
-        else
-        {
-            LOGGER.warn("[{} / {} / {}] {} Tracker cannot be enabled because it is already in that state.", coreName, trackerId, state, type);
-        }
+        isEnabled.set(true);
+        LOGGER.info("[{} / {} / {}] {} Tracker has been enabled", coreName, trackerId, state, type);
     }
 
     @Override
