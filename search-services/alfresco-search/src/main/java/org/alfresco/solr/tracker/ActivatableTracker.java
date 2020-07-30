@@ -72,7 +72,8 @@ public abstract class ActivatableTracker extends AbstractTracker
     public final void disable()
     {
         clearScheduledMaintenanceWork();
-        if (isEnabled.compareAndSet(true, false)){
+        if (isEnabled.compareAndSet(true, false))
+        {
             if (state != null && state.isRunning())
             {
                 setRollback(true, null);
