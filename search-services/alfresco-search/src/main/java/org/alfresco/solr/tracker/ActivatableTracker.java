@@ -44,20 +44,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class ActivatableTracker extends AbstractTracker
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ActivatableTracker.class);
-    public final static String INDEXING_ENABLED_PERSISTENT_FLAG_ACROSS_RELOADS = "alfresco.trackers.indexingEnabled";
 
-    protected final AtomicBoolean isEnabled;
+    protected static AtomicBoolean isEnabled = new AtomicBoolean(true);
 
     protected ActivatableTracker(Type type)
     {
         super(type);
-        this.isEnabled = new AtomicBoolean(true);
     }
 
     protected ActivatableTracker(Properties properties, SOLRAPIClient client, String coreName, InformationServer informationServer, Type type)
     {
         super(properties, client, coreName, informationServer, type);
-        isEnabled = new AtomicBoolean(Boolean.parseBoolean(properties.getProperty(INDEXING_ENABLED_PERSISTENT_FLAG_ACROSS_RELOADS, "true")));
 
         if (isEnabled.get())
         {
@@ -69,11 +66,6 @@ public abstract class ActivatableTracker extends AbstractTracker
         }
     }
 
-    protected void setPersistentIndexingStateAcrossReloadsTo(boolean enabled)
-    {
-        infoSrv.getAdminHandler().getCoreContainer().getCoreDescriptor(coreName).setProperty(INDEXING_ENABLED_PERSISTENT_FLAG_ACROSS_RELOADS, String.valueOf(enabled));
-    }
-
     /**
      * Disables this tracker instance.
      */
@@ -83,7 +75,6 @@ public abstract class ActivatableTracker extends AbstractTracker
 
         if (isEnabled.compareAndSet(true, false))
         {
-            setPersistentIndexingStateAcrossReloadsTo(false);
             if (state != null && state.isRunning())
             {
                 LOGGER.info("[{} / {} / {}] {} Tracker has been disabled (the change will be effective at the next tracking cycle) and set in rollback mode because it is running.", coreName, trackerId, state, type);
@@ -104,7 +95,6 @@ public abstract class ActivatableTracker extends AbstractTracker
     {
         if (isEnabled.compareAndSet(false, true))
         {
-            setPersistentIndexingStateAcrossReloadsTo(true);
             LOGGER.info("[{} / {} / {}] {} Tracker has been enabled. The change will be effective at the next tracking cycle.", coreName, trackerId, state, type);
         }
         else
