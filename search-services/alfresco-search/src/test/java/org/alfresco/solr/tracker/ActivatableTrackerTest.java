@@ -55,10 +55,6 @@ public class ActivatableTrackerTest
             // Nothing to be done here, it's a fake implementation.
         }
 
-        @Override
-        protected void setPersistentIndexingStateAcrossReloadsTo(boolean enabled) {
-            // Nothing to be done here, it's a fake implementation.
-        }
 
         @Override
         public void maintenance() {
@@ -90,6 +86,8 @@ public class ActivatableTrackerTest
         state = new TrackerState();
         state.setRunning(false);
         tracker = spy(new TestActivatableTracker(new Properties(), state));
+        tracker.enable();
+        assertTrue(tracker.isEnabled());
         assertFalse(tracker.state.isRunning());
     }
 
