@@ -164,9 +164,13 @@ jobs:
 #      if: fork = false AND (branch = master OR branch =~ /support\/.*/) AND type != pull_request AND commit_message =~ /\[release\]/
 #      if: commit_message =~ /\[release\]/
       install:
+        # Use full history for release
+        - git checkout -B "${TRAVIS_BRANCH}"
+        # Add email to link commits to user
+        - git config user.email "${GIT_EMAIL}"
         - travis_retry travis_wait 60 mvn --batch-mode -q clean package -DskipTests
       script:
-        - travis_wait 60 mvn --batch-mode -DreleaseVersion=$RELEASE_VERSION -DdevelopmentVersion=$DEVELOPMENT_VERSION release:prepare release:perform -DskipTests "-Darguments=-DskipTests -Dadditionalparam=-Xdoclint:none"
+        - travis_wait 60 mvn --batch-mode -DreleaseVersion=$RELEASE_VERSION -DdevelopmentVersion=$DEVELOPMENT_VERSION -DscmCommentPrefix="[maven-release-plugin][skip ci]" -DskipTests "-Darguments=-DskipTests -Dadditionalparam=-Xdoclint:none" release:prepare release:perform
       deploy:
         - provider: s3
           access_key_id: ${AWS_STAGING_ACCESS_KEY}

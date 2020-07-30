@@ -8,7 +8,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.timestamp>${maven.build.timestamp}</project.timestamp>
-        <project.revision.key>${bamboo_repository_revision_number}</project.revision.key>
     </properties>
     <parent>
         <groupId>org.alfresco</groupId>
