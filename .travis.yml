@@ -170,7 +170,7 @@ jobs:
         - git config user.email "${GIT_EMAIL}"
         - travis_retry travis_wait 60 mvn --batch-mode -q clean package -DskipTests
       script:
-        - travis_wait 60 mvn --batch-mode -DreleaseVersion=$RELEASE_VERSION -DdevelopmentVersion=$DEVELOPMENT_VERSION -DscmCommentPrefix="[maven-release-plugin][skip ci]" -DskipTests "-Darguments=-DskipTests -Dadditionalparam=-Xdoclint:none" release:prepare release:perform
+        - travis_wait 60 mvn --batch-mode -DreleaseVersion="${RELEASE_VERSION}" -DdevelopmentVersion="${DEVELOPMENT_VERSION}" -Dusername="${GIT_USERNAME}" -Dpassword="${GIT_PASSWORD}" -DscmCommentPrefix="[maven-release-plugin][skip ci]" -DskipTests "-Darguments=-DskipTests -Dadditionalparam=-Xdoclint:none" release:prepare release:perform
       deploy:
         - provider: s3
           access_key_id: ${AWS_STAGING_ACCESS_KEY}
