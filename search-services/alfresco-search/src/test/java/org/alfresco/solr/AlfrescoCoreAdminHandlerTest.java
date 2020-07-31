@@ -251,11 +251,6 @@ public class AlfrescoCoreAdminHandlerTest
             protected void doTrack(String iterationId) {
                 // Nothing to be done here, it's a fake implementation.
             }
-
-            @Override
-            protected void setPersistentIndexingStateAcrossReloadsTo(boolean enabled) {
-                // Nothing to be done here, it's a fake implementation.
-            }
         }
 
         class TestAclTracker extends AclTracker {
@@ -267,11 +262,6 @@ public class AlfrescoCoreAdminHandlerTest
 
             @Override
             protected void doTrack(String iterationId) {
-                // Nothing to be done here, it's a fake implementation.
-            }
-
-            @Override
-            protected void setPersistentIndexingStateAcrossReloadsTo(boolean enabled) {
                 // Nothing to be done here, it's a fake implementation.
             }
         }
