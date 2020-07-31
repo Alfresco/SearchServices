@@ -175,12 +175,13 @@ public class AlfrescoCoreAdminHandlerTest
         coreProperties.setProperty(
                 MAX_TRANSACTIONS_TO_SCHEDULE_CONF_PROPERTY_NAME,
                 String.valueOf(expectedMaxTransactionToSchedule));
-
         CoreContainer coreContainer = mock(CoreContainer.class);
         SolrCore core = mock(SolrCore.class);
         SolrResourceLoader resourceLoader = mock(SolrResourceLoader.class);
+        String solrHome = "./";
         when(coreContainer.getCore(ALFRESCO_CORE_NAME)).thenReturn(core);
         when(core.getResourceLoader()).thenReturn(resourceLoader);
+        when(coreContainer.getSolrHome()).thenReturn(solrHome);
         when(resourceLoader.getCoreProperties()).thenReturn(coreProperties);
 
         admin = new AlfrescoCoreAdminHandler(coreContainer);
@@ -198,8 +199,10 @@ public class AlfrescoCoreAdminHandlerTest
         CoreContainer coreContainer = mock(CoreContainer.class);
         SolrCore core = mock(SolrCore.class);
         SolrResourceLoader resourceLoader = mock(SolrResourceLoader.class);
+        String solrHome = "./";
         when(coreContainer.getCore(ALFRESCO_CORE_NAME)).thenReturn(core);
         when(core.getResourceLoader()).thenReturn(resourceLoader);
+        when(coreContainer.getSolrHome()).thenReturn(solrHome);
         when(resourceLoader.getCoreProperties()).thenReturn(coreProperties);
 
         admin = new AlfrescoCoreAdminHandler(coreContainer);

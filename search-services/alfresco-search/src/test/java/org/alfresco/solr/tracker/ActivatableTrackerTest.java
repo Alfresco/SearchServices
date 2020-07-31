@@ -86,6 +86,8 @@ public class ActivatableTrackerTest
         state = new TrackerState();
         state.setRunning(false);
         tracker = spy(new TestActivatableTracker(new Properties(), state));
+        tracker.enable();
+        assertTrue(tracker.isEnabled());
         assertFalse(tracker.state.isRunning());
     }
 
