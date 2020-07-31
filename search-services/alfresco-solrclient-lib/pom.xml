@@ -10,17 +10,6 @@
         <version>2.0.0-SNAPSHOT</version>
     </parent>
 
-    <distributionManagement>
-        <repository>
-            <id>alfresco-internal</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>alfresco-internal-snapshots</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <properties>
         <dependency.alfresco-data-model.version>8.135</dependency.alfresco-data-model.version>
         <dependency.jackson.version>2.10.3</dependency.jackson.version>
