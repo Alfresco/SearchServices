@@ -12,18 +12,18 @@
    <name>Alfresco Search And Insight Parent</name>
    <distributionManagement>
       <repository>
-         <id>alfresco-enterprise-releases</id>
+         <id>alfresco-internal</id>
          <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-releases/</url>
       </repository>
       <snapshotRepository>
-         <id>alfresco-enterprise-snapshots</id>
+         <id>alfresco-internal-snapshots</id>
          <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-snapshots/</url>
       </snapshotRepository>
    </distributionManagement>
    <scm>
-      <connection>scm:git:https://github.com/Alfresco/InsightEngine.git</connection>
-      <developerConnection>scm:git:https://github.com/Alfresco/InsightEngine.git</developerConnection>
-      <url>https://github.com/Alfresco/InsightEngine</url>
+      <connection>scm:git:ssh://git@github.com/Alfresco/InsightEngine.git</connection>
+      <developerConnection>scm:git:ssh://git@github.com/Alfresco/InsightEngine.git</developerConnection>
+      <url>scm:git:ssh://git@github.com/Alfresco/InsightEngine.git</url>
       <tag>HEAD</tag>
    </scm>
    <properties>
