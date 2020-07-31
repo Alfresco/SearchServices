@@ -22,7 +22,7 @@
    </distributionManagement>
    <scm>
       <connection>scm:git:https://github.com/Alfresco/InsightEngine.git</connection>
-      <developerConnection>scm:git:https://github.com/Alfresco//InsightEngine.git</developerConnection>
+      <developerConnection>scm:git:https://github.com/Alfresco/InsightEngine.git</developerConnection>
       <url>https://github.com/Alfresco/InsightEngine</url>
       <tag>HEAD</tag>
    </scm>
