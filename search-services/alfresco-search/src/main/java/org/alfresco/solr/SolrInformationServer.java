@@ -3290,6 +3290,7 @@ public class SolrInformationServer implements InformationServer
         doc.removeField(FIELD_TAG);
         doc.removeField(FIELD_TAG_SUGGEST);
         doc.removeField(FIELD_APATH);
+        doc.removeField(FIELD_ANAME);
 
         boolean repoOnly = true;
         for (Pair<String, QName> path : nodeMetaData.getPaths())
