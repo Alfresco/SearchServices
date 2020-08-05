@@ -18,6 +18,10 @@ updates:
       - dependency-name: "org.apache.solr:solr-solrj"
       # Zeppelin
       - dependency-name: "org.apache.zeppelin:zeppelin-web"
+      # Calcite
+      - dependency-name: "org.apache.calcite:calcite-core"
+      - dependency-name: "org.apache.calcite:calcite-linq4j"
+      - dependency-name: "org.apache.calcite.avatica:avatica-core"
 
   - package-ecosystem: "docker"
     directory: "search-services/packaging/src/docker/"
