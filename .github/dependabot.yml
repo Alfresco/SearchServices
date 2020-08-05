@@ -7,6 +7,7 @@ updates:
       interval: "daily"
       time: "22:00"
       timezone: "Europe/London"
+    open-pull-requests-limit: 15
     ignore:
       # Solr dependencies
       - dependency-name: "org.apache.lucene:lucene-analyzers-common"
