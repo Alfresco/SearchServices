@@ -23,9 +23,6 @@ updates:
       - dependency-name: "org.apache.calcite:calcite-core"
       - dependency-name: "org.apache.calcite:calcite-linq4j"
       - dependency-name: "org.apache.calcite.avatica:avatica-core"
-      # cxf lib updates should not be higher than 3.2
-      - dependency-name: "org.apache.cxf:*"
-        versions: [3.3,)
 
   - package-ecosystem: "docker"
     directory: "search-services/packaging/src/docker/"
