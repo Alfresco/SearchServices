@@ -117,6 +117,8 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import static java.util.Optional.ofNullable;
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_DAY_FIELD_SUFFIX;
+import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_DAY_OF_WEEK_FIELD_SUFFIX;
+import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_DAY_OF_YEAR_FIELD_SUFFIX;
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_HOUR_FIELD_SUFFIX;
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_MINUTE_FIELD_SUFFIX;
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_MONTH_FIELD_SUFFIX;
@@ -171,6 +173,8 @@ public class AlfrescoSolrDataModel implements QueryConstants
         UNIT_OF_TIME_MINUTE,
         UNIT_OF_TIME_HOUR,
         UNIT_OF_TIME_DAY,
+        UNIT_OF_TIME_DAY_OF_WEEK,
+        UNIT_OF_TIME_DAY_OF_YEAR,
         UNIT_OF_TIME_MONTH,
         UNIT_OF_TIME_QUARTER,
         UNIT_OF_TIME_YEAR
@@ -184,6 +188,8 @@ public class AlfrescoSolrDataModel implements QueryConstants
                 UNIT_OF_TIME_QUARTER_FIELD_SUFFIX,
                 UNIT_OF_TIME_MONTH_FIELD_SUFFIX,
                 UNIT_OF_TIME_DAY_FIELD_SUFFIX,
+                UNIT_OF_TIME_DAY_OF_WEEK_FIELD_SUFFIX,
+                UNIT_OF_TIME_DAY_OF_YEAR_FIELD_SUFFIX,
                 UNIT_OF_TIME_HOUR_FIELD_SUFFIX,
                 UNIT_OF_TIME_MINUTE_FIELD_SUFFIX,
                 UNIT_OF_TIME_SECOND_FIELD_SUFFIX);
@@ -1133,6 +1139,10 @@ public class AlfrescoSolrDataModel implements QueryConstants
                 return UNIT_OF_TIME_HOUR_FIELD_SUFFIX;
             case UNIT_OF_TIME_DAY:
                 return UNIT_OF_TIME_DAY_FIELD_SUFFIX;
+            case UNIT_OF_TIME_DAY_OF_WEEK:
+                return UNIT_OF_TIME_DAY_OF_WEEK_FIELD_SUFFIX;
+            case UNIT_OF_TIME_DAY_OF_YEAR:
+                return UNIT_OF_TIME_DAY_OF_YEAR_FIELD_SUFFIX;
             case UNIT_OF_TIME_MONTH:
                 return UNIT_OF_TIME_MONTH_FIELD_SUFFIX;
             case UNIT_OF_TIME_QUARTER:
@@ -1795,6 +1805,10 @@ public class AlfrescoSolrDataModel implements QueryConstants
                 return SpecializedFieldType.UNIT_OF_TIME_HOUR;
             case UNIT_OF_TIME_DAY_FIELD_SUFFIX:
                 return SpecializedFieldType.UNIT_OF_TIME_DAY;
+            case UNIT_OF_TIME_DAY_OF_WEEK_FIELD_SUFFIX:
+                return SpecializedFieldType.UNIT_OF_TIME_DAY_OF_WEEK;
+            case UNIT_OF_TIME_DAY_OF_YEAR_FIELD_SUFFIX:
+                return SpecializedFieldType.UNIT_OF_TIME_DAY_OF_YEAR;
             case UNIT_OF_TIME_MONTH_FIELD_SUFFIX:
                 return SpecializedFieldType.UNIT_OF_TIME_MONTH;
             case UNIT_OF_TIME_QUARTER_FIELD_SUFFIX:

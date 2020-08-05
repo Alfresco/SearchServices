@@ -384,7 +384,9 @@ public class SolrInformationServer implements InformationServer
     public static final String UNIT_OF_TIME_YEAR_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_year";
     public static final String UNIT_OF_TIME_QUARTER_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_quarter";
     public static final String UNIT_OF_TIME_MONTH_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_month";
-    public static final String UNIT_OF_TIME_DAY_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_day";
+    public static final String UNIT_OF_TIME_DAY_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_day_of_month";
+    public static final String UNIT_OF_TIME_DAY_OF_WEEK_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_day_of_week";
+    public static final String UNIT_OF_TIME_DAY_OF_YEAR_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_day_of_year";
     public static final String UNIT_OF_TIME_HOUR_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_hour";
     public static final String UNIT_OF_TIME_MINUTE_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_minute";
     public static final String UNIT_OF_TIME_SECOND_FIELD_SUFFIX = UNIT_OF_TIME_FIELD_INFIX + "_second";
@@ -3832,11 +3834,13 @@ public class SolrInformationServer implements InformationServer
         {
             String fieldNamePrefix = dataModel.destructuredDateTimePartFieldNamePrefix(sourceFieldName);
             ZonedDateTime dateTime = ZonedDateTime.parse(value, DateTimeFormatter.ISO_ZONED_DATE_TIME);
-            
+
             consumer.accept(fieldNamePrefix + UNIT_OF_TIME_YEAR_FIELD_SUFFIX, dateTime.getYear());
             consumer.accept(fieldNamePrefix + UNIT_OF_TIME_QUARTER_FIELD_SUFFIX, dateTime.get(IsoFields.QUARTER_OF_YEAR));
             consumer.accept(fieldNamePrefix + UNIT_OF_TIME_MONTH_FIELD_SUFFIX, dateTime.getMonth().getValue());
             consumer.accept(fieldNamePrefix + UNIT_OF_TIME_DAY_FIELD_SUFFIX, dateTime.getDayOfMonth());
+            consumer.accept(fieldNamePrefix + UNIT_OF_TIME_DAY_OF_WEEK_FIELD_SUFFIX, dateTime.getDayOfWeek().getValue());
+            consumer.accept(fieldNamePrefix + UNIT_OF_TIME_DAY_OF_YEAR_FIELD_SUFFIX, dateTime.getDayOfYear());
 
             if (DataTypeDefinition.DATETIME.equals(dataType.getName()) && isTimeComponentDefined(value))
             {
