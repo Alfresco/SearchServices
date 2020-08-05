@@ -90,13 +90,13 @@ aggdesigner-algorithm-6.0.jar https://github.com/julianhyde/aggdesigner
 
 
 === CDDL 1.1 ===
-jaxb-core-2.3.0.1.jar   http://jaxb.java.net/
-jaxb-xjc-2.3.2.jar      http://jaxb.java.net/
+jaxb-core-2.3.0.1.jar http://jaxb.java.net/
+jaxb-xjc-2.3.3.jar http://jaxb.java.net/
+jaxb-impl-2.3.3.jar http://jaxb.java.net/
 
 
 === Eclipse Distribution License 1.0 (BSD) ===
 jakarta.activation-1.2.2.jar https://eclipse-ee4j.github.io/jaf
-jakarta.activation-api-1.2.2.jar https://eclipse-ee4j.github.io/jaf
 jakarta.jws-api-1.1.1.jar https://projects.eclipse.org/projects/ee4j.websocket/releases/1.1.1
 jakarta.xml.bind-api-2.3.3.jar https://projects.eclipse.org/projects/ee4j.jaxb
 
