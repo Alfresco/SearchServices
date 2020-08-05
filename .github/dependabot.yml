@@ -16,6 +16,8 @@ updates:
       - dependency-name: "org.apache.solr:solr-clustering"
       - dependency-name: "org.apache.solr:solr-test-framework"
       - dependency-name: "org.apache.solr:solr-solrj"
+      # Zeppelin
+      - dependency-name: "org.apache.zeppelin:zeppelin-web"
 
   - package-ecosystem: "docker"
     directory: "search-services/packaging/src/docker/"
