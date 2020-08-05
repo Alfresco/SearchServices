@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Ahmed Owian
  */
-public class ContentTracker extends AbstractTracker implements Tracker
+public class ContentTracker extends ActivatableTracker
 {
 
     protected final static Logger log = LoggerFactory.getLogger(ContentTracker.class);

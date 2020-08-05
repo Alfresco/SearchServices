@@ -66,11 +66,11 @@ import java.util.stream.Collectors;
 
 /**
  * A partial state of {@link org.alfresco.solr.TrackerState} is exposed through two interfaces: AdminHandler.SUMMARY and
- * {@link MetadataTracker#getShardState}.
+ * {@link ShardStatePublisher#getShardState}.
  * This test makes sure that state is consistent across the two mentioned approaches. That is, properties returned by the
  * Core SUMMARY must have the same value of the same properties in the ShardState.
  *
- * Note that this is the distributed version of {@link AlfrescoSolrTrackerStateTest}.
+ * Note that this is the distributed version of {@link AlfrescoSolrTrackerStateIT}.
  *
  * @author agazzarini
  */
@@ -98,10 +98,10 @@ public class DistributedAlfrescoSolrTrackerStateIT extends AbstractAlfrescoDistr
         putHandleDefaults();
 
         getJettyCores(solrShards).forEach(core -> {
-            MetadataTracker tracker =
+            ShardStatePublisher tracker =
                     of(coreAdminHandler(core))
                             .map(AlfrescoCoreAdminHandler::getTrackerRegistry)
-                            .map(registry -> registry.getTrackerForCore(core.getName(), MetadataTracker.class))
+                            .map(registry -> registry.getTrackerForCore(core.getName(), ShardStatePublisher.class))
                             .orElseThrow(() -> new IllegalStateException("Cannot retrieve the Metadata tracker on this test core."));
 
             // 1. First consistency check: ShardState must have the same values of CoreAdmin.SUMMARY report

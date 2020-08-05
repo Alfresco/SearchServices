@@ -36,7 +36,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AuthenticationException;
-import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.solr.AclReport;
 import org.alfresco.solr.BoundedDeque;
 import org.alfresco.solr.InformationServer;
@@ -59,7 +58,7 @@ import org.slf4j.LoggerFactory;
  * @author Matt Ward
  **/
 
-public class AclTracker extends AbstractTracker
+public class AclTracker extends ActivatableTracker
 {
     protected final static Logger log = LoggerFactory.getLogger(AclTracker.class);
 
@@ -75,8 +74,7 @@ public class AclTracker extends AbstractTracker
     private ConcurrentLinkedQueue<Long> aclsToReindex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> aclsToIndex = new ConcurrentLinkedQueue<Long>();
     private ConcurrentLinkedQueue<Long> aclsToPurge = new ConcurrentLinkedQueue<Long>();
-    private DocRouter docRouter;
-    
+
     /**
      * Default constructor, for testing.
      */
@@ -91,8 +89,6 @@ public class AclTracker extends AbstractTracker
         super(p, client, coreName, informationServer, Tracker.Type.ACL);
         changeSetAclsBatchSize = Integer.parseInt(p.getProperty("alfresco.changeSetAclsBatchSize", "100"));
         aclBatchSize = Integer.parseInt(p.getProperty("alfresco.aclBatchSize", "10"));
-        shardMethod = p.getProperty("shard.method", SHARD_METHOD_DBID);
-        docRouter = DocRouterFactory.getRouter(p, ShardMethodEnum.getShardMethod(shardMethod));
         threadHandler = new ThreadHandler(p, coreName, "AclTracker");
     }
 
@@ -265,7 +261,7 @@ public class AclTracker extends AbstractTracker
             if (aclId != null)
             {
                 this.infoSrv.deleteByAclId(aclId);
-                log.info("PURGE ACTION - Purged aclId {}", aclId);                
+                log.info("PURGE ACTION - Purged aclId {}", aclId);
             }
             checkShutdown();
         }
@@ -304,6 +300,19 @@ public class AclTracker extends AbstractTracker
     public void addAclToPurge(Long aclToPurge)
     {
         aclsToPurge.offer(aclToPurge);
+    }
+
+    @Override
+    protected void clearScheduledMaintenanceWork()
+    {
+        logAndClear(aclChangeSetsToIndex, "ACL ChangeSets to be indexed");
+        logAndClear(aclsToIndex, "ACLs to be indexed");
+
+        logAndClear(aclChangeSetsToReindex, "ACL ChangeSets to be re-indexed");
+        logAndClear(aclsToReindex, "ACLs to be re-indexed");
+
+        logAndClear(aclChangeSetsToPurge, "ACL ChangeSets to be purged");
+        logAndClear(aclsToPurge, "ACLs to be purged");
     }
 
     protected void trackRepository() throws IOException, AuthenticationException, JSONException
@@ -362,8 +371,8 @@ public class AclTracker extends AbstractTracker
                 if (setSize == 0)
                 {
                     log.error("First acl transaction was not found with the correct timestamp.");
-                    log.error("SOLR has successfully connected to your repository  however the SOLR indexes and repository database do not match."); 
-                    log.error("If this is a new or rebuilt database your SOLR indexes also need to be re-built to match the database."); 
+                    log.error("SOLR has successfully connected to your repository  however the SOLR indexes and repository database do not match.");
+                    log.error("If this is a new or rebuilt database your SOLR indexes also need to be re-built to match the database.");
                     log.error("You can also check your SOLR connection details in solrcore.properties.");
                     throw new AlfrescoRuntimeException("Initial acl transaction not found with correct timestamp");
                 }
@@ -399,8 +408,8 @@ public class AclTracker extends AbstractTracker
                     log.error("Max Acl Tx In Index: " + maxAclTxInIndex.getId() + ", In Repo: " + maxChangeSetIdInRepo);
                     log.error("Max Acl Tx Commit Time In Index: " + maxAclTxInIndex.getCommitTimeMs() + ", In Repo: "
                             + maxChangeSetCommitTimeInRepo);
-                    log.error("SOLR has successfully connected to your repository  however the SOLR indexes and repository database do not match."); 
-                    log.error("If this is a new or rebuilt database your SOLR indexes also need to be re-built to match the database."); 
+                    log.error("SOLR has successfully connected to your repository  however the SOLR indexes and repository database do not match.");
+                    log.error("If this is a new or rebuilt database your SOLR indexes also need to be re-built to match the database.");
                     log.error("You can also check your SOLR connection details in solrcore.properties.");
                     throw new AlfrescoRuntimeException("Last acl transaction found in index with incorrect timestamp");
                 }
@@ -489,7 +498,7 @@ public class AclTracker extends AbstractTracker
         trackerStats.addAclTime(time);
     }
 
-    public IndexHealthReport checkIndex(Long toTx, Long toAclTx, Long fromTime, Long toTime) 
+    public IndexHealthReport checkIndex(Long toTx, Long toAclTx, Long fromTime, Long toTime)
                 throws AuthenticationException, IOException, JSONException
     {   
         // DB ACL TX Count
@@ -515,7 +524,7 @@ public class AclTracker extends AbstractTracker
         BoundedDeque<AclChangeSet> changeSetsFound = new  BoundedDeque<AclChangeSet>(100);
         DO: do
         {
-            aclTransactions = getSomeAclChangeSets(changeSetsFound, lastAclTxCommitTime, TIME_STEP_1_HR_IN_MS, 2000, 
+            aclTransactions = getSomeAclChangeSets(changeSetsFound, lastAclTxCommitTime, TIME_STEP_1_HR_IN_MS, 2000,
                         endTime);
             for (AclChangeSet set : aclTransactions.getAclChangeSets())
             {
@@ -645,7 +654,7 @@ public class AclTracker extends AbstractTracker
     {
 
         long startElapsed = System.nanoTime();
-        
+
         boolean upToDate = false;
         AclChangeSets aclChangeSets;
         BoundedDeque<AclChangeSet> changeSetsFound = new BoundedDeque<AclChangeSet>(100);
@@ -873,7 +882,7 @@ public class AclTracker extends AbstractTracker
         
         private List<Acl> filterAcls(List<Acl> acls)
         {
-            ArrayList<Acl> filteredList = new ArrayList<Acl>(acls.size());  
+            ArrayList<Acl> filteredList = new ArrayList<Acl>(acls.size());
             for(Acl acl : acls)
             {
                 if(docRouter.routeAcl(shardCount, shardInstance, acl))

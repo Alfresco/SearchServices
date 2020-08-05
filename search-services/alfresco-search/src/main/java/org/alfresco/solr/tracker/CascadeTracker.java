@@ -50,7 +50,7 @@ import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
  * This tracks Cascading Updates
  * @author Joel Bernstein
  */
-public class CascadeTracker extends AbstractTracker implements Tracker
+public class CascadeTracker extends ActivatableTracker
 {
 
     protected final static Logger log = LoggerFactory.getLogger(CascadeTracker.class);

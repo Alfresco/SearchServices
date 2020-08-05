@@ -51,7 +51,7 @@ import org.alfresco.solr.tracker.CommitTracker;
 import org.alfresco.solr.tracker.ContentTracker;
 import org.alfresco.solr.tracker.MetadataTracker;
 import org.alfresco.solr.tracker.ModelTracker;
-import org.alfresco.solr.tracker.NodeStatePublisher;
+import org.alfresco.solr.tracker.ShardStatePublisher;
 import org.alfresco.solr.tracker.SolrTrackerScheduler;
 import org.alfresco.solr.tracker.Tracker;
 import org.alfresco.solr.tracker.TrackerRegistry;
@@ -192,7 +192,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
         {
             LOGGER.info("SearchServices Core Trackers have been explicitly disabled on core \"{}\" through \"enable.alfresco.tracking\" configuration property.", core.getName());
 
-            NodeStatePublisher statePublisher = new NodeStatePublisher(false, coreProperties, repositoryClient, core.getName(), informationServer);
+            ShardStatePublisher statePublisher = new ShardStatePublisher(false, coreProperties, repositoryClient, core.getName(), informationServer);
             trackerRegistry.register(core.getName(), statePublisher);
             scheduler.schedule(statePublisher, core.getName(), coreProperties);
             trackers.add(statePublisher);
@@ -207,7 +207,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
         {
             LOGGER.info("SearchServices Core Trackers have been disabled on core \"{}\" because it is a slave core.", core.getName());
 
-            NodeStatePublisher statePublisher = new NodeStatePublisher(false, coreProperties, repositoryClient, core.getName(), informationServer);
+            ShardStatePublisher statePublisher = new ShardStatePublisher(false, coreProperties, repositoryClient, core.getName(), informationServer);
             trackerRegistry.register(core.getName(), statePublisher);
             scheduler.schedule(statePublisher, core.getName(), coreProperties);
             trackers.add(statePublisher);
@@ -266,9 +266,9 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
                         trackerRegistry,
                         scheduler);
 
-        NodeStatePublisher coreStateTracker =
+        ShardStatePublisher coreStateTracker =
                 registerAndSchedule(
-                        new NodeStatePublisher(true, props, repositoryClient, core.getName(), srv),
+                        new ShardStatePublisher(true, props, repositoryClient, core.getName(), srv),
                         core,
                         props,
                         trackerRegistry,
@@ -289,6 +289,7 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
                             scheduler);
             trackers.add(cascadeTracker);
         }
+
 
         //The CommitTracker will acquire these locks in order
         //The ContentTracker will likely have the longest runs so put it first to ensure the MetadataTracker is not paused while

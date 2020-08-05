@@ -87,7 +87,7 @@ import org.json.JSONException;
  * deactivate ModelTracker
  * @enduml
  */
-public class ModelTracker extends AbstractTracker implements Tracker
+public class ModelTracker extends AbstractTracker
 {
 
     private final Set<StoreRef> indexedStores = new HashSet<>();

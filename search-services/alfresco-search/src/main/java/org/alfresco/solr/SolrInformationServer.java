@@ -3637,7 +3637,7 @@ public class SolrInformationServer implements InformationServer
         return (NamedList) facetFields.get(field);
     }
 
-    private int getDocListSize(String query)
+    public int getDocListSize(String query)
     {
         try (SolrQueryRequest request = this.newSolrQueryRequest())
         {

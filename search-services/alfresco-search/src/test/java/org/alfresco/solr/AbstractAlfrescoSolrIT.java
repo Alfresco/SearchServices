@@ -190,6 +190,16 @@ public abstract class AbstractAlfrescoSolrIT implements SolrTestFiles, AlfrescoS
         h.reload();
     }
 
+    protected void disableIndexing()
+    {
+        admin.actionDisableIndexing(new ModifiableSolrParams());
+    }
+
+    protected void enableIndexing()
+    {
+        admin.actionEnableIndexing(new ModifiableSolrParams());
+    }
+
     /**
      * @deprecated as testHarness is used
      * Get admin core handler
@@ -627,33 +637,33 @@ public abstract class AbstractAlfrescoSolrIT implements SolrTestFiles, AlfrescoS
     public static void indexTransaction(Transaction transaction, List<Node> nodes, List<NodeMetaData> nodeMetaDatas)
     {
         //First map the nodes to a transaction.
-        SOLRAPIQueueClient.nodeMap.put(transaction.getId(), nodes);
+        SOLRAPIQueueClient.NODE_MAP.put(transaction.getId(), nodes);
 
         //Next map a node to the NodeMetaData
         for(NodeMetaData nodeMetaData : nodeMetaDatas)
         {
-            SOLRAPIQueueClient.nodeMetaDataMap.put(nodeMetaData.getId(), nodeMetaData);
+            SOLRAPIQueueClient.NODE_META_DATA_MAP.put(nodeMetaData.getId(), nodeMetaData);
         }
 
         //Next add the transaction to the queue
-        SOLRAPIQueueClient.transactionQueue.add(transaction);
+        SOLRAPIQueueClient.TRANSACTION_QUEUE.add(transaction);
     }
 
     public static void indexTransaction(Transaction transaction, List<Node> nodes, List<NodeMetaData> nodeMetaDatas, List<String> content)
     {
         //First map the nodes to a transaction.
-        SOLRAPIQueueClient.nodeMap.put(transaction.getId(), nodes);
+        SOLRAPIQueueClient.NODE_MAP.put(transaction.getId(), nodes);
 
         //Next map a node to the NodeMetaData
         int i=0;
         for(NodeMetaData nodeMetaData : nodeMetaDatas)
         {
-            SOLRAPIQueueClient.nodeMetaDataMap.put(nodeMetaData.getId(), nodeMetaData);
-            SOLRAPIQueueClient.nodeContentMap.put(nodeMetaData.getId(), content.get(i++));
+            SOLRAPIQueueClient.NODE_META_DATA_MAP.put(nodeMetaData.getId(), nodeMetaData);
+            SOLRAPIQueueClient.NODE_CONTENT_MAP.put(nodeMetaData.getId(), content.get(i++));
         }
 
         //Next add the transaction to the queue
-        SOLRAPIQueueClient.transactionQueue.add(transaction);
+        SOLRAPIQueueClient.TRANSACTION_QUEUE.add(transaction);
     }
 
 

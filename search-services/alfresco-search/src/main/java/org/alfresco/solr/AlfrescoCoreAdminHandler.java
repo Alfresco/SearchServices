@@ -34,12 +34,12 @@ import org.alfresco.solr.client.SOLRAPIClientFactory;
 import org.alfresco.solr.config.ConfigUtil;
 import org.alfresco.solr.content.SolrContentStore;
 import org.alfresco.solr.tracker.AclTracker;
-import org.alfresco.solr.tracker.AbstractShardInformationPublisher;
+import org.alfresco.solr.tracker.ActivatableTracker;
+import org.alfresco.solr.tracker.ShardStatePublisher;
 import org.alfresco.solr.tracker.DBIDRangeRouter;
 import org.alfresco.solr.tracker.DocRouter;
 import org.alfresco.solr.tracker.IndexHealthReport;
 import org.alfresco.solr.tracker.MetadataTracker;
-import org.alfresco.solr.tracker.NodeStatePublisher;
 import org.alfresco.solr.tracker.SolrTrackerScheduler;
 import org.alfresco.solr.tracker.Tracker;
 import org.alfresco.solr.tracker.TrackerRegistry;
@@ -55,6 +55,7 @@ import org.apache.solr.common.util.NamedList;
 import org.apache.solr.common.util.SimpleOrderedMap;
 import org.apache.solr.core.CoreContainer;
 import org.apache.solr.core.SolrCore;
+import org.apache.solr.core.SolrResourceLoader;
 import org.apache.solr.handler.admin.CoreAdminHandler;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
@@ -77,16 +78,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.LongToIntFunction;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_INACLTXID;
+import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_INTXID;
 import static org.alfresco.solr.HandlerOfResources.extractCustomProperties;
 import static org.alfresco.solr.HandlerOfResources.getSafeBoolean;
 import static org.alfresco.solr.HandlerOfResources.getSafeLong;
@@ -100,6 +105,8 @@ import static org.alfresco.solr.HandlerReportHelper.buildAclTxReport;
 import static org.alfresco.solr.HandlerReportHelper.buildNodeReport;
 import static org.alfresco.solr.HandlerReportHelper.buildTrackerReport;
 import static org.alfresco.solr.HandlerReportHelper.buildTxReport;
+import static org.alfresco.solr.utils.Utils.isNotNullAndNotEmpty;
+import static org.alfresco.solr.utils.Utils.isNullOrEmpty;
 import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
 
 /**
@@ -134,10 +141,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
     private static final String REPORT = "report";
     private static final String SUMMARY = "Summary";
-    private static final String ARG_ACLTXID = "acltxid";
+    static final String ARG_ACLTXID = "acltxid";
     static final String ARG_TXID = "txid";
-    private static final String ARG_ACLID = "aclid";
-    private static final String ARG_NODEID = "nodeid";
+    static final String ARG_ACLID = "aclid";
+    static final String ARG_NODEID = "nodeid";
     private static final String ARG_QUERY = "query";
     private static final String DATA_DIR_ROOT = "data.dir.root";
     public static final String ALFRESCO_DEFAULTS = "create.alfresco.defaults";
@@ -161,22 +168,40 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      */
     private static final String ACTION_STATUS_SUCCESS = "success";
     private static final String ACTION_STATUS_ERROR = "error";
-    private static final String ACTION_STATUS_SCHEDULED = "scheduled";
+    static final String ACTION_STATUS_SCHEDULED = "scheduled";
+    static final String ACTION_STATUS_NOT_SCHEDULED = "notScheduled";
+    static final String ADDITIONAL_INFO = "additionalInfo";
+    static final String WARNING = "WARNING";
+    static final String DRY_RUN_PARAMETER_NAME = "dryRun";
+    static final String FROM_TX_COMMIT_TIME_PARAMETER_NAME = "fromTxCommitTime";
+    static final String TO_TX_COMMIT_TIME_PARAMETER_NAME = "toTxCommitTime";
+    static final String MAX_TRANSACTIONS_TO_SCHEDULE_PARAMETER_NAME = "maxScheduledTransactions";
+    static final String MAX_TRANSACTIONS_TO_SCHEDULE_CONF_PROPERTY_NAME = "alfresco.admin.fix.maxScheduledTransactions";
+    static final String TX_IN_INDEX_NOT_IN_DB = "txInIndexNotInDb";
+    static final String DUPLICATED_TX_IN_INDEX = "duplicatedTxInIndex";
+    static final String MISSING_TX_IN_INDEX = "missingTxInIndex";
+    static final String ACL_TX_IN_INDEX_NOT_IN_DB = "aclTxInIndexNotInDb";
+    static final String DUPLICATED_ACL_TX_IN_INDEX = "duplicatedAclTxInIndex";
+    static final String MISSING_ACL_TX_IN_INDEX = "missingAclTxInIndex";
 
     /**
      * JSON/XML labels for the Action response
      */
     private static final String ACTION_LABEL = "action";
-    private static final String ACTION_STATUS_LABEL = "status";
-    private static final String ACTION_ERROR_MESSAGE_LABEL = "errorMessage";
+    static final String ACTION_STATUS_LABEL = "status";
+
+    static final String ACTION_ERROR_MESSAGE_LABEL = "errorMessage";
+    static final String UNKNOWN_CORE_MESSAGE = "Unknown core:";
+    static final String UNPROCESSABLE_REQUEST_ON_SLAVE_NODES = "Requested action cannot be performed on slave nodes.";
+
     private static final String ACTION_TX_TO_REINDEX = "txToReindex";
     private static final String ACTION_ACL_CHANGE_SET_TO_REINDEX = "aclChangeSetToReindex";
-    
-    private SolrTrackerScheduler scheduler;
-    private TrackerRegistry trackerRegistry;
-    private ConcurrentHashMap<String, InformationServer> informationServers;
 
-    private static List<String> CORE_PARAMETER_NAMES = asList(CoreAdminParams.CORE, "coreName", "index");
+    private SolrTrackerScheduler scheduler;
+    TrackerRegistry trackerRegistry;
+    ConcurrentHashMap<String, InformationServer> informationServers;
+
+    final static List<String> CORE_PARAMETER_NAMES = asList(CoreAdminParams.CORE, "coreName", "index");
     private SolrContentStore contentStore;
 
     public AlfrescoCoreAdminHandler()
@@ -224,7 +249,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
     /**
      * Creates new default cores based on the "createDefaultCores" String passed in.
-     * 
+     *
      * Synchronous execution
      *
      * @param names comma delimited list of core names that will be created.
@@ -240,12 +265,12 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      */
     private NamedList<Object> setupNewDefaultCores(String names, int numShards, int replicationFactor, int nodeInstance, int numNodes, String shardIds)
     {
-        
+
         var wrapper = new Object()
         {
             NamedList<Object> response = new SimpleOrderedMap<>();;
         };
-        
+
         try
         {
             List<String> coreNames =
@@ -276,10 +301,10 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             wrapper.response.add(ACTION_ERROR_MESSAGE_LABEL, exception.getMessage());
             return wrapper.response;
         }
-        
+
         wrapper.response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SUCCESS);
         return wrapper.response;
-        
+
     }
 
     /**
@@ -372,11 +397,11 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
         return response;
     }
-    
+
     @SuppressWarnings("unchecked")
     protected void handleCustomAction(SolrQueryRequest req, SolrQueryResponse rsp)
     {
-        
+
         SolrParams params = req.getParams();
         String action =
                 ofNullable(params.get(CoreAdminParams.ACTION))
@@ -385,7 +410,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     .orElse("");
         String coreName = coreName(params);
         LOGGER.info("Running action {} for core {} with params {}", action, coreName, params);
-        
+
         try
         {
             switch (action) {
@@ -490,11 +515,19 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                             ofNullable(params.get("resource"))
                                 .orElse("log4j.properties")));
                     break;
+                case "ENABLE-INDEXING":
+                case "ENABLEINDEXING":
+                    rsp.add(ACTION_LABEL, actionEnableIndexing(params));
+                    break;
+                case "DISABLE-INDEXING":
+                case "DISABLEINDEXING":
+                    rsp.add(ACTION_LABEL, actionDisableIndexing(params));
+                    break;
                 default:
                     super.handleCustomAction(req, rsp);
                     break;
             }
-            
+
         }
         catch (Exception ex)
         {
@@ -529,7 +562,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         req.getContext();
 
         NamedList<Object> response = new SimpleOrderedMap<>();
-        
+
         // If numCore > 1 we are creating a collection of cores for a sole node in a cluster
         int numShards = params.getInt("numShards", 1);
 
@@ -562,7 +595,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
     /**
      * Creates new default cores using default values.
-     * 
+     *
      * Synchronous execution
      *
      * @param req Query Request including following parameters:
@@ -576,9 +609,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      */
     private NamedList<Object> newDefaultCore(SolrQueryRequest req)
     {
-        
+
         NamedList<Object> response = new SimpleOrderedMap<>();
-        
+
         SolrParams params = req.getParams();
         String coreName = ofNullable(coreName(params)).orElse(ALFRESCO_CORE_NAME);
         String templateName =
@@ -609,7 +642,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
     protected NamedList<Object> newCore(String coreName, int numShards, StoreRef storeRef, String templateName, int replicationFactor, int nodeInstance, int numNodes, String shardIds, Properties extraProperties)
     {
-        
+
         NamedList<Object> response = new SimpleOrderedMap<>();
 
         try
@@ -618,7 +651,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             File solrHome = new File(coreContainer.getSolrHome());
             File templates = new File(solrHome, "templates");
             File template = new File(templates, templateName);
-            
+
             if(numShards > 1)
             {
                 String collectionName = templateName + "--" + storeRef.getProtocol() + "-" + storeRef.getIdentifier() + "--shards--"+numShards + "-x-"+replicationFactor+"--node--"+nodeInstance+"-of-"+numNodes;
@@ -660,7 +693,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 {
                     coreName = coreBase + shard;
                     File newCore = new File(baseDirectory, coreName);
-                    
+
                     response.addAll(createAndRegisterNewCore(extraProperties, storeRef, template, coreName,
                             newCore, numShards, shard, templateName));
                     if (Objects.equals(response.get(ACTION_STATUS_LABEL), ACTION_STATUS_ERROR))
@@ -668,7 +701,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                         coresNotCreated.add(coreName);
                     }
                 }
-                
+
                 if (coresNotCreated.size() > 0)
                 {
                     response.add(ACTION_STATUS_LABEL, ACTION_STATUS_ERROR);
@@ -681,7 +714,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                     response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SUCCESS);
                     return response;
                 }
-                
+
             }
             else
             {
@@ -695,7 +728,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
         catch (IOException exception)
         {
-            
+
             LOGGER.error("I/O Failure detected while creating the new core " +
                     "(name={}, numShard={}, storeRef={}, template={}, replication factor={}, node instance={}, num nodes={}, shard ids={})",
                     coreName,
@@ -735,9 +768,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
     private NamedList<Object> createAndRegisterNewCore(Properties extraProperties, StoreRef storeRef, File template, String coreName, File newCore, int shardCount, int shardInstance, String templateName) throws IOException
     {
-        
+
         NamedList<Object> response = new SimpleOrderedMap<>();
-        
+
         if (coreContainer.getLoadedCoreNames().contains(coreName))
         {
             //Core alfresco exists
@@ -815,7 +848,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         SolrParams params = req.getParams();
 
         NamedList<Object> response = new SimpleOrderedMap<>();
-        
+
         try
         {
             File config = new File(AlfrescoSolrDataModel.getResourceDirectory(), AlfrescoSolrDataModel.SHARED_PROPERTIES);
@@ -824,9 +857,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             coreContainer.getCores().stream()
                     .map(SolrCore::getName)
                     .forEach(coreContainer::reload);
-            
+
             response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SUCCESS);
-            
+
         }
         catch (IOException e)
         {
@@ -835,9 +868,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             response.add(ACTION_ERROR_MESSAGE_LABEL, "Shared properties couldn't be reloaded for some core. Check the log to find out the reason.");
             return response;
         }
-        
+
         return response;
-        
+
     }
 
     /**
@@ -860,7 +893,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         {
             NamedList<Object> response = new SimpleOrderedMap<>();;
         };
-        
+
         ofNullable(coreName(req.getParams()))
                 .map(String::trim)
                 .filter(coreName -> !coreName.isEmpty())
@@ -879,22 +912,22 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                             String configLocaltion = core.getResourceLoader().getConfigDir();
                             File config = new File(configLocaltion, "solrcore.properties");
                             updatePropertiesFile(req.getParams(), config, null);
-    
+
                             coreContainer.reload(coreName);
-                            
+
                             wrapper.response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SUCCESS);
-                            
+
                         }
-                        
+
                     }
-                }, 
+                },
                 () -> {
                     wrapper.response.add(ACTION_STATUS_LABEL, ACTION_STATUS_ERROR);
                     wrapper.response.add(ACTION_ERROR_MESSAGE_LABEL, "Core has NOT been updated as coreName param is required");
                 });
-        
+
         return wrapper.response;
-        
+
     }
 
     /**
@@ -916,7 +949,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         String store = "";
         SolrParams params = req.getParams();
         NamedList<Object> response = new SimpleOrderedMap<>();
-        
+
         if (params.get("storeRef") != null)
         {
             store = params.get("storeRef");
@@ -953,7 +986,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
         response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SUCCESS);
         return response;
-        
+
     }
 
     /**
@@ -961,8 +994,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      *
      * Synchronous execution
      *
-     * @param req Query Request without parameters
-     * - coreName, optional, the name of the core to be checked
+     * @param cname, optional, the name of the core to be checked
      *
      * @return Response including the action result:
      * - status: success, when the core has been created
@@ -975,7 +1007,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 .flatMap(Collection::stream)
                 .map(Tracker::getTrackerState)
                 .forEach(state -> state.setCheck(true));
-        
+
         NamedList<Object> response = new SimpleOrderedMap<>();
         response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SUCCESS);
         return response;
@@ -997,7 +1029,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      */
     private NamedList<Object> actionNODEREPORTS(SolrParams params) throws JSONException
     {
-        
+
         NamedList<Object> report = new SimpleOrderedMap<>();
 
         if (params.get(ARG_NODEID) == null)
@@ -1005,7 +1037,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             report.add(ACTION_STATUS_ERROR, "No " + ARG_NODEID +" parameter set.");
             return report;
         }
-        
+
         Long nodeid = Long.valueOf(params.get(ARG_NODEID));
         String requestedCoreName = coreName(params);
 
@@ -1032,7 +1064,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * @return Response including the action result:
      * - report: an Object with the details of the report
      * - error: When mandatory parameters are not set, an error node is returned
-     * 
+     *
      * @throws JSONException
      */
     private NamedList<Object> actionACLREPORT(SolrParams params) throws JSONException
@@ -1061,9 +1093,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         {
             addAlertMessage(report);
         }
-        
+
         return report;
-        
+
     }
 
     /**
@@ -1083,7 +1115,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     private NamedList<Object> actionTXREPORT(SolrParams params) throws JSONException
     {
         NamedList<Object> report = new SimpleOrderedMap<>();
-        
+
         if (params.get(ARG_TXID) == null)
         {
             report.add(ACTION_STATUS_ERROR, "No " + ARG_TXID + " parameter set.");
@@ -1112,7 +1144,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             addAlertMessage(report);
         }
         return report;
-        
+
     }
 
     /**
@@ -1126,13 +1158,13 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * @return Response including the action result:
      * - report: an Object with the details of the report
      * - error: When mandatory parameters are not set, an error node is returned
-     * 
+     *
      * @throws JSONException
      */
     private NamedList<Object> actionACLTXREPORT(SolrParams params) throws JSONException
     {
         NamedList<Object> report = new SimpleOrderedMap<>();
-        
+
         if (params.get(ARG_ACLTXID) == null)
         {
             report.add(ACTION_STATUS_ERROR, "No " + ARG_ACLTXID + " parameter set.");
@@ -1174,13 +1206,13 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * @return Response including the action result:
      * - report: An Object with the report details
      * - error: When mandatory parameters are not set, an error node is returned
-     * 
+     *
      * @throws IOException
      */
     private NamedList<Object> rangeCheck(SolrParams params) throws IOException
     {
         NamedList<Object> response = new SimpleOrderedMap<>();
-        
+
         String coreName = coreName(params);
         if (coreName == null)
         {
@@ -1290,20 +1322,20 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * - expand: The number of the new End Range limit or -1 if the action failed
      * - exception: Error message if expand is -1
      * - error: When mandatory parameters are not set, an error node is returned
-     * 
+     *
      * @throws IOException
      */
     private synchronized NamedList<Object> expand(SolrParams params) throws IOException
     {
         NamedList<Object> response = new SimpleOrderedMap<>();
-        
+
         String coreName = coreName(params);
         if (coreName == null)
         {
             response.add(ACTION_STATUS_ERROR, "No " + CoreAdminParams.CORE + " parameter set.");
             return response;
         }
-        
+
         if (isMasterOrStandalone(coreName))
         {
             InformationServer informationServer = informationServers.get(coreName);
@@ -1389,10 +1421,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * - fromAclTx, optional: from ACL transaction Id to filter report results
      * - toCalTx, optional: to ACL transaction Id to filter report results
      *
-     * @param Response including the action result:
      * - report.core: multiple Objects with the details of the report ("core" is the name of the Core)
-     * 
-     * @throws JSONException
      */
     private NamedList<Object> actionREPORT(SolrParams params) throws JSONException
     {
@@ -1447,16 +1476,30 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * @return Response including the action result:
      * - status: scheduled, as it will be executed by Trackers on the next maintenance operation
      */
-    private NamedList<Object> actionPURGE(SolrParams params)
+    NamedList<Object> actionPURGE(SolrParams params)
     {
+        final NamedList<Object> response = new SimpleOrderedMap<>();
         Consumer<String> purgeOnSpecificCore = coreName -> {
             final MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
             final AclTracker aclTracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
 
-            apply(params, ARG_TXID, metadataTracker::addTransactionToPurge);
-            apply(params, ARG_ACLTXID, aclTracker::addAclChangeSetToPurge);
-            apply(params, ARG_NODEID, metadataTracker::addNodeToPurge);
-            apply(params, ARG_ACLID, aclTracker::addAclToPurge);
+            final NamedList<Object> coreResponse = new SimpleOrderedMap<>();
+
+            if (metadataTracker.isEnabled() & aclTracker.isEnabled())
+            {
+                apply(params, ARG_TXID, metadataTracker::addTransactionToPurge);
+                apply(params, ARG_ACLTXID, aclTracker::addAclChangeSetToPurge);
+                apply(params, ARG_NODEID, metadataTracker::addNodeToPurge);
+                apply(params, ARG_ACLID, aclTracker::addAclToPurge);
+                coreResponse.add(ACTION_STATUS_LABEL, ACTION_STATUS_SCHEDULED);
+            }
+            else
+            {
+                coreResponse.add(ACTION_STATUS_LABEL, ACTION_STATUS_NOT_SCHEDULED);
+                coreResponse.add(ADDITIONAL_INFO, "Trackers have been disabled: the purge request cannot be executed; please enable indexing and then resubmit this command.");
+            }
+
+            response.add(coreName, coreResponse);
         };
 
         String requestedCoreName = coreName(params);
@@ -1465,9 +1508,12 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
                 .filter(this::isMasterOrStandalone)
                 .forEach(purgeOnSpecificCore);
-        
-        NamedList<Object> response = new SimpleOrderedMap<>();
-        response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SCHEDULED);
+
+        if (response.size() == 0)
+        {
+            addAlertMessage(response);
+        }
+
         return response;
     }
 
@@ -1487,18 +1533,31 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * @return Response including the action result:
      * - action.status: scheduled, as it will be executed by Trackers on the next maintenance operation
      */
-    private NamedList<Object> actionREINDEX(SolrParams params)
+    NamedList<Object> actionREINDEX(SolrParams params)
     {
+        final NamedList<Object> response = new SimpleOrderedMap<>();
         Consumer<String> reindexOnSpecificCore = coreName -> {
             final MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
             final AclTracker aclTracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
+            final NamedList<Object> coreResponse = new SimpleOrderedMap<>();
 
-            apply(params, ARG_TXID, metadataTracker::addTransactionToReindex);
-            apply(params, ARG_ACLTXID, aclTracker::addAclChangeSetToReindex);
-            apply(params, ARG_NODEID, metadataTracker::addNodeToReindex);
-            apply(params, ARG_ACLID, aclTracker::addAclToReindex);
+            if (metadataTracker.isEnabled() & aclTracker.isEnabled())
+            {
+                apply(params, ARG_TXID, metadataTracker::addTransactionToReindex);
+                apply(params, ARG_ACLTXID, aclTracker::addAclChangeSetToReindex);
+                apply(params, ARG_NODEID, metadataTracker::addNodeToReindex);
+                apply(params, ARG_ACLID, aclTracker::addAclToReindex);
 
-            ofNullable(params.get(ARG_QUERY)).ifPresent(metadataTracker::addQueryToReindex);
+                coreResponse.add(ACTION_STATUS_LABEL, ACTION_STATUS_SCHEDULED);
+                ofNullable(params.get(ARG_QUERY)).ifPresent(metadataTracker::addQueryToReindex);
+            }
+            else
+            {
+                coreResponse.add(ACTION_STATUS_LABEL, ACTION_STATUS_NOT_SCHEDULED);
+                coreResponse.add(ADDITIONAL_INFO, "Trackers have been disabled: the REINDEX request cannot be executed; please enable indexing and then resubmit this command.");
+            }
+
+            response.add(coreName, coreResponse);
         };
 
         String requestedCoreName = coreName(params);
@@ -1507,9 +1566,12 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
                 .filter(this::isMasterOrStandalone)
                 .forEach(reindexOnSpecificCore);
-        
-        NamedList<Object> response = new SimpleOrderedMap<>();
-        response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SCHEDULED);
+
+        if (response.size() == 0)
+        {
+            addAlertMessage(response);
+        }
+
         return response;
     }
 
@@ -1520,39 +1582,44 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      *
      * @param params Query Request with following parameters:
      * - core, optional: The name of the SOLR Core
-     * @param rsp  Query Response including the action result:
      * - action.status: scheduled, as it will be executed by Trackers on the next maintenance operation
      * - core: list of Document Ids with error that are going to reindexed
      */
-    private NamedList<Object> actionRETRY(SolrParams params)
+    NamedList<Object> actionRETRY(SolrParams params)
     {
         NamedList<Object> response = new SimpleOrderedMap<>();
-        
+
         final Consumer<String> retryOnSpecificCore = coreName -> {
             MetadataTracker tracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
             InformationServer srv = informationServers.get(coreName);
+            final NamedList<Object> coreResponse = new SimpleOrderedMap<>();
 
-            try
+            if (tracker.isEnabled())
             {
-                for (Long nodeid : srv.getErrorDocIds())
+                try
                 {
-                    tracker.addNodeToReindex(nodeid);
+                    for (Long nodeid : srv.getErrorDocIds())
+                    {
+                        tracker.addNodeToReindex(nodeid);
+                    }
+                    coreResponse.add("Error Nodes", srv.getErrorDocIds());
+                    coreResponse.add(ACTION_STATUS_LABEL, ACTION_STATUS_SCHEDULED);
+                } catch (Exception exception)
+                {
+                    LOGGER.error("I/O Exception while adding Node to reindex.", exception);
+                    coreResponse.add(ACTION_STATUS_LABEL, ACTION_STATUS_ERROR);
+                    coreResponse.add(ACTION_ERROR_MESSAGE_LABEL, exception.getMessage());
+                    coreResponse.add(ACTION_STATUS_LABEL, ACTION_STATUS_NOT_SCHEDULED);
                 }
-                response.add(coreName, srv.getErrorDocIds());
             }
-            catch (Exception exception)
+            else
             {
-                LOGGER.error("I/O Exception while adding Node to reindex.", exception);
-                response.add(ACTION_STATUS_LABEL, ACTION_STATUS_ERROR);
-                response.add(ACTION_ERROR_MESSAGE_LABEL, exception.getMessage());
-                
+                coreResponse.add(ACTION_STATUS_LABEL, ACTION_STATUS_NOT_SCHEDULED);
+                coreResponse.add(ADDITIONAL_INFO, "Trackers have been disabled: the RETRY request cannot be executed; please enable indexing and then resubmit this command.");
             }
+
+            response.add(coreName, coreResponse);
         };
-        
-        if (Objects.equals(response.get(ACTION_STATUS_LABEL), ACTION_STATUS_ERROR))
-        {
-            return response;
-        }
 
         String requestedCoreName = coreName(params);
 
@@ -1560,8 +1627,12 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
                 .filter(this::isMasterOrStandalone)
                 .forEach(retryOnSpecificCore);
-        
-        response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SCHEDULED);
+
+        if (response.size() == 0)
+        {
+            addAlertMessage(response);
+        }
+
         return response;
     }
 
@@ -1580,16 +1651,29 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * @return Response including the action result:
      * - action.status: scheduled, as it will be executed by Trackers on the next maintenance operation
      */
-    private NamedList<Object> actionINDEX(SolrParams params)
+    NamedList<Object> actionINDEX(SolrParams params)
     {
+        final NamedList<Object> response = new SimpleOrderedMap<>();
         Consumer<String> indexOnSpecificCore = coreName -> {
             final MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
             final AclTracker aclTracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
+            final NamedList<Object> coreResponse = new SimpleOrderedMap<>();
 
-            apply(params, ARG_TXID, metadataTracker::addTransactionToIndex);
-            apply(params, ARG_ACLTXID, aclTracker::addAclChangeSetToIndex);
-            apply(params, ARG_NODEID, metadataTracker::addNodeToIndex);
-            apply(params, ARG_ACLID, aclTracker::addAclToIndex);
+            if (metadataTracker.isEnabled() & aclTracker.isEnabled())
+            {
+                apply(params, ARG_TXID, metadataTracker::addTransactionToIndex);
+                apply(params, ARG_ACLTXID, aclTracker::addAclChangeSetToIndex);
+                apply(params, ARG_NODEID, metadataTracker::addNodeToIndex);
+                apply(params, ARG_ACLID, aclTracker::addAclToIndex);
+                coreResponse.add(ACTION_STATUS_LABEL, ACTION_STATUS_SCHEDULED);
+            }
+            else
+            {
+                coreResponse.add(ACTION_STATUS_LABEL, ACTION_STATUS_NOT_SCHEDULED);
+                coreResponse.add(ADDITIONAL_INFO, "Trackers have been disabled: the INDEX request cannot be executed; please enable indexing and then resubmit this command.");
+            }
+
+            response.add(coreName, coreResponse);
         };
 
         String requestedCoreName = coreName(params);
@@ -1598,10 +1682,23 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
                 .filter(this::isMasterOrStandalone)
                 .forEach(indexOnSpecificCore);
-        
-        NamedList<Object> response = new SimpleOrderedMap<>();
-        response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SCHEDULED);
-        return response;        
+
+        if (response.size() == 0)
+        {
+            addAlertMessage(response);
+        }
+
+        return response;
+    }
+
+    NamedList<Object> actionDisableIndexing(SolrParams params) throws JSONException
+    {
+        return executeTrackerSubsystemLifecycleAction(params, this::disableIndexingOnSpecificCore);
+    }
+
+    NamedList<Object> actionEnableIndexing(SolrParams params) throws JSONException
+    {
+        return executeTrackerSubsystemLifecycleAction(params, this::enableIndexingOnSpecificCore);
     }
 
     /**
@@ -1617,71 +1714,306 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * - action.status: scheduled, as it will be executed by Trackers on the next maintenance operation
      * - txToReindex: list of Transaction Ids that are going to be reindexed
      * - aclChangeSetToReindex: list of ACL Change Set Ids that are going to be reindexed
-     * @throws JSONException
      */
-    private NamedList<Object> actionFIX(SolrParams params) throws JSONException
+    NamedList<Object> actionFIX(SolrParams params) throws JSONException
     {
         String requestedCoreName = coreName(params);
+
         var wrapper = new Object()
         {
-            NamedList<Object> response = new SimpleOrderedMap<>();;
+            final NamedList<Object> response = new SimpleOrderedMap<>();
         };
 
+        if (isNullOrEmpty(requestedCoreName))
+        {
+            return wrapper.response;
+        }
+
+        if (!coreNames().contains(requestedCoreName))
+        {
+            wrapper.response.add(ACTION_ERROR_MESSAGE_LABEL, UNKNOWN_CORE_MESSAGE + requestedCoreName);
+            return wrapper.response;
+        }
+
+        if (!isMasterOrStandalone(requestedCoreName)) {
+            wrapper.response.add(ACTION_ERROR_MESSAGE_LABEL, UNPROCESSABLE_REQUEST_ON_SLAVE_NODES);
+            return wrapper.response;
+        }
+
+        Long fromTxCommitTime = params.getLong(FROM_TX_COMMIT_TIME_PARAMETER_NAME);
+        Long toTxCommitTime = params.getLong(TO_TX_COMMIT_TIME_PARAMETER_NAME);
+        boolean dryRun = params.getBool(DRY_RUN_PARAMETER_NAME, true);
+        int maxTransactionsToSchedule = getMaxTransactionToSchedule(params);
+
+        MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(requestedCoreName, MetadataTracker.class);
+        AclTracker aclTracker = trackerRegistry.getTrackerForCore(requestedCoreName, AclTracker.class);
+        final boolean actualDryRun = dryRun | (metadataTracker == null || metadataTracker.isDisabled()) || (aclTracker == null || aclTracker.isDisabled());
+
+        LOGGER.debug("FIX Admin request on core {}, parameters: " +
+                    FROM_TX_COMMIT_TIME_PARAMETER_NAME + " = {}, " +
+                    TO_TX_COMMIT_TIME_PARAMETER_NAME + " = {}, " +
+                    DRY_RUN_PARAMETER_NAME + " = {}, " +
+                    "actualDryRun = {} " +
+                    MAX_TRANSACTIONS_TO_SCHEDULE_PARAMETER_NAME + " = {}",
+                    requestedCoreName,
+                    ofNullable(fromTxCommitTime).map(Object::toString).orElse("N.A."),
+                    ofNullable(toTxCommitTime).map(Object::toString).orElse("N.A."),
+                    dryRun,
+                    actualDryRun,
+                    maxTransactionsToSchedule);
+
         coreNames().stream()
-                .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
+                .filter(coreName -> coreName.equals(requestedCoreName))
                 .filter(this::isMasterOrStandalone)
-                .forEach(coreName -> {
-                    wrapper.response.add(coreName, fixOnSpecificCore(coreName));   
-                });
-        
-        wrapper.response.add(ACTION_STATUS_LABEL, ACTION_STATUS_SCHEDULED);
+                .forEach(coreName ->
+                        wrapper.response.add(
+                                    coreName,
+                                    fixOnSpecificCore(coreName, fromTxCommitTime, toTxCommitTime, actualDryRun, maxTransactionsToSchedule)));
+
+        if (wrapper.response.size() > 0)
+        {
+            wrapper.response.add(DRY_RUN_PARAMETER_NAME, dryRun);
+
+            ofNullable(fromTxCommitTime).ifPresent(value -> wrapper.response.add(FROM_TX_COMMIT_TIME_PARAMETER_NAME, value));
+            ofNullable(toTxCommitTime).ifPresent(value -> wrapper.response.add(TO_TX_COMMIT_TIME_PARAMETER_NAME, value));
+
+            wrapper.response.add(MAX_TRANSACTIONS_TO_SCHEDULE_PARAMETER_NAME, maxTransactionsToSchedule);
+            wrapper.response.add(ACTION_STATUS_LABEL, actualDryRun ? ACTION_STATUS_NOT_SCHEDULED : ACTION_STATUS_SCHEDULED);
+
+            // the user wanted a real execution (dryRun = false) but the trackers are disabled.
+            // that adds a message in the response just to inform the user we didn't schedule anything (i.e. we forced a dryRun)
+            if (!dryRun && actualDryRun)
+            {
+                wrapper.response.add(ADDITIONAL_INFO, "Trackers are disabled: a (dryRun = true) has been forced. As consequence of that nothing has been scheduled.");
+            }
+        }
+
         return wrapper.response;
     }
 
-    private NamedList<Object> fixOnSpecificCore(String coreName)
+    /**
+     * Detects the transactions that need a FIX (i.e. reindexing) because the following reasons:
+     *
+     * <ul>
+     *     <li>A transaction is in the index but not in repository</li>
+     *     <li>A transaction is duplicated in the index</li>
+     *     <li>A transaction is missing in the index</li>
+     * </ul>
+     *
+     * Depending on the dryRun parameter, other than collecting, this method could also schedule the transactions for
+     * reindexing.
+     *
+     * @param coreName the target core name.
+     * @param fromTxCommitTime the start commit time we consider for collecting transaction.
+     * @param toTxCommitTime the end commit time we consider for collecting transaction.
+     * @param dryRun a flag indicating if the collected transactions must be actually scheduled for reindexing.
+     * @param maxTransactionsToSchedule the maximum number of transactions to be scheduled for reindexing.
+     * @return a report about transactions that need to be fixed.
+     */
+    NamedList<Object> fixOnSpecificCore(String coreName, Long fromTxCommitTime, Long toTxCommitTime, boolean dryRun, int maxTransactionsToSchedule)
     {
         try
         {
-            // Gets Metadata health and fixes any problems
             MetadataTracker metadataTracker = trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class);
-            IndexHealthReport indexHealthReport = metadataTracker.checkIndex(null, null, null, null);
-            IOpenBitSet toReindex = indexHealthReport.getTxInIndexButNotInDb();
-            toReindex.or(indexHealthReport.getDuplicatedTxInIndex());
-            toReindex.or(indexHealthReport.getMissingTxFromIndex());
-            long current = -1;
-            // Goes through problems in the index
-            Set<Long> txToReindex = new TreeSet<>();
-            while ((current = toReindex.nextSetBit(current + 1)) != -1)
-            {
-                metadataTracker.addTransactionToReindex(current);
-                txToReindex.add(current);
-            }
-
-            // Gets the Acl health and fixes any problems
             AclTracker aclTracker = trackerRegistry.getTrackerForCore(coreName, AclTracker.class);
-            indexHealthReport = aclTracker.checkIndex(null, null, null, null);
-            toReindex = indexHealthReport.getAclTxInIndexButNotInDb();
-            toReindex.or(indexHealthReport.getDuplicatedAclTxInIndex());
-            toReindex.or(indexHealthReport.getMissingAclTxFromIndex());
-            current = -1;
-            // Goes through the problems in the index
-            Set<Long> aclChangeSetToReindex = new TreeSet<>();
-            while ((current = toReindex.nextSetBit(current + 1)) != -1)
-            {
-                aclTracker.addAclChangeSetToReindex(current);
-                aclChangeSetToReindex.add(current);
-            }
-            
+
+            final IndexHealthReport metadataTrackerIndexHealthReport =
+                    metadataTracker.checkIndex(null, null, fromTxCommitTime, toTxCommitTime);
+
+            LOGGER.debug("FIX Admin action built the MetadataTracker Index Health Report on core {}, parameters: " +
+                            FROM_TX_COMMIT_TIME_PARAMETER_NAME + " = {}, " +
+                            TO_TX_COMMIT_TIME_PARAMETER_NAME + " = {}, " +
+                            DRY_RUN_PARAMETER_NAME + " = {}, " +
+                            MAX_TRANSACTIONS_TO_SCHEDULE_PARAMETER_NAME + " = {}",
+                    coreName,
+                    ofNullable(fromTxCommitTime).map(Object::toString).orElse("N.A."),
+                    ofNullable(toTxCommitTime).map(Object::toString).orElse("N.A."),
+                    dryRun,
+                    maxTransactionsToSchedule);
+
+            final IndexHealthReport aclTrackerIndexHealthReport =
+                    aclTracker.checkIndex(null, null, fromTxCommitTime, toTxCommitTime);
+
+            LOGGER.debug("FIX Admin action built the AclTracker Index Health Report on core {}, parameters: " +
+                            FROM_TX_COMMIT_TIME_PARAMETER_NAME + " = {}, " +
+                            TO_TX_COMMIT_TIME_PARAMETER_NAME + " = {}, " +
+                            DRY_RUN_PARAMETER_NAME + " = {}, " +
+                            MAX_TRANSACTIONS_TO_SCHEDULE_PARAMETER_NAME + " = {}",
+                    coreName,
+                    ofNullable(fromTxCommitTime).map(Object::toString).orElse("N.A."),
+                    ofNullable(toTxCommitTime).map(Object::toString).orElse("N.A."),
+                    dryRun,
+                    maxTransactionsToSchedule);
+
             NamedList<Object> response = new SimpleOrderedMap<>();
-            response.add(ACTION_TX_TO_REINDEX, txToReindex);
-            response.add(ACTION_ACL_CHANGE_SET_TO_REINDEX, aclChangeSetToReindex);
+            response.add(ACTION_TX_TO_REINDEX,
+                         txToReindex(
+                                coreName,
+                                metadataTracker,
+                                metadataTrackerIndexHealthReport,
+                                dryRun ? txid -> {} : metadataTracker::addTransactionToReindex,
+                                maxTransactionsToSchedule));
+
+            response.add(ACTION_ACL_CHANGE_SET_TO_REINDEX,
+                         aclTxToReindex(
+                                 coreName,
+                                 aclTracker,
+                                 aclTrackerIndexHealthReport,
+                                 dryRun ? txid -> {} : aclTracker::addAclChangeSetToReindex,
+                                 maxTransactionsToSchedule));
             return response;
-            
         }
         catch(Exception exception)
         {
             throw new AlfrescoRuntimeException("", exception);
         }
+    }
+
+    /**
+     * Detects the transactions that need a FIX (i.e. reindexing) because the following reasons:
+     *
+     * <ul>
+     *     <li>A transaction is in the index but not in repository</li>
+     *     <li>A transaction is duplicated in the index</li>
+     *     <li>A transaction is missing in the index</li>
+     * </ul>
+     *
+     * Note: the method, as a side effect, could also schedule the detected transactions for reindexing.
+     * That is controlled by the scheduler input param (which is directly connected with the FIX tool "dryRun" parameter).
+     *
+     * @param coreName the target core name.
+     * @param tracker the {@link MetadataTracker} instance associated with the target core.
+     * @param report the index healt report produced by the tracker.
+     * @param scheduler the controller which manages the actual transaction scheduling.
+     * @param maxTransactionsToSchedule the maximum number of transactions to schedule for reindexing.
+     * @return a report which includes the transactions that need a reindexing.
+     * @see <a href="https://issues.alfresco.com/jira/browse/SEARCH-2233">SEARCH-2233</a>
+     * @see <a href="https://issues.alfresco.com/jira/browse/SEARCH-2248">SEARCH-2248</a>
+     */
+    NamedList<Object> txToReindex(
+            String coreName,
+            MetadataTracker tracker,
+            final IndexHealthReport report,
+            Consumer<Long> scheduler,
+            int maxTransactionsToSchedule)
+    {
+        final AtomicInteger globalLimit = new AtomicInteger(maxTransactionsToSchedule);
+
+        final LongToIntFunction retrieveTransactionRelatedNodesCountFromRepository =
+                txid -> notNullOrEmpty(tracker.getFullNodesForDbTransaction(txid)).size();
+
+        final LongToIntFunction retrieveTransactionRelatedNodesCountFromIndex =
+                txid -> of(getInformationServers().get(coreName))
+                        .map(SolrInformationServer.class::cast)
+                        .map(server -> server.getDocListSize(FIELD_INTXID + ":" + txid))
+                        .orElse(0);
+
+        NamedList<Object> txToReindex = new SimpleOrderedMap<>();
+        txToReindex.add(TX_IN_INDEX_NOT_IN_DB,
+                manageTransactionsToBeFixed(
+                        report.getTxInIndexButNotInDb(),
+                        retrieveTransactionRelatedNodesCountFromIndex,
+                        scheduler,
+                        globalLimit));
+
+        txToReindex.add(DUPLICATED_TX_IN_INDEX,
+                manageTransactionsToBeFixed(
+                        report.getDuplicatedTxInIndex(),
+                        retrieveTransactionRelatedNodesCountFromIndex,
+                        scheduler,
+                        globalLimit));
+
+        txToReindex.add(MISSING_TX_IN_INDEX,
+                manageTransactionsToBeFixed(
+                        report.getMissingTxFromIndex(),
+                        retrieveTransactionRelatedNodesCountFromRepository,
+                        scheduler,
+                        globalLimit));
+        return txToReindex;
+    }
+
+    /**
+     * Detects the ACL transactions that need a FIX (i.e. reindexing) because the following reasons:
+     *
+     * <ul>
+     *     <li>A transaction is in the index but not in repository</li>
+     *     <li>A transaction is duplicated in the index</li>
+     *     <li>A transaction is missing in the index</li>
+     * </ul>
+     *
+     * This method is almost the same as {@link #txToReindex(String, MetadataTracker, IndexHealthReport, Consumer, int)}.
+     * The main difference is the target tracker ({@link AclTracker} in this case, instead of {@link MetadataTracker}).
+     *
+     * Note: the method, as a side effect, could also schedule the detected transactions for reindexing.
+     * That is controlled by the scheduler input param (which is directly connected with the FIX tool "dryRun" parameter).
+     *
+     * @param coreName the target core name.
+     * @param tracker the {@link AclTracker} instance associated with the target core.
+     * @param report the index healt report produced by the tracker.
+     * @param scheduler the controller which manages the actual transaction scheduling.
+     * @return a report which includes the transactions that need a reindexing.
+     * @see <a href="https://issues.alfresco.com/jira/browse/SEARCH-2233">SEARCH-2233</a>
+     * @see <a href="https://issues.alfresco.com/jira/browse/SEARCH-2248">SEARCH-2248</a>
+     */
+    NamedList<Object> aclTxToReindex(
+            String coreName,
+            AclTracker tracker,
+            final IndexHealthReport report,
+            Consumer<Long> scheduler,
+            int maxTransactionsToSchedule)
+    {
+        final AtomicInteger globalLimit = new AtomicInteger(maxTransactionsToSchedule);
+
+        final LongToIntFunction retrieveAclTransactionRelatedNodesCountFromRepository =
+                txid -> notNullOrEmpty(tracker.getAclsForDbAclTransaction(txid)).size();
+
+        final LongToIntFunction retrieveAclTransactionRelatedNodesCountFromIndex =
+                txid -> of(getInformationServers().get(coreName))
+                        .map(SolrInformationServer.class::cast)
+                        .map(server -> server.getDocListSize(FIELD_INACLTXID + ":" + txid))
+                        .orElse(0);
+
+        NamedList<Object> aclTxToReindex = new SimpleOrderedMap<>();
+        aclTxToReindex.add(ACL_TX_IN_INDEX_NOT_IN_DB,
+                manageTransactionsToBeFixed(
+                        report.getAclTxInIndexButNotInDb(),
+                        retrieveAclTransactionRelatedNodesCountFromIndex,
+                        scheduler,
+                        globalLimit));
+
+        aclTxToReindex.add(DUPLICATED_ACL_TX_IN_INDEX,
+                manageTransactionsToBeFixed(
+                        report.getDuplicatedAclTxInIndex(),
+                        retrieveAclTransactionRelatedNodesCountFromIndex,
+                        scheduler,
+                        globalLimit));
+
+        aclTxToReindex.add(MISSING_ACL_TX_IN_INDEX,
+                manageTransactionsToBeFixed(
+                        report.getMissingAclTxFromIndex(),
+                        retrieveAclTransactionRelatedNodesCountFromRepository,
+                        scheduler,
+                        globalLimit));
+
+        return aclTxToReindex;
+    }
+
+    NamedList<Object> manageTransactionsToBeFixed(
+            IOpenBitSet transactions,
+            LongToIntFunction nodesCounter,
+            Consumer<Long> scheduler,
+            AtomicInteger limit)
+    {
+        final NamedList<Object> transactionsList = new SimpleOrderedMap<>();
+
+        long txid = -1;
+        while ((txid = transactions.nextSetBit(txid + 1)) != -1 && limit.decrementAndGet() >= 0)
+        {
+            transactionsList.add(String.valueOf(txid), nodesCounter.applyAsInt(txid));
+            scheduler.accept(txid);
+        }
+
+        return transactionsList;
     }
 
     /**
@@ -1707,7 +2039,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         coreNames().stream()
                 .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
                 .forEach(coreName -> coreSummary(params, report, coreName));
-        
+
         return report;
     }
 
@@ -1792,11 +2124,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * @param coreName the owning core name.
      * @return the component which is in charge to publish the core state.
      */
-    AbstractShardInformationPublisher coreStatePublisher(String coreName)
+    ShardStatePublisher coreStatePublisher(String coreName)
     {
-        return ofNullable(trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class))
-                .map(AbstractShardInformationPublisher.class::cast)
-                .orElse(trackerRegistry.getTrackerForCore(coreName, NodeStatePublisher.class));
+        return trackerRegistry.getTrackerForCore(coreName, ShardStatePublisher.class);
     }
 
     /**
@@ -1819,7 +2149,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     private void addAlertMessage(NamedList<Object> report)
     {
         report.add(
-                "WARNING",
+                WARNING,
                 "The requested endpoint is not available on the slave. " +
                         "Please re-submit the same request to the corresponding Master");
     }
@@ -1852,6 +2182,78 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 .map(String::trim)
                 .findFirst()
                 .orElse(null);
+    }
+
+    int getMaxTransactionToSchedule(SolrParams params)
+    {
+        String requestedCoreName = coreName(params);
+        return ofNullable(params.getInt(MAX_TRANSACTIONS_TO_SCHEDULE_PARAMETER_NAME))
+                .orElseGet(() ->
+                        ofNullable(coreContainer)
+                            .map(container -> container.getCore(requestedCoreName))
+                            .map(SolrCore::getResourceLoader)
+                            .map(SolrResourceLoader::getCoreProperties)
+                            .map(conf -> conf.getProperty(MAX_TRANSACTIONS_TO_SCHEDULE_CONF_PROPERTY_NAME))
+                            .map(Integer::parseInt)
+                            .orElse(Integer.MAX_VALUE)); // Last fallback if we don't have a request param and a value in configuration
+    }
+
+    NamedList<Object> disableIndexingOnSpecificCore(String coreName) {
+        final NamedList<Object> coreResponse = new SimpleOrderedMap<>();
+        trackerRegistry.getTrackersForCore(coreName)
+                .stream()
+                .filter(tracker -> tracker instanceof ActivatableTracker)
+                .map(ActivatableTracker.class::cast)
+                .peek(ActivatableTracker::disable)
+                .forEach(tracker -> coreResponse.add(tracker.getType().toString(), tracker.isEnabled()));
+        return coreResponse;
+    }
+
+    NamedList<Object> enableIndexingOnSpecificCore(String coreName) {
+        final NamedList<Object> coreResponse = new SimpleOrderedMap<>();
+        trackerRegistry.getTrackersForCore(coreName)
+                .stream()
+                .filter(tracker -> tracker instanceof ActivatableTracker)
+                .map(ActivatableTracker.class::cast)
+                .peek(ActivatableTracker::enable)
+                .forEach(tracker -> coreResponse.add(tracker.getType().toString(), tracker.isEnabled()));
+        return coreResponse;
+    }
+
+    /**
+     * Internal method used for executing the enable/disable indexing/tracking action.
+     *
+     * @param params the input request parameters. The only mandatory parameter is the core name
+     * @param action this can be the "enable" or the "disable" action: it is an "impure" function which takes a core name
+     *               executes the enable/disable logic as part of its side-effect, and returns the action response.
+     * @return the action response indicating the result of the enable/disable command on a specific core.
+     * @see #CORE_PARAMETER_NAMES
+     */
+    private NamedList<Object> executeTrackerSubsystemLifecycleAction(SolrParams params, Function<String, NamedList<Object>> action) throws JSONException
+    {
+        String requestedCoreName = coreName(params);
+        final NamedList<Object> response = new SimpleOrderedMap<>();
+
+        if (isNotNullAndNotEmpty(requestedCoreName))
+        {
+            if (!coreNames().contains(requestedCoreName))
+            {
+                response.add(ACTION_ERROR_MESSAGE_LABEL, UNKNOWN_CORE_MESSAGE + requestedCoreName);
+                return response;
+            }
+
+            if (!isMasterOrStandalone(requestedCoreName)) {
+                response.add(ACTION_ERROR_MESSAGE_LABEL, UNPROCESSABLE_REQUEST_ON_SLAVE_NODES);
+                return response;
+            }
+        }
+
+        coreNames().stream()
+                .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
+                .filter(this::isMasterOrStandalone)
+                .forEach(coreName -> response.add(coreName, action.apply(coreName)));
+
+        return response;
     }
 
     public SolrContentStore getSolrContentStore()
