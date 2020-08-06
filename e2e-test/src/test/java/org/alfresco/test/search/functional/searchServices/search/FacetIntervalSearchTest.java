@@ -150,7 +150,7 @@ public class FacetIntervalSearchTest extends AbstractSearchServicesE2ETest
         bucket = facetResponseModel.getBuckets().get(1);
 
         bucket.assertThat().field("label").is("theRest");
-        bucket.assertThat().field("filterQuery").is("creator:<\"user\" TO \"z\"]");
+        bucket.assertThat().field("filterQuery").is("creator:[\"user\" TO \"z\"]");
         bucket.getMetrics().get(0).assertThat().field("type").is("count");
         bucket.getMetrics().get(0).assertThat().field("value").is("{count=0}");
     }
@@ -196,7 +196,7 @@ public class FacetIntervalSearchTest extends AbstractSearchServicesE2ETest
         bucket = facetResponseModel.getBuckets().get(1);
 
         bucket.assertThat().field("label").is("Before2016");
-        bucket.assertThat().field("filterQuery").is("cm:modified:[\"*\" TO \"2016\">");
+        bucket.assertThat().field("filterQuery").is("cm:modified:[\"*\" TO \"2016\"]");
         bucket.getMetrics().get(0).assertThat().field("type").is("count");
         bucket.getMetrics().get(0).assertThat().field("value").is("{count=0}");
     }
