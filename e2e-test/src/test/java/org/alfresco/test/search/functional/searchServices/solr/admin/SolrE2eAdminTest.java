@@ -492,23 +492,6 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         Integer expand = response.getResponse().body().jsonPath().get("expand");             
         Assert.assertEquals(expand, Integer.valueOf(-1), "Expansion is not allowed when not using Shard DB_ID_RANGE method,");
     }
-    
-    /**
-     * When using DB_ID_RANGE Sharding method, expand param is including a number of nodes to be extended.
-     * @throws Exception
-     */
-    @Test(priority = 21, groups = { TestGroup.ASS_SHARDING_DB_ID_RANGE })
-    public void testRangeCheckSharding() throws Exception
-    {
-        String coreName = "alfresco";
-        
-        RestResponse response = restClient.withParams("coreName=" + coreName).withSolrAdminAPI().getAction("rangeCheck");
-        
-        checkResponseStatusOk(response);
-        
-        Integer expand = response.getResponse().body().jsonPath().get("expand");             
-        Assert.assertNotEquals(expand, Integer.valueOf(-1), "Expansion is a positive number when using Shard DB_ID_RANGE method,");    
-    }
 
     /**
      * This action only applies to DB_ID_RANGE Sharding method.
@@ -528,25 +511,6 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         // This action only applies to DB_ID_RANGE Sharding method
         Integer expand = response.getResponse().body().jsonPath().get("expand");             
         Assert.assertEquals(expand, Integer.valueOf(-1), "Expansion is not allowed when not using Shard DB_ID_RANGE method,");
-    }
-    
-    /**
-     * When using DB_ID_RANGE Sharding method, expand param is including a number of nodes extended.
-     * @throws Exception
-     */
-    @Test(priority = 23, groups = { TestGroup.ASS_SHARDING_DB_ID_RANGE })
-    public void testExpandSharding() throws Exception
-    {
-        String coreName = "alfresco";
-        String add = "1000";
-        
-        RestResponse response = restClient.withParams("coreName=" + coreName, "add=" + add).withSolrAdminAPI().getAction("expand");
-        
-        checkResponseStatusOk(response);
-        
-        // This action only applies to DB_ID_RANGE Sharding method
-        Integer expand = response.getResponse().body().jsonPath().get("expand");             
-        Assert.assertNotEquals(expand, Integer.valueOf(-1), "Expansion is a positive number when using Shard DB_ID_RANGE method,");
     }
     
     /**
