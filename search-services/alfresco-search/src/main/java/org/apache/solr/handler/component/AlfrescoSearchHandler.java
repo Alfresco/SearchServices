@@ -635,16 +635,15 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
          * 
          */
         public static final String FACET_COUNTS_KEY = "facet_counts";
-        public static final String FACET_QUERIES_KEY = "facet_queries";
         public static final String FACET_CONTEXT_KEY = "_facet.context";
 
         @SuppressWarnings("unchecked")
-        private void removeFacetQueriesWithCountZero(SolrQueryResponse rsp)
+        public static void removeFacetQueriesWithCountZero(SolrQueryResponse rsp)
         {
             NamedList<Object> facetCounts = (NamedList<Object>) rsp.getValues().get(FACET_COUNTS_KEY);
             if (facetCounts != null)
             {
-                NamedList<Object> facetQueries = (NamedList<Object>) facetCounts.get(FACET_QUERIES_KEY);
+                NamedList<Object> facetQueries = (NamedList<Object>) facetCounts.get(FacetComponent.FACET_QUERY_KEY);
                 if (facetQueries != null)
                 {
                     List<String> keyCountsToRemove = new ArrayList<>();
@@ -655,13 +654,13 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
                             keyCountsToRemove.add(facetQuery.getKey());
                         }
                     });
-
+                    
                     if (!keyCountsToRemove.isEmpty())
                     {
                         keyCountsToRemove.forEach(key -> facetQueries.remove(key));
 
-                        ((NamedList<Object>) rsp.getValues().get(FACET_COUNTS_KEY)).remove(FACET_QUERIES_KEY);
-                        ((NamedList<Object>) rsp.getValues().get(FACET_COUNTS_KEY)).add(FACET_QUERIES_KEY,
+                        ((NamedList<Object>) rsp.getValues().get(FACET_COUNTS_KEY)).remove(FacetComponent.FACET_QUERY_KEY);
+                        ((NamedList<Object>) rsp.getValues().get(FACET_COUNTS_KEY)).add(FacetComponent.FACET_QUERY_KEY,
                                 facetQueries);
 
                         BasicResultContext result = (BasicResultContext) rsp.getResponse();
