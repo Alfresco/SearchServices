@@ -68,7 +68,9 @@ import org.apache.solr.core.CloseHook;
 import org.apache.solr.core.PluginInfo;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.handler.RequestHandlerBase;
+import org.apache.solr.handler.component.FacetComponent.FacetContext;
 import org.apache.solr.request.SolrQueryRequest;
+import org.apache.solr.response.BasicResultContext;
 import org.apache.solr.response.ResultContext;
 import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.schema.IndexSchema;
@@ -603,7 +605,77 @@ public class AlfrescoSearchHandler extends RequestHandlerBase implements
 			shardInfo.add(shardInfoName, nl);
 			rsp.getValues().add(ShardParams.SHARDS_INFO, shardInfo);
 		}
+		
+                removeFacetQueriesWithCountZero(rsp);
+                
 	}
+	
+        /**
+         * Facet SOLR Queries are omitting facet results with count equals to 0 as general rule.
+         * SOLR Queries executed on a Shard environment, don't include these results but the same
+         * query executed on a single server environment are adding these elements to the response.
+         * This method removes every facet query having count equals to 0 to provide the same
+         * behaviour in both cases.
+         * 
+         * A query like the following, will return only Facet Queries having elements:
+         * "facetQueries" : [
+         *     { "query" : "content.size:[0 TO 102400]", "label" : "small"},
+         *     { "query" : "content.size:[102400 TO 1048576]", "label" : "medium"},
+         *     { "query" : "content.size:[1048576 TO 16777216]", "label" : "large"}
+         * ]
+         * 
+         * For instance, if there are only results with "small" key, the result will be:
+         * "facetQueries": [
+         *     {
+         *         "label": "small",
+         *         "filterQuery": "content.size:[0 TO 102400]",
+         *         "count": 5
+         *     }
+         * ]
+         * 
+         */
+        public static final String FACET_COUNTS_KEY = "facet_counts";
+        public static final String FACET_CONTEXT_KEY = "_facet.context";
+
+        @SuppressWarnings("unchecked")
+        public static void removeFacetQueriesWithCountZero(SolrQueryResponse rsp)
+        {
+            NamedList<Object> facetCounts = (NamedList<Object>) rsp.getValues().get(FACET_COUNTS_KEY);
+            if (facetCounts != null)
+            {
+                NamedList<Object> facetQueries = (NamedList<Object>) facetCounts.get(FacetComponent.FACET_QUERY_KEY);
+                if (facetQueries != null)
+                {
+                    List<String> keyCountsToRemove = new ArrayList<>();
+
+                    facetQueries.forEach(facetQuery -> {
+                        if ((Integer) facetQuery.getValue() == 0)
+                        {
+                            keyCountsToRemove.add(facetQuery.getKey());
+                        }
+                    });
+                    
+                    if (!keyCountsToRemove.isEmpty())
+                    {
+                        keyCountsToRemove.forEach(key -> facetQueries.remove(key));
+
+                        ((NamedList<Object>) rsp.getValues().get(FACET_COUNTS_KEY)).remove(FacetComponent.FACET_QUERY_KEY);
+                        ((NamedList<Object>) rsp.getValues().get(FACET_COUNTS_KEY)).add(FacetComponent.FACET_QUERY_KEY,
+                                facetQueries);
+
+                        BasicResultContext result = (BasicResultContext) rsp.getResponse();
+                        FacetContext facetContext = (FacetContext) result.getRequest().getContext()
+                                .get(FACET_CONTEXT_KEY);
+                        facetContext.getAllQueryFacets()
+                                .removeIf(queryFacet -> keyCountsToRemove.contains(queryFacet.getKey()));
+                        result.getRequest().getContext().put(FACET_CONTEXT_KEY, facetContext);
+
+                        log.debug("In SOLR query '" + result.getRequest() + "', Facet Queries results having labels "
+                                + keyCountsToRemove + " have been removed from results");
+                    }
+                }
+            }
+        }
 
 	// ////////////////////// SolrInfoMBeans methods //////////////////////
 
