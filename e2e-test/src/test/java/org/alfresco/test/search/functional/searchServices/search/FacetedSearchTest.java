@@ -138,15 +138,22 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
         FacetFieldBucket facet = response.getContext().getFacetQueries().get(0);
         facet.assertThat().field("label").contains("small").and().field("count").isGreaterThan(0);
         facet.assertThat().field("label").contains("small").and().field("filterQuery").is("content.size:[0 TO 102400]");
-        response.getContext().getFacetQueries().get(1).assertThat().field("label").contains("large")
-                    .and().field("count").isLessThan(1)
-                    .and().field("filterQuery").is("content.size:[1048576 TO 16777216]");
-        response.getContext().getFacetQueries().get(2).assertThat().field("label").contains("medium")
-                    .and().field("count").isLessThan(1)
-                    .and().field("filterQuery").is("content.size:[102400 TO 1048576]");
+        Assert.assertEquals(response.getContext().getFacetQueries().size(), 1, "Results with count=0 must be omitted");
+
       //We don't expect to see the FacetFields if group is being used.
         Assert.assertNull(response.getContext().getFacetsFields());
         Assert.assertNull(response.getContext().getFacets());
+    }
+
+    /**
+     * Verify this query is returning the same results for both single server and shard environments.
+     * @throws Exception
+     */
+    @Test(groups={TestGroup.CONFIG_SHARDING})
+    @TestRail(section = { TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.ACCEPTANCE, description = "Checks facet queries for the Search api in Shard environments")
+    public void searchWithQueryFacetingCluster() throws Exception
+    {
+        searchWithQueryFaceting();
     }
 
     /**
