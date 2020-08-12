@@ -149,7 +149,7 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
      * Verify this query is returning the same results for both single server and shard environments.
      * @throws Exception
      */
-    @Test(groups={TestGroup.CONFIG_SHARDING})
+    @Test(groups={TestGroup.ASS_SHARDING})
     @TestRail(section = { TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.ACCEPTANCE, description = "Checks facet queries for the Search api in Shard environments")
     public void searchWithQueryFacetingCluster() throws Exception
     {
