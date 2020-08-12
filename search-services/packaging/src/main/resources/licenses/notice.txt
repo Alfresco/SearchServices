@@ -36,37 +36,37 @@ xml-resolver-1.2.jar    https://github.com/FasterXML/jackson
 neethi-3.1.1.jar http://ws.apache.org/commons/neethi/
 commons-dbcp-1.4.jar http://jakarta.apache.org/commons/
 commons-logging-1.1.3.jar http://jakarta.apache.org/commons/
-commons-lang3-3.10.jar http://jakarta.apache.org/commons/
+commons-lang3-3.11.jar http://jakarta.apache.org/commons/
 commons-pool-1.5.4.jar http://jakarta.apache.org/commons/
 chemistry-opencmis-commons-impl-1.1.0.jar      http://chemistry.apache.org/
 chemistry-opencmis-commons-api-1.1.0.jar       http://chemistry.apache.org/
 xmlschema-core-2.2.5.jar http://ws.apache.org/commons/XmlSchema/
 HikariCP-java7-2.4.13.jar https://github.com/brettwooldridge/HikariCP
-cxf-core-3.2.13.jar https://cxf.apache.org/
-cxf-rt-bindings-soap-3.2.13.jar https://cxf.apache.org/
-cxf-rt-bindings-xml-3.2.13.jar https://cxf.apache.org/
-cxf-rt-databinding-jaxb-3.2.13.jar https://cxf.apache.org/
-cxf-rt-frontend-jaxws-3.2.13.jar https://cxf.apache.org/
-cxf-rt-frontend-simple-3.2.13.jar https://cxf.apache.org/
-cxf-rt-transports-http-3.2.13.jar https://cxf.apache.org/
-cxf-rt-ws-addr-3.2.13.jar https://cxf.apache.org/
-cxf-rt-ws-policy-3.2.13.jar https://cxf.apache.org/
-cxf-rt-wsdl-3.2.13.jar https://cxf.apache.org/
+cxf-core-3.2.14.jar https://cxf.apache.org/
+cxf-rt-bindings-soap-3.2.14.jar https://cxf.apache.org/
+cxf-rt-bindings-xml-3.2.14.jar https://cxf.apache.org/
+cxf-rt-databinding-jaxb-3.2.14.jar https://cxf.apache.org/
+cxf-rt-frontend-jaxws-3.2.14.jar https://cxf.apache.org/
+cxf-rt-frontend-simple-3.2.14.jar https://cxf.apache.org/
+cxf-rt-transports-http-3.2.14.jar https://cxf.apache.org/
+cxf-rt-ws-addr-3.2.14.jar https://cxf.apache.org/
+cxf-rt-ws-policy-3.2.14.jar https://cxf.apache.org/
+cxf-rt-wsdl-3.2.14.jar https://cxf.apache.org/
 chemistry-opencmis-server-support-1.0.0.jar     http://chemistry.apache.org/
 chemistry-opencmis-server-bindings-1.0.0.jar    http://chemistry.apache.org/
 quartz-2.3.2.jar http://quartz-scheduler.org/
-jackson-core-2.10.3.jar https://github.com/FasterXML/jackson
-jackson-annotations-2.10.3.jar https://github.com/FasterXML/jackson
-jackson-databind-2.10.3.jar https://github.com/FasterXML/jackson
+jackson-core-2.11.2.jar https://github.com/FasterXML/jackson
+jackson-annotations-2.11.2.jar https://github.com/FasterXML/jackson
+jackson-databind-2.11.2.jar https://github.com/FasterXML/jackson
 commons-httpclient-3.1-HTTPCLIENT-1265.jar      http://jakarta.apache.org/commons/
-spring-aop-5.2.7.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-beans-5.2.7.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-context-5.2.7.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-core-5.2.7.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-expression-5.2.7.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-jdbc-5.2.7.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-orm-5.2.7.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-tx-5.2.7.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-aop-5.2.8.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-beans-5.2.8.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-context-5.2.8.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-core-5.2.8.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-expression-5.2.8.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-jdbc-5.2.8.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-orm-5.2.8.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-tx-5.2.8.RELEASE.jar http://projects.spring.io/spring-framework/
 xercesImpl-2.12.0-alfresco-patched-20191004.jar http://xerces.apache.org/xerces2-j
 guessencoding-1.4.jar   http://docs.codehaus.org/display/GUESSENC/
 xml-apis-1.4.01.jar     https://github.com/FasterXML/jackson
@@ -90,13 +90,13 @@ aggdesigner-algorithm-6.0.jar https://github.com/julianhyde/aggdesigner
 
 
 === CDDL 1.1 ===
-jaxb-core-2.3.0.1.jar   http://jaxb.java.net/
-jaxb-xjc-2.3.2.jar      http://jaxb.java.net/
+jaxb-core-2.3.0.1.jar http://jaxb.java.net/
+jaxb-xjc-2.3.3.jar http://jaxb.java.net/
+jaxb-impl-2.3.3.jar http://jaxb.java.net/
 
 
 === Eclipse Distribution License 1.0 (BSD) ===
 jakarta.activation-1.2.2.jar https://eclipse-ee4j.github.io/jaf
-jakarta.activation-api-1.2.2.jar https://eclipse-ee4j.github.io/jaf
 jakarta.jws-api-1.1.1.jar https://projects.eclipse.org/projects/ee4j.websocket/releases/1.1.1
 jakarta.xml.bind-api-2.3.3.jar https://projects.eclipse.org/projects/ee4j.jaxb
 
