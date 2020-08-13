@@ -7,7 +7,7 @@
       <version>10</version>
    </parent>
    <artifactId>alfresco-search-and-insight-parent</artifactId>
-   <version>1.4.3-RC2</version>
+   <version>1.4.3.0-SNAPSHOT</version>
    <packaging>pom</packaging>
    <name>Alfresco Search And Insight Parent</name>
    <distributionManagement>
@@ -24,7 +24,7 @@
       <connection>scm:git:ssh://git@github.com/Alfresco/InsightEngine.git</connection>
       <developerConnection>scm:git:ssh://git@github.com/Alfresco/InsightEngine.git</developerConnection>
       <url>scm:git:ssh://git@github.com/Alfresco/InsightEngine.git</url>
-      <tag>1.4.3-RC2</tag>
+      <tag>HEAD</tag>
    </scm>
    <properties>
       <java.version>11</java.version>
