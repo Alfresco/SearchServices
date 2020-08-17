@@ -1716,7 +1716,7 @@ public class SolrInformationServer implements InformationServer
                                             .orElse(false);
 
                     addDocCmd.solrDoc = isIndexed
-                                ? populateWithMetadata(basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new), nodeMetaData)
+                                ? populateWithMetadata(basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new), nodeMetaData, nmdp)
                                 : basicDocument(nodeMetaData, DOC_TYPE_UNINDEXED_NODE, SolrInputDocument::new);
                     processor.processAdd(addDocCmd);
                 }
@@ -2073,7 +2073,7 @@ public class SolrInformationServer implements InformationServer
 
                     addDocCmd.solrDoc =
                             populateWithMetadata(basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new),
-                                    nodeMetaData);
+                                    nodeMetaData, nmdp);
                     processor.processAdd(addDocCmd);
 
                     this.trackerStats.addNodeTime(System.nanoTime() - start);
@@ -2097,9 +2097,9 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    private SolrInputDocument populateWithMetadata(SolrInputDocument document, NodeMetaData metadata)
+    private SolrInputDocument populateWithMetadata(SolrInputDocument document, NodeMetaData metadata, NodeMetaDataParameters nmdp)
     {
-        populateFields(metadata, document);
+        populateFields(metadata, document, nmdp);
 
         LOGGER.debug("Document size (fields) after getting fields from node {} metadata: {}", metadata.getId(), document.size());
 
@@ -2114,40 +2114,44 @@ public class SolrInformationServer implements InformationServer
         return document;
     }
 
-    private void populateFields(NodeMetaData metadata, SolrInputDocument doc)
+    private void populateFields(NodeMetaData metadata, SolrInputDocument doc, NodeMetaDataParameters nmdp)
     {
         doc.setField(FIELD_TYPE, metadata.getType().toString());
-        notNullOrEmpty(metadata.getAspects())
-                .stream()
-                .filter(Objects::nonNull)
-                .forEach(aspect -> {
-                    doc.addField(FIELD_ASPECT, aspect.toString());
-                    if(aspect.equals(ContentModel.ASPECT_GEOGRAPHIC))
-                    {
-                        Optional<Double> latitude =
-                                ofNullable(metadata.getProperties().get(ContentModel.PROP_LATITUDE))
-                                        .map(StringPropertyValue.class::cast)
-                                        .map(StringPropertyValue::getValue)
-                                        .map(Utils::doubleOrNull)
-                                        .filter(value -> -90d <= value && value <= 90d);
-
-                        Optional<Double> longitude =
-                                ofNullable(metadata.getProperties().get(ContentModel.PROP_LONGITUDE))
-                                        .map(StringPropertyValue.class::cast)
-                                        .map(StringPropertyValue::getValue)
-                                        .map(Utils::doubleOrNull)
-                                        .filter(value -> -180d <= value && value <= 180d);
-
-                        if (latitude.isPresent() && longitude.isPresent())
+        if (nmdp.isIncludeAspects())
+        {
+            doc.removeField(FIELD_ASPECT);
+            notNullOrEmpty(metadata.getAspects())
+                    .stream()
+                    .filter(Objects::nonNull)
+                    .forEach(aspect -> {
+                        doc.addField(FIELD_ASPECT, aspect.toString());
+                        if(aspect.equals(ContentModel.ASPECT_GEOGRAPHIC))
                         {
-                            doc.setField(FIELD_GEO, latitude.get() + ", " + longitude.get());
+                            Optional<Double> latitude =
+                                    ofNullable(metadata.getProperties().get(ContentModel.PROP_LATITUDE))
+                                            .map(StringPropertyValue.class::cast)
+                                            .map(StringPropertyValue::getValue)
+                                            .map(Utils::doubleOrNull)
+                                            .filter(value -> -90d <= value && value <= 90d);
+    
+                            Optional<Double> longitude =
+                                    ofNullable(metadata.getProperties().get(ContentModel.PROP_LONGITUDE))
+                                            .map(StringPropertyValue.class::cast)
+                                            .map(StringPropertyValue::getValue)
+                                            .map(Utils::doubleOrNull)
+                                            .filter(value -> -180d <= value && value <= 180d);
+    
+                            if (latitude.isPresent() && longitude.isPresent())
+                            {
+                                doc.setField(FIELD_GEO, latitude.get() + ", " + longitude.get());
+                            }
+                            else
+                            {
+                                LOGGER.warning("Skipping missing geo data on node {}", metadata.getId());
+                            }
                         }
-                        else
-                        {
-                            LOGGER.warning("Skipping missing geo data on node {}", metadata.getId());
-                        }
-                    }
-                });
+                    });
+        }
 
         doc.setField(FIELD_ISNODE, "T");
         doc.setField(FIELD_TENANT, AlfrescoSolrDataModel.getTenantId(metadata.getTenantDomain()));
