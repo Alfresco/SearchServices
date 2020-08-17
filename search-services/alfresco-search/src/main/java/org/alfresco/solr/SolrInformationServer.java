@@ -2174,7 +2174,7 @@ public class SolrInformationServer implements InformationServer
                     }
                     qNameBuffer.append(ISO9075.getXPathName(childAssocRef.getQName()));
                     assocTypeQNameBuffer.append(ISO9075.getXPathName(childAssocRef.getTypeQName()));
-                    doc.setField(FIELD_PARENT, childAssocRef.getParentRef().toString());
+                    doc.addField(FIELD_PARENT, childAssocRef.getParentRef().toString());
 
                     if (childAssocRef.isPrimary())
                     {
