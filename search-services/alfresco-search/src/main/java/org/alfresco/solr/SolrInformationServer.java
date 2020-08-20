@@ -1716,7 +1716,7 @@ public class SolrInformationServer implements InformationServer
                                             .orElse(false);
 
                     addDocCmd.solrDoc = isIndexed
-                                ? populateWithMetadata(basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new), nodeMetaData)
+                                ? populateWithMetadata(basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new), nodeMetaData, nmdp)
                                 : basicDocument(nodeMetaData, DOC_TYPE_UNINDEXED_NODE, SolrInputDocument::new);
                     processor.processAdd(addDocCmd);
                 }
@@ -2073,7 +2073,7 @@ public class SolrInformationServer implements InformationServer
 
                     addDocCmd.solrDoc =
                             populateWithMetadata(basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new),
-                                    nodeMetaData);
+                                    nodeMetaData, nmdp);
                     processor.processAdd(addDocCmd);
 
                     this.trackerStats.addNodeTime(System.nanoTime() - start);
@@ -2097,9 +2097,9 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    private SolrInputDocument populateWithMetadata(SolrInputDocument document, NodeMetaData metadata)
+    private SolrInputDocument populateWithMetadata(SolrInputDocument document, NodeMetaData metadata, NodeMetaDataParameters nmdp)
     {
-        populateFields(metadata, document);
+        populateFields(metadata, document, nmdp);
 
         LOGGER.debug("Document size (fields) after getting fields from node {} metadata: {}", metadata.getId(), document.size());
 
@@ -2114,40 +2114,44 @@ public class SolrInformationServer implements InformationServer
         return document;
     }
 
-    private void populateFields(NodeMetaData metadata, SolrInputDocument doc)
+    private void populateFields(NodeMetaData metadata, SolrInputDocument doc, NodeMetaDataParameters nmdp)
     {
         doc.setField(FIELD_TYPE, metadata.getType().toString());
-        notNullOrEmpty(metadata.getAspects())
-                .stream()
-                .filter(Objects::nonNull)
-                .forEach(aspect -> {
-                    doc.addField(FIELD_ASPECT, aspect.toString());
-                    if(aspect.equals(ContentModel.ASPECT_GEOGRAPHIC))
-                    {
-                        Optional<Double> latitude =
-                                ofNullable(metadata.getProperties().get(ContentModel.PROP_LATITUDE))
-                                        .map(StringPropertyValue.class::cast)
-                                        .map(StringPropertyValue::getValue)
-                                        .map(Utils::doubleOrNull)
-                                        .filter(value -> -90d <= value && value <= 90d);
-
-                        Optional<Double> longitude =
-                                ofNullable(metadata.getProperties().get(ContentModel.PROP_LONGITUDE))
-                                        .map(StringPropertyValue.class::cast)
-                                        .map(StringPropertyValue::getValue)
-                                        .map(Utils::doubleOrNull)
-                                        .filter(value -> -180d <= value && value <= 180d);
-
-                        if (latitude.isPresent() && longitude.isPresent())
+        if (nmdp.isIncludeAspects())
+        {
+            doc.removeField(FIELD_ASPECT);
+            notNullOrEmpty(metadata.getAspects())
+                    .stream()
+                    .filter(Objects::nonNull)
+                    .forEach(aspect -> {
+                        doc.addField(FIELD_ASPECT, aspect.toString());
+                        if(aspect.equals(ContentModel.ASPECT_GEOGRAPHIC))
                         {
-                            doc.setField(FIELD_GEO, latitude.get() + ", " + longitude.get());
+                            Optional<Double> latitude =
+                                    ofNullable(metadata.getProperties().get(ContentModel.PROP_LATITUDE))
+                                            .map(StringPropertyValue.class::cast)
+                                            .map(StringPropertyValue::getValue)
+                                            .map(Utils::doubleOrNull)
+                                            .filter(value -> -90d <= value && value <= 90d);
+    
+                            Optional<Double> longitude =
+                                    ofNullable(metadata.getProperties().get(ContentModel.PROP_LONGITUDE))
+                                            .map(StringPropertyValue.class::cast)
+                                            .map(StringPropertyValue::getValue)
+                                            .map(Utils::doubleOrNull)
+                                            .filter(value -> -180d <= value && value <= 180d);
+    
+                            if (latitude.isPresent() && longitude.isPresent())
+                            {
+                                doc.setField(FIELD_GEO, latitude.get() + ", " + longitude.get());
+                            }
+                            else
+                            {
+                                LOGGER.warning("Skipping missing geo data on node {}", metadata.getId());
+                            }
                         }
-                        else
-                        {
-                            LOGGER.warning("Skipping missing geo data on node {}", metadata.getId());
-                        }
-                    }
-                });
+                    });
+        }
 
         doc.setField(FIELD_ISNODE, "T");
         doc.setField(FIELD_TENANT, AlfrescoSolrDataModel.getTenantId(metadata.getTenantDomain()));
@@ -2165,31 +2169,35 @@ public class SolrInformationServer implements InformationServer
         StringBuilder qNameBuffer = new StringBuilder();
         StringBuilder assocTypeQNameBuffer = new StringBuilder();
 
-        notNullOrEmpty(metadata.getParentAssocs())
-                .forEach(childAssocRef -> {
-                    if (qNameBuffer.length() > 0)
-                    {
-                        qNameBuffer.append(";/");
-                        assocTypeQNameBuffer.append(";/");
-                    }
-                    qNameBuffer.append(ISO9075.getXPathName(childAssocRef.getQName()));
-                    assocTypeQNameBuffer.append(ISO9075.getXPathName(childAssocRef.getTypeQName()));
-                    doc.setField(FIELD_PARENT, childAssocRef.getParentRef().toString());
-
-                    if (childAssocRef.isPrimary())
-                    {
-                        if(doc.getField(FIELD_PRIMARYPARENT) == null)
+        if (nmdp.isIncludeParentAssociations())
+        {
+            doc.removeField(FIELD_PARENT);
+            notNullOrEmpty(metadata.getParentAssocs())
+                    .forEach(childAssocRef -> {
+                        if (qNameBuffer.length() > 0)
                         {
-                            doc.setField(FIELD_PRIMARYPARENT, childAssocRef.getParentRef().toString());
-                            doc.setField(FIELD_PRIMARYASSOCTYPEQNAME, ISO9075.getXPathName(childAssocRef.getTypeQName()));
-                            doc.setField(FIELD_PRIMARYASSOCQNAME, ISO9075.getXPathName(childAssocRef.getQName()));
+                            qNameBuffer.append(";/");
+                            assocTypeQNameBuffer.append(";/");
                         }
-                        else
+                        qNameBuffer.append(ISO9075.getXPathName(childAssocRef.getQName()));
+                        assocTypeQNameBuffer.append(ISO9075.getXPathName(childAssocRef.getTypeQName()));
+                        doc.addField(FIELD_PARENT, childAssocRef.getParentRef().toString());
+    
+                        if (childAssocRef.isPrimary())
                         {
-                            LOGGER.warning("Duplicate primary parent for node id {}", metadata.getId());
+                            if(doc.getField(FIELD_PRIMARYPARENT) == null)
+                            {
+                                doc.setField(FIELD_PRIMARYPARENT, childAssocRef.getParentRef().toString());
+                                doc.setField(FIELD_PRIMARYASSOCTYPEQNAME, ISO9075.getXPathName(childAssocRef.getTypeQName()));
+                                doc.setField(FIELD_PRIMARYASSOCQNAME, ISO9075.getXPathName(childAssocRef.getQName()));
+                            }
+                            else
+                            {
+                                LOGGER.warning("Duplicate primary parent for node id {}", metadata.getId());
+                            }
                         }
-                    }
-                });
+                    });
+        }
 
         ofNullable(metadata.getParentAssocs()).ifPresent(parents -> {
             doc.addField(FIELD_ASSOCTYPEQNAME, assocTypeQNameBuffer.toString());

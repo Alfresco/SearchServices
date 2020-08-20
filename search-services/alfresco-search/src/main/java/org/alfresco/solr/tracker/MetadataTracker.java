@@ -1052,7 +1052,9 @@ public class MetadataTracker extends ActivatableTracker
      * @throws JSONException
      */
     private int indexBatchOfTransactions(List<Transaction> txBatch)
-            throws AuthenticationException, IOException, JSONException, ExecutionException, InterruptedException {
+            throws AuthenticationException, IOException, JSONException, ExecutionException, InterruptedException 
+    {
+        
         // Skip transactions without modifications (updates, deletes)
         ArrayList<Long> txIds = new ArrayList<>();
         for (Transaction tx : txBatch)
@@ -1062,7 +1064,13 @@ public class MetadataTracker extends ActivatableTracker
                 txIds.add(tx.getId());
             }
         }
-
+        
+        // Skip getting nodes when no transactions left
+        if (txIds.size() == 0)
+        {
+            return 0;
+        }
+        
         // Get Nodes Id properties for every transaction
         GetNodesParameters gnp = new GetNodesParameters();
         gnp.setTransactionIds(txIds);
