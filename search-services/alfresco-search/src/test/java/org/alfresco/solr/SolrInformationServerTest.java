@@ -26,11 +26,18 @@
 
 package org.alfresco.solr;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
@@ -320,4 +327,74 @@ public class SolrInformationServerTest
 
         assertNull(document);
     }
+    
+    /**
+     * When storing ANAME and APATH fields, skipping to store duplicated entries should be granted.
+     * 
+     * Test data has been simplified from a living input use case:
+     * 
+     * {
+     * "apath": "/9ea65c3c/1f5eebed/d657ec29/7c7da7c4/3ca56633/85f3f802/5c3a9e15/da781274",
+     * "path": "/company_home/user_homes/user1/taskers/Tasker-1418058127641/responseSummary-1418332928505/responseSummary-1418332928552/response"
+     * },
+     * {
+     * "apath": "/9ea65c3c/1f5eebed/d657ec29/572c38fc/4ff94a6e/85f3f802/5c3a9e15/da781274",
+     * "path": "/company_home/user_homes/user2/taskers/tasker/responseSummary-1418332928505/responseSummary-1418332928552/response"
+     * },
+     * {
+     * "apath": "/9ea65c3c/1f5eebed/d657ec29/cebd969b/0decd203/85f3f802/5c3a9e15/da781274",
+     * "path": "/company_home/user_homes/user3/taskers/tasker/responseSummary-1418332928505/responseSummary-1418332928552/response"
+     * }
+     */
+    @Test
+    public void testPathsFieldStorage()
+    {
+
+        SolrInputDocument doc = new SolrInputDocument();
+        NodeMetaData nodeMetaData = new NodeMetaData();
+        nodeMetaData.setAncestorPaths(List.of("/1/2/4/7/10", "/1/2/5/8/10", "/1/2/6/9/10"));
+        nodeMetaData.setPaths(List.of());
+        
+        // Repeat the operation 2 times to verify updating and existing document removes previous
+        // information in ANAME and APATH fields
+        IntStream.range(0, 2).forEach(i -> 
+        {
+
+            infoServer.updatePathRelatedFields(nodeMetaData, doc);
+
+            List<String> anames = doc.getFieldValues(QueryConstants.FIELD_ANAME).stream()
+                    .map(aname -> aname.toString())
+                    .collect(Collectors.toList())
+                    .stream()
+                    .sorted()
+                    .collect(Collectors.toList());
+
+            assertEquals("Expecting only 1 aname for level 0 path: 0/10",
+                    anames.stream().filter(aname -> aname.startsWith("0/")).count(), 1);
+            assertEquals(anames.stream().filter(aname -> aname.startsWith("1/")).count(), 3);
+            assertEquals(anames.stream().filter(aname -> aname.startsWith("2/")).count(), 3);
+            assertEquals(anames.stream().filter(aname -> aname.startsWith("3/")).count(), 3);
+            assertEquals(anames.stream().filter(aname -> aname.startsWith("4/")).count(), 3);
+            assertEquals(anames.stream().filter(aname -> aname.startsWith("F/")).count(), 3);
+
+            List<String> apaths = doc.getFieldValues(QueryConstants.FIELD_APATH).stream()
+                    .map(aname -> aname.toString())
+                    .collect(Collectors.toList())
+                    .stream()
+                    .sorted()
+                    .collect(Collectors.toList());
+
+            assertEquals("Expecting only 1 aname for level 0 path: 0/1",
+                    apaths.stream().filter(apath -> apath.startsWith("0/")).count(), 1);
+            assertEquals("Expecting only 1 aname for level 0 path: 1/1/2",
+                    apaths.stream().filter(apath -> apath.startsWith("1/")).count(), 1);
+            assertEquals(apaths.stream().filter(apath -> apath.startsWith("2/")).count(), 3);
+            assertEquals(apaths.stream().filter(apath -> apath.startsWith("3/")).count(), 3);
+            assertEquals(apaths.stream().filter(apath -> apath.startsWith("4/")).count(), 3);
+            assertEquals(apaths.stream().filter(apath -> apath.startsWith("F/")).count(), 3);
+
+        });
+
+    }
+    
 }
