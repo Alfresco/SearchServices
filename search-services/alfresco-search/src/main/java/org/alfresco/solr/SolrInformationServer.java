@@ -3339,7 +3339,7 @@ public class SolrInformationServer implements InformationServer
         return doc;
     }
 
-    private void updatePathRelatedFields(NodeMetaData nodeMetaData, SolrInputDocument doc)
+    protected void updatePathRelatedFields(NodeMetaData nodeMetaData, SolrInputDocument doc)
     {
         clearFields(doc, FIELD_PATH, FIELD_SITE, FIELD_TAG, FIELD_TAG_SUGGEST, FIELD_APATH, FIELD_ANAME);
 
@@ -3376,6 +3376,9 @@ public class SolrInformationServer implements InformationServer
             doc.addField(FIELD_SITE, NO_SITE);
         }
 
+        // Saving calculated APATH and ANAME elements in order to avoid storing duplicate values
+        Set<String> addedAPaths = new HashSet<>();
+        Set<String> addedANames = new HashSet<>();
         notNullOrEmpty(nodeMetaData.getAncestorPaths())
             .forEach(ancestorPath -> {
                 String [] elements =
@@ -3387,27 +3390,37 @@ public class SolrInformationServer implements InformationServer
 
                 StringBuilder builder = new StringBuilder();
                 int i = 0;
-                for(String element : elements)
+                for (String element : elements)
                 {
                     builder.append('/').append(element);
-                    doc.addField(FIELD_APATH, "" + i++ + builder);
+                    String apath = "" + i++ + builder;
+                    if (!addedAPaths.contains(apath))
+                    {
+                        doc.addField(FIELD_APATH, apath);
+                        addedAPaths.add(apath);
+                    }
                 }
 
-                if(builder.length() > 0)
+                if (builder.length() > 0)
                 {
                     doc.addField(FIELD_APATH, "F" + builder);
                 }
 
                 builder = new StringBuilder();
-                for(int j = 0;  j < elements.length; j++)
+                for (int j = 0;  j < elements.length; j++)
                 {
                     String element = elements[elements.length - 1 - j];
                     builder.insert(0, element);
                     builder.insert(0, '/');
-                    doc.addField(FIELD_ANAME, "" + j +  builder);
+                    String aname = "" + j +  builder;
+                    if (!addedANames.contains(aname))
+                    {
+                        doc.addField(FIELD_ANAME, aname);
+                        addedANames.add(aname);
+                    }
                 }
 
-                if(builder.length() > 0)
+                if (builder.length() > 0)
                 {
                     doc.addField(FIELD_ANAME, "F" +  builder);
                 }
