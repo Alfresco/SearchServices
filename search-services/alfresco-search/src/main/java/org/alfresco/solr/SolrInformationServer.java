@@ -3996,7 +3996,14 @@ public class SolrInformationServer implements InformationServer
         }
         catch (Exception exception)
         {
-            LOGGER.error("Unable to get nodes metadata from repository. See the stacktrace below for further details.", exception);
+            LOGGER.error("Unable to get nodes metadata from repository using "
+                    + "fromNodeId=" + parameters.getFromNodeId() + ", "
+                    + "toNodeId=" + parameters.getToNodeId() + ", "
+                    + "nodeIds=" + parameters.getNodeIds() +  ", "
+                    + "fromTxId=" + parameters.getFromTxnId() + ", "
+                    + "toTxId=" + parameters.getToTxnId() + ", "
+                    + "txIds=" + parameters.getTransactionIds() 
+                    + ". See the stacktrace below for further details.", exception);
             return empty();
         }
     }
