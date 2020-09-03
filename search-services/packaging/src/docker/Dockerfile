@@ -7,6 +7,10 @@ ENV DIST_DIR /opt/alfresco-search-services
 ENV SOLR_ZIP ${project.build.finalName}.zip
 ENV LANG C.UTF-8
 
+# Get values from ENV VARS or use default values if ENV VARS are not specified
+ENV SOLR_DATA_DIR_ROOT=${SOLR_DATA_DIR_ROOT:-$DIST_DIR/data}
+ENV SOLR_SOLR_MODEL_DIR=${SOLR_SOLR_MODEL_DIR:-$DIST_DIR/data/alfrescoModels}
+
 ARG USERNAME=solr
 ARG USERID=33007
 
@@ -33,7 +37,7 @@ RUN set -x \
    && mv $DIST_DIR/solrhome/alfrescoModels $DIST_DIR/data/ \
    && chown -R ${USERNAME}:${USERNAME} $DIST_DIR \
    && echo '#Docker Setup' >> $DIST_DIR/solr.in.sh \
-   && echo 'SOLR_OPTS="$SOLR_OPTS -Dsolr.data.dir.root=$DIST_DIR/data -Dsolr.solr.model.dir=$DIST_DIR/data/alfrescoModels"' >> $DIST_DIR/solr.in.sh
+   && echo 'SOLR_OPTS="$SOLR_OPTS -Dsolr.data.dir.root=$SOLR_DATA_DIR_ROOT -Dsolr.solr.model.dir=$SOLR_SOLR_MODEL_DIR"' >> $DIST_DIR/solr.in.sh
 
 COPY search_config_setup.sh $DIST_DIR/solr/bin/
 RUN chmod +x $DIST_DIR/solr/bin/search_config_setup.sh
