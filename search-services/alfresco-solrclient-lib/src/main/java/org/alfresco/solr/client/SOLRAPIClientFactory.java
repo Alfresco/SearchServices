@@ -195,7 +195,7 @@ public class SOLRAPIClientFactory
         else
         {
             httpClientFactory = new PlainHttpClientFactory(alfrescoHost, alfrescoPort, maxTotalConnections,
-                    maxHostConnections);
+                    maxHostConnections, socketTimeout);
         }
 
         AlfrescoHttpClient repoClient = httpClientFactory.getRepoClient(alfrescoHost, alfrescoPortSSL);
@@ -235,13 +235,14 @@ public class SOLRAPIClientFactory
      */
     class PlainHttpClientFactory extends HttpClientFactory
     {
-        public PlainHttpClientFactory(String host, int port, int maxTotalConnections, int maxHostConnections)
+        public PlainHttpClientFactory(String host, int port, int maxTotalConnections, int maxHostConnections, int socketTimeout)
         {
             setSecureCommsType("none");
             setHost(host);
             setPort(port);
             setMaxTotalConnections(maxTotalConnections);
             setMaxHostConnections(maxHostConnections);
+            setSocketTimeout(socketTimeout);
             init();
         }
 
