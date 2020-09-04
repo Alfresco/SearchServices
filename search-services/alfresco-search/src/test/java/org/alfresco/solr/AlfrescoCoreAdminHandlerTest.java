@@ -60,6 +60,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -69,6 +70,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.solr.adapters.IOpenBitSet;
 import org.alfresco.solr.adapters.SolrOpenBitSetAdapter;
 import org.alfresco.solr.client.SOLRAPIClient;
@@ -150,6 +152,33 @@ public class AlfrescoCoreAdminHandlerTest
         NamedList<Object> actionResponse = admin.actionFIX(params);
         assertEquals( 1, actionResponse.size());
         assertEquals(UNPROCESSABLE_REQUEST_ON_SLAVE_NODES, actionResponse.get(ACTION_ERROR_MESSAGE_LABEL));
+    }
+
+    @Test
+    public void noStartEndDatesInParamsForFix() throws Exception
+    {
+        // An exception to allow us to return once we've tested the relevant code.
+        // Controlling execution with exceptions isn't stylish, but it's effective.
+        class EndOfTest extends RuntimeException {}
+
+        params.set(CORE, ALFRESCO_CORE_NAME);
+        MetadataTracker metadataTracker = mock(MetadataTracker.class);
+        when(registry.getTrackerForCore(ALFRESCO_CORE_NAME, MetadataTracker.class)).thenReturn(metadataTracker);
+        when(metadataTracker.checkIndex(any(), any(), any())).thenThrow(new EndOfTest());
+
+        try
+        {
+            // Call the method under test.
+            admin.actionFIX(params);
+            fail("Expected 'End of test' exception to be thrown.");
+        }
+        catch (AlfrescoRuntimeException e)
+        {
+            assertEquals("Expected AlfrescoRuntimeException to be caused by the EndOfTest exception.",
+                    e.getCause().getClass(), EndOfTest.class);
+            // Check that the start and end dates were set to null.
+            verify(metadataTracker).checkIndex(null, null, null);
+        }
     }
 
     @Test
