@@ -758,7 +758,7 @@ public class AclTracker extends ActivatableTracker
                 Collection<List<AclChangeSet>> changeSetBatches = aclChangeSets.getAclChangeSets().stream()
                         .peek(changeSetsFound::add)
                         .filter(this::isAclChangeSetAlreadyIndexed)
-                        .collect(Collectors.groupingBy(it -> counter.getAndAdd(it.getAclCount()) / changeSetAclsBatchSize))
+                        .collect(Collectors.groupingBy(it -> counter.getAndAdd(1) / changeSetAclsBatchSize))
                         .values();
 
 
