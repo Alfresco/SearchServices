@@ -168,7 +168,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         RandomSupplier.RandVal.uniqueValues = new HashSet<>(); // reset random values
 
         createServers(testClassName, coreNames, numShards, solrcoreProperties);
-
+        System.setProperty("solr.solr.home", testDir.toPath().resolve(testClassName).toString());
         return testClassName;
     }
 
@@ -531,8 +531,6 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
     {
         FileUtils.copyFile(new File(getTestFilesHome(), getSolrXml()), jettyHome.resolve(getSolrXml()).toFile());
 
-        //Add solr home conf folder with alfresco based configuration.
-        FileUtils.copyDirectory(new File(getTestFilesHome() + "/conf"), jettyHome.resolve("conf").toFile());
         // Add alfresco data model def
         FileUtils.copyDirectory(new File(getTestFilesHome() + "/alfrescoModels"), jettyHome.resolve("alfrescoModels").toFile());
         // Add templates
