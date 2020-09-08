@@ -1435,6 +1435,8 @@ public class SolrInformationServer implements InformationServer
             long timeBeforeWhichThereCanBeNoChangeSetHolesInIndex = state.getLastIndexedChangeSetCommitTime() - holeRetention;
             state.setLastGoodChangeSetCommitTimeInIndex(timeBeforeWhichThereCanBeNoChangeSetHolesInIndex > 0 ? timeBeforeWhichThereCanBeNoChangeSetHolesInIndex : 0);
 
+            LOGGER.debug("The tracker initial state was created: " + state);
+
             return state;
         }
     }
