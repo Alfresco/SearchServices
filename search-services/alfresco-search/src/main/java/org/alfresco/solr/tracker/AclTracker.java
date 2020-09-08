@@ -81,6 +81,9 @@ public class AclTracker extends ActivatableTracker
     private static final int MAX_NUMBER_OF_ACL_CHANGE_SETS = 2000;
 
     private static final long MAX_TIME_STEP = TIME_STEP_32_DAYS_IN_MS;
+    
+    // Repository Remote API doesn't accept more than 512 aclChangeSetIds by invocation
+    private static final int MAX_ACL_CHANGE_SET_BATCH_SIZE = 512;
 
     private int aclTrackerParallelism;
 
@@ -128,6 +131,12 @@ public class AclTracker extends ActivatableTracker
         super(p, client, coreName, informationServer, Tracker.Type.ACL);
         changeSetAclsBatchSize = Integer.parseInt(p.getProperty("alfresco.changeSetAclsBatchSize",
                 String.valueOf(DEFAULT_CHANGE_SET_ACLS_BATCH_SIZE)));
+        if (changeSetAclsBatchSize > MAX_ACL_CHANGE_SET_BATCH_SIZE)
+        {
+            LOGGER.warn("Max value for 'alfresco.changeSetAclsBatchSize' is 512. "
+                      + "This value is being taken instead of the one specified in 'solrcore.properties': " + changeSetAclsBatchSize);
+            changeSetAclsBatchSize = MAX_ACL_CHANGE_SET_BATCH_SIZE;
+        }
         aclBatchSize = Integer.parseInt(p.getProperty("alfresco.aclBatchSize",
                 String.valueOf(DEFAULT_ACL_BATCH_SIZE)));
         docRouter = DocRouterFactory.getRouter(p, shardMethod);
@@ -749,7 +758,7 @@ public class AclTracker extends ActivatableTracker
                 Collection<List<AclChangeSet>> changeSetBatches = aclChangeSets.getAclChangeSets().stream()
                         .peek(changeSetsFound::add)
                         .filter(this::isAclChangeSetAlreadyIndexed)
-                        .collect(Collectors.groupingBy(it -> counter.getAndAdd(it.getAclCount()) / changeSetAclsBatchSize))
+                        .collect(Collectors.groupingBy(it -> counter.getAndAdd(1) / changeSetAclsBatchSize))
                         .values();
 
 
@@ -763,6 +772,7 @@ public class AclTracker extends ActivatableTracker
                     long endElapsed = System.nanoTime();
                     trackerStats.addElapsedAclTime(aclCount, endElapsed-startElapsed);
                     startElapsed = endElapsed;
+                    totalAclCount += aclCount;
                 }
 
             }
