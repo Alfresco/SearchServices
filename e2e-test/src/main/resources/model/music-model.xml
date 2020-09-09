@@ -67,7 +67,7 @@
                     <mandatory>false</mandatory>
                     <index enabled="true">
                         <tokenised>BOTH</tokenised>
-                        <facetable>true</facetable>
+                        <facetable>false</facetable>
                     </index>
                 </property>
             </properties>
