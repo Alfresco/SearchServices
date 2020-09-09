@@ -168,7 +168,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         RandomSupplier.RandVal.uniqueValues = new HashSet<>(); // reset random values
 
         createServers(testClassName, coreNames, numShards, solrcoreProperties);
-        System.setProperty("solr.solr.home", testDir.toPath().resolve(testClassName).toString());
+
         return testClassName;
     }
 
