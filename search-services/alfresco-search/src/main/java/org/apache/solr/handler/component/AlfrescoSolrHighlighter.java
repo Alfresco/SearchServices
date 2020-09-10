@@ -189,14 +189,7 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 		{
 			schemaFieldName = AlfrescoSolrDataModel.getInstance().mapProperty(localFieldName, FieldUse.FTS, request, 1);
 		}
-
-		// In case after the second query we didn't get the cross-locale version, then it's better to ignore the
-		// fieldMatch parameter; in this way we are sure the snippets will be properly returned (together with other
-		// unwanted fields)
-		if (!schemaFieldName.contains("_t@{"))
-		{
-			schemaFieldName = null;
-		}
+		
 
 		// The query scorer purpose is to give a score to the text fragments by the number of unique query terms found.
 		//
