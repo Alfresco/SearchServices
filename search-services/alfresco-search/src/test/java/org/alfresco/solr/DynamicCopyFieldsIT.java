@@ -295,7 +295,8 @@ public class DynamicCopyFieldsIT extends AbstractAlfrescoDistributedIT {
                 .collect(Collectors.toSet());
         Assert.assertEquals(Set.of(DynamicFieldType.STORED,
                 DynamicFieldType.NON_TOKENIZED_LOCALE,
-                DynamicFieldType.TOKENIZED_LOCALE), dynamicFieldsTypes);
+                DynamicFieldType.TOKENIZED_LOCALE,
+                DynamicFieldType.NON_TOKENIZED_CROSS_LOCALE), dynamicFieldsTypes);
 
     }
 
@@ -340,7 +341,8 @@ public class DynamicCopyFieldsIT extends AbstractAlfrescoDistributedIT {
                 .collect(Collectors.toSet());
         Assert.assertEquals(Set.of(DynamicFieldType.STORED,
                 DynamicFieldType.NON_TOKENIZED_LOCALE,
-                DynamicFieldType.SORT), dynamicFieldsTypes);
+                DynamicFieldType.SORT,
+                DynamicFieldType.NON_TOKENIZED_CROSS_LOCALE), dynamicFieldsTypes);
 
     }
 
@@ -361,7 +363,8 @@ public class DynamicCopyFieldsIT extends AbstractAlfrescoDistributedIT {
         Assert.assertEquals(Set.of(DynamicFieldType.STORED,
                 DynamicFieldType.NON_TOKENIZED_LOCALE,
                 DynamicFieldType.TOKENIZED_LOCALE,
-                DynamicFieldType.SORT), dynamicFieldsTypes);
+                DynamicFieldType.SORT,
+                DynamicFieldType.NON_TOKENIZED_CROSS_LOCALE), dynamicFieldsTypes);
 
     }
 
@@ -424,7 +427,8 @@ public class DynamicCopyFieldsIT extends AbstractAlfrescoDistributedIT {
 
         Assert.assertEquals(Set.of(DynamicFieldType.STORED,
                 DynamicFieldType.NON_TOKENIZED_LOCALE,
-                DynamicFieldType.SORT), dynamicFieldsTypes);
+                DynamicFieldType.SORT,
+                DynamicFieldType.NON_TOKENIZED_CROSS_LOCALE), dynamicFieldsTypes);
     }
 
     /**
