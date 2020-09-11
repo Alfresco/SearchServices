@@ -66,10 +66,9 @@ def generate_fields(field_type, tokenized, string, cross_locale, sortable, sugge
 
     if string:
         generated_fields.append(get_copy_field_xml(field, create_non_tokenized(prefix)))
+        generated_fields.append(get_copy_field_xml(field, create_non_tokenized_cross_locale(prefix)))
         if sortable:
             generated_fields.append(get_copy_field_xml(field, create_sortable(prefix)))
-        if cross_locale:
-            generated_fields.append(get_copy_field_xml(field, create_non_tokenized_cross_locale(prefix)))
 
     if suggestable:
         generated_fields.append(get_copy_field_xml(field, "suggest"))
@@ -106,7 +105,6 @@ def generate_text(file):
             file.writelines(["%s\n" % item  for item in generated])
             file.write("\n")
         file.write("\n")
-
 
 def main():
     file = open(output_file, "w")
