@@ -131,7 +131,7 @@ public class AlfrescoSolrReloadIT extends AbstractAlfrescoSolrIT
 
         indexTransaction(bigTxn2, nodes, nodeMetaDatas);
 
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes * 2, 150000);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes * 2, 200000);
     }
 
     private void reloadAndAssertCorrect(Collection<Tracker> trackers, int numOfTrackers, int jobs) throws Exception
