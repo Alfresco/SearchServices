@@ -67,6 +67,7 @@ import org.apache.solr.common.params.ModifiableSolrParams;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 @SolrTestCaseJ4.SuppressSSL
@@ -101,6 +102,7 @@ public class AlfrescoSolrTrackerExceptionIT extends AbstractAlfrescoSolrIT
 
 
     @Test
+    @Ignore("https://issues.alfresco.com/jira/browse/SEARCH-2525")
     public void testTrackers() throws Exception
     {
         /*
