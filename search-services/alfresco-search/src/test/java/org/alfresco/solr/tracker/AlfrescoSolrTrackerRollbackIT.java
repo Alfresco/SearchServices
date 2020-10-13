@@ -62,6 +62,7 @@ import org.apache.solr.SolrTestCaseJ4;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 @LuceneTestCase.SuppressCodecs({"Appending","Lucene3x","Lucene40","Lucene41","Lucene42","Lucene43", "Lucene44", "Lucene45","Lucene46","Lucene47","Lucene48","Lucene49"})
@@ -96,7 +97,8 @@ public class AlfrescoSolrTrackerRollbackIT extends AbstractAlfrescoSolrIT
 
 
     @Test
-    public void testTrackers() throws Exception
+    @Ignore("https://issues.alfresco.com/jira/browse/SEARCH-2526")
+        public void testTrackers() throws Exception
     {
 
         AlfrescoCoreAdminHandler alfrescoCoreAdminHandler = (AlfrescoCoreAdminHandler)getCore().getCoreContainer().getMultiCoreHandler();
