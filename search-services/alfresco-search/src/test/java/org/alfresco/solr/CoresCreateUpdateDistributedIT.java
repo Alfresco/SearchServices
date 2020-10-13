@@ -39,6 +39,7 @@ import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.SolrQueryResponse;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -100,6 +101,7 @@ public class CoresCreateUpdateDistributedIT extends AbstractAlfrescoDistributedI
     }
 
     @Test
+    @Ignore("https://issues.alfresco.com/jira/browse/SEARCH-2524")
     public void newCoreWithUpdateSharedProperties() throws Exception
     {
         CoreContainer coreContainer = jettyContainers.get(testFolder).getCoreContainer();
