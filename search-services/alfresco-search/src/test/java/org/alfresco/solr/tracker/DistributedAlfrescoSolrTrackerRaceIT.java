@@ -42,6 +42,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static java.util.Arrays.asList;
@@ -76,6 +77,7 @@ public class DistributedAlfrescoSolrTrackerRaceIT extends AbstractAlfrescoDistri
     }
 
     @Test
+    @Ignore("https://issues.alfresco.com/jira/browse/SEARCH-2523")
     public void testTracker() throws Exception {
         putHandleDefaults();
 
