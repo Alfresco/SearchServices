@@ -29,6 +29,7 @@ package org.alfresco.solr.query.cmis;
 import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -567,6 +568,7 @@ public class AlfrescoCMISQParserPluginIT extends LoadCMISData implements QueryCo
                 expectedDocCount(0));
     }
     @Test
+    @Ignore("https://issues.alfresco.com/jira/browse/SEARCH-2527")
     public void checkInTree()
     {
         assertQ(qurySolr("SELECT * FROM cmis:folder WHERE IN_TREE('" + testCMISFolder00NodeRef + "')"),
@@ -669,6 +671,7 @@ public class AlfrescoCMISQParserPluginIT extends LoadCMISData implements QueryCo
     }
 
     @Test
+    @Ignore("https://issues.alfresco.com/jira/browse/SEARCH-2527")
     public void checkDateFormatting()
     {
         assertQ(qurySolr("SELECT * FROM cm:lockable L WHERE L.cm:expiryDate =  TIMESTAMP '2012-12-12T12:12:12.012Z'"),
@@ -681,6 +684,7 @@ public class AlfrescoCMISQParserPluginIT extends LoadCMISData implements QueryCo
                 expectedDocCount(0));
     }
     @Test
+    @Ignore("https://issues.alfresco.com/jira/browse/SEARCH-2527")
     public void checkAspectJoin()
     {
         assertQ(qurySolr("select o.*, t.* from ( cm:ownable o join cm:titled t on o.cmis:objectId = t.cmis:objectId JOIN cmis:document AS D ON D.cmis:objectId = o.cmis:objectId  ) where o.cm:owner = 'andy' and t.cm:title = 'Alfresco tutorial' and CONTAINS(D, '\\'jumped\\'') and D.cmis:contentStreamLength <> 2"),
