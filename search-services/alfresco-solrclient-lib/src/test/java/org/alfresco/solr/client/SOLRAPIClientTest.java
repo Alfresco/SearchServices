@@ -254,8 +254,8 @@ public class SOLRAPIClientTest extends TestCase
     protected AlfrescoHttpClient getRepoClient(ClasspathKeyResourceLoader keyResourceLoader)
     {
         // TODO i18n
-        KeyStoreParameters keyStoreParameters = new KeyStoreParameters("SSL Key Store", "JCEKS", null, "ssl-keystore-passwords.properties", "ssl.repo.client.keystore");
-        KeyStoreParameters trustStoreParameters = new KeyStoreParameters("SSL Trust Store", "JCEKS", null, "ssl-truststore-passwords.properties", "ssl.repo.client.truststore");
+        KeyStoreParameters keyStoreParameters = new KeyStoreParameters("ssl-keystore", "SSL Key Store", "JCEKS", null, "ssl-keystore-passwords.properties", "ssl.repo.client.keystore");
+        KeyStoreParameters trustStoreParameters = new KeyStoreParameters("ssl-truststore", "SSL Trust Store", "JCEKS", null, "ssl-truststore-passwords.properties", "ssl.repo.client.truststore");
  
         SSLEncryptionParameters sslEncryptionParameters = new SSLEncryptionParameters(keyStoreParameters, trustStoreParameters);
 
