@@ -1363,22 +1363,9 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     public boolean putModel(M2Model model)
     {
-        Set<String> errors = validateModel(model);
-        if(errors.isEmpty())
-        {
-            modelErrors.remove(model.getName());
-            dictionaryDAO.putModelIgnoringConstraints(model);
-            return true;
-        }
-        else
-        {
-            if(!modelErrors.containsKey(model.getName()))
-            {
-                modelErrors.put(model.getName(), errors);
-                log.warn(errors.iterator().next());
-            }
-            return false;
-        }
+        modelErrors.remove(model.getName());
+        dictionaryDAO.putModelIgnoringConstraints(model);
+        return true;
     }
 
     public void removeModel(QName modelQName)
@@ -1902,27 +1889,4 @@ public class AlfrescoSolrDataModel implements QueryConstants
         return solrSortField;
     }
 
-    private Set<String> validateModel(M2Model model)
-    {
-        try
-        {
-            dictionaryDAO.getCompiledModel(QName.createQName(model.getName(), namespaceDAO));
-        }
-        catch (DictionaryException | NamespaceException exception)
-        {
-            // No model to diff
-            return Collections.emptySet();
-        }
-
-        // namespace unknown - no model
-        List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModelIgnoringConstraints(model);
-        return modelDiffs.stream()
-                .filter(diff -> diff.getDiffType().equals(M2ModelDiff.DIFF_UPDATED))
-                .map(diff ->
-                        String.format("Model not updated: %s Failed to validate model update - found non-incrementally updated %s '%s'",
-                                model.getName(),
-                                diff.getElementType(),
-                                diff.getElementName()))
-                .collect(Collectors.toSet());
-    }
-}
+ }
