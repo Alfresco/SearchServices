@@ -28,7 +28,7 @@ xpp3-1.1.4c.jar http://www.extreme.indiana.edu/dist/java-repository/xpp3/license
 
 
 === JSON ===
-json-20160212.jar       http://code.google.com/p/json-simple/
+json-20200518.jar https://github.com/stleary/JSON-java
 
 
 === Apache 2.0 ===
@@ -59,14 +59,14 @@ jackson-core-2.11.3.jar https://github.com/FasterXML/jackson
 jackson-annotations-2.11.3.jar https://github.com/FasterXML/jackson
 jackson-databind-2.11.3.jar https://github.com/FasterXML/jackson
 commons-httpclient-3.1-HTTPCLIENT-1265.jar      http://jakarta.apache.org/commons/
-spring-aop-5.2.8.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-beans-5.2.8.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-context-5.2.8.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-core-5.2.8.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-expression-5.2.8.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-jdbc-5.2.8.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-orm-5.2.8.RELEASE.jar http://projects.spring.io/spring-framework/
-spring-tx-5.2.8.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-aop-5.2.9.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-beans-5.2.9.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-context-5.2.9.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-core-5.2.9.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-expression-5.2.9.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-jdbc-5.2.9.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-orm-5.2.9.RELEASE.jar http://projects.spring.io/spring-framework/
+spring-tx-5.2.9.RELEASE.jar http://projects.spring.io/spring-framework/
 xercesImpl-2.12.0-alfresco-patched-20191004.jar http://xerces.apache.org/xerces2-j
 guessencoding-1.4.jar   http://docs.codehaus.org/display/GUESSENC/
 xml-apis-1.4.01.jar     https://github.com/FasterXML/jackson
