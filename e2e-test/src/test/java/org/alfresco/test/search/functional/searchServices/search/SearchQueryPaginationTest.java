@@ -208,7 +208,8 @@ public class SearchQueryPaginationTest extends AbstractCmisE2ETest
         Assert.assertFalse(response.getPagination().isHasMoreItems(), "Incorrect: hasMoreItems");
     }
 
-    @Test(priority = 4)
+    @Test(priority = 4, enabled = false)
+    // https://issues.alfresco.com/jira/browse/SEARCH-2541
     public void testSearchApiPagination()
     {
         // Search for the files with specific title
