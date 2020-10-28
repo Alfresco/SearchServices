@@ -96,7 +96,8 @@ public class SetupTest extends AbstractE2EFunctionalTest
     }
 
     // Test Custom Model: Finance can be used
-    @Test(priority = 3)
+    @Test(priority = 3, enabled = false)
+    // https://issues.alfresco.com/jira/browse/SEARCH-2543
     public void testModelFinanceCanBeUsed() throws Exception
     {
         // Create document of custom type
