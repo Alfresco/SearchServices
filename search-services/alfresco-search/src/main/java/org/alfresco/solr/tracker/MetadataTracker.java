@@ -948,33 +948,52 @@ public class MetadataTracker extends ActivatableTracker
                     break;
                 }
 
-                final AtomicInteger counter = new AtomicInteger();
+                final AtomicInteger counterTransaction = new AtomicInteger();
                 Collection<List<Transaction>> txBatches = transactions.getTransactions().stream()
                         .peek(txnsFound::add)
                         .filter(this::isTransactionIndexed)
-                        .collect(Collectors.groupingBy(transaction -> counter.getAndAdd(
+                        .collect(Collectors.groupingBy(transaction -> counterTransaction.getAndAdd(
                                 (int) (transaction.getDeletes() + transaction.getUpdates())) / transactionDocsBatchSize))
                         .values();
 
                 // Index batches of transactions and the nodes updated or deleted within the transaction
+                List<List<Node>> nodeBatches = new ArrayList<>();
                 for (List<Transaction> batch : txBatches)
                 {
 
                     // Index nodes contained in the transactions
                     long idTxBatch = System.currentTimeMillis();
-                    int docCount =  indexBatchOfTransactions(batch, idTrackerCycle, idTxBatch);
-                    totalUpdatedDocs += docCount;
+                    nodeBatches.addAll(buildBatchOfTransactions(batch, idTrackerCycle, idTxBatch));
+                }
+                
+                // Counter used to identify the worker inside the parallel stream processing
+                final AtomicInteger counterBatch = new AtomicInteger(0);
+                long idThread = Thread.currentThread().getId();
+                totalUpdatedDocs += forkJoinPool.submit(() ->
+                        nodeBatches.parallelStream().map(batch -> {
+                            int count = counterBatch.addAndGet(1);
+                            if (LOGGER.isTraceEnabled())
+                            {
+                                LOGGER.trace("{}:{}:{}-[CORE {}] indexing {} nodes ...",
+                                        idThread, idTrackerCycle, count,
+                                        coreName, batch.size());
+                            }
+                            new NodeIndexWorker(batch, infoSrv, idThread, idTrackerCycle, count).run();
+                            return batch.size();
+                        }).reduce(0, Integer::sum)).get();
 
+                for (List<Transaction> batch : txBatches)
+                {
                     // Add the transactions as found to avoid processing them again in the next iteration
                     batch.forEach(txnsFound::add);
-
+    
                     // Index the transactions
-                    indexTransactionsAfterWorker(batch, idTrackerCycle, idTxBatch);
+                    indexTransactionsAfterWorker(batch);
                     long endElapsed = System.nanoTime();
-                    trackerStats.addElapsedNodeTime(docCount, endElapsed - startElapsed);
+                    trackerStats.addElapsedNodeTime(totalUpdatedDocs, endElapsed - startElapsed);
                     startElapsed = endElapsed;
                 }
-
+                
                 setLastTxCommitTimeAndTxIdInTrackerState(transactions);
             }
             catch(Exception e)
@@ -1014,11 +1033,9 @@ public class MetadataTracker extends ActivatableTracker
     /**
      * Index transactions and update state of the tracker
      * @param txsIndexed List of transactions to be indexed
-     * @param idTrackerCycle Id of the Tracker Cycle being executed
-     * @param idTxBatch Id of the Transaction Batch being executed
      * @throws IOException
      */
-    private void indexTransactionsAfterWorker(List<Transaction> txsIndexed, long idTrackerCycle, long idTxBatch)
+    private void indexTransactionsAfterWorker(List<Transaction> txsIndexed)
                 throws IOException
     {
         for (Transaction tx : txsIndexed)
@@ -1039,7 +1056,7 @@ public class MetadataTracker extends ActivatableTracker
 
 
     /**
-     * Index a batch of transactions.
+     * Build a batch of transactions.
      *
      * Updated or deleted nodes from these transactions are also packed into batches in order to get
      * the metadata of the nodes in smaller invocations to Repository
@@ -1047,13 +1064,10 @@ public class MetadataTracker extends ActivatableTracker
      * @param txBatch Batch of transactions to be indexed
      * @param idTrackerCycle Id of the Tracker Cycle being executed
      * @param idTxBatch Id of the Transaction Batch being executed
-     * @return Number of nodes indexed and last node indexed
+     * @return List of Nodes to be indexed splitted by nodeBatchSize count
      *
-     * @throws AuthenticationException
-     * @throws IOException
-     * @throws JSONException
      */
-    private int indexBatchOfTransactions(List<Transaction> txBatch, long idTrackerCycle, long idTxBatch)
+    private List<List<Node>> buildBatchOfTransactions(List<Transaction> txBatch, long idTrackerCycle, long idTxBatch)
             throws AuthenticationException, IOException, JSONException, ExecutionException, InterruptedException 
     {
         
@@ -1070,7 +1084,7 @@ public class MetadataTracker extends ActivatableTracker
         // Skip getting nodes when no transactions left
         if (txIds.size() == 0)
         {
-            return 0;
+            return Collections.emptyList();
         }
         
         // Get Nodes Id properties for every transaction
@@ -1092,23 +1106,8 @@ public class MetadataTracker extends ActivatableTracker
         }
 
         // Group the nodes in batches of nodeBatchSize (or less)
-        List<List<Node>> nodeBatches = Lists.partition(nodes, nodeBatchSize);
+        return Lists.partition(nodes, nodeBatchSize);
 
-        // Counter used to identify the worker inside the parallel stream processing
-        AtomicInteger counter = new AtomicInteger(0);
-        long idThread = Thread.currentThread().getId();
-        return forkJoinPool.submit(() ->
-                nodeBatches.parallelStream().map(batch -> {
-                    int count = counter.addAndGet(1);
-                    if (LOGGER.isTraceEnabled())
-                    {
-                        LOGGER.trace("{}:{}:{}:{}-[CORE {}] indexing {} nodes ...",
-                                idThread, idTrackerCycle, idTxBatch, count,
-                                coreName, batch.size());
-                    }
-                    new NodeIndexWorker(batch, infoSrv, idThread, idTrackerCycle, idTxBatch, count).run();
-                    return batch.size();
-                }).reduce(0, Integer::sum)).get();
     }
 
 
@@ -1119,22 +1118,20 @@ public class MetadataTracker extends ActivatableTracker
     {
         InformationServer infoServer;
         List<Node> nodes;
-        // Unique Id for the worker > thread : trackerCycle : txBatch : worker
+        // Unique Id for the worker > thread : trackerCycle : worker
         long idThread;
         long idTrackerCycle;
-        long idTxBatch;
         int idWorker;
         
         // Link logger messages to parent Class MetadataTracker
         protected Logger LOGGER = LoggerFactory.getLogger(MetadataTracker.class);
 
-        NodeIndexWorker(List<Node> nodes, InformationServer infoServer, long idThread, long idTrackerCycle, long idTxBatch, int idWorker)
+        NodeIndexWorker(List<Node> nodes, InformationServer infoServer, long idThread, long idTrackerCycle, int idWorker)
         {
             this.infoServer = infoServer;
             this.nodes = nodes;
             this.idThread = idThread;
             this.idTrackerCycle = idTrackerCycle;
-            this.idTxBatch = idTxBatch;
             this.idWorker = idWorker;
         }
 
@@ -1148,8 +1145,8 @@ public class MetadataTracker extends ActivatableTracker
             }
             if (LOGGER.isTraceEnabled())
             {
-                LOGGER.trace("{}:{}:{}:{}-[CORE {}] ...indexed",
-                        idThread, idTrackerCycle, idTxBatch, idWorker, coreName);
+                LOGGER.trace("{}:{}:{}-[CORE {}] ...indexed",
+                        idThread, idTrackerCycle, idWorker, coreName);
             }
         }
         
