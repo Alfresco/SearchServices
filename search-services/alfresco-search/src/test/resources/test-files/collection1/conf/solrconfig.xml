@@ -484,6 +484,7 @@
 
     <updateRequestProcessorChain name="uniq-fields" default="true" post-processor="field-values-deduplication">
         <processor class="solr.LogUpdateProcessorFactory" />
+        <processor class="org.alfresco.solr.update.processor.AlfrescoDistributedUpdateProcessorFactory" />
         <processor class="solr.RunUpdateProcessorFactory" />
     </updateRequestProcessorChain>
 
