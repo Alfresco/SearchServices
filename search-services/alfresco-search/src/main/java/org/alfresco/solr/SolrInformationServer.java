@@ -284,9 +284,30 @@ public class SolrInformationServer implements InformationServer
      *         unless you call it with a list, any subsequent call will replace the existing value.
      *     </li>
      * </ul>
+     *
+     * It has been introduced a new method "keepField". If this method is called, an explicit atomic update is executed
+     * instead of a standard atomic updated.
+     *
+     * An explicit atomic update is an atomic update with the difference that we must specify all the fields that we want
+     * to keep from the document already indexed in solr.
+     *
      */
     static class PartialSolrInputDocument extends SolrInputDocument
     {
+        private static final Map<String, String> KEEP_MAP = Map.of("keep", "");
+
+        /**
+         * Keep the field from the indexed solr document.
+         *
+         * Calling this method at least once provokes the execution of an explicit atomic update.
+         * With explicit atomic update, all the fields defined in the indexed solr document
+         * that are not explicitly inserted into the inputDocument will be discarded.
+         */
+        public void keepField(String name)
+        {
+            setField(name, KEEP_MAP);
+        }
+
         @Override
         @SuppressWarnings("unchecked")
         public void addField(String name, Object value)
@@ -294,7 +315,7 @@ public class SolrInformationServer implements InformationServer
             Map<String, List<Object>> fieldModifier =
                     (Map<String, List<Object>>)computeIfAbsent(name, k -> {
                         remove(name);
-                        setField(name, newFieldModifier("add"));
+                        setField(name, newFieldModifier("set"));
 
                         return getField(name);
                     }).getValue();
@@ -2099,7 +2120,7 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    private SolrInputDocument populateWithMetadata(SolrInputDocument document, NodeMetaData metadata, NodeMetaDataParameters nmdp)
+    private PartialSolrInputDocument populateWithMetadata(PartialSolrInputDocument document, NodeMetaData metadata, NodeMetaDataParameters nmdp)
     {
         populateFields(metadata, document, nmdp);
 
@@ -2110,6 +2131,8 @@ public class SolrInformationServer implements InformationServer
                 isContentIndexedForNode(metadata.getProperties()),
                 document,
                 contentIndexingHasBeenEnabledOnThisInstance);
+
+        keepContentFields(document);
 
         LOGGER.debug("Document size (fields) after getting properties from node {} metadata: {}", metadata.getId(), document.size());
 
@@ -2633,6 +2656,8 @@ public class SolrInformationServer implements InformationServer
         addContentPropertyToDocUsingAlfrescoRepository(doc, propertyQName, dbId, locale);
     }
 
+
+
     /**
      * Extracts the text content from the given API response.
      *
@@ -2703,6 +2728,30 @@ public class SolrInformationServer implements InformationServer
                     .getFields()
                     .forEach(field -> addFieldIfNotSet(doc, field.getField()));
         }
+    }
+
+    private void keepContentFields(PartialSolrInputDocument doc)
+    {
+        String qNamePart = CONTENT_LOCALE_FIELD.substring(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX.length());
+        QName propertyQName = QName.createQName(qNamePart);
+
+        dataModel.getIndexedFieldForSpecializedPropertyMetadata(propertyQName, AlfrescoSolrDataModel.SpecializedFieldType.TRANSFORMATION_STATUS)
+                .getFields()
+                .stream()
+                .forEach(field -> doc.keepField(field.getField()));
+
+        dataModel.getIndexedFieldForSpecializedPropertyMetadata(propertyQName, AlfrescoSolrDataModel.SpecializedFieldType.TRANSFORMATION_EXCEPTION)
+                .getFields()
+                .stream()
+                .forEach(field -> doc.keepField(field.getField()));
+
+        dataModel.getIndexedFieldForSpecializedPropertyMetadata(propertyQName, AlfrescoSolrDataModel.SpecializedFieldType.TRANSFORMATION_TIME)
+                .getFields()
+                .stream()
+                .forEach(field -> doc.keepField(field.getField()));
+
+        doc.keepField(FINGERPRINT_FIELD);
+        doc.keepField(dataModel.getStoredContentField(propertyQName));
     }
 
     private String languageFrom(String locale)
@@ -3321,9 +3370,9 @@ public class SolrInformationServer implements InformationServer
      * @param initialEmptyDocumentSupplier a factory for creating the initial {@link SolrInputDocument} instance.
      * @return a basic {@link SolrInputDocument} instance populated with the minimal set of information.
      */
-    private SolrInputDocument basicDocument(NodeMetaData metadata, String docType, Supplier<SolrInputDocument> initialEmptyDocumentSupplier)
+    private <T extends SolrInputDocument> T basicDocument(NodeMetaData metadata, String docType, Supplier<T> initialEmptyDocumentSupplier)
     {
-        SolrInputDocument doc = initialEmptyDocumentSupplier.get();
+        T doc = initialEmptyDocumentSupplier.get();
         doc.setField(FIELD_SOLR4_ID,
                 AlfrescoSolrDataModel.getNodeDocumentId(
                         metadata.getTenantDomain(),
