@@ -53,7 +53,8 @@ public class ContentTracker extends ActivatableTracker
 {
     protected final static Logger LOGGER = LoggerFactory.getLogger(ContentTracker.class);
 
-    private static final int DEFAULT_CONTENT_TRACKER_MAX_PARALLELISM = 32;
+    // Keep this value to 1/4 of all the other pools, as ContentTracker Threads are heavier
+    private static final int DEFAULT_CONTENT_TRACKER_MAX_PARALLELISM = 8;
 
     private int contentTrackerParallelism;
     private int contentUpdateBatchSize;
