@@ -408,6 +408,10 @@ public class SolrInformationServer implements InformationServer
 
     private long cleanContentLastPurged;
 
+    // Get Paths information from Repository for a batch of nodes (true by default)
+    // When false, Paths information is only recovered for single nodes
+    private final boolean getPathsInNodeBatches;
+    
     // Metadata pulling control
     private boolean skipDescendantDocsForSpecificTypes;
     private boolean skipDescendantDocsForSpecificAspects;
@@ -604,6 +608,8 @@ public class SolrInformationServer implements InformationServer
         dataModel = AlfrescoSolrDataModel.getInstance();
 
         contentStreamLimit = Integer.parseInt(coreConfiguration.getProperty("alfresco.contentStreamLimit", "10000000"));
+
+        getPathsInNodeBatches = Boolean.parseBoolean(coreConfiguration.getProperty("alfresco.metadata.getPathsInNodeBatches", "true"));
 
         props = AlfrescoSolrDataModel.getCommonConfig();
         hostName = ConfigUtil.locateProperty(SOLR_HOST, props.getProperty(SOLR_HOST));
@@ -2013,6 +2019,9 @@ public class SolrInformationServer implements InformationServer
                 nmdp.setNodeIds(nodeIds);
                 nmdp.setIncludeChildIds(false);
                 nmdp.setIncludeChildAssociations(false);
+                // Getting Ancestor information when getting a batch of nodes from repository,
+                // may contain large information to be stored in memory for a long time.
+                nmdp.setIncludePaths(getPathsInNodeBatches);
 
                 // Fetches bulk metadata
                 nmdp.setMaxResults(Integer.MAX_VALUE);
@@ -2160,10 +2169,18 @@ public class SolrInformationServer implements InformationServer
 
         if (cascadeTrackingEnabled())
         {
-            updatePathRelatedFields(metadata, doc);
-            updateNamePathRelatedFields(metadata, doc);
-            updateAncestorRelatedFields(metadata, doc);
-            doc.setField(FIELD_PARENT_ASSOC_CRC, metadata.getParentAssocsCrc());
+            // As metadata is used like final but the lambdas above, we need a new variable here
+            NodeMetaData extendedMetadata = metadata;
+            // Ancestor information was not recovered for node batches, so we need to update
+            // the node with that information before updating the SOLR Document
+            if (!getPathsInNodeBatches)
+            {
+                extendedMetadata = getNodeMetaDataWithPathInfo(metadata.getId());
+            }
+            updatePathRelatedFields(extendedMetadata, doc);
+            updateNamePathRelatedFields(extendedMetadata, doc);
+            updateAncestorRelatedFields(extendedMetadata, doc);
+            doc.setField(FIELD_PARENT_ASSOC_CRC, extendedMetadata.getParentAssocsCrc());
         }
 
         ofNullable(metadata.getOwner()).ifPresent(owner -> doc.setField(FIELD_OWNER, owner));
@@ -2207,6 +2224,23 @@ public class SolrInformationServer implements InformationServer
         });
     }
 
+    /**
+     * Gets full metadata information for a given nodeId, including Paths information.
+     * Paths information can be huge in some scenarios, so it's recommended to use 
+     * this method always, as this gets Paths information for a single node. 
+     * @param nodeId Id for the node to get information from repository
+     * @return Full metadata information for the node
+     */
+    private NodeMetaData getNodeMetaDataWithPathInfo(long nodeId)
+    {
+        NodeMetaDataParameters nmdp = new NodeMetaDataParameters();
+        nmdp.setFromNodeId(nodeId);
+        nmdp.setToNodeId(nodeId);
+        nmdp.setIncludePaths(true);
+        nmdp.setMaxResults(1);
+        return getNodesMetaDataFromRepository(nmdp).get().iterator().next();
+    }
+    
     private void updateAncestorRelatedFields(NodeMetaData nodeMetaData, SolrInputDocument doc)
     {
         doc.removeField(FIELD_ANCESTOR);
