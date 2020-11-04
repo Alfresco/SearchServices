@@ -29,11 +29,11 @@ package org.alfresco.solr.query;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.adaptor.lucene.AnalysisMode;
-import org.alfresco.repo.search.adaptor.lucene.LuceneFunction;
-import org.alfresco.repo.search.adaptor.lucene.LuceneQueryParserAdaptor;
-import org.alfresco.repo.search.adaptor.lucene.LuceneQueryParserExpressionAdaptor;
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.repo.search.adaptor.QueryParserAdaptor;
+import org.alfresco.repo.search.adaptor.QueryParserExpressionAdaptor;
+import org.alfresco.repo.search.adaptor.AnalysisMode;
+import org.alfresco.repo.search.adaptor.LuceneFunction;
+import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.Ordering;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -53,7 +53,7 @@ import org.apache.lucene.search.TermQuery;
  * @author Andy
  *
  */
-public class Lucene4QueryParserAdaptor implements LuceneQueryParserAdaptor<Query, Sort, ParseException>
+public class Lucene4QueryParserAdaptor implements QueryParserAdaptor<Query, Sort, ParseException>
 {
 
     private Solr4QueryParser lqp;
@@ -274,7 +274,7 @@ public class Lucene4QueryParserAdaptor implements LuceneQueryParserAdaptor<Query
     @Override
     public Query getNegatedQuery(Query query) throws ParseException
     {
-        LuceneQueryParserExpressionAdaptor<Query, ParseException> expressionAdaptor = getExpressionAdaptor();
+        QueryParserExpressionAdaptor<Query, ParseException> expressionAdaptor = getExpressionAdaptor();
         expressionAdaptor.addRequired(getMatchAllQuery());
         expressionAdaptor.addExcluded(query);
         return expressionAdaptor.getQuery();
@@ -284,7 +284,7 @@ public class Lucene4QueryParserAdaptor implements LuceneQueryParserAdaptor<Query
      * @see org.alfresco.repo.search.adaptor.lucene.LuceneQueryParserAdaptor#getExpressionAdaptor()
      */
     @Override
-    public LuceneQueryParserExpressionAdaptor<Query, ParseException> getExpressionAdaptor()
+    public QueryParserExpressionAdaptor<Query, ParseException> getExpressionAdaptor()
     {
         return new Lucene4QueryParserExpressionAdaptor();
     }
@@ -307,7 +307,7 @@ public class Lucene4QueryParserAdaptor implements LuceneQueryParserAdaptor<Query
         throw new UnsupportedOperationException();
     }
     
-    private class Lucene4QueryParserExpressionAdaptor implements LuceneQueryParserExpressionAdaptor<Query, ParseException>
+    private class Lucene4QueryParserExpressionAdaptor implements QueryParserExpressionAdaptor<Query, ParseException>
     {
         BooleanQuery.Builder booleanQuery = new BooleanQuery.Builder();
 
