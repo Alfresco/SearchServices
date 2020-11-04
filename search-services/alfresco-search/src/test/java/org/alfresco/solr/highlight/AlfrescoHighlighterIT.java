@@ -34,7 +34,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.*;
 
 import java.util.Map;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AbstractAlfrescoSolrIT;
 import org.alfresco.solr.client.*;
