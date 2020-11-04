@@ -26,7 +26,7 @@
 
 package org.alfresco.solr.query;
 
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.solr.AbstractAlfrescoSolrIT;
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.SolrTestCaseJ4;

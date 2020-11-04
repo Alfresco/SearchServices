@@ -38,7 +38,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
 import java.util.Collection;
 
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.repo.search.adaptor.QueryConstants;
 
 import org.alfresco.solr.AbstractAlfrescoSolrIT;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;

@@ -40,7 +40,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.AbstractAlfrescoSolrIT;

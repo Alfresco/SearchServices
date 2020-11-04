@@ -26,7 +26,7 @@
 
 package org.alfresco.solr.query.afts.qparser;
 
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.solr.dataload.TestDataProvider;
 import org.alfresco.util.ISO9075;
 import org.junit.BeforeClass;
