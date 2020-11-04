@@ -22,7 +22,7 @@
     </distributionManagement>
 
     <properties>
-        <dependency.alfresco-data-model.version>8.302</dependency.alfresco-data-model.version>
+        <dependency.alfresco-data-model.version>8.319</dependency.alfresco-data-model.version>
         <dependency.jackson.version>2.11.3</dependency.jackson.version>
     </properties>
 

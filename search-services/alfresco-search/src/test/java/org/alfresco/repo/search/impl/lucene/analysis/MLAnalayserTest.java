@@ -74,7 +74,6 @@ public class MLAnalayserTest
     {
         analyser = new MLAnalayser(mlAnalaysisMode);
         PropertyDefinition propDef = Mockito.mock(PropertyDefinition.class);
-        when(propDef.resolveAnalyserClassName(any(Locale.class))).thenReturn(StandardAnalyzer.class.getName()); //AlfrescoStandardAnalyser.class.getName());
         when(dictionaryService.getProperty(any(QName.class))).thenReturn(propDef);
     }
 

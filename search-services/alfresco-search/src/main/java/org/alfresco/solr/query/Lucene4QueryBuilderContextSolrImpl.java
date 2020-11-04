@@ -29,9 +29,9 @@ package org.alfresco.solr.query;
 import java.util.Properties;
 
 import org.alfresco.repo.search.MLAnalysisMode;
-import org.alfresco.repo.search.adaptor.lucene.LuceneQueryParserAdaptor;
+import org.alfresco.repo.search.adaptor.QueryParserAdaptor;
 import org.alfresco.repo.search.impl.parsers.FTSQueryParser;
-import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext;
+import org.alfresco.repo.search.impl.querymodel.impl.lucene.QueryBuilderContext;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -47,13 +47,13 @@ import org.apache.solr.request.SolrQueryRequest;
 /**
  * @author andyh
  */
-public class Lucene4QueryBuilderContextSolrImpl implements LuceneQueryBuilderContext<Query, Sort, ParseException>
+public class Lucene4QueryBuilderContextSolrImpl implements QueryBuilderContext<Query, Sort, ParseException>
 {
     private Solr4QueryParser lqp;
 
     private NamespacePrefixResolver namespacePrefixResolver;
     
-    private LuceneQueryParserAdaptor<Query, Sort, ParseException> lqpa;
+    private QueryParserAdaptor<Query, Sort, ParseException> lqpa;
 
     /**
      * Context for building lucene queries
@@ -90,7 +90,7 @@ public class Lucene4QueryBuilderContextSolrImpl implements LuceneQueryBuilderCon
     /* (non-Javadoc)
      * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderContext#getLuceneQueryParser()
      */
-    public LuceneQueryParserAdaptor<Query, Sort, ParseException> getLuceneQueryParserAdaptor()
+    public QueryParserAdaptor<Query, Sort, ParseException> getLuceneQueryParserAdaptor()
     {
         return lqpa;
     }

@@ -28,7 +28,7 @@ package org.alfresco.solr.query;
 
 import java.io.IOException;
 
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.repo.search.impl.parsers.FTSQueryParser;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.solr.SolrInformationServer;

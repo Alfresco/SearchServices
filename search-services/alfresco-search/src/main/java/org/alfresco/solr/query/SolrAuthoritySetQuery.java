@@ -32,7 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.solr.data.GlobalReaders;

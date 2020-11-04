@@ -40,7 +40,7 @@ import java.util.Locale;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.MLAnalysisMode;
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.QueryConsistency;
 import org.alfresco.service.cmr.search.SearchParameters;

@@ -26,7 +26,7 @@
 
 package org.alfresco.solr.component;
 
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_LID;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_LID;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
