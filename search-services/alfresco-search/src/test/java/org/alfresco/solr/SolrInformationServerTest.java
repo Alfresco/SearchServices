@@ -68,7 +68,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.solr.client.NodeMetaData;

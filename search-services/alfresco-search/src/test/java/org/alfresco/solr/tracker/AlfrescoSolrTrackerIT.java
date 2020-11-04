@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.AbstractAlfrescoSolrIT;

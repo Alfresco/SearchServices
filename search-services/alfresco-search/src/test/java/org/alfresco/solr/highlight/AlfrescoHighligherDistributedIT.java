@@ -38,7 +38,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.solr.AbstractAlfrescoDistributedIT;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.AclChangeSet;
