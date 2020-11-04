@@ -69,7 +69,6 @@ spring-orm-5.2.9.RELEASE.jar http://projects.spring.io/spring-framework/
 spring-tx-5.2.9.RELEASE.jar http://projects.spring.io/spring-framework/
 xercesImpl-2.12.0-alfresco-patched-20191004.jar http://xerces.apache.org/xerces2-j
 guessencoding-1.4.jar   http://docs.codehaus.org/display/GUESSENC/
-xml-apis-1.4.01.jar     https://github.com/FasterXML/jackson
 jug-2.0.0-asl.jar   http://jug.safehaus.org/
 acegi-security-0.8.2_patched.jar        http://sourceforge.net/projects/acegisecurity/
 jetty-continuation-9.3.27.v20190418.jar https://www.eclipse.org/jetty/licenses.html
