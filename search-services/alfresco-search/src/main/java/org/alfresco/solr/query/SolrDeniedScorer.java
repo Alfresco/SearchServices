@@ -28,7 +28,7 @@ package org.alfresco.solr.query;
 
 import java.io.IOException;
 
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.solr.cache.CacheConstants;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.Term;

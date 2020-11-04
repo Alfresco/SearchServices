@@ -28,7 +28,7 @@ package org.alfresco.solr.tracker;
 
 import static java.util.Collections.singletonList;
 
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_DOC_TYPE;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;

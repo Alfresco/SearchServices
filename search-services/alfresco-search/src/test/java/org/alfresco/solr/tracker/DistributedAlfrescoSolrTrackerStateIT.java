@@ -40,7 +40,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
 
 import org.alfresco.repo.index.shard.ShardState;
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.solr.AbstractAlfrescoDistributedIT;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.client.Acl;

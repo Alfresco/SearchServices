@@ -159,8 +159,6 @@ public class SOLRAPIClientTest extends TestCase
                     new ThreadPoolExecutor.CallerRunsPolicy());
             compiledModelsCache.setThreadPoolExecutor(threadPoolExecutor);
             dictionaryDAO.setDictionaryRegistryCache(compiledModelsCache);
-            // TODO: use config ....
-            dictionaryDAO.setDefaultAnalyserResourceBundleName("alfresco/model/dataTypeAnalyzers");
             dictionaryDAO.setResourceClassLoader(getResourceClassLoader());
             dictionaryDAO.init();
 

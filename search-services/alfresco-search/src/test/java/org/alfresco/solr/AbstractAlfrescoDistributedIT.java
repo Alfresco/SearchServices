@@ -27,7 +27,7 @@
 package org.alfresco.solr;
 
 import static java.util.Arrays.asList;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_DOC_TYPE;
 
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
