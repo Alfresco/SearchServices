@@ -1742,12 +1742,22 @@ public class SolrInformationServer implements InformationServer
                     boolean isIndexed = ofNullable(pValue)
                                             .map(StringPropertyValue::getValue)
                                             .map(Boolean::parseBoolean)
-                                            .orElse(false);
-
+                                            .orElse(true);
+                    
                     addDocCmd.solrDoc = isIndexed
-                                ? populateWithMetadata(basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new), nodeMetaData, nmdp)
-                                : basicDocument(nodeMetaData, DOC_TYPE_UNINDEXED_NODE, SolrInputDocument::new);
-                    processor.processAdd(addDocCmd);
+                                ? populateWithMetadata(
+                                            basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new),
+                                            nodeMetaData, nmdp)
+                                : (recordUnindexedNodes
+                                            ? basicDocument(nodeMetaData, DOC_TYPE_UNINDEXED_NODE, SolrInputDocument::new)
+                                            : null);
+
+                    // UnindexedNodes are not indexed when solrcore property flag "recordUnindexedNodes" is set to false
+                    if (addDocCmd != null)
+                    {
+                        processor.processAdd(addDocCmd);
+                    }
+                    
                 }
             }
         }
