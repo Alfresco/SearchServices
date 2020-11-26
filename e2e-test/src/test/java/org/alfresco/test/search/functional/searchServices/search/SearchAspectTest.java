@@ -23,9 +23,13 @@
 
 package org.alfresco.test.search.functional.searchServices.search;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchRequest;
@@ -33,10 +37,16 @@ import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.alfresco.utility.data.CustomObjectTypeProperties;
 import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
+import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
+import org.apache.chemistry.opencmis.commons.enums.VersioningState;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import javax.validation.constraints.AssertTrue;
 
 /**
  * Test class tests aspects are added and removed from Solr Documents
@@ -62,6 +72,9 @@ public class SearchAspectTest extends AbstractE2EFunctionalTest
                 new CustomObjectTypeProperties());
 
         waitForMetadataIndexing(file.getName(), true);
+
+        assertTrue(deployCustomModel("model/finance-model.xml"),
+                "failing while deploying model");
     }
 
     @Test(priority = 1)
@@ -97,6 +110,78 @@ public class SearchAspectTest extends AbstractE2EFunctionalTest
 
         assertTrue(!response.getEntries().get(0).getModel().getAspectNames().contains("cm:checkedOut"),
                 "checkedOut aspect was NOT expected");
+
+    }
+
+    /**
+     * Check that when an aspect is removed, all the properties defined in the aspect are removed as well.
+     * Created for Search-2538
+     */
+    @Test(priority = 2)
+    public void testAspectIsRemovedWithItsProperties()
+    {
+        String parkingLocationFieldName = "finance:ParkingLocation";
+        String financeLocationFieldName = "finance:Location";
+
+        FileModel expenseLondon = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "Expense");
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(PropertyIds.OBJECT_TYPE_ID, "D:finance:Expense");
+        properties.put(PropertyIds.NAME, expenseLondon.getName());
+        properties.put(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, List.of("P:finance:ParkEx"));
+        properties.put(financeLocationFieldName, "LondonBridge");
+        properties.put(parkingLocationFieldName, "LiverpoolStreet");
+
+        // Compose query
+        String queryFile = "cm:name:'" + expenseLondon.getName() + "'";
+        RestRequestQueryModel queryModel = new RestRequestQueryModel();
+        queryModel.setQuery(queryFile);
+        queryModel.setLanguage(SearchLanguage.AFTS.toString());
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.setQuery(queryModel);
+        searchRequest.setInclude(List.of("aspectNames","properties"));
+
+        cmisApi.authenticateUser(testUser)
+                .usingSite(testSite)
+                .usingResource(folder)
+                .createFile(expenseLondon, properties, VersioningState.MAJOR)
+                .assertThat().existsInRepo();
+
+        String parkingLocationQuery = parkingLocationFieldName + ":LiverpoolStreet";
+        Assert.assertTrue(waitForIndexing(parkingLocationQuery, true));
+
+        // check that the document found has the expected properties and aspects defined.
+        SearchResponse response = restClient.authenticateUser(testUser).withSearchAPI().search(searchRequest);
+        assertTrue(response.getEntries().get(0).getModel().getAspectNames().contains("finance:ParkEx"),
+                "parkEx aspect was expected");
+        Map<String, String> foundProperties = (Map<String, String>) response.getEntries().get(0).getModel().getProperties();
+        assertEquals("LondonBridge", foundProperties.get(financeLocationFieldName),
+                "finance:Location property is expected to be defined with 'LondonBridge' as value");
+        assertEquals("LiverpoolStreet", foundProperties.get(parkingLocationFieldName),
+                "finance:ParkingLocation property is expected to be defined with 'LiverpoolStreet' as value");
+
+        // remove aspect
+        Document doc = cmisApi.withCMISUtil().getCmisDocument(cmisApi.getLastResource());
+        List<Object> aspects = doc.getProperty(PropertyIds.SECONDARY_OBJECT_TYPE_IDS).getValues();
+        aspects.remove("P:finance:ParkEx");
+        Map<String, Object> updateProperties = new HashMap<>();
+        updateProperties.put(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, aspects);
+
+        doc.updateProperties(updateProperties);
+
+        // Check that the field related to the removed aspect is not longer indexed for tested file
+        Assert.assertTrue(waitForIndexing(parkingLocationQuery, false));
+
+        response = restClient.authenticateUser(testUser).withSearchAPI().search(searchRequest);
+        assertTrue(!response.getEntries().get(0).getModel().getAspectNames().contains("finance:ParkEx"),
+                "parkEx aspect was NOT expected");
+
+        // check that the document found has finance:Location property defined and finance:ParkingLocation has been removed
+        foundProperties = (Map<String, String>) response.getEntries().get(0).getModel().getProperties();
+        assertEquals("LondonBridge", foundProperties.get(financeLocationFieldName),
+                "finance:Location property is expected to be defined with 'LondonBridge' as value");
+        assertNull(foundProperties.get(parkingLocationFieldName), "finance:ParkingLocation should not be included " +
+                "into the document anymore");
 
     }
 }
