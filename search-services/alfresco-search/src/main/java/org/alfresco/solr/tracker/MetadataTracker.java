@@ -849,8 +849,11 @@ public class MetadataTracker extends ActivatableTracker
                     infoSrv.txnInIndex(transaction.getId(), true));
             if (LOGGER.isTraceEnabled())
             {
-                LOGGER.trace("{}-[CORE {}] Skipping Transaction Id {} as it was already indexed",
-                        Thread.currentThread().getId(), coreName, transaction.getId());
+                if (isInIndex)
+                {
+                    LOGGER.trace("{}-[CORE {}] Skipping Transaction Id {} as it was already indexed",
+                            Thread.currentThread().getId(), coreName, transaction.getId());
+                }
             }
             return !isInIndex;
         }
@@ -917,8 +920,9 @@ public class MetadataTracker extends ActivatableTracker
                 long idTrackerCycle = System.currentTimeMillis();
                 if (transactions.getTransactions().size() > 0)
                 {
-                    LOGGER.info("{}-[CORE {}] Found {} transactions after lastTxCommitTime {}, transactions from {} to {}",
+                    LOGGER.info("{}:{}-[CORE {}] Found {} transactions after lastTxCommitTime {}, transactions from {} to {}",
                             Thread.currentThread().getId(),
+                            idTrackerCycle,
                             coreName,
                             transactions.getTransactions().size(),
                             fromCommitTime,
@@ -927,8 +931,9 @@ public class MetadataTracker extends ActivatableTracker
                 }
                 else
                 {
-                    LOGGER.info("{}-[CORE {}] No transaction found after lastTxCommitTime {}",
+                    LOGGER.info("{}:{}-[CORE {}] No transaction found after lastTxCommitTime {}",
                             Thread.currentThread().getId(),
+                            idTrackerCycle,
                             coreName,
                             ((txnsFound.size() > 0) ? txnsFound.getLast().getCommitTimeMs()
                                     : state.getLastIndexedTxCommitTime()));
@@ -981,14 +986,14 @@ public class MetadataTracker extends ActivatableTracker
                 {
                     // Add the transactions as found to avoid processing them again in the next iteration
                     batch.forEach(txnsFound::add);
-
+    
                     // Index the transactions
                     indexTransactionsAfterWorker(batch);
                     long endElapsed = System.nanoTime();
                     trackerStats.addElapsedNodeTime(totalUpdatedDocs, endElapsed - startElapsed);
                     startElapsed = endElapsed;
                 }
-
+                
                 setLastTxCommitTimeAndTxIdInTrackerState(transactions);
             }
             catch(Exception e)
@@ -1095,8 +1100,9 @@ public class MetadataTracker extends ActivatableTracker
 
         if (LOGGER.isDebugEnabled())
         {
-            LOGGER.debug("{}-[CORE {}] Found {} Nodes to be indexed from Transactions: {}",
-                    Thread.currentThread().getId(), coreName, nodes.size(), txIds);
+            LOGGER.debug("{}:{}:{}-[CORE {}] Indexing {} Nodes from Transactions: {}",
+                    Thread.currentThread().getId(), idTrackerCycle, idTxBatch,
+                    coreName, nodes.size(), txIds);
         }
 
         // Group the nodes in batches of nodeBatchSize (or less)
@@ -1147,7 +1153,7 @@ public class MetadataTracker extends ActivatableTracker
         @Override
         protected void onFail(Throwable failCausedBy)
         {
-        	setRollback(true, failCausedBy);
+            setRollback(true, failCausedBy);
         }
         
         private List<Node> filterNodes(List<Node> nodes)
