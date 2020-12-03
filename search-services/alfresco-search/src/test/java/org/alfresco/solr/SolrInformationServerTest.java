@@ -26,28 +26,6 @@
 
 package org.alfresco.solr;
 
-import java.util.Properties;
-import java.util.stream.Stream;
-
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.solr.client.SOLRAPIClient;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.params.CommonParams;
-import org.apache.solr.common.util.SimpleOrderedMap;
-import org.apache.solr.core.SolrCore;
-import org.apache.solr.core.SolrResourceLoader;
-import org.apache.solr.request.SolrQueryRequest;
-import org.apache.solr.request.SolrRequestHandler;
-import org.apache.solr.response.SolrQueryResponse;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
-
 import static java.util.Optional.ofNullable;
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.ANY;
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.ASSOC_REF;
@@ -71,8 +49,8 @@ import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_DAY_FIELD_SUF
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_HOUR_FIELD_SUFFIX;
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_MINUTE_FIELD_SUFFIX;
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_MONTH_FIELD_SUFFIX;
-import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_SECOND_FIELD_SUFFIX;
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_QUARTER_FIELD_SUFFIX;
+import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_SECOND_FIELD_SUFFIX;
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_YEAR_FIELD_SUFFIX;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -82,6 +60,34 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import org.alfresco.repo.search.adaptor.QueryConstants;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.SOLRAPIClient;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.params.CommonParams;
+import org.apache.solr.common.util.SimpleOrderedMap;
+import org.apache.solr.core.SolrCore;
+import org.apache.solr.core.SolrResourceLoader;
+import org.apache.solr.request.SolrQueryRequest;
+import org.apache.solr.request.SolrRequestHandler;
+import org.apache.solr.response.SolrQueryResponse;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * Unit tests for the {@link SolrInformationServer} class.
@@ -320,4 +326,96 @@ public class SolrInformationServerTest
 
         assertNull(document);
     }
+    
+    /**
+     * When storing ANAME and APATH fields, skipping to store duplicated entries should be granted.
+     * 
+     * Test data has been simplified from a living input use case:
+     * 
+     * {
+     * "apath": "/9ea65c3c/1f5eebed/d657ec29/7c7da7c4/3ca56633/85f3f802/5c3a9e15/da781274",
+     * "path": "/company_home/user_homes/user1/taskers/Tasker-1418058127641/responseSummary-1418332928505/responseSummary-1418332928552/response"
+     * },
+     * {
+     * "apath": "/9ea65c3c/1f5eebed/d657ec29/572c38fc/4ff94a6e/85f3f802/5c3a9e15/da781274",
+     * "path": "/company_home/user_homes/user2/taskers/tasker/responseSummary-1418332928505/responseSummary-1418332928552/response"
+     * },
+     * {
+     * "apath": "/9ea65c3c/1f5eebed/d657ec29/cebd969b/0decd203/85f3f802/5c3a9e15/da781274",
+     * "path": "/company_home/user_homes/user3/taskers/tasker/responseSummary-1418332928505/responseSummary-1418332928552/response"
+     * }
+     */
+    @Test
+    public void testPathsFieldStorage()
+    {
+
+        SolrInputDocument doc = new SolrInputDocument();
+        NodeMetaData nodeMetaData = new NodeMetaData();
+        nodeMetaData.setAncestorPaths(List.of("/1/2/4/7/10", "/1/2/5/8/10", "/1/2/6/9/10"));
+        nodeMetaData.setPaths(List.of());
+        
+        List<String> expectedANames = Stream.of("0/10", 
+                "1/7/10", "1/8/10", "1/9/10", 
+                "2/4/7/10", "2/5/8/10", "2/6/9/10", 
+                "3/2/4/7/10", "3/2/5/8/10", "3/2/6/9/10", 
+                "4/1/2/4/7/10", "4/1/2/5/8/10", "4/1/2/6/9/10", 
+                "F/1/2/4/7/10", "F/1/2/5/8/10", "F/1/2/6/9/10")
+                .collect(Collectors.toCollection(ArrayList::new));
+        
+        List<String> expectedAPaths = Stream.of("0/1", 
+                "1/1/2", 
+                "2/1/2/4", "2/1/2/5", "2/1/2/6", 
+                "3/1/2/4/7", "3/1/2/5/8", "3/1/2/6/9", 
+                "4/1/2/4/7/10", "4/1/2/5/8/10", "4/1/2/6/9/10", 
+                "F/1/2/4/7/10", "F/1/2/5/8/10", "F/1/2/6/9/10")
+                .collect(Collectors.toCollection(ArrayList::new));
+        
+        infoServer.updatePathRelatedFields(nodeMetaData, doc);
+        
+        List<String> anames = doc.getFieldValues(QueryConstants.FIELD_ANAME).stream()
+                .map(aname -> aname.toString())
+                .collect(Collectors.toList())
+                .stream()
+                .sorted()
+                .collect(Collectors.toList());
+        
+        assertEquals(expectedANames, anames);
+                
+        List<String> apaths = doc.getFieldValues(QueryConstants.FIELD_APATH).stream()
+                .map(aname -> aname.toString())
+                .collect(Collectors.toList())
+                .stream()
+                .sorted()
+                .collect(Collectors.toList());
+        
+        assertEquals(expectedAPaths, apaths);
+
+
+    }
+    
+    /**
+     * Repeat the indexing operation 2 times to verify that updating and existing document 
+     * removes previous information in ANAME and APATH fields
+     */
+    @Test
+    public void testPathsFieldStorageIterations()
+    {
+
+        SolrInputDocument doc = new SolrInputDocument();
+        NodeMetaData nodeMetaData = new NodeMetaData();
+        nodeMetaData.setAncestorPaths(List.of("/1/2/4/7/10", "/1/2/5/8/10", "/1/2/6/9/10"));
+        nodeMetaData.setPaths(List.of());
+        
+        IntStream.range(0, 2).forEach(i -> 
+        {
+
+            infoServer.updatePathRelatedFields(nodeMetaData, doc);
+            
+            assertEquals(doc.getFieldValues(QueryConstants.FIELD_ANAME).size(), 16);
+            assertEquals(doc.getFieldValues(QueryConstants.FIELD_APATH).size(), 14);
+
+        });
+
+    }
+    
 }

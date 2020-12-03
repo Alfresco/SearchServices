@@ -30,54 +30,54 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTXCOMMITTIME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ACLTXID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ANAME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ANCESTOR;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_APATH;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ASPECT;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ASSOCTYPEQNAME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_CASCADE_FLAG;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DBID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DENIED;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_EXCEPTION_MESSAGE;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_EXCEPTION_STACK;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_FIELDS;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_GEO;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_INACLTXID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_INTXID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_ISNODE;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_LID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_NPATH;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_NULLPROPERTIES;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_OWNER;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_PARENT;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_PARENT_ASSOC_CRC;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_PATH;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_PNAME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_PRIMARYASSOCQNAME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_PRIMARYASSOCTYPEQNAME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_PRIMARYPARENT;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_PROPERTIES;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_QNAME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_READER;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_SITE;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_SOLR4_ID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_S_ACLTXCOMMITTIME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_S_ACLTXID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_S_INACLTXID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_S_INTXID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_S_TXCOMMITTIME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_S_TXID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TAG;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TAG_SUGGEST;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TENANT;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXCOMMITTIME;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TXID;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_TYPE;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_VERSION;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_ACLID;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_ACLTXCOMMITTIME;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_ACLTXID;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_ANAME;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_ANCESTOR;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_APATH;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_ASPECT;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_ASSOCTYPEQNAME;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_CASCADE_FLAG;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_DBID;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_DENIED;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_DOC_TYPE;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_EXCEPTION_MESSAGE;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_EXCEPTION_STACK;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_FIELDS;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_GEO;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_INACLTXID;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_INTXID;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_ISNODE;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_LID;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_NPATH;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_NULLPROPERTIES;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_OWNER;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_PARENT;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_PARENT_ASSOC_CRC;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_PATH;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_PNAME;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_PRIMARYASSOCQNAME;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_PRIMARYASSOCTYPEQNAME;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_PRIMARYPARENT;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_PROPERTIES;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_QNAME;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_READER;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_SITE;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_SOLR4_ID;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_S_ACLTXCOMMITTIME;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_S_ACLTXID;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_S_INACLTXID;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_S_INTXID;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_S_TXCOMMITTIME;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_S_TXID;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_TAG;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_TAG_SUGGEST;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_TENANT;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_TXCOMMITTIME;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_TXID;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_TYPE;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_VERSION;
 import static org.alfresco.solr.AlfrescoSolrDataModel.getAclChangeSetDocumentId;
 import static org.alfresco.solr.AlfrescoSolrDataModel.getAclDocumentId;
 import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
@@ -132,7 +132,7 @@ import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.NamespaceDAO;
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -284,9 +284,30 @@ public class SolrInformationServer implements InformationServer
      *         unless you call it with a list, any subsequent call will replace the existing value.
      *     </li>
      * </ul>
+     *
+     * It has been introduced a new method "keepField". If this method is called, an explicit atomic update is executed
+     * instead of a standard atomic updated.
+     *
+     * An explicit atomic update is an atomic update with the difference that we must specify all the fields that we want
+     * to keep from the document already indexed in solr.
+     *
      */
     static class PartialSolrInputDocument extends SolrInputDocument
     {
+        private static final Map<String, String> KEEP_MAP = Map.of("keep", "");
+
+        /**
+         * Keep the field from the indexed solr document.
+         *
+         * Calling this method at least once provokes the execution of an explicit atomic update.
+         * With explicit atomic update, all the fields defined in the indexed solr document
+         * that are not explicitly inserted into the inputDocument will be discarded.
+         */
+        public void keepField(String name)
+        {
+            setField(name, KEEP_MAP);
+        }
+
         @Override
         @SuppressWarnings("unchecked")
         public void addField(String name, Object value)
@@ -294,7 +315,7 @@ public class SolrInformationServer implements InformationServer
             Map<String, List<Object>> fieldModifier =
                     (Map<String, List<Object>>)computeIfAbsent(name, k -> {
                         remove(name);
-                        setField(name, newFieldModifier("add"));
+                        setField(name, newFieldModifier("set"));
 
                         return getField(name);
                     }).getValue();
@@ -408,6 +429,10 @@ public class SolrInformationServer implements InformationServer
 
     private long cleanContentLastPurged;
 
+    // Get Paths information from Repository for a batch of nodes (true by default)
+    // When false, Paths information is only recovered for single nodes
+    private final boolean getPathsInNodeBatches;
+    
     // Metadata pulling control
     private boolean skipDescendantDocsForSpecificTypes;
     private boolean skipDescendantDocsForSpecificAspects;
@@ -604,6 +629,8 @@ public class SolrInformationServer implements InformationServer
         dataModel = AlfrescoSolrDataModel.getInstance();
 
         contentStreamLimit = Integer.parseInt(coreConfiguration.getProperty("alfresco.contentStreamLimit", "10000000"));
+
+        getPathsInNodeBatches = Boolean.parseBoolean(coreConfiguration.getProperty("alfresco.metadata.getPathsInNodeBatches", "true"));
 
         props = AlfrescoSolrDataModel.getCommonConfig();
         hostName = ConfigUtil.locateProperty(SOLR_HOST, props.getProperty(SOLR_HOST));
@@ -1435,6 +1462,8 @@ public class SolrInformationServer implements InformationServer
             long timeBeforeWhichThereCanBeNoChangeSetHolesInIndex = state.getLastIndexedChangeSetCommitTime() - holeRetention;
             state.setLastGoodChangeSetCommitTimeInIndex(timeBeforeWhichThereCanBeNoChangeSetHolesInIndex > 0 ? timeBeforeWhichThereCanBeNoChangeSetHolesInIndex : 0);
 
+            LOGGER.debug("The tracker initial state was created: " + state);
+
             return state;
         }
     }
@@ -1713,12 +1742,22 @@ public class SolrInformationServer implements InformationServer
                     boolean isIndexed = ofNullable(pValue)
                                             .map(StringPropertyValue::getValue)
                                             .map(Boolean::parseBoolean)
-                                            .orElse(false);
+                                            .orElse(true);
 
                     addDocCmd.solrDoc = isIndexed
-                                ? populateWithMetadata(basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new), nodeMetaData, nmdp)
-                                : basicDocument(nodeMetaData, DOC_TYPE_UNINDEXED_NODE, SolrInputDocument::new);
+                                ? populateWithMetadata(
+                                            basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new),
+                                            nodeMetaData, nmdp)
+                                : (recordUnindexedNodes
+                                            ? basicDocument(nodeMetaData, DOC_TYPE_UNINDEXED_NODE, SolrInputDocument::new)
+                                            : null);
+
+                    // UnindexedNodes are not indexed when solrcore property flag "recordUnindexedNodes" is set to false
+                    if (addDocCmd != null)
+                    {
                     processor.processAdd(addDocCmd);
+                }
+                    
                 }
             }
         }
@@ -2011,6 +2050,9 @@ public class SolrInformationServer implements InformationServer
                 nmdp.setNodeIds(nodeIds);
                 nmdp.setIncludeChildIds(false);
                 nmdp.setIncludeChildAssociations(false);
+                // Getting Ancestor information when getting a batch of nodes from repository,
+                // may contain large information to be stored in memory for a long time.
+                nmdp.setIncludePaths(getPathsInNodeBatches);
 
                 // Fetches bulk metadata
                 nmdp.setMaxResults(Integer.MAX_VALUE);
@@ -2097,7 +2139,7 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    private SolrInputDocument populateWithMetadata(SolrInputDocument document, NodeMetaData metadata, NodeMetaDataParameters nmdp)
+    private PartialSolrInputDocument populateWithMetadata(PartialSolrInputDocument document, NodeMetaData metadata, NodeMetaDataParameters nmdp)
     {
         populateFields(metadata, document, nmdp);
 
@@ -2108,6 +2150,8 @@ public class SolrInformationServer implements InformationServer
                 isContentIndexedForNode(metadata.getProperties()),
                 document,
                 contentIndexingHasBeenEnabledOnThisInstance);
+
+        keepContentFields(document);
 
         LOGGER.debug("Document size (fields) after getting properties from node {} metadata: {}", metadata.getId(), document.size());
 
@@ -2158,10 +2202,18 @@ public class SolrInformationServer implements InformationServer
 
         if (cascadeTrackingEnabled())
         {
-            updatePathRelatedFields(metadata, doc);
-            updateNamePathRelatedFields(metadata, doc);
-            updateAncestorRelatedFields(metadata, doc);
-            doc.setField(FIELD_PARENT_ASSOC_CRC, metadata.getParentAssocsCrc());
+            // As metadata is used like final but the lambdas above, we need a new variable here
+            NodeMetaData extendedMetadata = metadata;
+            // Ancestor information was not recovered for node batches, so we need to update
+            // the node with that information before updating the SOLR Document
+            if (!getPathsInNodeBatches)
+            {
+                extendedMetadata = getNodeMetaDataWithPathInfo(metadata.getId());
+            }
+            updatePathRelatedFields(extendedMetadata, doc);
+            updateNamePathRelatedFields(extendedMetadata, doc);
+            updateAncestorRelatedFields(extendedMetadata, doc);
+            doc.setField(FIELD_PARENT_ASSOC_CRC, extendedMetadata.getParentAssocsCrc());
         }
 
         ofNullable(metadata.getOwner()).ifPresent(owner -> doc.setField(FIELD_OWNER, owner));
@@ -2205,6 +2257,23 @@ public class SolrInformationServer implements InformationServer
         });
     }
 
+    /**
+     * Gets full metadata information for a given nodeId, including Paths information.
+     * Paths information can be huge in some scenarios, so it's recommended to use 
+     * this method always, as this gets Paths information for a single node. 
+     * @param nodeId Id for the node to get information from repository
+     * @return Full metadata information for the node
+     */
+    private NodeMetaData getNodeMetaDataWithPathInfo(long nodeId)
+    {
+        NodeMetaDataParameters nmdp = new NodeMetaDataParameters();
+        nmdp.setFromNodeId(nodeId);
+        nmdp.setToNodeId(nodeId);
+        nmdp.setIncludePaths(true);
+        nmdp.setMaxResults(1);
+        return getNodesMetaDataFromRepository(nmdp).get().iterator().next();
+    }
+    
     private void updateAncestorRelatedFields(NodeMetaData nodeMetaData, SolrInputDocument doc)
     {
         doc.removeField(FIELD_ANCESTOR);
@@ -2631,6 +2700,8 @@ public class SolrInformationServer implements InformationServer
         addContentPropertyToDocUsingAlfrescoRepository(doc, propertyQName, dbId, locale);
     }
 
+
+
     /**
      * Extracts the text content from the given API response.
      *
@@ -2701,6 +2772,30 @@ public class SolrInformationServer implements InformationServer
                     .getFields()
                     .forEach(field -> addFieldIfNotSet(doc, field.getField()));
         }
+    }
+
+    private void keepContentFields(PartialSolrInputDocument doc)
+    {
+        String qNamePart = CONTENT_LOCALE_FIELD.substring(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX.length());
+        QName propertyQName = QName.createQName(qNamePart);
+
+        dataModel.getIndexedFieldForSpecializedPropertyMetadata(propertyQName, AlfrescoSolrDataModel.SpecializedFieldType.TRANSFORMATION_STATUS)
+                .getFields()
+                .stream()
+                .forEach(field -> doc.keepField(field.getField()));
+
+        dataModel.getIndexedFieldForSpecializedPropertyMetadata(propertyQName, AlfrescoSolrDataModel.SpecializedFieldType.TRANSFORMATION_EXCEPTION)
+                .getFields()
+                .stream()
+                .forEach(field -> doc.keepField(field.getField()));
+
+        dataModel.getIndexedFieldForSpecializedPropertyMetadata(propertyQName, AlfrescoSolrDataModel.SpecializedFieldType.TRANSFORMATION_TIME)
+                .getFields()
+                .stream()
+                .forEach(field -> doc.keepField(field.getField()));
+
+        doc.keepField(FINGERPRINT_FIELD);
+        doc.keepField(dataModel.getStoredContentField(propertyQName));
     }
 
     private String languageFrom(String locale)
@@ -3319,9 +3414,9 @@ public class SolrInformationServer implements InformationServer
      * @param initialEmptyDocumentSupplier a factory for creating the initial {@link SolrInputDocument} instance.
      * @return a basic {@link SolrInputDocument} instance populated with the minimal set of information.
      */
-    private SolrInputDocument basicDocument(NodeMetaData metadata, String docType, Supplier<SolrInputDocument> initialEmptyDocumentSupplier)
+    private <T extends SolrInputDocument> T basicDocument(NodeMetaData metadata, String docType, Supplier<T> initialEmptyDocumentSupplier)
     {
-        SolrInputDocument doc = initialEmptyDocumentSupplier.get();
+        T doc = initialEmptyDocumentSupplier.get();
         doc.setField(FIELD_SOLR4_ID,
                 AlfrescoSolrDataModel.getNodeDocumentId(
                         metadata.getTenantDomain(),
@@ -3339,7 +3434,7 @@ public class SolrInformationServer implements InformationServer
         return doc;
     }
 
-    private void updatePathRelatedFields(NodeMetaData nodeMetaData, SolrInputDocument doc)
+    protected void updatePathRelatedFields(NodeMetaData nodeMetaData, SolrInputDocument doc)
     {
         clearFields(doc, FIELD_PATH, FIELD_SITE, FIELD_TAG, FIELD_TAG_SUGGEST, FIELD_APATH, FIELD_ANAME);
 
@@ -3376,6 +3471,9 @@ public class SolrInformationServer implements InformationServer
             doc.addField(FIELD_SITE, NO_SITE);
         }
 
+        // Saving calculated APATH and ANAME elements in order to avoid storing duplicate values
+        Set<String> addedAPaths = new HashSet<>();
+        Set<String> addedANames = new HashSet<>();
         notNullOrEmpty(nodeMetaData.getAncestorPaths())
             .forEach(ancestorPath -> {
                 String [] elements =
@@ -3387,27 +3485,37 @@ public class SolrInformationServer implements InformationServer
 
                 StringBuilder builder = new StringBuilder();
                 int i = 0;
-                for(String element : elements)
+                for (String element : elements)
                 {
                     builder.append('/').append(element);
-                    doc.addField(FIELD_APATH, "" + i++ + builder);
+                    String apath = "" + i++ + builder;
+                    if (!addedAPaths.contains(apath))
+                    {
+                        doc.addField(FIELD_APATH, apath);
+                        addedAPaths.add(apath);
+                    }
                 }
 
-                if(builder.length() > 0)
+                if (builder.length() > 0)
                 {
                     doc.addField(FIELD_APATH, "F" + builder);
                 }
 
                 builder = new StringBuilder();
-                for(int j = 0;  j < elements.length; j++)
+                for (int j = 0;  j < elements.length; j++)
                 {
                     String element = elements[elements.length - 1 - j];
                     builder.insert(0, element);
                     builder.insert(0, '/');
-                    doc.addField(FIELD_ANAME, "" + j +  builder);
+                    String aname = "" + j +  builder;
+                    if (!addedANames.contains(aname))
+                    {
+                        doc.addField(FIELD_ANAME, aname);
+                        addedANames.add(aname);
+                    }
                 }
 
-                if(builder.length() > 0)
+                if (builder.length() > 0)
                 {
                     doc.addField(FIELD_ANAME, "F" +  builder);
                 }
@@ -3983,7 +4091,14 @@ public class SolrInformationServer implements InformationServer
         }
         catch (Exception exception)
         {
-            LOGGER.error("Unable to get nodes metadata from repository. See the stacktrace below for further details.", exception);
+            LOGGER.error("Unable to get nodes metadata from repository using "
+                    + "fromNodeId=" + parameters.getFromNodeId() + ", "
+                    + "toNodeId=" + parameters.getToNodeId() + ", "
+                    + "nodeIds=" + parameters.getNodeIds() +  ", "
+                    + "fromTxId=" + parameters.getFromTxnId() + ", "
+                    + "toTxId=" + parameters.getToTxnId() + ", "
+                    + "txIds=" + parameters.getTransactionIds() 
+                    + ". See the stacktrace below for further details.", exception);
             return empty();
         }
     }

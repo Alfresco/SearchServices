@@ -42,7 +42,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 import org.alfresco.repo.index.shard.ShardState;
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.solr.AbstractAlfrescoSolrIT;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.client.Acl;

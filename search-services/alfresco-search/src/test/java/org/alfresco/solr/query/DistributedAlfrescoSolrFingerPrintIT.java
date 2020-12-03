@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.solr.AbstractAlfrescoDistributedIT;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.AclChangeSet;

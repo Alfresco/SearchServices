@@ -280,6 +280,24 @@
                             <resources>
                                 <resource>
                                     <directory>src/main/resources/solr/instance</directory>
+                                    <excludes>
+                                        <exclude>conf/shared.properties</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-test-conf</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.testOutputDirectory}/test-files/conf</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/test/resources/test-files/conf</directory>
                                 </resource>
                             </resources>
                         </configuration>

@@ -27,8 +27,6 @@ package org.alfresco.solr.tracker;
 
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.client.SOLRAPIClient;
-import org.apache.solr.core.CoreDescriptorDecorator;
-import org.apache.solr.core.SolrCore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
