@@ -26,7 +26,7 @@
 
 package org.alfresco.solr.tracker;
 
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.solr.AbstractAlfrescoDistributedIT;
 import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.client.Acl;
@@ -52,8 +52,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_DOC_TYPE;
-import static org.alfresco.repo.search.adaptor.lucene.QueryConstants.FIELD_SOLR4_ID;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_DOC_TYPE;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_SOLR4_ID;
 import static org.alfresco.solr.AlfrescoSolrUtils.MAX_WAIT_TIME;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;

@@ -30,9 +30,9 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.search.MLAnalysisMode;
-import org.alfresco.repo.search.adaptor.lucene.AnalysisMode;
-import org.alfresco.repo.search.adaptor.lucene.LuceneFunction;
-import org.alfresco.repo.search.adaptor.lucene.QueryConstants;
+import org.alfresco.repo.search.adaptor.AnalysisMode;
+import org.alfresco.repo.search.adaptor.LuceneFunction;
+import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.repo.search.impl.QueryParserUtils;
 import org.alfresco.repo.search.impl.lucene.analysis.MLTokenDuplicator;
 import org.alfresco.repo.search.impl.parsers.FTSQueryException;
@@ -4483,8 +4483,7 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
     }
 
     /**
-     * @param dateAndResolution
-     * @return
+     * Returns the formatted start (i.e. lower bound) of a range query.
      */
     private String getDateStart(Pair<Date, Integer> dateAndResolution)
     {
@@ -4492,39 +4491,37 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         cal.setTime(dateAndResolution.getFirst());
         switch (dateAndResolution.getSecond())
         {
-        case Calendar.YEAR:
-            cal.set(Calendar.MONTH, cal.getActualMinimum(Calendar.MONTH));
-        case Calendar.MONTH:
-            cal.set(Calendar.DAY_OF_MONTH, cal.getActualMinimum(Calendar.DAY_OF_MONTH));
-        case Calendar.DAY_OF_MONTH:
-            cal.set(Calendar.HOUR_OF_DAY, cal.getActualMinimum(Calendar.HOUR_OF_DAY));
-        case Calendar.HOUR_OF_DAY:
-            cal.set(Calendar.MINUTE, cal.getActualMinimum(Calendar.MINUTE));
-        case Calendar.MINUTE:
-            cal.set(Calendar.SECOND, cal.getActualMinimum(Calendar.SECOND));
-        case Calendar.SECOND:
-            cal.set(Calendar.MILLISECOND, cal.getActualMinimum(Calendar.MILLISECOND));
-        case Calendar.MILLISECOND:
-        default:
+            case Calendar.YEAR:
+                cal.set(Calendar.MONTH, cal.getActualMinimum(Calendar.MONTH));
+            case Calendar.MONTH:
+                cal.set(Calendar.DAY_OF_MONTH, cal.getActualMinimum(Calendar.DAY_OF_MONTH));
+            case Calendar.DAY_OF_MONTH:
+                cal.set(Calendar.HOUR_OF_DAY, cal.getActualMinimum(Calendar.HOUR_OF_DAY));
+            case Calendar.HOUR_OF_DAY:
+                cal.set(Calendar.MINUTE, cal.getActualMinimum(Calendar.MINUTE));
+            case Calendar.MINUTE:
+                cal.set(Calendar.SECOND, cal.getActualMinimum(Calendar.SECOND));
+            case Calendar.SECOND:
+                cal.set(Calendar.MILLISECOND, cal.getActualMinimum(Calendar.MILLISECOND));
+            case Calendar.MILLISECOND:
+            default:
         }
-        SimpleDateFormat formatter = CachingDateFormat.getSolrDatetimeFormat();
-        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-        return formatter.format(cal.getTime());
+        return CachingDateFormat.getSolrDatetimeFormat().format(cal.getTime());
     }
 
     private Pair<Date, Integer> parseDateString(String dateString)
     {
         try
         {
-            Pair<Date, Integer> result = CachingDateFormat.lenientParse(dateString, Calendar.YEAR);
-            return result;
+            return CachingDateFormat.lenientParse(dateString, Calendar.YEAR);
         } catch (java.text.ParseException e)
         {
             SimpleDateFormat oldDf = CachingDateFormat.getDateFormat();
+            oldDf.setTimeZone(TimeZone.getTimeZone("UTC"));
             try
             {
                 Date date = oldDf.parse(dateString);
-                return new Pair<Date, Integer>(date, Calendar.SECOND);
+                return new Pair<>(date, Calendar.SECOND);
             } catch (java.text.ParseException ee)
             {
                 if (dateString.equalsIgnoreCase("min"))
