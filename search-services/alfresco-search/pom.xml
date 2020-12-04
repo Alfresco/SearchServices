@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-search-parent</artifactId>
-        <version>2.1.0-SEARCH-2548</version>
+        <version>THIS_NEEDS_TO_BE_SET-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-solrclient-lib</artifactId>
-            <version>2.1.0-SEARCH-2548</version>
+            <version>THIS_NEEDS_TO_BE_SET-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <artifactId>servlet-api</artifactId>
