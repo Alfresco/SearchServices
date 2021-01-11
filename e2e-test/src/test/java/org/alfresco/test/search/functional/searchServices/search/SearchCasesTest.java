@@ -56,7 +56,6 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=1)
     public void testSearchNameField() throws Exception
     {        
-        // Name
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery("cm:name:pangram");
@@ -70,7 +69,6 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=2)
     public void testSearchTitleField() throws Exception
     {        
-        // Title
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery("cm:title:cars");
@@ -84,7 +82,6 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=3)
     public void testSearchDescriptionField() throws Exception
     {        
-        // Description
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery("cm:description:alfresco");
@@ -98,7 +95,6 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=4)
     public void testSearchContentField() throws Exception
     {        
-        // Content
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery("cm:content:unique");
@@ -112,7 +108,6 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=5)
     public void testSearchUpdateContent() throws Exception
     {        
-        // Content
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery("cm:content:unique");
@@ -135,7 +130,6 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=6)
     public void testSearchTextFile() throws Exception
     {        
-        // Content
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery("cm:name:pangram.txt");
@@ -149,7 +143,6 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=7)
     public void testSearchPDFFile() throws Exception
     {        
-        // Content
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery("cm:name:cars.PDF");
@@ -163,7 +156,6 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=8)
     public void testSearchDocxFile() throws Exception
     {        
-        // Content
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery("cm:name:alfresco.docx");
@@ -177,7 +169,6 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=9)
     public void testSearchODTFile() throws Exception
     {        
-        // Content
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery("cm:name:unique.ODT");
@@ -230,6 +221,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         bucket1.assertThat().field("count").is(1);
     }
 
+//    Test for highlighting that is part of the test cases but has been commented out as a different configuration is needed for highlighting
 //    @Test(priority=11)
 //    public void searchWithHighLight() throws Exception
 //    {
@@ -255,7 +247,6 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=12)
     public void testSearchPhraseQueries() throws Exception
     {        
-        // Content
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery("cm:name:alfresco");
@@ -269,7 +260,6 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=13)
     public void testSearchExactTermQueries() throws Exception
     {        
-        // Content
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery("cm:name:alfresco");
@@ -283,7 +273,6 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=14)
     public void testSearchConjunctionQueries() throws Exception
     {        
-        // Content
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery("cm:name:unique");
@@ -297,7 +286,6 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=15)
     public void testSearchDisjunctionQueries() throws Exception
     {        
-        // Content
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery("cm:name:cars");
@@ -311,7 +299,6 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=16)
     public void testSearchNegationQueries() throws Exception
     {        
-        // Content
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery("cm:name:pangram");
@@ -325,7 +312,6 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=17)
     public void testSearchWildcardQueries() throws Exception
     {        
-        // Content
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery("cm:name:alfresco");
@@ -339,7 +325,6 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=18)
     public void searchSpecialCharacters() throws Exception
     {
-        // Create a file with Special Characters
         String specialCharfileName = "è¥äæ§ç§-åæ.pdf";
         FileModel file = new FileModel(specialCharfileName, "è¥äæ§ç§-åæ¬¯¸" + "è¥äæ§ç§-åæ¬¯¸", "è¥äæ§ç§-åæ¬¯¸", FileType.TEXT_PLAIN,
                 "Text file with Special Characters: " + specialCharfileName);
@@ -355,6 +340,4 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
 
         restClient.onResponse().assertThat().body("list.entries.entry[0].name", Matchers.equalToIgnoringCase(specialCharfileName));
     }
-
-
 } 
