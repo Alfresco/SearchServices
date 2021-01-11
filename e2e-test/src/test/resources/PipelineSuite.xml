@@ -1,0 +1,16 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="PipelineSuite" verbose="6" preserve-order="true">
+
+    <listeners>
+        <listener class-name="org.alfresco.utility.report.log.LogsListener"/>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
+    </listeners>
+
+    <test name="Pipeline">
+        <classes>
+            <class name="org.alfresco.test.search.functional.searchServices.search.SearchCasesTest" />
+        </classes>
+    </test>
+    
+</suite>
