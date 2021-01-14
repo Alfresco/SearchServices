@@ -13,4 +13,12 @@
         </classes>
     </test>
     
+    <test name="E2E-SearchServices">
+        <packages>
+            <package name="org.alfresco.test.search.functional.searchServices.*">
+                <exclude name="org.alfresco.test.search.functional.searchServices.cmis"/>
+            </package>
+        </packages>       
+    </test>
+    
 </suite>
