@@ -7,18 +7,20 @@
         <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
     </listeners>
 
+	<test name="E2E-SearchServices">
+        <packages>
+            <package name="org.alfresco.test.search.functional.searchServices.*">
+                <exclude name="org.alfresco.test.search.functional.insightEngine.*"/>
+                <exclude name="org.alfresco.test.search.functional.searchServices.*">
+                <exclude name="org.alfresco.test.search.nonfunctional.*"/>
+            </package>
+        </packages>   
+    </test>
+    
     <test name="Pipeline">
         <classes>
             <class name="org.alfresco.test.search.functional.searchServices.search.SearchCasesTest" />
         </classes>
-    </test>
-    
-    <test name="E2E-SearchServices">
-        <packages>
-            <package name="org.alfresco.test.search.functional.searchServices.*">
-                <exclude name="org.alfresco.test.search.functional.searchServices.cmis"/>
-            </package>
-        </packages>       
     </test>
     
 </suite>
