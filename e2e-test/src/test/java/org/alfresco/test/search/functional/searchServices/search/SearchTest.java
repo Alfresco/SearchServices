@@ -115,9 +115,9 @@ public class SearchTest extends AbstractSearchServicesE2ETest
     public void searchWithOneSortClause()
     {
         // Tests the ascending order first
-        List<String> expectedOrder = asList("alfresco.txt", "cars.txt", "pangram.txt");
+        List<String> expectedOrder = asList("alfresco.docx", "cars.PDF", "pangram.txt");
 
-        SearchRequest searchRequest = createQuery("cm_name:alfresco\\.txt cm_name:cars\\.txt cm_name:pangram\\.txt");
+        SearchRequest searchRequest = createQuery("cm_name:alfresco\\.docx cm_name:cars\\.ODT cm_name:pangram\\.txt");
         searchRequest.addSortClause("FIELD", "name", true);
 
         RestRequestFilterQueryModel filters = new RestRequestFilterQueryModel();
@@ -162,9 +162,9 @@ public class SearchTest extends AbstractSearchServicesE2ETest
     public void searchWithTwoSortClauses()
     {
         // Tests the ascending order first
-        List<String> expectedOrder = asList("alfresco.txt", "cars.txt", "pangram.txt");
+        List<String> expectedOrder = asList("alfresco.docx", "cars.PDF", "pangram.txt");
 
-        SearchRequest searchRequest = createQuery("cm_name:alfresco\\.txt cm_name:cars\\.txt cm_name:pangram\\.txt");
+        SearchRequest searchRequest = createQuery("cm_name:alfresco\\.docx cm_name:cars\\.ODT cm_name:pangram\\.txt");
         searchRequest.addSortClause("FIELD", "name", true);
         searchRequest.addSortClause("FIELD", "createdByUser.id", true);
 

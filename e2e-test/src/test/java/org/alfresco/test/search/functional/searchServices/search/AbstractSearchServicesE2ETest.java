@@ -72,12 +72,12 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
                 description + " The quick brown fox jumps over the lazy dog");
 
         file2 = new FileModel("cars.PDF", "cars", description, FileType.TEXT_PLAIN,
-                "The landrover discovery is not a sports cars");
+                "The landrover discovery is not a sports car");
 
         file3 = new FileModel("alfresco.docx", "alfresco", "alfresco", FileType.TEXT_PLAIN,
                 "Alfresco text file for search ");
 
-        file4 = new FileModel("unique.ODT", "uniquee" + title, description, FileType.TEXT_PLAIN,
+        file4 = new FileModel(unique_searchString + ".ODT", "uniquee" + title, description, FileType.TEXT_PLAIN,
                 "Unique text file for search ");
 
 
