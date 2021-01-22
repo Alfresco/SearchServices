@@ -83,7 +83,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringContextTests
 {
     /** The number of retries that a query will be tried before giving up. */
-    protected static final int SEARCH_MAX_ATTEMPTS = 6;
+    protected static final int SEARCH_MAX_ATTEMPTS = 60;
 
     private static final Logger LOGGER = LogFactory.getLogger();
 
@@ -318,7 +318,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
             }
             else
             {
-                throw new RuntimeException("API returned status code:" + restClient.getStatusCode() + " Expected: " + expectedStatusCode);
+                throw new RuntimeException("API returned status code:" + restClient.getStatusCode() + " Expected: " + expectedStatusCode + "; Response body: " + response);
             }
         }
 

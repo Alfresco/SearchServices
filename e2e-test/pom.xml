@@ -5,7 +5,7 @@
       <artifactId>alfresco-search-and-insight-parent</artifactId>
       <version>2.0.2-SNAPSHOT</version>
    </parent>
-   <groupId>search-analytics-e2e-test</groupId>
+   <groupId>org.alfresco</groupId>
    <artifactId>search-analytics-e2e-test</artifactId>
    <name>Search Analytics E2E Tests</name>
    <description>Test Project to test Search Service and Analytics Features on a complete setup of Alfresco, Share</description>
@@ -128,4 +128,37 @@
          <version>12-ea+10</version>
       </dependency>
    </dependencies>
+
+    <repositories>
+        <repository>
+            <id>alfresco-enterprise-releases</id>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>alfresco-enterprise-snapshots</id>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>alfresco-hotfix</id>
+            <url>https://artifacts.alfresco.com/nexus/content/groups/hotfix</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>
