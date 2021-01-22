@@ -12,22 +12,22 @@
    <name>Alfresco Search And Insight Parent</name>
    <distributionManagement>
       <repository>
-         <id>alfresco-internal</id>
+         <id>alfresco-enterprise-releases</id>
          <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-releases/</url>
       </repository>
       <snapshotRepository>
-         <id>alfresco-internal-snapshots</id>
+         <id>alfresco-enterprise-snapshots</id>
          <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-snapshots/</url>
       </snapshotRepository>
    </distributionManagement>
    <scm>
-      <connection>scm:git:ssh://git@github.com/Alfresco/InsightEngine.git</connection>
-      <developerConnection>scm:git:ssh://git@github.com/Alfresco/InsightEngine.git</developerConnection>
-      <url>scm:git:ssh://git@github.com/Alfresco/InsightEngine.git</url>
+      <connection>scm:git:https://github.com/Alfresco/InsightEngine.git</connection>
+      <developerConnection>scm:git:https://github.com/Alfresco/InsightEngine.git</developerConnection>
+      <url>https://github.com/Alfresco/InsightEngine</url>
       <tag>HEAD</tag>
    </scm>
    <properties>
-      <java.version>11</java.version>
+      <maven.build.sourceVersion>11</maven.build.sourceVersion>
       <solr.base.version>6.6.5</solr.base.version>
       <solr.version>${solr.base.version}-patched.2</solr.version>
       <!-- The location to download the solr zip file from. -->
@@ -46,17 +46,6 @@
    </modules>
    <build>
       <plugins>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.8.1</version>
-            <configuration>
-               <release>${java.version}</release>
-               <target>${java.version}</target>
-               <showWarnings>true</showWarnings>
-               <showDeprecation>true</showDeprecation>
-            </configuration>
-         </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
