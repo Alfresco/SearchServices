@@ -181,6 +181,13 @@ public class MetadataTracker extends ActivatableTracker
         minTxnIdRange = new Pair<>(Long.valueOf(minTxninitialRangeString[0]), Long.valueOf(minTxninitialRangeString[1]));
         forkJoinPool = new ForkJoinPool(matadataTrackerParallelism);
 
+        if (p.getProperty("solr.initial.transaction.id") != null)
+        {
+            Long initialTransactionId = Long.parseLong(p.getProperty("solr.initial.transaction.id"));
+            minTxnIdRange = new Pair<>(initialTransactionId, initialTransactionId + 2000l);
+            LOGGER.info("Start indexing from transaction {}, previous transactions will be ignored.", initialTransactionId);
+        }
+
         RUN_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
         WRITE_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
         
