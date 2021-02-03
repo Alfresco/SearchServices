@@ -2749,7 +2749,9 @@ public class SolrInformationServer implements InformationServer
                 TokenStream ts = analyzer.tokenStream("dummy_field", textContent);
                 CharTermAttribute termAttribute = ts.getAttribute(CharTermAttribute.class);
                 ts.reset();
-                while (ts.incrementToken()) {
+                doc.removeField(FINGERPRINT_FIELD);
+                while (ts.incrementToken())
+                {
                     StringBuilder tokenBuff = new StringBuilder();
                     char[] buff = termAttribute.buffer();
 
