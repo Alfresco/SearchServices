@@ -221,7 +221,7 @@ public class FingerPrintTest extends AbstractE2EFunctionalTest
     {
         // Revert fileToBeUpdated to previous version
         restClient.authenticateUser(testUser).withCoreAPI().usingNode(fileToBeUpdated).revertVersion("1.0", "{}");
-        String revertedContent = restClient.authenticateUser(testUser).withCoreAPI().usingNode(fileToBeUpdated).getVersionContent("1.2").toString();
+        String revertedContent = restClient.authenticateUser(testUser).withCoreAPI().usingNode(fileToBeUpdated).getVersionContent("1.2").getResponse().asString();
         Assert.assertEquals(revertedContent, fileOriginal.getContent(), "Reverted content does not match Original");
 
         // Wair for the new version of the file to be indexed
