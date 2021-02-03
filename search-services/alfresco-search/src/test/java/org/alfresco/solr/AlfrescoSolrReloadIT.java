@@ -55,7 +55,6 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.solr.SolrTestCaseJ4;
 import org.junit.After;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.quartz.SchedulerException;
 
@@ -81,7 +80,6 @@ public class AlfrescoSolrReloadIT extends AbstractAlfrescoSolrIT
     }
 
     @Test
-    @Ignore("https://issues.alfresco.com/jira/browse/SEARCH-2542")
     public void testReload() throws Exception
     {
         long localId = 0L;
