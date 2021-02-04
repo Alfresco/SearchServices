@@ -190,7 +190,7 @@ public class FingerPrintTest extends AbstractE2EFunctionalTest
         testSearchQueryUnordered(fingerprintQuery, expectedNames, SearchLanguage.AFTS);
     }
     
-    @Test(priority = 5, enabled = false)
+    @Test(priority = 5)
     @Bug(id = "SEARCH-2065")
     public void searchAfterVersionUpdate()
     {
@@ -215,13 +215,13 @@ public class FingerPrintTest extends AbstractE2EFunctionalTest
         Assert.assertTrue(found, "Update File Not found in results for Fingerprint Query with updated content"); 
     }
 
-    @Test(priority = 6, enabled = false)
+    @Test(priority = 6)
     @Bug(id = "SEARCH-2065")
     public void searchAfterVersionRevert() throws Exception
     {
         // Revert fileToBeUpdated to previous version
         restClient.authenticateUser(testUser).withCoreAPI().usingNode(fileToBeUpdated).revertVersion("1.0", "{}");
-        String revertedContent = restClient.authenticateUser(testUser).withCoreAPI().usingNode(fileToBeUpdated).getVersionContent("1.2").toString();
+        String revertedContent = restClient.authenticateUser(testUser).withCoreAPI().usingNode(fileToBeUpdated).getVersionContent("1.2").getResponse().asString();
         Assert.assertEquals(revertedContent, fileOriginal.getContent(), "Reverted content does not match Original");
 
         // Wair for the new version of the file to be indexed
@@ -236,7 +236,7 @@ public class FingerPrintTest extends AbstractE2EFunctionalTest
         Assert.assertTrue(notFound, "File appears in the results for Fingerprint Query even after reverting content changes");
     }
 
-    @Test(priority = 7, enabled = false)
+    @Test(priority = 7)
     @Bug(id = "SEARCH-2065")
     public void searchAfterVersionDelete() throws Exception
     {
