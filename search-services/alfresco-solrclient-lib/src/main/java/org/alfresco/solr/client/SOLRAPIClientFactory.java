@@ -26,9 +26,7 @@
 
 package org.alfresco.solr.client;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import org.alfresco.encryption.KeyResourceLoader;
 import org.alfresco.encryption.KeyStoreParameters;
@@ -38,7 +36,11 @@ import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.httpclient.HttpClientFactory.SecureCommsType;
 import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.params.DefaultHttpParams;
+import org.apache.commons.httpclient.params.HostParams;
+import org.apache.commons.httpclient.params.HttpParams;
 
 /**
  * This factory encapsulates the creation of a SOLRAPIClient and the management of that resource.
@@ -53,7 +55,7 @@ public class SOLRAPIClientFactory
     private static Map<String, SOLRAPIClient> clientsPerAlfresco = new HashMap<>();
 
     // encryption related parameters
-    private String secureCommsType; // "none", "https"
+    private String secureCommsType; // "https", "apikey"
 
     // ssl
     private String sslKeyStoreType;
@@ -68,6 +70,11 @@ public class SOLRAPIClientFactory
     private int alfrescoPort;
     private int alfrescoPortSSL;
     private String baseUrl;
+
+    // Alfresco ApiKey
+    private String apiKeyHeader = DEFAULT_APIKEY_HEADER;
+    private String alfrescoApiKey;
+    private static final String DEFAULT_APIKEY_HEADER = "X-Alfresco-Search-ApiKey";
 
     // http client
     private int maxTotalConnections = 40;
@@ -165,6 +172,23 @@ public class SOLRAPIClientFactory
                 sslTrustStorePasswordFileLocation = getProperty(props,
                         "alfresco.encryption.ssl.truststore.passwordFileLocation", "");
             }
+            else if (secureCommsType.equals("apikey"))
+            {
+                alfrescoApiKey = props.getProperty("alfresco.apiKey", null);
+                if(alfrescoApiKey == null || alfrescoApiKey.length()==0)
+                {
+                    throw new IllegalArgumentException("Missing value for alfresco.apiKey configuration property. If alfresco.secureComms is set to \"apikey\", a value for alfresco.apiKey is required. See https://docs.alfresco.com/search-enterprise/tasks/solr-install-withoutSSL.html");
+                }
+                apiKeyHeader = props.getProperty("alfresco.apiKeyHeader", DEFAULT_APIKEY_HEADER);
+                if(apiKeyHeader == null || apiKeyHeader.length()==0)
+                {
+                    throw new IllegalArgumentException("Missing apiKeyHeader");
+                }
+            }
+            else
+            {
+                throw new IllegalArgumentException("The only supported options for alfresco.secureComms are \"https\" and \"apikey\". Please see https://docs.alfresco.com/search-enterprise/tasks/solr-install-withoutSSL.html");
+            }
             maxTotalConnections = Integer.parseInt(props.getProperty("alfresco.maxTotalConnections", "40"));
             maxHostConnections = Integer.parseInt(props.getProperty("alfresco.maxHostConnections", "40"));
             socketTimeout = Integer.parseInt(props.getProperty("alfresco.socketTimeout", "60000"));
@@ -192,10 +216,14 @@ public class SOLRAPIClientFactory
                     keyResourceLoader, null, null, alfrescoHost, alfrescoPort, alfrescoPortSSL, maxTotalConnections,
                     maxHostConnections, socketTimeout);
         }
+        else if (secureCommsType.equals("apikey"))
+        {
+            httpClientFactory = new ApiKeyHttpClientFactory(alfrescoHost, alfrescoPort, alfrescoApiKey, apiKeyHeader,
+                    maxTotalConnections, maxHostConnections, socketTimeout);
+        }
         else
         {
-            httpClientFactory = new PlainHttpClientFactory(alfrescoHost, alfrescoPort, maxTotalConnections,
-                    maxHostConnections, socketTimeout);
+            throw new IllegalArgumentException("Invalid value for alfresco.secureComms");
         }
 
         AlfrescoHttpClient repoClient = httpClientFactory.getRepoClient(alfrescoHost, alfrescoPortSSL);
@@ -233,9 +261,14 @@ public class SOLRAPIClientFactory
      * @author aborroy
      *
      */
-    class PlainHttpClientFactory extends HttpClientFactory
+    class ApiKeyHttpClientFactory extends HttpClientFactory
     {
-        public PlainHttpClientFactory(String host, int port, int maxTotalConnections, int maxHostConnections, int socketTimeout)
+
+        private String apiKeyHeader;
+
+        private String apiKey;
+
+        public ApiKeyHttpClientFactory(String host, int port, String apiKeyHeader, String apiKey, int maxTotalConnections, int maxHostConnections, int socketTimeout)
         {
             setSecureCommsType("none");
             setHost(host);
@@ -243,6 +276,8 @@ public class SOLRAPIClientFactory
             setMaxTotalConnections(maxTotalConnections);
             setMaxHostConnections(maxHostConnections);
             setSocketTimeout(socketTimeout);
+            apiKeyHeader = apiKeyHeader;
+            apiKey = apiKey;
             init();
         }
 
@@ -252,7 +287,21 @@ public class SOLRAPIClientFactory
             DefaultHttpParams.setHttpParamsFactory(new NonBlockingHttpParamsFactory());
         }
 
+        @Override
+        protected HttpClient getDefaultHttpClient(String httpHost, int httpPort)
+        {
+            HttpClient result = super.getDefaultHttpClient(httpHost, httpPort);
+            HostParams hostParams = result.getHostConfiguration().getParams();
+            ArrayList<Header> defaultHeaders = new ArrayList<>();
+            defaultHeaders.add(new Header(apiKeyHeader, apiKey));
+            if(hostParams.getParameter(HostParams.DEFAULT_HEADERS) != null)
+            {
+                defaultHeaders.addAll((Collection)hostParams.getParameter(HostParams.DEFAULT_HEADERS));
+            }
+            hostParams.setParameter(HostParams.DEFAULT_HEADERS, defaultHeaders);
+            return result;
+        }
     }
-    
+
 }
 
