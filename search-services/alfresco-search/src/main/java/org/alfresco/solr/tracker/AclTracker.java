@@ -468,11 +468,15 @@ public class AclTracker extends ActivatableTracker
                         null, INITIAL_MAX_ACL_CHANGE_SET_ID, 1);
             }
 
-            setLastChangeSetIdAndCommitTimeInTrackerState(firstChangeSets.getAclChangeSets(), state);
             Long maxChangeSetCommitTimeInRepo = firstChangeSets.getMaxChangeSetCommitTime();
             Long maxChangeSetIdInRepo = firstChangeSets.getMaxChangeSetId();
+
             if (maxChangeSetCommitTimeInRepo != null && maxChangeSetIdInRepo != null)
             {
+                // We know the server has at least as many transactions as the index.
+                state.setLastChangeSetCommitTimeOnServer(maxChangeSetCommitTimeInRepo);
+                state.setLastChangeSetIdOnServer(maxChangeSetIdInRepo);
+
                 AclChangeSet maxAclTxInIndex = this.infoSrv.getMaxAclChangeSetIdAndCommitTimeInIndex();
                 if (maxAclTxInIndex.getCommitTimeMs() > maxChangeSetCommitTimeInRepo)
                 {
