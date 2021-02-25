@@ -77,7 +77,7 @@ public class AclTracker extends ActivatableTracker
     private static final int DEFAULT_ACL_TRACKER_MAX_PARALLELISM = 32;
     private static final long DEFAULT_ACL_TRACKER_TIMESTEP = TIME_STEP_1_HR_IN_MS;
 
-    private static final long INITIAL_MAX_ACL_CHANGE_SET_ID = 2000L;
+    protected static final long INITIAL_MAX_ACL_CHANGE_SET_ID = 2000L;
     private static final int MAX_NUMBER_OF_ACL_CHANGE_SETS = 2000;
 
     private static final long MAX_TIME_STEP = TIME_STEP_32_DAYS_IN_MS;
@@ -405,17 +405,23 @@ public class AclTracker extends ActivatableTracker
     /**
      * Checks the first and last TX time
      */
-    private void checkRepoAndIndexConsistency(TrackerState state) throws AuthenticationException, IOException, JSONException
+    protected void checkRepoAndIndexConsistency(TrackerState state) throws AuthenticationException, IOException, JSONException
     {
-        AclChangeSets firstChangeSets = null;
+        if (state.getLastGoodChangeSetCommitTimeInIndex() != 0 && state.isCheckedFirstAclTransactionTime() && state.isCheckedLastAclTransactionTime())
+        {
+            // Verification done previously.
+            return;
+        }
+
+        AclChangeSets firstChangeSets = client.getAclChangeSets(null, 0L,
+                null, INITIAL_MAX_ACL_CHANGE_SET_ID, 1);
+
         if (state.getLastGoodChangeSetCommitTimeInIndex() == 0)
         {
             state.setCheckedLastAclTransactionTime(true);
             state.setCheckedFirstAclTransactionTime(true);
             LOGGER.info("[CORE {}] - No acl transactions found - no verification required", coreName);
-            
-            firstChangeSets = client.getAclChangeSets(null, 0L,
-                    null, INITIAL_MAX_ACL_CHANGE_SET_ID, 1);
+
             if (!firstChangeSets.getAclChangeSets().isEmpty())
             {
                 AclChangeSet firstChangeSet = firstChangeSets.getAclChangeSets().get(0);
@@ -425,49 +431,38 @@ public class AclTracker extends ActivatableTracker
             }
         }
         
-        if (!state.isCheckedFirstAclTransactionTime())
+        if (!state.isCheckedFirstAclTransactionTime() && !firstChangeSets.getAclChangeSets().isEmpty())
         {
-            firstChangeSets = client.getAclChangeSets(null, 0L,
-                    null, INITIAL_MAX_ACL_CHANGE_SET_ID, 1);
-            if (!firstChangeSets.getAclChangeSets().isEmpty())
+            AclChangeSet firstAclChangeSet = firstChangeSets.getAclChangeSets().get(0);
+            long firstAclTxId = firstAclChangeSet.getId();
+            long firstAclTxCommitTime = firstAclChangeSet.getCommitTimeMs();
+            int setSize = this.infoSrv.getAclTxDocsSize(Long.toString(firstAclTxId),
+                    Long.toString(firstAclTxCommitTime));
+
+            if (setSize == 0)
             {
-                AclChangeSet firstAclChangeSet= firstChangeSets.getAclChangeSets().get(0);
-                long firstAclTxId = firstAclChangeSet.getId();
-                long firstAclTxCommitTime = firstAclChangeSet.getCommitTimeMs();
-                int setSize = this.infoSrv.getAclTxDocsSize(Long.toString(firstAclTxId),
-                        Long.toString(firstAclTxCommitTime));
-                
-                if (setSize == 0)
-                {
-                    LOGGER.error("[CORE {}] First acl transaction was not found with the correct timestamp.", coreName);
-                    LOGGER.error("SOLR has successfully connected to your repository " +
-                            "however the SOLR indexes and repository database do not match.");
-                    LOGGER.error("If this is a new or rebuilt database your SOLR indexes " +
-                            "also need to be re-built to match the database.");
-                    LOGGER.error("You can also check your SOLR connection details in solrcore.properties.");
-                    throw new AlfrescoRuntimeException("Initial acl transaction not found with correct timestamp");
-                }
-                else if (setSize == 1)
-                {
-                    state.setCheckedFirstTransactionTime(true);
-                    LOGGER.info("[CORE {}] Verified first acl transaction and timestamp in index", coreName);
-                }
-                else
-                {
-                    LOGGER.warn("[CORE {}] Duplicate initial acl transaction found with correct timestamp", coreName);
-                }
+                LOGGER.error("[CORE {}] First acl transaction was not found with the correct timestamp.", coreName);
+                LOGGER.error("SOLR has successfully connected to your repository " +
+                        "however the SOLR indexes and repository database do not match.");
+                LOGGER.error("If this is a new or rebuilt database your SOLR indexes " +
+                        "also need to be re-built to match the database.");
+                LOGGER.error("You can also check your SOLR connection details in solrcore.properties.");
+                throw new AlfrescoRuntimeException("Initial acl transaction not found with correct timestamp");
+            }
+            else if (setSize == 1)
+            {
+                state.setCheckedFirstAclTransactionTime(true);
+                LOGGER.info("[CORE {}] Verified first acl transaction and timestamp in index", coreName);
+            }
+            else
+            {
+                LOGGER.warn("[CORE {}] Duplicate initial acl transaction found with correct timestamp", coreName);
             }
         }
 
         // Checks that the last aclTxId in solr is <= last aclTxId in repo
         if (!state.isCheckedLastAclTransactionTime())
         {
-            if (firstChangeSets == null)
-            {
-                firstChangeSets = client.getAclChangeSets(null, 0L,
-                        null, INITIAL_MAX_ACL_CHANGE_SET_ID, 1);
-            }
-
             Long maxChangeSetCommitTimeInRepo = firstChangeSets.getMaxChangeSetCommitTime();
             Long maxChangeSetIdInRepo = firstChangeSets.getMaxChangeSetId();
 
