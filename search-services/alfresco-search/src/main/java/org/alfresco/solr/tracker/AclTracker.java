@@ -83,7 +83,6 @@ public class AclTracker extends ActivatableTracker
     
     // Repository Remote API doesn't accept more than 512 aclChangeSetIds by invocation
     private static final int MAX_ACL_CHANGE_SET_BATCH_SIZE = 512;
-    private static final String ALLOW_MISSING_TRANSACTIONS_PROPERTY = "alfresco.aclTracker.allowMissingTransactions";
 
     private int aclTrackerParallelism;
 
@@ -105,10 +104,6 @@ public class AclTracker extends ActivatableTracker
     // Share run and write locks across all AclTracker threads
     private static Map<String, Semaphore> RUN_LOCK_BY_CORE = new ConcurrentHashMap<>();
     private static Map<String, Semaphore> WRITE_LOCK_BY_CORE = new ConcurrentHashMap<>();
-
-    /** Allow starting the server even if the initial ACL transaction was not found. */
-    private boolean allowMissingInitialAclTransaction = false;
-
     @Override
     public Semaphore getWriteLock()
     {
@@ -157,9 +152,6 @@ public class AclTracker extends ActivatableTracker
 
         RUN_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
         WRITE_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
-
-        allowMissingInitialAclTransaction = Boolean.parseBoolean(p.getProperty(ALLOW_MISSING_TRANSACTIONS_PROPERTY,
-                Boolean.FALSE.toString()));
     }
 
     @Override
@@ -454,18 +446,10 @@ public class AclTracker extends ActivatableTracker
                         "however the SOLR indexes and repository database do not match.");
                 LOGGER.error("If this is a new or rebuilt database your SOLR indexes " +
                         "also need to be re-built to match the database.");
+                LOGGER.error("Notice that SOLR will continue to track the repository, but the index may be corrupted.");
                 LOGGER.error("You can also check your SOLR connection details in solrcore.properties.");
-                String exceptionMessage = "Initial ACL transaction from DB with Id=" + firstAclTxId
-                        + " and Timestamp=" + firstAclTxCommitTime + " was not found in Solr core.";
-                if (allowMissingInitialAclTransaction)
-                {
-                    LOGGER.error(exceptionMessage);
-                    LOGGER.error("Ignoring missing ACL Transaction and continuing to start up as {} set to true.", ALLOW_MISSING_TRANSACTIONS_PROPERTY);
-                }
-                else
-                {
-                    throw new AlfrescoRuntimeException(exceptionMessage);
-                }
+                throw new AlfrescoRuntimeException("Initial ACL transaction from DB with Id=" + firstAclTxId
+                        + " and Timestamp=" + firstAclTxCommitTime + " was not found in Solr core.");
             }
             else if (setSize == 1)
             {
@@ -952,10 +936,5 @@ public class AclTracker extends ActivatableTracker
     {
         super.invalidateState();
         infoSrv.clearProcessedAclChangeSets();
-    }
-
-    public void setAllowMissingInitialAclTransaction(boolean allowMissingInitialAclTransaction)
-    {
-        this.allowMissingInitialAclTransaction = allowMissingInitialAclTransaction;
     }
 }

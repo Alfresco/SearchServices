@@ -158,26 +158,6 @@ public class AclTrackerTest
         aclTracker.checkRepoAndIndexConsistency(trackerState);
     }
 
-    /** Check that allowMissingInitialAclTransaction allows start up if the index is missing the first ACL transaction. */
-    @Test
-    public void testCheckRepoAndIndexConsistency_allowMissingInitialAclTransactionSet_errorIgnored() throws Exception
-    {
-        aclTracker.setAllowMissingInitialAclTransaction(true);
-
-        TrackerState trackerState = new TrackerState();
-        trackerState.setLastGoodChangeSetCommitTimeInIndex(8000L);
-        // Pretend that we've already checked the last ACL tx since it's not the purpose of this test.
-        trackerState.setCheckedLastAclTransactionTime(true);
-        AclChangeSets firstChangeSets = new AclChangeSets(asList(new AclChangeSet(1, 1000, 2)), 8000L, 8L);
-        when(repositoryClient.getAclChangeSets(null, 0L,
-                null, INITIAL_MAX_ACL_CHANGE_SET_ID, 1)).thenReturn(firstChangeSets);
-        // The first ACL transaction was not found in Solr.
-        when(solrInformationServer.getAclTxDocsSize("1", "1000")).thenReturn(0);
-
-        // Call the method under test and check no exception is thrown.
-        aclTracker.checkRepoAndIndexConsistency(trackerState);
-    }
-
     /** Check that if the last ACL in the index is after the last ACL in the repository then we get an exception. */
     @Test (expected = AlfrescoRuntimeException.class)
     public void testCheckRepoAndIndexConsistency_indexAheadOfRepo_runtimeException() throws Exception
