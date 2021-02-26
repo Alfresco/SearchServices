@@ -29,7 +29,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
 import static org.alfresco.solr.tracker.AclTracker.INITIAL_MAX_ACL_CHANGE_SET_ID;
-import static org.mockito.Mockito.verify;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -48,88 +49,132 @@ import org.mockito.Mock;
 /** Unit tests for the {@link AclTracker}. */
 public class AclTrackerTest
 {
+    /** The class under test. */
     @InjectMocks
-    private AclTracker aclTracker = new AclTracker();
+    private AclTracker aclTracker;
+    /** The class that gets information from the Repository. */
     @Mock
-    private SOLRAPIClient solrAPIClient;
+    private SOLRAPIClient repositoryClient;
+    /** The class that gets information from Solr. */
     @Mock
-    private InformationServer informationServer;
-    @Mock
-    private TrackerState trackerState;
+    private InformationServer solrInformationServer;
 
     @Before
     public void setUp()
     {
+        aclTracker = new AclTracker();
         openMocks(this);
     }
 
-    /** Check that during the first run (with an empty index) then verification is successful. */
+    /** Check that during the first run (with an empty repository and index) then verification is successful. */
     @Test
     public void testCheckRepoAndIndexConsistency_firstRun_success() throws Exception
     {
+        TrackerState trackerState = new TrackerState();
         AclChangeSets firstChangeSets = new AclChangeSets(emptyList());
-        when(solrAPIClient.getAclChangeSets(null, 0L,
+        when(repositoryClient.getAclChangeSets(null, 0L,
                 null, INITIAL_MAX_ACL_CHANGE_SET_ID, 1)).thenReturn(firstChangeSets);
-        when(informationServer.getAclTxDocsSize("1", "1000")).thenReturn(1);
 
         // Call the method under test.
         aclTracker.checkRepoAndIndexConsistency(trackerState);
 
-        verify(trackerState).setCheckedFirstAclTransactionTime(true);
-        verify(trackerState).setCheckedLastAclTransactionTime(true);
+        assertTrue("Expected first ACL transaction to have been checked.", trackerState.isCheckedFirstAclTransactionTime());
+        assertTrue("Expected last ACL transaction to have been checked.", trackerState.isCheckedLastAclTransactionTime());
     }
 
     /** Check that subsequent checks of a running index don't make expensive requests. */
     @Test
     public void testCheckRepoAndIndexConsistency_alreadyInitialised_success() throws Exception
     {
-        when(trackerState.getLastGoodChangeSetCommitTimeInIndex()).thenReturn(8000L);
-        when(trackerState.isCheckedFirstAclTransactionTime()).thenReturn(true);
-        when(trackerState.isCheckedLastAclTransactionTime()).thenReturn(true);
+        TrackerState trackerState = new TrackerState();
+        trackerState.setLastGoodChangeSetCommitTimeInIndex(8000L);
+        trackerState.setCheckedFirstAclTransactionTime(true);
+        trackerState.setCheckedLastAclTransactionTime(true);
 
         // Call the method under test.
         aclTracker.checkRepoAndIndexConsistency(trackerState);
 
         // Check that we don't make any expensive calls to the index or the repo.
-        verifyNoInteractions(solrAPIClient, informationServer);
+        verifyNoInteractions(repositoryClient, solrInformationServer);
+    }
+
+    /** Check that during the first run (with data in the repo but an empty index) then verification is successful. */
+    @Test
+    public void testCheckRepoAndIndexConsistency_populatedRepoEmptyIndex_success() throws Exception
+    {
+        TrackerState trackerState = new TrackerState();
+        AclChangeSets firstChangeSets = new AclChangeSets(asList(new AclChangeSet(1, 1000, 2)), 8000L, 8L);
+        when(repositoryClient.getAclChangeSets(null, 0L,
+                null, INITIAL_MAX_ACL_CHANGE_SET_ID, 1)).thenReturn(firstChangeSets);
+
+        // Call the method under test.
+        aclTracker.checkRepoAndIndexConsistency(trackerState);
+
+        assertTrue("Expected first ACL transaction to have been checked.", trackerState.isCheckedFirstAclTransactionTime());
+        assertTrue("Expected last ACL transaction to have been checked.", trackerState.isCheckedLastAclTransactionTime());
+        assertEquals("Expected last good change set commit time to be loaded from repository.",
+                trackerState.getLastGoodChangeSetCommitTimeInIndex(), 1000L);
+        assertEquals("Expected last change set commit time to be loaded from repository.",
+                trackerState.getLastChangeSetCommitTimeOnServer(), 1000L);
+        assertEquals("Expected last change set id to be loaded from repository.",
+                trackerState.getLastChangeSetIdOnServer(), 1);
     }
 
     /** Check that after downtime the validation is successful. */
     @Test
     public void testCheckRepoAndIndexConsistency_afterRestart_success() throws Exception
     {
-        when(trackerState.getLastGoodChangeSetCommitTimeInIndex()).thenReturn(8000L);
+        TrackerState trackerState = new TrackerState();
+        trackerState.setLastGoodChangeSetCommitTimeInIndex(8000L);
         AclChangeSets firstChangeSets = new AclChangeSets(asList(new AclChangeSet(1, 1000, 2)), 8000L, 8L);
-        when(solrAPIClient.getAclChangeSets(null, 0L,
+        when(repositoryClient.getAclChangeSets(null, 0L,
                 null, INITIAL_MAX_ACL_CHANGE_SET_ID, 1)).thenReturn(firstChangeSets);
-        when(informationServer.getAclTxDocsSize("1", "1000")).thenReturn(1);
+        when(solrInformationServer.getAclTxDocsSize("1", "1000")).thenReturn(1);
 
         // The index is behind the repo.
         AclChangeSet lastIndexedChangeSet = new AclChangeSet(7, 7000, 7);
-        when(informationServer.getMaxAclChangeSetIdAndCommitTimeInIndex()).thenReturn(lastIndexedChangeSet);
+        when(solrInformationServer.getMaxAclChangeSetIdAndCommitTimeInIndex()).thenReturn(lastIndexedChangeSet);
 
         // Call the method under test.
         aclTracker.checkRepoAndIndexConsistency(trackerState);
 
-        verify(trackerState).setCheckedFirstAclTransactionTime(true);
-        verify(trackerState).setCheckedLastAclTransactionTime(true);
+        assertTrue("Expected first ACL transaction to have been checked.", trackerState.isCheckedFirstAclTransactionTime());
+        assertTrue("Expected last ACL transaction to have been checked.", trackerState.isCheckedLastAclTransactionTime());
     }
 
-    /** Check that if the index is populated but the repository is empty then we get an exception. */
+    /** Check that if the index is populated but missing the first ACL transaction then we get an exception. */
     @Test(expected = AlfrescoRuntimeException.class)
-    public void testCheckRepoAndIndexConsistency_populatedIndexEmptyRepo_runtimeException() throws Exception
+    public void testCheckRepoAndIndexConsistency_indexMissingFirstACLTx_runtimeException() throws Exception
     {
-        when(trackerState.getLastGoodChangeSetCommitTimeInIndex()).thenReturn(8000L);
+        TrackerState trackerState = new TrackerState();
+        trackerState.setLastGoodChangeSetCommitTimeInIndex(8000L);
         AclChangeSets firstChangeSets = new AclChangeSets(asList(new AclChangeSet(1, 1000, 2)), 8000L, 8L);
-        when(solrAPIClient.getAclChangeSets(null, 0L,
+        when(repositoryClient.getAclChangeSets(null, 0L,
                 null, INITIAL_MAX_ACL_CHANGE_SET_ID, 1)).thenReturn(firstChangeSets);
-        // The first ACL transaction was not found in the repository.
-        when(informationServer.getAclTxDocsSize("1", "1000")).thenReturn(0);
-
-        AclChangeSet lastIndexedChangeSet = new AclChangeSet(8, 8000, 8);
-        when(informationServer.getMaxAclChangeSetIdAndCommitTimeInIndex()).thenReturn(lastIndexedChangeSet);
+        // The first ACL transaction was not found in Solr.
+        when(solrInformationServer.getAclTxDocsSize("1", "1000")).thenReturn(0);
 
         // Call the method under test.
+        aclTracker.checkRepoAndIndexConsistency(trackerState);
+    }
+
+    /** Check that allowMissingInitialAclTransaction allows start up if the index is missing the first ACL transaction. */
+    @Test
+    public void testCheckRepoAndIndexConsistency_allowMissingInitialAclTransactionSet_errorIgnored() throws Exception
+    {
+        aclTracker.setAllowMissingInitialAclTransaction(true);
+
+        TrackerState trackerState = new TrackerState();
+        trackerState.setLastGoodChangeSetCommitTimeInIndex(8000L);
+        // Pretend that we've already checked the last ACL tx since it's not the purpose of this test.
+        trackerState.setCheckedLastAclTransactionTime(true);
+        AclChangeSets firstChangeSets = new AclChangeSets(asList(new AclChangeSet(1, 1000, 2)), 8000L, 8L);
+        when(repositoryClient.getAclChangeSets(null, 0L,
+                null, INITIAL_MAX_ACL_CHANGE_SET_ID, 1)).thenReturn(firstChangeSets);
+        // The first ACL transaction was not found in Solr.
+        when(solrInformationServer.getAclTxDocsSize("1", "1000")).thenReturn(0);
+
+        // Call the method under test and check no exception is thrown.
         aclTracker.checkRepoAndIndexConsistency(trackerState);
     }
 
@@ -137,15 +182,16 @@ public class AclTrackerTest
     @Test (expected = AlfrescoRuntimeException.class)
     public void testCheckRepoAndIndexConsistency_indexAheadOfRepo_runtimeException() throws Exception
     {
-        when(trackerState.getLastGoodChangeSetCommitTimeInIndex()).thenReturn(8000L);
+        TrackerState trackerState = new TrackerState();
+        trackerState.setLastGoodChangeSetCommitTimeInIndex(8000L);
         AclChangeSets firstChangeSets = new AclChangeSets(asList(new AclChangeSet(1, 1000, 2)), 8000L, 8L);
-        when(solrAPIClient.getAclChangeSets(null, 0L,
+        when(repositoryClient.getAclChangeSets(null, 0L,
                 null, INITIAL_MAX_ACL_CHANGE_SET_ID, 1)).thenReturn(firstChangeSets);
-        when(informationServer.getAclTxDocsSize("1", "1000")).thenReturn(1);
+        when(solrInformationServer.getAclTxDocsSize("1", "1000")).thenReturn(1);
 
         // The index contains an ACL after the last one from the server (id 8 at time 8000L).
         AclChangeSet lastIndexedChangeSet = new AclChangeSet(9, 9000, 9);
-        when(informationServer.getMaxAclChangeSetIdAndCommitTimeInIndex()).thenReturn(lastIndexedChangeSet);
+        when(solrInformationServer.getMaxAclChangeSetIdAndCommitTimeInIndex()).thenReturn(lastIndexedChangeSet);
 
         // Call the method under test.
         aclTracker.checkRepoAndIndexConsistency(trackerState);

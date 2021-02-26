@@ -46,7 +46,6 @@ import java.util.stream.Collectors;
 import com.google.common.collect.Lists;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AuthenticationException;
-import org.alfresco.repo.index.shard.ShardMethodEnum;
 import org.alfresco.solr.AclReport;
 import org.alfresco.solr.BoundedDeque;
 import org.alfresco.solr.InformationServer;
@@ -84,6 +83,7 @@ public class AclTracker extends ActivatableTracker
     
     // Repository Remote API doesn't accept more than 512 aclChangeSetIds by invocation
     private static final int MAX_ACL_CHANGE_SET_BATCH_SIZE = 512;
+    private static final String ALLOW_MISSING_TRANSACTIONS_PROPERTY = "alfresco.aclTracker.allowMissingTransactions";
 
     private int aclTrackerParallelism;
 
@@ -105,6 +105,10 @@ public class AclTracker extends ActivatableTracker
     // Share run and write locks across all AclTracker threads
     private static Map<String, Semaphore> RUN_LOCK_BY_CORE = new ConcurrentHashMap<>();
     private static Map<String, Semaphore> WRITE_LOCK_BY_CORE = new ConcurrentHashMap<>();
+
+    /** Allow starting the server even if the initial ACL transaction was not found. */
+    private boolean allowMissingInitialAclTransaction = false;
+
     @Override
     public Semaphore getWriteLock()
     {
@@ -153,6 +157,9 @@ public class AclTracker extends ActivatableTracker
 
         RUN_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
         WRITE_LOCK_BY_CORE.put(coreName, new Semaphore(1, true));
+
+        allowMissingInitialAclTransaction = Boolean.parseBoolean(p.getProperty(ALLOW_MISSING_TRANSACTIONS_PROPERTY,
+                Boolean.FALSE.toString()));
     }
 
     @Override
@@ -413,6 +420,7 @@ public class AclTracker extends ActivatableTracker
             return;
         }
 
+        // Load the first ACL change sets from the Repository.
         AclChangeSets firstChangeSets = client.getAclChangeSets(null, 0L,
                 null, INITIAL_MAX_ACL_CHANGE_SET_ID, 1);
 
@@ -447,7 +455,17 @@ public class AclTracker extends ActivatableTracker
                 LOGGER.error("If this is a new or rebuilt database your SOLR indexes " +
                         "also need to be re-built to match the database.");
                 LOGGER.error("You can also check your SOLR connection details in solrcore.properties.");
-                throw new AlfrescoRuntimeException("Initial acl transaction not found with correct timestamp");
+                String exceptionMessage = "Initial ACL transaction from DB with Id=" + firstAclTxId
+                        + " and Timestamp=" + firstAclTxCommitTime + " was not found in Solr core.";
+                if (allowMissingInitialAclTransaction)
+                {
+                    LOGGER.error(exceptionMessage);
+                    LOGGER.error("Ignoring missing ACL Transaction and continuing to start up as {} set to true.", ALLOW_MISSING_TRANSACTIONS_PROPERTY);
+                }
+                else
+                {
+                    throw new AlfrescoRuntimeException(exceptionMessage);
+                }
             }
             else if (setSize == 1)
             {
@@ -934,5 +952,10 @@ public class AclTracker extends ActivatableTracker
     {
         super.invalidateState();
         infoSrv.clearProcessedAclChangeSets();
+    }
+
+    public void setAllowMissingInitialAclTransaction(boolean allowMissingInitialAclTransaction)
+    {
+        this.allowMissingInitialAclTransaction = allowMissingInitialAclTransaction;
     }
 }
