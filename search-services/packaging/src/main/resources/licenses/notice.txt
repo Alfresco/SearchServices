@@ -36,7 +36,7 @@ xml-resolver-1.2.jar    https://github.com/FasterXML/jackson
 neethi-3.1.1.jar http://ws.apache.org/commons/neethi/
 commons-dbcp-1.4.jar http://jakarta.apache.org/commons/
 commons-logging-1.1.3.jar http://jakarta.apache.org/commons/
-commons-lang3-3.11.jar http://jakarta.apache.org/commons/
+commons-lang3-3.12.0.jar http://jakarta.apache.org/commons/
 commons-pool-1.5.4.jar http://jakarta.apache.org/commons/
 chemistry-opencmis-commons-impl-1.1.0.jar      http://chemistry.apache.org/
 chemistry-opencmis-commons-api-1.1.0.jar       http://chemistry.apache.org/
