@@ -428,7 +428,7 @@ public class SolrInformationServer implements InformationServer
     private final int contentStreamLimit;
 
     private long cleanContentLastPurged;
-
+    
     // Get Paths information from Repository for a batch of nodes (true by default)
     // When false, Paths information is only recovered for single nodes
     private final boolean getPathsInNodeBatches;
@@ -629,7 +629,7 @@ public class SolrInformationServer implements InformationServer
         dataModel = AlfrescoSolrDataModel.getInstance();
 
         contentStreamLimit = Integer.parseInt(coreConfiguration.getProperty("alfresco.contentStreamLimit", "10000000"));
-
+        
         getPathsInNodeBatches = Boolean.parseBoolean(coreConfiguration.getProperty("alfresco.metadata.getPathsInNodeBatches", "true"));
 
         props = AlfrescoSolrDataModel.getCommonConfig();
@@ -1743,7 +1743,7 @@ public class SolrInformationServer implements InformationServer
                                             .map(StringPropertyValue::getValue)
                                             .map(Boolean::parseBoolean)
                                             .orElse(true);
-
+                    
                     addDocCmd.solrDoc = isIndexed
                                 ? populateWithMetadata(
                                             basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new),
@@ -1755,8 +1755,8 @@ public class SolrInformationServer implements InformationServer
                     // UnindexedNodes are not indexed when solrcore property flag "recordUnindexedNodes" is set to false
                     if (addDocCmd != null)
                     {
-                    processor.processAdd(addDocCmd);
-                }
+                        processor.processAdd(addDocCmd);
+                    }
                     
                 }
             }
@@ -2053,7 +2053,7 @@ public class SolrInformationServer implements InformationServer
                 // Getting Ancestor information when getting a batch of nodes from repository,
                 // may contain large information to be stored in memory for a long time.
                 nmdp.setIncludePaths(getPathsInNodeBatches);
-
+                
                 // Fetches bulk metadata
                 nmdp.setMaxResults(Integer.MAX_VALUE);
                 Optional<Collection<NodeMetaData>> nodesMetaDataFromRepository = getNodesMetaDataFromRepository(nmdp);
@@ -2256,7 +2256,7 @@ public class SolrInformationServer implements InformationServer
             doc.addField(FIELD_QNAME, qNameBuffer.toString());
         });
     }
-
+    
     /**
      * Gets full metadata information for a given nodeId, including Paths information.
      * Paths information can be huge in some scenarios, so it's recommended to use 
@@ -2341,9 +2341,10 @@ public class SolrInformationServer implements InformationServer
             String storedFieldName = dataModel.getStoredTextField(propertyQName);
             valueHolder.accept(storedFieldName, getLocalisedValue(value, locale));
 
+            // Add identifiers for single valued (sd) and multi-valued (md) identifier fields
             dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
                     .stream()
-                    .filter(field -> field.getField().startsWith("text@sd___@"))
+                    .filter(field -> field.getField().startsWith("text@sd___@") || field.getField().startsWith("text@md___@"))
                     .forEach(field -> addStringProperty(valueHolder, field, value, locale));
         } 
         else
@@ -2384,7 +2385,7 @@ public class SolrInformationServer implements InformationServer
         {
             
             QName propertyQName =  property.getKey();
-            PropertyDefinition propertyDefinition = dataModel.getPropertyDefinition(propertyQName);
+            PropertyDefinition propertyDefinition = dataModel.getPropertyDefinition(propertyQName);          
             
             // Skip adding Alfresco Fields declared as indexed="false" to SOLR Schema
             if (propertyDefinition != null && propertyDefinition.isIndexed())
