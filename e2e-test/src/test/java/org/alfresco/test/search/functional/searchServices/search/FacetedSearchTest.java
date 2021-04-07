@@ -27,7 +27,9 @@
 package org.alfresco.test.search.functional.searchServices.search;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.rest.search.FacetFieldBucket;
 import org.alfresco.rest.search.FacetQuery;
@@ -40,8 +42,12 @@ import org.alfresco.rest.search.RestResultBucketsModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.search.TestGroup;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
+import org.apache.chemistry.opencmis.commons.PropertyIds;
+import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.testng.Assert;
 import org.testng.TestException;
 import org.testng.annotations.BeforeClass;
@@ -338,5 +344,86 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
         bucket1.assertThat().field("display").is("FN-" + testUser.getUsername() + " LN-" + testUser.getUsername());
         bucket1.assertThat().field("filterQuery").is("modifier:\"" + testUser.getUsername() + "\"");
         bucket1.assertThat().field("metrics").is("[{entry=null, type=count, value={count=1}}]");
+    }
+    
+    /**
+     * Test that facet fields return results for single and multivalued fields.
+     * {
+     *  "query": {
+     *              "query": "cm:addressee:'first'"
+     *           },
+     *  "facetFields": {
+     *      "facets": [{"field": "cm:addressee"}, {"field": "cm:addressees"}]
+     *  },
+     *  "facetFormat":"V2"
+     * }
+     */
+    @Test
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
+              description = "Checks facet queries for the Search api, single and multi-valued properties")
+    public void searchWithMultiValuedFieldsFacet() throws Exception
+    {
+        
+        // Create properties with single (cm:addressee) and multi-valued (cm:addressees) values
+        FileModel emailFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "Email");
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
+        properties.put(PropertyIds.NAME, emailFile.getName());
+        properties.put(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, List.of("P:cm:emailed"));
+        properties.put("cm:addressee", "first");
+        properties.put("cm:addressees", List.of("first", "second"));
+
+        cmisApi.authenticateUser(testUser)
+                .usingSite(testSite)
+                .usingResource(folder)
+                .createFile(emailFile, properties, VersioningState.MAJOR)
+                .assertThat().existsInRepo();
+
+        String addresseeQuery = "cm:addressee:'first'";
+        Assert.assertTrue(waitForIndexing(addresseeQuery, true));
+        
+        // Search facets fields cm:addressee and cm:addressess
+        SearchRequest query = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("cm:addressee:'first'");
+        query.setQuery(queryReq);
+        query.setFacetFormat("V2");
+        RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
+        List<RestRequestFacetFieldModel> facets = new ArrayList<>();
+        facets.add(new RestRequestFacetFieldModel("cm:addressee"));
+        facets.add(new RestRequestFacetFieldModel("cm:addressees"));
+        facetFields.setFacets(facets);
+        query.setFacetFields(facetFields);
+
+        SearchResponse response = query(query);
+        
+        // Verify results
+        Assert.assertNull(response.getContext().getFacetsFields());
+        Assert.assertNull(response.getContext().getFacetQueries());
+        Assert.assertFalse(response.getContext().getFacets().isEmpty());
+        
+        // Facets for cm:addressees (multi-valued)
+        RestGenericFacetResponseModel model = response.getContext().getFacets().get(0);
+        Assert.assertEquals(model.getLabel(), "cm:addressees");
+        model.assertThat().field("label").is("cm:addressees");
+        RestGenericBucketModel bucket = model.getBuckets().get(0);
+        bucket.assertThat().field("label").is("{en}first");
+        bucket.assertThat().field("filterQuery").is("cm:addressees:\"{en}first\"");
+        bucket.assertThat().field("metrics").is("[{entry=null, type=count, value={count=1}}]");
+        bucket = model.getBuckets().get(1);
+        bucket.assertThat().field("label").is("{en}second");
+        bucket.assertThat().field("filterQuery").is("cm:addressees:\"{en}second\"");
+        bucket.assertThat().field("metrics").is("[{entry=null, type=count, value={count=1}}]");
+        
+        // Facets for cm:addressee (singel valued)
+        model = response.getContext().getFacets().get(1);
+        Assert.assertEquals(model.getLabel(), "cm:addressee");
+        model.assertThat().field("label").is("cm:addressee");
+        bucket = model.getBuckets().get(0);
+        bucket.assertThat().field("label").is("{en}first");
+        bucket.assertThat().field("filterQuery").is("cm:addressee:\"{en}first\"");
+        bucket.assertThat().field("metrics").is("[{entry=null, type=count, value={count=1}}]");
+        
     }
 }
