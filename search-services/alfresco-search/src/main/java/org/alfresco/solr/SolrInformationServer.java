@@ -2341,9 +2341,10 @@ public class SolrInformationServer implements InformationServer
             String storedFieldName = dataModel.getStoredTextField(propertyQName);
             valueHolder.accept(storedFieldName, getLocalisedValue(value, locale));
 
+            // Add identifiers for single valued (sd) and multi-valued (md) identifier fields
             dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
                     .stream()
-                    .filter(field -> field.getField().startsWith("text@sd___@"))
+                    .filter(field -> field.getField().startsWith("text@sd___@") || field.getField().startsWith("text@md___@"))
                     .forEach(field -> addStringProperty(valueHolder, field, value, locale));
         } 
         else
@@ -2384,7 +2385,7 @@ public class SolrInformationServer implements InformationServer
         {
             
             QName propertyQName =  property.getKey();
-            PropertyDefinition propertyDefinition = dataModel.getPropertyDefinition(propertyQName);
+            PropertyDefinition propertyDefinition = dataModel.getPropertyDefinition(propertyQName);          
             
             // Skip adding Alfresco Fields declared as indexed="false" to SOLR Schema
             if (propertyDefinition != null && propertyDefinition.isIndexed())
