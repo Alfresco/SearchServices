@@ -30,6 +30,7 @@ JAVA_OPTS = ('-Ddb.driver=org.postgresql.Driver -Ddb.username=alfresco -Ddb.pass
         '-Dsolr.http.connection.timeout=3000 ')
 MTLS_OPTS = ('-Dsolr.port.ssl=8983 -Dsolr.secureComms=https ')
 HTTP_OPTS = ('-Dsolr.secureComms=none')
+SECRET_OPTS = ('-Dsolr.secureComms=secret -Dsolr.sharedSecret=secret')
 JAVA_TOOL_OPTIONS = ('-Dencryption.keystore.type=JCEKS '
         '-Dencryption.cipherAlgorithm=DESede/CBC/PKCS5Padding '
         '-Dencryption.keyAlgorithm=DESede '
@@ -48,7 +49,7 @@ MTLS_JAVA_TOOL_OPTIONS = ('-Dencryption.keystore.type=pkcs12 -Dencryption.cipher
         '-Dssl-truststore.alfresco-ca.password=kT9X6oe68t '
         '-Dssl-truststore.ssl-repo-client.password=kT9X6oe68t')
 
-def getJavaOpts(includeAMQ, includeTransform, includeShare, solrHost, solrBaseUrl, sharding, mtls):
+def getJavaOpts(includeAMQ, includeTransform, includeShare, solrHost, solrBaseUrl, sharding, communication):
 
     solrHost = '-Dsolr.host=' + solrHost
     shardingOpts = (SHARDING_OPTS if sharding != None else '')
@@ -56,13 +57,18 @@ def getJavaOpts(includeAMQ, includeTransform, includeShare, solrHost, solrBaseUr
     transformOpts = (TRANSFORM_OPTS if includeTransform else '')
     solrBaseUrlOpts = '-Dsolr.baseUrl=' + solrBaseUrl
     shareTransformOpts = (SHARE_TRANSFORM_OPTS if includeShare and includeTransform else '')
-    mtlsOpts = (MTLS_OPTS if mtls else HTTP_OPTS)
+    if communication == 'mtls':
+        commOpts = MTLS_OPTS
+    elif communication == 'none':
+        commOpts = HTTP_OPTS
+    else :
+        commOpts = SECRET_OPTS
 
-    return ' '.join([JAVA_OPTS, amqOpts, transformOpts, shareTransformOpts, solrHost, solrBaseUrlOpts, shardingOpts, mtlsOpts])
+    return ' '.join([JAVA_OPTS, amqOpts, transformOpts, shareTransformOpts, solrHost, solrBaseUrlOpts, shardingOpts, commOpts])
 
-def getJavaToolOptions(mtls):
+def getJavaToolOptions(communication):
 
-    mtlsJavaToolOptions = (MTLS_JAVA_TOOL_OPTIONS if mtls else '')
+    mtlsJavaToolOptions = (MTLS_JAVA_TOOL_OPTIONS if communication == 'mtls' else '')
 
     return ' '.join([JAVA_TOOL_OPTIONS, mtlsJavaToolOptions])
 
@@ -108,19 +114,21 @@ def getSolrcoreConfig(sharding, shardId, shardCount, shardRange):
         print("SolrConfig for Shard: ", shardId, " : ", solrcoreConfig)
     return solrcoreConfig
 
-def getSolrcoreReplacements(sharding, mtls):
+def getSolrcoreReplacements(sharding, communication):
     """Returns a dict of replacements to make in the solrcore.properties file."""
     solrcoreReplacements = {}
     if sharding != None:
         solrcoreReplacements['shard.method=DB_ID'] = 'shard.method={}'.format(sharding)
-    if mtls:
+    if communication == 'mtls':
         solrcoreReplacements['alfresco.secureComms=none'] = 'alfresco.secureComms=https'
         solrcoreReplacements['alfresco.encryption.ssl.keystore.location=.*'] = 'alfresco.encryption.ssl.keystore.location=\\\\\\/opt\\\\\\/alfresco-search-services\\\\\\/keystore\\\\\\/ssl-repo-client.keystore'
         solrcoreReplacements['alfresco.encryption.ssl.keystore.type=.*'] = 'alfresco.encryption.ssl.keystore.type=JCEKS'
         solrcoreReplacements['alfresco.encryption.ssl.truststore.location=.*'] = 'alfresco.encryption.ssl.truststore.location=\\\\\\/opt\\\\\\/alfresco-search-services\\\\\\/keystore\\\\\\/ssl-repo-client.truststore'
         solrcoreReplacements['alfresco.encryption.ssl.truststore.type=.*'] = 'alfresco.encryption.ssl.truststore.type=JCEKS'
-    else:
+    elif communication == 'none':
         solrcoreReplacements['alfresco.secureComms=https'] = 'alfresco.secureComms=none'
+    else :
+        solrcoreReplacements['alfresco.secureComms=https'] = 'alfresco.secureComms=secret'
     return solrcoreReplacements
 
 def addAlfrescoMtlsConfig(alfrescoArgsNode):
@@ -168,11 +176,15 @@ def addSolrVolumes(solrNode):
     """Add route to keystores folder"""
     solrNode['volumes'] = ['./keystores/solr:/opt/alfresco-search-services/keystore']
 
-def makeSearchNode(outputDirectory, nodeName, externalPort, params, mtls, extraEnvironmentVars={}, solrcoreConfig=[], solrcoreReplacements={}):
+def addSharedSecretSolrOpts(solrEnvNode):
+    """Add a list of values to add in Docker Compose SOLR_OPTS property for Shared Secret communication."""
+    solrEnvNode['SOLR_OPTS'] = '-Dalfresco.secureComms.secret=secret'
+
+def makeSearchNode(outputDirectory, nodeName, externalPort, params, communication, extraEnvironmentVars={}, solrcoreConfig=[], solrcoreReplacements={}):
     # Create a dictionary for the template replacement.
     allParams = dict(params)
     allParams['SOLR_HOST'] = nodeName
-    allParams['ALFRESCO_PORT'] = 8443 if mtls else 8080
+    allParams['ALFRESCO_PORT'] = 8443 if communication == 'mtls' else 8080
     allParams['EXTERNAL_PORT'] = externalPort
     # Properties to add to solrcore.properties.
     allParams['SOLRCORE_PROPERTIES'] = '\\n'.join(solrcoreConfig)
@@ -180,7 +192,13 @@ def makeSearchNode(outputDirectory, nodeName, externalPort, params, mtls, extraE
     allParams['SOLRCORE_REPLACEMENTS'] = ' '.join(map(lambda pair: '"{}/{}"'.format(*pair), solrcoreReplacements.items()))
 
     # mTLS settings
-    allParams['ALFRESCO_SECURE_COMMS'] = ('https' if mtls else 'none')
+    if communication == 'mtls':
+        allParams['ALFRESCO_SECURE_COMMS'] = 'https'
+    elif communication == 'none':
+        allParams['ALFRESCO_SECURE_COMMS'] = 'none'
+    else :
+        allParams['ALFRESCO_SECURE_COMMS'] = 'secret'
+
     allParams['TRUSTSTORE_TYPE'] = 'JCEKS'
     allParams['KEYSTORE_TYPE'] = 'JCEKS'
 
@@ -203,11 +221,15 @@ def makeSearchNode(outputDirectory, nodeName, externalPort, params, mtls, extraE
     searchNodeYaml['environment'].update(extraEnvironmentVars)
 
     # Add mTLS configuration if required
-    if mtls:
+    if communication == 'mtls':
         addSolrMtlsConfig(searchNodeYaml['environment'])
         addSolrOpts(searchNodeYaml['environment'])
         addSolrJavaToolOptions(searchNodeYaml['environment'])
         addSolrVolumes(searchNodeYaml)
+
+    # Add shared secret configuration if required
+    if communication == 'secret':
+        addSharedSecretSolrOpts(searchNodeYaml['environment'])
 
     return searchNodeYaml
 
@@ -231,7 +253,8 @@ if __name__ == '__main__':
     parser.add_argument('-sl', '--searchLogLevel', default='WARN', help='The log level for search (default WARN)',
                         choices=['TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR'])
     parser.add_argument('-o', '--output', default='.', help='The path of the directory to output to')
-    parser.add_argument('-mtls', '--mtls', action='store_true', help='Use mTLS between SOLR and Alfresco Repository')
+    parser.add_argument('-comm', '--communication', default='none', help='Use none, mtls or secret communication between SOLR and Alfresco Repository',
+                        choices=['none', 'mtls', 'secret'])
     args = parser.parse_args()
 
     # If sharding is selected then the default number of shards is two.
@@ -280,20 +303,20 @@ if __name__ == '__main__':
             if shardId == 0 and replicationType == 'standalone':
                 serviceName = 'search'
             externalPort = 8083 + 100 * shardId + (1 if replicationType == 'slave' else 0)
-            dcYaml['services'][serviceName] = makeSearchNode(args.output, serviceName, externalPort, params, args.mtls,
+            dcYaml['services'][serviceName] = makeSearchNode(args.output, serviceName, externalPort, params, args.communication,
                       extraEnvironmentVars=getExtraEnvironmentVars(serviceName, replicationType),
                       solrcoreConfig=getSolrcoreConfig(args.sharding, shardId, args.shardCount, args.shardRange),
-                      solrcoreReplacements=getSolrcoreReplacements(args.sharding, args.mtls))
+                      solrcoreReplacements=getSolrcoreReplacements(args.sharding, args.communication))
 
     # Point Alfresco at whichever Solr node came last in the list.
     solrHost = serviceName
     solrBaseUrl = '/solr-slave' if args.masterslave else '/solr'
 
-    javaOpts = getJavaOpts(not args.excludeAMQ, args.transformer == AIO_TRANSFORMERS, args.share != None, solrHost, solrBaseUrl, args.sharding, args.mtls)
+    javaOpts = getJavaOpts(not args.excludeAMQ, args.transformer == AIO_TRANSFORMERS, args.share != None, solrHost, solrBaseUrl, args.sharding, args.communication)
     dcYaml['services']['alfresco']['environment']['JAVA_OPTS'] = javaOpts
-    javaToolOpts = getJavaToolOptions(args.mtls)
+    javaToolOpts = getJavaToolOptions(args.communication)
     dcYaml['services']['alfresco']['environment']['JAVA_TOOL_OPTIONS'] = javaToolOpts
-    if args.mtls:
+    if args.communication == 'mtls':
         addAlfrescoMtlsConfig(dcYaml['services']['alfresco']['build']['args'])
         addAlfrescoVolumes(dcYaml['services']['alfresco'])
 
@@ -321,5 +344,5 @@ if __name__ == '__main__':
         dockerfileTemplate = f.write(dockerfileString)
 
     # Copy the keystores (when using mTLS)
-    if args.mtls:
+    if args.communication == 'mtls':
         copy_tree(scriptDir + '/keystores', args.output + '/keystores')
