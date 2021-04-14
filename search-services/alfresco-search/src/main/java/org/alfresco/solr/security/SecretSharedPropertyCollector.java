@@ -39,6 +39,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.config.ConfigUtil;
 import org.apache.solr.core.SolrResourceLoader;
@@ -60,9 +61,6 @@ public class SecretSharedPropertyCollector
     private static String SECURE_COMMS_PROPERTY = "alfresco.secureComms";
     private static String SHARED_SECRET = "alfresco.secureComms.secret";
     private static String SHARED_SECRET_HEADER = "alfresco.secureComms.secret.header";
-
-    // Default request header value
-    private static final String DEFAULT_SHARED_SECRET_HEADER = "X-Alfresco-Search-Secret";
 
     // Save communication method as static value in order to improve performance 
     private static String commsMethod;
@@ -200,8 +198,24 @@ public class SecretSharedPropertyCollector
         }
         else
         {
-            return DEFAULT_SHARED_SECRET_HEADER;
+            return HttpClientFactory.DEFAULT_SHAREDSECRET_HEADER;
         }
+    }
+    
+    /**
+     * Add secret shared properties to original core properties read from "solrcore.properties"
+     * @param properties Read properties from "solrcore.properties"
+     * @return when "secret" communication method is configured additional properties are set in original parameter
+     */
+    public static Properties completeCoreProperties(Properties properties)
+    {
+        if (isCommsSecretShared())
+        {
+            properties.setProperty(SECURE_COMMS_PROPERTY, getCommsMethod());
+            properties.setProperty(SHARED_SECRET, getSecret());
+            properties.setProperty(SHARED_SECRET_HEADER, getSecretHeader());
+        }
+        return properties;
     }
 
 }
