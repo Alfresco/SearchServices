@@ -28,7 +28,7 @@ xpp3-1.1.4c.jar http://www.extreme.indiana.edu/dist/java-repository/xpp3/license
 
 
 === JSON ===
-json-20201115.jar https://github.com/stleary/JSON-java
+json-20210307.jar https://github.com/stleary/JSON-java
 
 
 === Apache 2.0 ===
