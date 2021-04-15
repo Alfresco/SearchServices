@@ -17,10 +17,10 @@ $ tree generators/app/templates/
 │   ├── .env
 │   ├── docker-compose-ce.yml
 │   └── docker-compose-ee.yml
-├── latest
+├── 7.0
 │   ├── .env
 │   ├── docker-compose-ce.yml
-│   └── docker-compose-ee.yml├── empty
+│   └── docker-compose-ee.yml
 ├── images
 │   ├── alfresco
 │   │   ├── Dockerfile
@@ -82,7 +82,7 @@ $ yo alfresco-docker-compose
 
 ## ACS Version
 
-Currently supported ACS Versions are `latest`, `6.2` and `6.1`
+Currently supported ACS Versions are `7.0`, `6.2` and `6.1`
 
 This is the first choice to be selected when the generator is executed.
 
@@ -90,7 +90,7 @@ This is the first choice to be selected when the generator is executed.
 ? Which ACS version do you want to use?
   6.1
   6.2
-❯ latest
+❯ 7.0
 ```
 
 ## AGS Version
@@ -107,14 +107,15 @@ If you chose ACS 6.1, a prompt will allow you to use AGS.
 
 When using Community, some different options can be combined:
 
-* Plain HTTP (http) or TLS/SSL Mutual Authentication (https) for communication between Alfresco and SOLR
 * Plain HTTP (http) or HTTPs (https) for Http Web Proxy for HTTP access to services
 * Protect the access to SOLR REST API in the Http WebProxy to forbid direct access to Alfresco Web Proxy port
 * Use SOLR Replication in Master/Slave mode (only when using http)
+* Plain HTTP (http), Shared Secret HTTP (secret) or TLS/SSL Mutual Authentication (https) for communication between Alfresco and SOLR
+>> Shared Secret is only available from ACS 7.0.1
 
 ```
 ? Would you like to use Alfresco enterprise or community? community
-? Would you like to use HTTP or mTLS for Alfresco-SOLR communication? http
+? Would you like to use HTTP, Shared Secret or mTLS for Alfresco-SOLR communication? http
 ? Would you like to use HTTP or HTTPs for Web Proxy? http
 ? Would you like to protect the access to SOLR REST API? Yes
 ? Would you like to use a SOLR Replication? No
