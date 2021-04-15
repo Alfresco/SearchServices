@@ -52,8 +52,13 @@ public class SOLRAPIClientFactory
      */
     private static Map<String, SOLRAPIClient> clientsPerAlfresco = new HashMap<>();
 
-    // encryption related parameters
-    private String secureCommsType; // "none", "https"
+    // http communication related parameters
+    private String secureCommsType; // "none", "https", "secret"
+
+    // http
+    private String alfrescoHost;
+    private int alfrescoPort;
+    private String baseUrl;
 
     // ssl
     private String sslKeyStoreType;
@@ -64,19 +69,21 @@ public class SOLRAPIClientFactory
     private String sslTrustStoreProvider;
     private String sslTrustStoreLocation;
     private String sslTrustStorePasswordFileLocation;
-    private String alfrescoHost;
-    private int alfrescoPort;
     private int alfrescoPortSSL;
-    private String baseUrl;
 
-    // http client
+    // secret shared
+    private String secret;
+    private String secretHeader;
+
+    // http client settings
     private int maxTotalConnections = 40;
     private int maxHostConnections = 40;
     private int socketTimeout = 120000;
 
-
-    public static void close() {
-        for(SOLRAPIClient client : clientsPerAlfresco.values()) {
+    public static void close()
+    {
+        for (SOLRAPIClient client : clientsPerAlfresco.values())
+        {
             client.close();
         }
     }
@@ -131,12 +138,13 @@ public class SOLRAPIClientFactory
      * @param namespaceDAO allows retrieving and creating Namespace definitions
      * @return an instance of SOLRAPIClient
      */
-    public SOLRAPIClient getSOLRAPIClient(Properties props, KeyResourceLoader keyResourceLoader, DictionaryService dictionaryService, NamespaceDAO namespaceDAO)
+    public SOLRAPIClient getSOLRAPIClient(Properties props, KeyResourceLoader keyResourceLoader,
+                DictionaryService dictionaryService, NamespaceDAO namespaceDAO)
     {
 
         if (Boolean.parseBoolean(System.getProperty("alfresco.test", "false")))
-        {
-            return new SOLRAPIQueueClient(namespaceDAO);
+        { 
+            return new SOLRAPIQueueClient(namespaceDAO); 
         }
 
         alfrescoHost = props.getProperty("alfresco.host", "localhost");
@@ -150,20 +158,25 @@ public class SOLRAPIClientFactory
             baseUrl = props.getProperty("alfresco.baseUrl", "/alfresco");
             // Load SSL settings only when using HTTPs protocol
             secureCommsType = props.getProperty("alfresco.secureComms", "none");
-            if (secureCommsType.equals("https"))
+            if (SecureCommsType.getType(secureCommsType) == SecureCommsType.HTTPS)
             {
                 sslKeyStoreType = getProperty(props, "alfresco.encryption.ssl.keystore.type", "JCEKS");
                 sslKeyStoreProvider = getProperty(props, "alfresco.encryption.ssl.keystore.provider", "");
                 sslKeyStoreLocation = getProperty(props, "alfresco.encryption.ssl.keystore.location",
-                        "ssl.repo.client.keystore");
+                            "ssl.repo.client.keystore");
                 sslKeyStorePasswordFileLocation = getProperty(props,
-                        "alfresco.encryption.ssl.keystore.passwordFileLocation", "");
+                            "alfresco.encryption.ssl.keystore.passwordFileLocation", "");
                 sslTrustStoreType = getProperty(props, "alfresco.encryption.ssl.truststore.type", "JCEKS");
                 sslTrustStoreProvider = getProperty(props, "alfresco.encryption.ssl.truststore.provider", "");
                 sslTrustStoreLocation = getProperty(props, "alfresco.encryption.ssl.truststore.location",
-                        "ssl.repo.client.truststore");
+                            "ssl.repo.client.truststore");
                 sslTrustStorePasswordFileLocation = getProperty(props,
-                        "alfresco.encryption.ssl.truststore.passwordFileLocation", "");
+                            "alfresco.encryption.ssl.truststore.passwordFileLocation", "");
+            }
+            if (SecureCommsType.getType(secureCommsType) == SecureCommsType.SECRET)
+            {
+                secret = getProperty(props, "alfresco.secureComms.secret", "");
+                secretHeader = getProperty(props, "alfresco.secureComms.secret.header", "");
             }
             maxTotalConnections = Integer.parseInt(props.getProperty("alfresco.maxTotalConnections", "40"));
             maxHostConnections = Integer.parseInt(props.getProperty("alfresco.maxHostConnections", "40"));
@@ -175,69 +188,76 @@ public class SOLRAPIClientFactory
 
         return client;
     }
-    
+
     protected AlfrescoHttpClient getRepoClient(KeyResourceLoader keyResourceLoader)
     {
         HttpClientFactory httpClientFactory = null;
 
-        if (secureCommsType.equals("https"))
+        if (SecureCommsType.getType(secureCommsType) == SecureCommsType.HTTPS)
         {
             KeyStoreParameters keyStoreParameters = new KeyStoreParameters("ssl-keystore", "SSL Key Store",
-                    sslKeyStoreType, sslKeyStoreProvider, sslKeyStorePasswordFileLocation, sslKeyStoreLocation);
+                        sslKeyStoreType, sslKeyStoreProvider, sslKeyStorePasswordFileLocation, sslKeyStoreLocation);
             KeyStoreParameters trustStoreParameters = new KeyStoreParameters("ssl-truststore", "SSL Trust Store",
-                    sslTrustStoreType, sslTrustStoreProvider, sslTrustStorePasswordFileLocation, sslTrustStoreLocation);
+                        sslTrustStoreType, sslTrustStoreProvider, sslTrustStorePasswordFileLocation,
+                        sslTrustStoreLocation);
             SSLEncryptionParameters sslEncryptionParameters = new SSLEncryptionParameters(keyStoreParameters,
-                    trustStoreParameters);
+                        trustStoreParameters);
             httpClientFactory = new HttpClientFactory(SecureCommsType.getType(secureCommsType), sslEncryptionParameters,
-                    keyResourceLoader, null, null, alfrescoHost, alfrescoPort, alfrescoPortSSL, maxTotalConnections,
-                    maxHostConnections, socketTimeout);
+                        keyResourceLoader, null, null, null, null, alfrescoHost, alfrescoPort, alfrescoPortSSL,
+                        maxTotalConnections, maxHostConnections, socketTimeout);
         }
         else
         {
-            httpClientFactory = new PlainHttpClientFactory(alfrescoHost, alfrescoPort, maxTotalConnections,
-                    maxHostConnections, socketTimeout);
+            httpClientFactory = new PlainHttpClientFactory(secureCommsType, alfrescoHost, alfrescoPort,
+                        maxTotalConnections, maxHostConnections, socketTimeout);
+            if (SecureCommsType.getType(secureCommsType) == SecureCommsType.SECRET)
+            {
+                httpClientFactory.setSharedSecret(secret);
+                httpClientFactory.setSharedSecretHeader(secretHeader);
+            }
         }
 
         AlfrescoHttpClient repoClient = httpClientFactory.getRepoClient(alfrescoHost, alfrescoPortSSL);
+
         repoClient.setBaseUrl(baseUrl);
         return repoClient;
-        
+
     }
-    
+
     /**
-     * Return property value from system (passed as -D argument).
-     * If the system property does not exists, return local value from solrcore.properties
+     * Return property value from system (passed as -D argument). 
+     * If the system property does not exists, return local value from solrcore.properties 
      * If the local property does not exists, return default value
      * 
      * @param props Local properties file (solrcore.properties)
      * @param key The property key
      * @return The value
      */
-    private String getProperty(Properties props, String key, String defaultValue) 
+    private String getProperty(Properties props, String key, String defaultValue)
     {
-    	String value = System.getProperties().getProperty(key);
-    	if (value == null)
-    	{
-    		value = props.getProperty(key);
-    	}
-    	if (value == null)
-    	{
-    		value = defaultValue;
-    	}
-    	return value;
+        String value = System.getProperties().getProperty(key);
+        if (value == null)
+        {
+            value = props.getProperty(key);
+        }
+        if (value == null)
+        {
+            value = defaultValue;
+        }
+        return value;
     }
-    
+
     /**
-     * Local class to avoid loading sslEntryptionParameters for plain http connections. 
+     * Local class to avoid loading sslEntryptionParameters for plain http connections.
      * 
      * @author aborroy
-     *
      */
     class PlainHttpClientFactory extends HttpClientFactory
     {
-        public PlainHttpClientFactory(String host, int port, int maxTotalConnections, int maxHostConnections, int socketTimeout)
+        public PlainHttpClientFactory(String secureCommsType, String host, int port, int maxTotalConnections,
+                    int maxHostConnections, int socketTimeout)
         {
-            setSecureCommsType("none");
+            setSecureCommsType(secureCommsType);
             setHost(host);
             setPort(port);
             setMaxTotalConnections(maxTotalConnections);

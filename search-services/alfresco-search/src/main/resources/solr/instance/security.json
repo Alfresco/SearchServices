@@ -1,0 +1,5 @@
+{
+  "authentication" : {
+    "class": "org.alfresco.solr.security.SecretSharedAuthPlugin"
+  }
+}
