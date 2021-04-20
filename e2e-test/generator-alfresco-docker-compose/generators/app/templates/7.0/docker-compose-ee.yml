@@ -13,6 +13,7 @@ services:
             KEYSTORE_TYPE: JCEKS
             KEYSTORE_PASS: kT9X6oe68t <% } %>
             COMPRESS_CONTENT: "<%=gzip%>"
+            SHARE_SERVICES_TAG: ${SHARE_TAG}
         mem_limit: 1800m
         environment:
             JAVA_TOOL_OPTIONS: "
@@ -121,10 +122,6 @@ services:
             - 8083:8983 <% if (httpMode == 'https') { %>
         volumes:
             - ./keystores/solr:/opt/<%=searchPath%>/keystore <% } %>
-        ports:
-            - 8083:8983 <% if (httpMode == 'https') { %>
-        volumes:
-            - ./keystores/solr:/opt/<%=searchPath%>/keystore <% } %>
 
     <% if (sharding == 'true' || replication) { %>
     solr6secondary:
@@ -179,10 +176,6 @@ services:
             " <% } %>
         ports:
             - 8083:8983 <% if (httpMode == 'https') { %>
-        volumes:
-            - ./keystores/solr:/opt/<%=searchPath%>/keystore <% } %>
-        ports:
-            - 8084:8983  <% if (httpMode == 'https') { %>
         volumes:
             - ./keystores/solr:/opt/<%=searchPath%>/keystore <% } %>
     <% } %>
