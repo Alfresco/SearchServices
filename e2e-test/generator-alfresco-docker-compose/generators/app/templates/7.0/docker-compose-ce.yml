@@ -14,6 +14,7 @@ services:
             KEYSTORE_TYPE: JCEKS
             KEYSTORE_PASS: kT9X6oe68t <% } %>
             COMPRESS_CONTENT: "<%=gzip%>"
+            SHARE_SERVICES_TAG: ${SHARE_TAG}
         mem_limit: 1800m
         depends_on:
             - postgres

@@ -22,7 +22,7 @@ module.exports = class extends Generator {
         name: 'acsVersion',
         message: 'Which ACS version do you want to use?',
         choices: [ '6.1', '6.2', '7.0' ],
-        default: 'latest'
+        default: '7.0'
       },
       {
         whenFunction: response => response.acsVersion == '6.1',
@@ -220,7 +220,7 @@ module.exports = class extends Generator {
         httpWebMode: this.props.httpWebMode,
         port: (this.props.httpWebMode == 'http' ? '8080' : '443'),
         secureComms: (this.props.httpMode == 'http' ? 'none' : this.props.httpMode),
-        alfrescoPort: (this.props.httpMode == 'http' ? '8080' : '8443'),
+        alfrescoPort: (this.props.httpMode == 'https' ? '8443' : '8080'),
         replication: this.props.replication,
         searchSolrHost: (this.props.replication ? "solr6secondary" : "solr6"),
         searchPath: searchBasePath,
@@ -279,7 +279,7 @@ module.exports = class extends Generator {
       )
     }
 
-    // Empty addons directories.
+    // Empty addons directories
     ['alfresco', 'share'].forEach(container => {
       ['jars', 'amps'].forEach(addonType => {
         this.fs.copy(
