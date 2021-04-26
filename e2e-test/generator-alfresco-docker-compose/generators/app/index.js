@@ -21,8 +21,8 @@ module.exports = class extends Generator {
         type: 'list',
         name: 'acsVersion',
         message: 'Which ACS version do you want to use?',
-        choices: [ '6.1', '6.2', 'latest' ],
-        default: 'latest'
+        choices: [ '6.1', '6.2', '7.0' ],
+        default: '7.0'
       },
       {
         whenFunction: response => response.acsVersion == '6.1',
@@ -41,8 +41,8 @@ module.exports = class extends Generator {
       {
         type: 'list',
         name: 'httpMode',
-        message: 'Would you like to use HTTP or mTLS for Alfresco-SOLR communication?',
-        choices: [ "http", "https" ],
+        message: 'Would you like to use HTTP, Shared Secret or mTLS for Alfresco-SOLR communication?',
+        choices: [ "http", "https", "secret" ],
         default: 'http'
       },
       {
@@ -156,7 +156,7 @@ module.exports = class extends Generator {
   // Generate boilerplate from "templates" folder
   writing() {
 
-    // Set base template directory: 6.1, 6.2, latest
+    // Set base template directory: 6.1, 6.2, 7.0
     var dockerComposeTemplateDirectory = this.props.acsVersion;
 
     // Docker Compose environment variables values
@@ -183,7 +183,7 @@ module.exports = class extends Generator {
           'alfresco/alfresco-content-repository-community') :
         (this.props.ags ? 
           'quay.io/alfresco/alfresco-governance-repository-enterprise':
-          'alfresco/alfresco-content-repository'
+          'quay.io/alfresco/alfresco-content-repository'
         )
       );
 
@@ -192,7 +192,7 @@ module.exports = class extends Generator {
       (this.props.alfrescoVersion == 'community' ?
         (this.props.ags ? 
           'alfresco/alfresco-governance-share-community' :
-          'quay.io/alfresco/alfresco-share') :
+          'alfresco/alfresco-share') :
         (this.props.ags ? 
           'quay.io/alfresco/alfresco-governance-share-enterprise':
           'quay.io/alfresco/alfresco-share'
@@ -219,8 +219,8 @@ module.exports = class extends Generator {
         httpMode: this.props.httpMode,
         httpWebMode: this.props.httpWebMode,
         port: (this.props.httpWebMode == 'http' ? '8080' : '443'),
-        secureComms: (this.props.httpMode == 'http' ? 'none' : 'https'),
-        alfrescoPort: (this.props.httpMode == 'http' ? '8080' : '8443'),
+        secureComms: (this.props.httpMode == 'http' ? 'none' : this.props.httpMode),
+        alfrescoPort: (this.props.httpMode == 'https' ? '8443' : '8080'),
         replication: this.props.replication,
         searchSolrHost: (this.props.replication ? "solr6secondary" : "solr6"),
         searchPath: searchBasePath,
@@ -279,7 +279,7 @@ module.exports = class extends Generator {
       )
     }
 
-    // Empty addons directories.
+    // Empty addons directories
     ['alfresco', 'share'].forEach(container => {
       ['jars', 'amps'].forEach(addonType => {
         this.fs.copy(
