@@ -314,8 +314,14 @@ if __name__ == '__main__':
 
     javaOpts = getJavaOpts(not args.excludeAMQ, args.transformer == AIO_TRANSFORMERS, args.share != None, solrHost, solrBaseUrl, args.sharding, args.communication)
     dcYaml['services']['alfresco']['environment']['JAVA_OPTS'] = javaOpts
-    javaToolOpts = getJavaToolOptions(args.communication)
+
+    # Add Java Tool Options for Alfresco Repository > 6.x
+    if not ':6.' in args.alfresco:
+        javaToolOpts = getJavaToolOptions(args.communication)
+    else:
+        javaToolOpts = ''
     dcYaml['services']['alfresco']['environment']['JAVA_TOOL_OPTIONS'] = javaToolOpts
+
     if args.communication == 'mtls':
         addAlfrescoMtlsConfig(dcYaml['services']['alfresco']['build']['args'])
         addAlfrescoVolumes(dcYaml['services']['alfresco'])
