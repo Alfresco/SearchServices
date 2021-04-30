@@ -14,8 +14,21 @@ services:
             KEYSTORE_TYPE: JCEKS
             KEYSTORE_PASS: kT9X6oe68t <% } %>
             COMPRESS_CONTENT: "<%=gzip%>"
+            SHARE_SERVICES_TAG: ${SHARE_TAG}
         mem_limit: 1800m
+        depends_on:
+            - postgres
         environment:
+            JAVA_TOOL_OPTIONS: "
+                -Dencryption.keystore.type=JCEKS
+                -Dencryption.cipherAlgorithm=DESede/CBC/PKCS5Padding
+                -Dencryption.keyAlgorithm=DESede
+                -Dencryption.keystore.location=/usr/local/tomcat/shared/classes/alfresco/extension/keystore/keystore
+                -Dmetadata-keystore.password=mp6yc0UD9e
+                -Dmetadata-keystore.aliases=metadata
+                -Dmetadata-keystore.metadata.password=oKIWzVdEdA
+                -Dmetadata-keystore.metadata.algorithm=DESede
+                "
             JAVA_OPTS : "
                 -Ddb.driver=org.postgresql.Driver
                 -Ddb.username=alfresco
@@ -25,20 +38,19 @@ services:
                 -Dsolr.port.ssl=8983
                 -Dsolr.secureComms=<%=secureComms%>
                 -Dsolr.baseUrl=/solr
-                -Dindex.subsystem.name=solr6
+                -Dindex.subsystem.name=solr6<% if (httpMode == 'secret') { %>
+                -Dsolr.sharedSecret=secret<% } %>
                 -Dshare.host=localhost
                 -Dalfresco.port=8080
                 -Daos.baseUrlOverwrite=http://localhost:8080/alfresco/aos
                 -Dmessaging.broker.url=\"failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true\"
                 -Ddeployment.method=DOCKER_COMPOSE
-
                 -DlocalTransform.core-aio.url=http://transform-core-aio:8090/
                 -Dalfresco-pdf-renderer.url=http://transform-core-aio:8090/
                 -Djodconverter.url=http://transform-core-aio:8090/
                 -Dimg.url=http://transform-core-aio:8090/
                 -Dtika.url=http://transform-core-aio:8090/
                 -Dtransform.misc.url=http://transform-core-aio:8090/
-
                 -Dcsrf.filter.enabled=false
                 -Dalfresco.restApi.basicAuthScheme=true
                 -Xms1500m -Xmx1500m
@@ -63,6 +75,8 @@ services:
             COMPRESS_CONTENT: "<%=gzip%>"
             SEARCH_LOG_LEVEL: <%=searchLogLevel%>
         mem_limit: 1200m
+        depends_on:
+            - alfresco
         environment:
             #Solr needs to know how to register itself with Alfresco
             SOLR_ALFRESCO_HOST: "alfresco"
@@ -84,6 +98,9 @@ services:
             SOLR_OPTS: "
                 -Dsolr.ssl.checkPeerName=false
                 -Dsolr.allow.unsafe.resourceloading=true
+            " <% } %> <% if (httpMode == 'secret') { %>
+            SOLR_OPTS: "
+                -Dalfresco.secureComms.secret=secret
             " <% } %>
         ports:
             - 8083:8983 <% if (httpMode == 'https') { %>
@@ -106,6 +123,8 @@ services:
             MASTER_HOST: solr6 <% } %>
             COMPRESS_CONTENT: "<%=gzip%>"
         mem_limit: 1200m
+        depends_on:
+            - alfresco
         environment:
             #Solr needs to know how to register itself with Alfresco
             SOLR_ALFRESCO_HOST: "alfresco"
@@ -127,6 +146,9 @@ services:
             SOLR_OPTS: "
                 -Dsolr.ssl.checkPeerName=false
                 -Dsolr.allow.unsafe.resourceloading=true
+            " <% } %> <% if (httpMode == 'secret') { %>
+            SOLR_OPTS: "
+                -Dalfresco.secureComms.secret=secret
             " <% } %>
         ports:
             - 8084:8983  <% if (httpMode == 'https') { %>
@@ -193,6 +215,9 @@ services:
         mem_limit: 128m
         depends_on:
             - alfresco
+            - share
+            - solr6
+            - content-app
         volumes:
             - ./config/nginx.conf:/etc/nginx/nginx.conf
             - ./config/nginx.htpasswd:/etc/nginx/conf.d/nginx.htpasswd <% if (httpWebMode == 'https') { %>

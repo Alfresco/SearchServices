@@ -45,6 +45,7 @@ import org.alfresco.solr.SolrInformationServer;
 import org.alfresco.solr.SolrKeyResourceLoader;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.alfresco.solr.client.SOLRAPIClientFactory;
+import org.alfresco.solr.security.SecretSharedPropertyCollector;
 import org.alfresco.solr.tracker.AclTracker;
 import org.alfresco.solr.tracker.CascadeTracker;
 import org.alfresco.solr.tracker.CommitTracker;
@@ -113,6 +114,9 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
 
         TrackerRegistry trackerRegistry = admin.getTrackerRegistry();
         Properties coreProperties = new CoreDescriptorDecorator(core.getCoreDescriptor()).getProperties();
+        
+        // Add secret shared properties if required, as they are passed as Java Environment Variables
+        coreProperties = SecretSharedPropertyCollector.completeCoreProperties(coreProperties);
 
         SolrResourceLoader loader = core.getLatestSchema().getResourceLoader();
         SolrKeyResourceLoader keyResourceLoader = new SolrKeyResourceLoader(loader);

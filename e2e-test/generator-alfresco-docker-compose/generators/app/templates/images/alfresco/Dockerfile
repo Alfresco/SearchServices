@@ -25,6 +25,19 @@ VOLUME ["${ALF_DATA_DIR}/keystore"]
 
 USER root
 
+ARG SHARE_SERVICES_TAG
+ENV SHARE_SERVICES_TAG $SHARE_SERVICES_TAG
+
+# From Alfresco Repository 7.0.0 Share Services AMP is not provided with default Docker Image
+RUN if [ ! -z "$SHARE_SERVICES_TAG" ] ; then \
+    yum -y update && \
+    yum -y install wget && \
+    yum clean all && \
+    mkdir -p $TOMCAT_DIR/amps && \
+    wget https://nexus.alfresco.com/nexus/service/local/repo_groups/public/content/org/alfresco/alfresco-share-services/${SHARE_SERVICES_TAG}/alfresco-share-services-${SHARE_SERVICES_TAG}.amp \
+    -O $TOMCAT_DIR/amps/alfresco-share-services-${SHARE_SERVICES_TAG}.amp; \
+fi
+
 # Install modules and addons
 RUN mkdir -p $TOMCAT_DIR/amps
 COPY modules/amps/* $TOMCAT_DIR/amps/
