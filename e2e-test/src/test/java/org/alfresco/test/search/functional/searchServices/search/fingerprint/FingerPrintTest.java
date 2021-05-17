@@ -24,7 +24,7 @@
  * #L%
  */
 
-package org.alfresco.test.search.functional.searchServices.search;
+package org.alfresco.test.search.functional.searchServices.search.fingerprint;
 
 import static jersey.repackaged.com.google.common.collect.Sets.newHashSet;
 import static org.testng.Assert.assertTrue;
