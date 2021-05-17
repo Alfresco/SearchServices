@@ -161,7 +161,7 @@ public class FingerPrintTest extends AbstractE2EFunctionalTest
         SearchResponse response = query(fingerprintQuery);
 
         int count = response.getEntries().size();
-        assertTrue(count > 1);
+        assertTrue(count >= 1);
         
         Set<String> expectedNames = newHashSet();
         expectedNames.add(fileTaco.getName());
