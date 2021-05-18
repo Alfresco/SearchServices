@@ -95,12 +95,10 @@ public class AlfrescoFieldMapperTransformerIT extends AbstractAlfrescoDistribute
         SolrDocumentList results = resp.getResults();
         assertEquals("Expecting 5 rows",5, results.size());
         SolrDocument doc = results.get(0);
-        assertEquals(3, doc.size());
+        assertEquals(2, doc.size());
         assertNotNull(doc);
         String id = (String) doc.get("id");
         assertNotNull(id);
-        Long version = (Long) doc.get("_version_");
-        assertNotNull(version);
         Long dbid = (Long) doc.get("DBID");
         assertNotNull(dbid);
         //Not expected to see below as part of the solr response.
