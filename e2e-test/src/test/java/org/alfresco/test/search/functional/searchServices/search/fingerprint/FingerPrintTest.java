@@ -24,7 +24,7 @@
  * #L%
  */
 
-package org.alfresco.test.search.functional.searchServices.search;
+package org.alfresco.test.search.functional.searchServices.search.fingerprint;
 
 import static jersey.repackaged.com.google.common.collect.Sets.newHashSet;
 import static org.testng.Assert.assertTrue;
@@ -161,7 +161,7 @@ public class FingerPrintTest extends AbstractE2EFunctionalTest
         SearchResponse response = query(fingerprintQuery);
 
         int count = response.getEntries().size();
-        assertTrue(count > 1);
+        assertTrue(count >= 1);
         
         Set<String> expectedNames = newHashSet();
         expectedNames.add(fileTaco.getName());
