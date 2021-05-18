@@ -50,7 +50,7 @@ import static java.util.Optional.ofNullable;
  * Transform the fieldlist depending on the use of cached transformer:
  * [cached] -> add to the field list the translations of the fiels to the internal schema notation
  * otherwise -> modify the field list in order to contains a subset of the following fields:
- * 		id, DBID, _version_ and score
+ * 		id, DBID, and score
  */
 public class RewriteFieldListComponent extends SearchComponent {
 
@@ -63,7 +63,7 @@ public class RewriteFieldListComponent extends SearchComponent {
     {
         Set<String> fieldListSet = new HashSet<>();
 
-        Set<String> defaultNonCachedFields = Set.of("id","DBID", "_version_");
+        Set<String> defaultNonCachedFields = Set.of("id","DBID");
         Set<String> allowedNonCachedFields = new HashSet<>(defaultNonCachedFields);
         allowedNonCachedFields.add("score");
 
@@ -79,7 +79,7 @@ public class RewriteFieldListComponent extends SearchComponent {
 
 
         // In case cache transformer is no set, we need to modify the field list in order return
-        // only id, DBID and _version_ fields
+        // only id, DBID  fields
         if (!cacheTransformer){
             if (!solrReturnFields.wantsAllFields())
             {
