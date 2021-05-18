@@ -114,9 +114,11 @@ def getSolrcoreConfig(sharding, shardId, shardCount, shardRange):
         print("SolrConfig for Shard: ", shardId, " : ", solrcoreConfig)
     return solrcoreConfig
 
-def getSolrcoreReplacements(sharding, communication):
+def getSolrcoreReplacements(sharding, communication, fingerprint):
     """Returns a dict of replacements to make in the solrcore.properties file."""
     solrcoreReplacements = {}
+    if fingerprint == 'true':
+        solrcoreReplacements['alfresco.fingerprint=false'] = 'alfresco.fingerprint=true'
     if sharding != None:
         solrcoreReplacements['shard.method=DB_ID'] = 'shard.method={}'.format(sharding)
     if communication == 'mtls':
@@ -250,6 +252,7 @@ if __name__ == '__main__':
     parser.add_argument('-sc', '--shardCount', type=int, help='Total number of shards to create (default 2)')
     parser.add_argument('-sr', '--shardRange', type=int, help='Total number of nodes per shard with DB_ID_RANGE sharding (default 800)')
     parser.add_argument('-ct', '--disableCascadeTracking', action='store_true', help='Cascade Tracking Disabled')
+    parser.add_argument('-ef', '--enableFingerprint', action='store_true', help='Enable Fingerprint feature')
     parser.add_argument('-sl', '--searchLogLevel', default='WARN', help='The log level for search (default WARN)',
                         choices=['TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR'])
     parser.add_argument('-o', '--output', default='.', help='The path of the directory to output to')
@@ -306,7 +309,7 @@ if __name__ == '__main__':
             dcYaml['services'][serviceName] = makeSearchNode(args.output, serviceName, externalPort, params, args.communication,
                       extraEnvironmentVars=getExtraEnvironmentVars(serviceName, replicationType),
                       solrcoreConfig=getSolrcoreConfig(args.sharding, shardId, args.shardCount, args.shardRange),
-                      solrcoreReplacements=getSolrcoreReplacements(args.sharding, args.communication))
+                      solrcoreReplacements=getSolrcoreReplacements(args.sharding, args.communication, str(args.enableFingerprint).lower()))
 
     # Point Alfresco at whichever Solr node came last in the list.
     solrHost = serviceName
