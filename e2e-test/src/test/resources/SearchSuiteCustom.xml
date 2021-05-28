@@ -1,0 +1,16 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="SearchSuite" verbose="6" preserve-order="true">
+
+    <listeners>
+        <listener class-name="org.alfresco.utility.report.log.LogsListener"/>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
+    </listeners>
+    
+    <test name="E2E-CustomSearchServices">
+		<classes>
+			<class name="org.alfresco.test.search.functional.searchServices.search.SearchExactTermTest" />
+		</classes>        
+    </test>
+
+</suite>
