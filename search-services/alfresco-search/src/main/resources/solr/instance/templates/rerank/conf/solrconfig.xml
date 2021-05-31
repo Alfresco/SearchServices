@@ -196,6 +196,12 @@
          can perform merges in the background using separate threads.
          The SerialMergeScheduler (Lucene 2.2 default) does not.
      -->
+     
+    <mergePolicy class="org.apache.lucene.index.TieredMergePolicy">
+        <int name="maxMergedSegmentMB">${merge.policy.maxMergedSegmentMB:5120}</int>
+        <int name="maxMergeAtOnce">${merge.policy.maxMergeAtOnce:10}</int>
+        <int name="segmentsPerTier">${merge.policy.segmentsPerTier:10}</int>
+    </mergePolicy>
     
     <mergeScheduler class="org.apache.lucene.index.ConcurrentMergeScheduler">
         <int name="maxMergeCount">${merger.maxMergeCount:6}</int>
