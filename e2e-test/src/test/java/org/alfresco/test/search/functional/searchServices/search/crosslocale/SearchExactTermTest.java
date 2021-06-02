@@ -24,7 +24,7 @@
  * #L%
  */
 
-package org.alfresco.test.search.functional.searchServices.search;
+package org.alfresco.test.search.functional.searchServices.search.crosslocale;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -51,6 +51,10 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 
+/**
+ * Tests including all different tokenization (false, true, both) modes with Exact Term queries.
+ * Search Services must be configured with Cross Locale enabled in order to run this tests.
+ */
 public class SearchExactTermTest extends AbstractE2EFunctionalTest
 {
     @Autowired
@@ -60,49 +64,95 @@ public class SearchExactTermTest extends AbstractE2EFunctionalTest
     protected DataContent dataContent;
     
     private static final DateFormat QUERY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-    
+    private String fromDate;
+    private String toDate;
     
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         serverHealth.assertServerIsOnline();
         
-        deployCustomModel("model/ses-model.xml");
+        deployCustomModel("model/tokenised-model.xml");
         
         dataUser.addUserToSite(testUser, testSite, UserRole.SiteContributor);
 
         FolderModel testFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
 
-        FileModel agent1 = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "Agent");
-        agent1.setName("ses1-" + agent1.getName());
+        FileModel tok1 = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "Tokenised");
+        tok1.setName("tok1-" + tok1.getName());
 
         Map<String, Object> properties = new HashMap<>();
-        properties.put(PropertyIds.OBJECT_TYPE_ID, "D:ses:businessplan");
-        properties.put(PropertyIds.NAME, agent1.getName());
-        properties.put("ses:agent", "1");
+        properties.put(PropertyIds.OBJECT_TYPE_ID, "D:tok:document");
+        properties.put(PropertyIds.NAME, tok1.getName());
+        properties.put("tok:true", "1");
+        properties.put("tok:false", "1");
+        properties.put("tok:both", "1");
 
-        cmisApi.authenticateUser(testUser).usingSite(testSite).usingResource(testFolder).createFile(agent1, properties, VersioningState.MAJOR)
+        cmisApi.authenticateUser(testUser).usingSite(testSite).usingResource(testFolder).createFile(tok1, properties, VersioningState.MAJOR)
                 .assertThat().existsInRepo();
 
-        // Wait for the file to be indexed
-        waitForIndexing(agent1.getName(), true);
-    }
-
-    @Test(priority = 1)
-    public void testExactTermQueryConjunction()
-    {
+        waitForIndexing(tok1.getName(), true);
         
+        
+        // Calculate time query range
         Date today = new Date();
         
         LocalDateTime yesterday = today.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         yesterday = yesterday.plusDays(-1);
-        String fromDate = QUERY_DATE_FORMAT.format(Date.from(yesterday.atZone(ZoneId.systemDefault()).toInstant()));
+        fromDate = QUERY_DATE_FORMAT.format(Date.from(yesterday.atZone(ZoneId.systemDefault()).toInstant()));
         
         LocalDateTime tomorrow = today.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         tomorrow = tomorrow.plusDays(1);
-        String toDate = QUERY_DATE_FORMAT.format(Date.from(tomorrow.atZone(ZoneId.systemDefault()).toInstant()));
+        toDate = QUERY_DATE_FORMAT.format(Date.from(tomorrow.atZone(ZoneId.systemDefault()).toInstant()));
         
-        String query = "=ses:agent:1";
+    }
+
+    @Test(priority = 1)
+    public void testExactTermTokenised()
+    {
+        
+        String query = "=tok:true:1";
+        SearchResponse response = queryAsUser(testUser, query);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        Assert.assertEquals(response.getPagination().getCount(), 1, query);
+
+        query = "=tok:both:1";
+        response = queryAsUser(testUser, query);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        Assert.assertEquals(response.getPagination().getCount(), 1, query);
+        
+        query = "cm:created:['" + fromDate + "' TO '" + toDate + "']";
+        response = queryAsUser(testUser, query);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        Assert.assertEquals(response.getPagination().getCount(), 100, query);
+
+        query = "tok:true:1 AND cm:created:['" + fromDate + "' TO '" + toDate + "']";
+        response = queryAsUser(testUser, query);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        Assert.assertEquals(response.getPagination().getCount(), 1, query);
+        
+        query = "=tok:true:1 AND cm:created:['" + fromDate + "' TO '" + toDate + "']";
+        response = queryAsUser(testUser, query);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        Assert.assertEquals(response.getPagination().getCount(), 1, query);
+
+        query = "tok:both:1 AND cm:created:['" + fromDate + "' TO '" + toDate + "']";
+        response = queryAsUser(testUser, query);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        Assert.assertEquals(response.getPagination().getCount(), 1, query);
+        
+        query = "=tok:both:1 AND cm:created:['" + fromDate + "' TO '" + toDate + "']";
+        response = queryAsUser(testUser, query);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        Assert.assertEquals(response.getPagination().getCount(), 1, query);
+
+    }
+
+    @Test(priority = 2)
+    public void testExactTermNonTokenised()
+    {
+        
+        String query = "=tok:false:1";
         SearchResponse response = queryAsUser(testUser, query);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1, query);
@@ -112,16 +162,16 @@ public class SearchExactTermTest extends AbstractE2EFunctionalTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 100, query);
 
-        query = "ses:agent:1 AND cm:created:['" + fromDate + "' TO '" + toDate + "']";
+        query = "tok:false:1 AND cm:created:['" + fromDate + "' TO '" + toDate + "']";
         response = queryAsUser(testUser, query);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1, query);
         
-        query = "=ses:agent:1 AND cm:created:['" + fromDate + "' TO '" + toDate + "']";
+        query = "=tok:false:1 AND cm:created:['" + fromDate + "' TO '" + toDate + "']";
         response = queryAsUser(testUser, query);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1, query);
 
     }
-
+    
 }

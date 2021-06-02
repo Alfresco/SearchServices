@@ -19,6 +19,7 @@
                 <exclude name="org.alfresco.test.search.functional.searchServices.cmis"/>
                 <exclude name="org.alfresco.test.search.functional.searchServices.search.rm"/>
                 <exclude name="org.alfresco.test.search.functional.searchServices.search.fingerprint"/>
+                <exclude name="org.alfresco.test.search.functional.searchServices.search.crosslocale"/>
             </package>
         </packages>
         <!-- Despite this class is included in Search Services package, needs to be excluded in order to be executed as the last one -->

@@ -7,10 +7,11 @@
         <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
     </listeners>
     
-    <test name="E2E-CustomSearchServices">
-		<classes>
-			<class name="org.alfresco.test.search.functional.searchServices.search.SearchExactTermTest" />
-		</classes>        
+    <!-- This tests require Cross Locale configuration for Search Services -->
+    <test name="E2E-CrossLocaleSearchServices">
+        <packages>
+            <package name="org.alfresco.test.search.functional.searchServices.search.crosslocale"/>
+        </packages>
     </test>
 
 </suite>
