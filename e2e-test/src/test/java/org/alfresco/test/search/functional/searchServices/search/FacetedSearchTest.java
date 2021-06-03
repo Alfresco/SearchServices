@@ -408,12 +408,12 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
         Assert.assertEquals(model.getLabel(), "cm:addressees");
         model.assertThat().field("label").is("cm:addressees");
         RestGenericBucketModel bucket = model.getBuckets().get(0);
-        bucket.assertThat().field("label").is("{en}first");
-        bucket.assertThat().field("filterQuery").is("cm:addressees:\"{en}first\"");
+        bucket.assertThat().field("label").is("first");
+        bucket.assertThat().field("filterQuery").is("cm:addressees:\"first\"");
         bucket.assertThat().field("metrics").is("[{entry=null, type=count, value={count=1}}]");
         bucket = model.getBuckets().get(1);
-        bucket.assertThat().field("label").is("{en}second");
-        bucket.assertThat().field("filterQuery").is("cm:addressees:\"{en}second\"");
+        bucket.assertThat().field("label").is("second");
+        bucket.assertThat().field("filterQuery").is("cm:addressees:\"second\"");
         bucket.assertThat().field("metrics").is("[{entry=null, type=count, value={count=1}}]");
         
         // Facets for cm:addressee (singel valued)
@@ -421,8 +421,8 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
         Assert.assertEquals(model.getLabel(), "cm:addressee");
         model.assertThat().field("label").is("cm:addressee");
         bucket = model.getBuckets().get(0);
-        bucket.assertThat().field("label").is("{en}first");
-        bucket.assertThat().field("filterQuery").is("cm:addressee:\"{en}first\"");
+        bucket.assertThat().field("label").is("first");
+        bucket.assertThat().field("filterQuery").is("cm:addressee:\"first\"");
         bucket.assertThat().field("metrics").is("[{entry=null, type=count, value={count=1}}]");
         
     }
