@@ -84,9 +84,9 @@ public class SearchExactTermTest extends AbstractE2EFunctionalTest
         Map<String, Object> properties = new HashMap<>();
         properties.put(PropertyIds.OBJECT_TYPE_ID, "D:tok:document");
         properties.put(PropertyIds.NAME, tok1.getName());
-        properties.put("tok:true", "1");
-        properties.put("tok:false", "1");
-        properties.put("tok:both", "1");
+        properties.put("tok:true", "running");
+        properties.put("tok:false", "running");
+        properties.put("tok:both", "running");
 
         cmisApi.authenticateUser(testUser).usingSite(testSite).usingResource(testFolder).createFile(tok1, properties, VersioningState.MAJOR)
                 .assertThat().existsInRepo();
@@ -111,12 +111,12 @@ public class SearchExactTermTest extends AbstractE2EFunctionalTest
     public void testExactTermTokenised()
     {
         
-        String query = "=tok:true:1";
+        String query = "=tok:true:running";
         SearchResponse response = queryAsUser(testUser, query);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1, query);
 
-        query = "=tok:both:1";
+        query = "=tok:both:running";
         response = queryAsUser(testUser, query);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1, query);
@@ -126,22 +126,22 @@ public class SearchExactTermTest extends AbstractE2EFunctionalTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 100, query);
 
-        query = "tok:true:1 AND cm:created:['" + fromDate + "' TO '" + toDate + "']";
+        query = "tok:true:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']";
         response = queryAsUser(testUser, query);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1, query);
         
-        query = "=tok:true:1 AND cm:created:['" + fromDate + "' TO '" + toDate + "']";
+        query = "=tok:true:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']";
         response = queryAsUser(testUser, query);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1, query);
 
-        query = "tok:both:1 AND cm:created:['" + fromDate + "' TO '" + toDate + "']";
+        query = "tok:both:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']";
         response = queryAsUser(testUser, query);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1, query);
         
-        query = "=tok:both:1 AND cm:created:['" + fromDate + "' TO '" + toDate + "']";
+        query = "=tok:both:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']";
         response = queryAsUser(testUser, query);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1, query);
@@ -152,7 +152,7 @@ public class SearchExactTermTest extends AbstractE2EFunctionalTest
     public void testExactTermNonTokenised()
     {
         
-        String query = "=tok:false:1";
+        String query = "=tok:false:running";
         SearchResponse response = queryAsUser(testUser, query);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1, query);
@@ -162,16 +162,59 @@ public class SearchExactTermTest extends AbstractE2EFunctionalTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 100, query);
 
-        query = "tok:false:1 AND cm:created:['" + fromDate + "' TO '" + toDate + "']";
+        query = "tok:false:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']";
         response = queryAsUser(testUser, query);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1, query);
         
-        query = "=tok:false:1 AND cm:created:['" + fromDate + "' TO '" + toDate + "']";
+        query = "=tok:false:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']";
         response = queryAsUser(testUser, query);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response.getPagination().getCount(), 1, query);
 
+    }
+    
+    /**
+     * Since this test is not strictly related with exact term searching,
+     * it includes a set of queries to verify different tokenisation options:
+     * 
+     *   - false: only exact term (running) will provide results
+     *   - true | both: exact term (running) and tokens (run) will provide results
+     */
+    @Test(priority = 3)
+    public void testTokenisation()
+    {
+        
+        String query = "tok:false:running";
+        SearchResponse response = queryAsUser(testUser, query);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        Assert.assertEquals(response.getPagination().getCount(), 1, query);
+
+        query = "tok:false:run";
+        response = queryAsUser(testUser, query);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        Assert.assertEquals(response.getPagination().getCount(), 0, query);
+        
+        query = "tok:true:running";
+        response = queryAsUser(testUser, query);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        Assert.assertEquals(response.getPagination().getCount(), 1, query);
+
+        query = "tok:true:run";
+        response = queryAsUser(testUser, query);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        Assert.assertEquals(response.getPagination().getCount(), 1, query);
+        
+        query = "tok:both:running";
+        response = queryAsUser(testUser, query);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        Assert.assertEquals(response.getPagination().getCount(), 1, query);
+
+        query = "tok:both:run";
+        response = queryAsUser(testUser, query);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        Assert.assertEquals(response.getPagination().getCount(), 1, query);
+        
     }
     
 }
