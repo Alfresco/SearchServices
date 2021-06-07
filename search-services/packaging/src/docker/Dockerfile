@@ -15,7 +15,7 @@ ARG USERNAME=solr
 ARG USERID=33007
 
 # YourKit Java Profiler
-ARG JAVA_PROFILER=YourKit-JavaProfiler-2019.8-docker
+ARG JAVA_PROFILER=YourKit-JavaProfiler-2019.8-b142-docker
 
 COPY "$SOLR_ZIP" .
 
@@ -62,7 +62,7 @@ EXPOSE 8983
 #    "
 #    ports:
 #        - 10001:10001
-RUN wget https://www.yourkit.com/download/docker/${JAVA_PROFILER}.zip -P /tmp/ && \
+RUN wget https://download.yourkit.com/yjp/2019.8/${JAVA_PROFILER}.zip -P /tmp/ && \
   unzip /tmp/${JAVA_PROFILER}.zip -d /usr/local && \
   rm /tmp/${JAVA_PROFILER}.zip
 
