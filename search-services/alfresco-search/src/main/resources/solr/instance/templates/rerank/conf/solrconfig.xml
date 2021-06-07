@@ -1176,6 +1176,15 @@
          <str name="pollInterval">00:00:60</str>
        </lst>
     -->
+
+      <!--
+      This invariant is needed to prevent the usage of location parameter in the replication handler APIs.
+      There is no validation for location parameter. This results in a vulnerability described in https://nvd.nist.gov/vuln/detail/CVE-2020-13941
+      -->
+      <lst name="invariants">
+          <str name="location">${solr.backup.dir:.}</str>
+      </lst>
+
   </requestHandler>
 
   <!-- Search Components
