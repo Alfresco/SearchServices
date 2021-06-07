@@ -30,7 +30,7 @@ RUN if [ "${SEARCH_LOG_LEVEL}" != "" ] ; then \
 fi
 
 # Enable cross locale configuration if requested.
-RUN if [ "${ENABLE_CROSS_LOCALE}" != "" ] ; then \
+RUN if [[ "${ENABLE_CROSS_LOCALE}" == "True" ]] ; then \
   sed -i '/^bash.*/i sed -i "'"/alfresco.cross.locale.datatype/s/^#//g"'" $${DIST_DIR}/solrhome/conf/shared.properties\n' \
   $${DIST_DIR}/solr/bin/search_config_setup.sh; \
 fi
