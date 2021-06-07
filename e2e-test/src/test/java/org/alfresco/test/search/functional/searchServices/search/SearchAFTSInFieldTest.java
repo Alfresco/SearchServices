@@ -123,7 +123,7 @@ public class SearchAFTSInFieldTest extends AbstractE2EFunctionalTest
     @Test(priority = 2, groups = { TestGroup.ACS_63n })
     public void testSearchInFieldTitle()
     {
-        // Field names in various formats, as this field is tokenised more than one result is expected (1-file.txt, file1.txt)
+        // Field names in various formats
         Stream<String> fieldNames = Stream.of("{http://www.alfresco.org/model/content/1.0}title",
         "@{http://www.alfresco.org/model/content/1.0}title",
         "cm_title",
