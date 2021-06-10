@@ -23,20 +23,25 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
-package org.alfresco.test.search.functional.searchServices.search.crosslocale;
+package org.alfresco.test.search.functional.searchServices.search;
 
 import org.alfresco.test.search.functional.AbstractSearchExactTermTest;
 import org.testng.annotations.Test;
 
-
 /**
  * Tests including all different tokenization (false, true, both) modes with Exact Term queries.
- * Search Services must be configured with Cross Locale enabled in order to run these tests.
+ * Since Search Services are not configured with Cross Locale enabled, some errors and omissions are expected.
  * These tests are based in AFTSDefaultTextQueryIT class, but an additional type of property 
  * has been added (tok:true) in order to provide full coverage for the available options.
+ * 
+ * Since tok:true and tok:both properties are not supported to be used with exact term search,
+ * exception from this queries is expected.
+ * 
+ * SOLR log is dumping the cause of the error, for instance:
+ *   java.lang.UnsupportedOperationException: Exact Term search is not supported unless you configure the field 
+ *   <{http://www.alfresco.org/model/tokenised/1.0}true> for cross locale search
  */
-public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
+public class SearchExactTermTest extends AbstractSearchExactTermTest
 {
     
     @Test
@@ -44,15 +49,13 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
     {
         /*
          * Out of the 5 'run corpus' documents 
-         * 2 results are expected:
+         * 1 result is expected:
          * 
          * - "name", "Run",
          * "description", "you are supposed to run jump"
          * 
-         * - "name", "Running jumping",
-         * "content", "run is Good as jump",
          */
-        assertResponseCardinality("=run", 2);
+        assertResponseCardinality("=run", 1);
         
         /*
          * No result for runner, one record has runners,
@@ -65,19 +68,12 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
          * Out of the 5 'run corpus' documents
          * Note that we are not using 'running' this time as 'Milestone' wiki page (coming from ootb content)
          * is including "running" in the content
-         * 3 results are expected, only two docs are not fit for the query
+         * 1 result is expected
          * 
-         * - "name", "Running",
-         * "description", "Running is a sport is a nice activity",
-         * "content", "when you are running you are doing an amazing sport",
-         * "title", "Running jumping"
-         *
-         * - "name", "Poetry",
-         * "description", "a document about poetry and jumpers",
-         * "content", "poetry is unrelated to sport",
-         * "title", "Running jumping twice jumpers"
+         * - "name", "Jump",
+         * "description", "a document about jumps"
          */
-        assertResponseCardinality("=jump", 3);
+        assertResponseCardinality("=jump", 1);
         
     }
     
@@ -111,8 +107,8 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
          *
          */
         assertResponseCardinality("=tok:false:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
-        assertResponseCardinality("=tok:true:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 4);
-        assertResponseCardinality("=tok:both:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 4);
+        assertException("=tok:true:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
+        assertException("=tok:both:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
         
         /*
          * Following queries will get results directly from DB
@@ -133,8 +129,8 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
          *
          */
         assertResponseCardinality("=tok:false:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
-        assertResponseCardinality("=tok:true:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 4);
-        assertResponseCardinality("=tok:both:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 4);
+        assertException("=tok:true:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
+        assertException("=tok:both:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
         
         /*
          * Following queries will get results directly from DB
@@ -155,9 +151,8 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
          *
          */
         assertResponseCardinality("=tok:false:Run AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
-        assertResponseCardinality("=tok:true:Run AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
-        assertResponseCardinality("=tok:both:Run AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
-
+        assertException("=tok:true:Run AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
+        assertException("=tok:both:Run AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
 
     }
     
@@ -166,20 +161,16 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
     {
         /*
          * Out of the 5 'run corpus' documents
-         * 3 results are expected:
+         * 2 results are expected:
          *
          * - "name", "Run",
          * "description", "you are supposed to run jump",
-         * 
-         * - "name", "Running jumping",
-         * "description", "runners jumpers runs everywhere",
-         * "content", "run is Good as jump",
          * 
          * - "name", "Jump",
          * "description", "a document about jumps",
          * 
          */
-        assertResponseCardinality("=run =jump", 3);
+        assertResponseCardinality("=run =jump", 2);
 
         /*
          * No result for runner or jumper, one record has runners,
@@ -197,19 +188,14 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
 
         /*
          * Out of the 5 'run corpus' documents
-         * 4 results are expected:
-         * Only one doc does't fit:
-         * - "name", "Run",
-         *  "description", "you are supposed to run jump",
-         *  "content", "after many runs you are tired and if you jump it happens the same",
-         *  "title", "Run : a philosophy",
-         *  "creator", "Alex"
-         *  
-         * Since 'Milestone' wiki page (coming from ootb content) is including "running" in the content,
-         * we are checking for 5 results instead of 4
-         *               
+         * 2 results are expected:
+         * Only one doc fits:
+         * - "name", "Running jumping",
+         * "description", "runners jumpers run everywhere",
+         * - "name", "Running",
+         * "title", "Running jumping"
          */
-        assertResponseCardinality("=running =jumping", 5);
+        assertResponseCardinality("=running =jumping", 2);
     }
     
     @Test
@@ -237,8 +223,8 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
          *
          */
         assertResponseCardinality("=tok:false:running =tok:false:jumpers AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
-        assertResponseCardinality("=tok:both:running =tok:both:jumpers AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 4);
-        assertResponseCardinality("=tok:true:running =tok:true:jumpers AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 4);
+        assertException("=tok:both:running =tok:both:jumpers AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
+        assertException("=tok:true:running =tok:true:jumpers AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
     }
     
     @Test
@@ -246,13 +232,9 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
     {
         /*
          * Out of the 5 'run corpus' documents
-         * 1 results are expected:
-         *
-         * - "name", "Run",
-         * "description", "you are supposed to run jump",
-         * 
+         * 0 results are expected.
          */
-        assertResponseCardinality("=\"run jump\"", 1);
+        assertResponseCardinality("=\"run jump\"", 0);
 
         /*
          * No result for runner jumper, one record has runners jumpers,
@@ -266,18 +248,11 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
 
         /*
          * Out of the 5 'run corpus' documents
-         * 3 results are expected:
+         * 1 results is expected:
          *
-         * - "name", "Running",
-         *  ...
-         *   "title", "Running jumping",
-         * 
-         * - "name", "Poetry",
-         * "title", "Running jumping twice jumpers"
-         * 
          * - "name", "Running jumping",
          */
-        assertResponseCardinality("=\"running jumping\"", 3);
+        assertResponseCardinality("=\"running jumping\"", 1);
         assertResponseCardinality("\"running jumping\"", 5);
     }
     
@@ -308,8 +283,8 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
          *
          */
         assertResponseCardinality("=tok:false:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
-        assertResponseCardinality("=tok:true:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 2);
-        assertResponseCardinality("=tok:both:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 2);
+        assertException("=tok:true:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
+        assertException("=tok:both:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
 
         /*
          * Following queries will get results directly from DB
@@ -328,8 +303,8 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
          *
          */
         assertResponseCardinality("=tok:false:\"Running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
-        assertResponseCardinality("=tok:true:\"Running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 2);
-        assertResponseCardinality("=tok:both:\"Running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 2);
+        assertException("=tok:true:\"Running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
+        assertException("=tok:both:\"Running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
 
 
         /*
@@ -350,8 +325,8 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
          *
          */
         assertResponseCardinality("=tok:false:\"Running jumping twice\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
-        assertResponseCardinality("=tok:true:\"Running jumping twice\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
-        assertResponseCardinality("=tok:both:\"Running jumping twice\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
+        assertException("=tok:true:\"Running jumping twice\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
+        assertException("=tok:both:\"Running jumping twice\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
     }
     
 }
