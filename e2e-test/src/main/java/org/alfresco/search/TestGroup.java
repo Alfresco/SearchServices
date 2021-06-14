@@ -44,6 +44,8 @@ public class TestGroup
 
     public static final String CONFIG_ENABLED_CASCADE_TRACKER ="Config_Enabled_Cascade_Tracker"; // Alfresco search services does not index fields related to cascaded updates
 
+    public static final String CROSS_LOCALE_SUPPORT_DISABLED = "CROSS_LOCALE_SUPPORT_DISABLED";
+
     public static final String NOT_INSIGHT_ENGINE = "Not_InsightEngine"; // When Alfresco Insight Engine 1.0 isn't running
 
     public static final String ACS_52n = "ACS_52n"; // Alfresco Content Services 5.2.n

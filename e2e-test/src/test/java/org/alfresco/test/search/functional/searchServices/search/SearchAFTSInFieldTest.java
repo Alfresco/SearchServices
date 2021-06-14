@@ -29,6 +29,7 @@ package org.alfresco.test.search.functional.searchServices.search;
 import static java.util.List.of;
 
 import static jersey.repackaged.com.google.common.collect.Sets.newHashSet;
+import static org.alfresco.search.TestGroup.CROSS_LOCALE_SUPPORT_DISABLED;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,12 +38,15 @@ import java.util.stream.Stream;
 
 import org.alfresco.rest.model.RestNodeAssociationModelCollection;
 import org.alfresco.rest.model.RestNodeChildAssociationModel;
+import org.alfresco.rest.search.RestRequestQueryModel;
+import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.search.TestGroup;
 import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
+import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -341,5 +345,17 @@ public class SearchAFTSInFieldTest extends AbstractE2EFunctionalTest
 
         fileFound = isContentInSearchResponse(response, file3.getName());
         Assert.assertFalse(fileFound, "File3 found for query: " + query);
+    }
+
+    /** Check that a 501 error is returned when performing exact search on a tokenised field without cross-locale support. */
+    @Test (priority = 12, groups = CROSS_LOCALE_SUPPORT_DISABLED)
+    public void testExactMatchWithoutCrossLocale()
+    {
+        String query = "=cm:title:test and =cm:name:" + file1.getName();
+        RestRequestQueryModel queryModel = new RestRequestQueryModel();
+        queryModel.setQuery(query);
+        SearchRequest searchRequest = new SearchRequest(queryModel);
+        restClient.authenticateUser(dataUser.getAdminUser()).withSearchAPI().search(searchRequest);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_IMPLEMENTED);
     }
 }
