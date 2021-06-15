@@ -40,7 +40,7 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
 {
     
     /**
-     * Note this tests are searching in cm:name, cm:title, cm:description and cm:content properties
+     * Note these tests are searching in cm:name, cm:title, cm:description and cm:content properties
      */
     @Test
     public void exactSearch_singleTerm_shouldReturnResultsContainingExactTerm() throws Exception
@@ -151,7 +151,7 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
     
     
     /**
-     * Note this tests are searching in cm:name, cm:title, cm:description and cm:content properties
+     * Note these tests are searching in cm:name, cm:title, cm:description and cm:content properties
      */
     @Test
     public void exactSearch_multiTerm_shouldReturnResultsContainingExactTerm() throws Exception 
@@ -221,7 +221,7 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
     
     
     /**
-     * Note this tests are searching in cm:name, cm:title, cm:description and cm:content properties
+     * Note these tests are searching in cm:name, cm:title, cm:description and cm:content properties
      */
     @Test
     public void exactSearch_exactPhrase_shouldReturnResultsContainingExactPhrase() throws Exception 
