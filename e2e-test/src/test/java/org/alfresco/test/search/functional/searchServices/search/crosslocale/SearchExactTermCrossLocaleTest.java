@@ -55,7 +55,7 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
         assertResponseCardinality("=run", 2);
         
         /*
-         * No result for runner, one record has runners,
+         * No result for runner, one record has "runners",
          * you can see the difference between exact search and not
          */
         assertResponseCardinality("=runner", 0);
@@ -96,62 +96,31 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
          */
         
         /*
-         * Following queries will get results directly from DB
-         * As there is no "running" value, 0 results are expected
-         */
-        assertResponseCardinality("=tok:false:running", 0);
-        assertResponseCardinality("=tok:true:running", 0);
-        assertResponseCardinality("=tok:both:running", 0);
-        
-        /*
          * Following queries will get results from SOLR
          * Out of the 5 'run corpus' documents
-         * 0 results are expected:
-         * there is no result that have tok_false:"running"
+         * 0 results are expected for non-tokenised,
+         * 4 results are expected for tokenised
          *
          */
-        assertResponseCardinality("=tok:false:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
+        assertResponseCardinality("=tok:false:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
         assertResponseCardinality("=tok:true:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 4);
         assertResponseCardinality("=tok:both:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 4);
         
         /*
-         * Following queries will get results directly from DB
-         * 1 result is expected
-         */
-        assertResponseCardinality("=tok:false:Running", 1);
-        assertResponseCardinality("=tok:true:Running", 1);
-        assertResponseCardinality("=tok:both:Running", 1);
-        
-        /*
          * Following queries will get results from SOLR
          * Out of the 5 'run corpus' documents
-         * 1 result is expected:
-         * 
-         * - "name", "Jump",
-         *  ...
-         *  "title", "Running"
-         *
+         * 1 result is expected for non-tokenised
+         * 4 results are expected for tokenised
          */
         assertResponseCardinality("=tok:false:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
         assertResponseCardinality("=tok:true:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 4);
         assertResponseCardinality("=tok:both:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 4);
         
         /*
-         * Following queries will get results directly from DB
-         * As there is no "Run" value, 0 results are expected
-         */
-        assertResponseCardinality("=tok:false:Run", 0);
-        assertResponseCardinality("=tok:true:Run", 0);
-        assertResponseCardinality("=tok:both:Run", 0);
-
-
-        /*
          * Following queries will get results from SOLR
          * Out of the 5 'run corpus' documents
-         * 0 results are expected:
-         * there is no result that have exactly tok:false:"Run"
-         * The closest we have is record Run (tok:false:"Run : a philosophy")
-         * As you can see we don't have a full match, so it's not in the results.
+         * 0 results are expected for non-tokenised
+         * 1 result is expected for tokenised
          *
          */
         assertResponseCardinality("=tok:false:Run AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
@@ -222,21 +191,13 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
          */
 
         /*
-         * Following queries will get results directly from DB
-         * As there is no "running" or "jumper" value, 0 results are expected
-         */
-        assertResponseCardinality("=tok:false:running =tok:false:jumpers", 0);
-        assertResponseCardinality("=tok:both:running =tok:both:jumpers", 0);
-        assertResponseCardinality("=tok:true:running =tok:true:jumpers", 0);
-        
-        /*
          * Following queries will get results from SOLR
          * Out of the 5 'run corpus' documents
-         * 0 results are expected:
-         * there is no result that have tok:false:"running" or "jumpers"
+         * 0 results are expected for non-tokenised
+         * 4 results are expected for tokenised
          *
          */
-        assertResponseCardinality("=tok:false:running =tok:false:jumpers AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
+        assertResponseCardinality("=tok:false:running =tok:false:jumpers AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
         assertResponseCardinality("=tok:both:running =tok:both:jumpers AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 4);
         assertResponseCardinality("=tok:true:running =tok:true:jumpers AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 4);
     }
@@ -291,14 +252,6 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
          */
         
         /*
-         * Following queries will get results directly from DB
-         * As there is no "running jumping" value, 0 results are expected
-         */
-        assertResponseCardinality("=tok:false:\"running jumping\"", 0);
-        assertResponseCardinality("=tok:true:\"running jumping\"", 0);
-        assertResponseCardinality("=tok:both:\"running jumping\"", 0);
-
-        /*
          * Following queries will get results from SOLR
          * Out of the 5 'run corpus' documents
          * 0 results are expected:
@@ -307,18 +260,10 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
          * "title", "Running jumping",
          *
          */
-        assertResponseCardinality("=tok:false:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
+        assertResponseCardinality("=tok:false:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
         assertResponseCardinality("=tok:true:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 2);
         assertResponseCardinality("=tok:both:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 2);
 
-        /*
-         * Following queries will get results directly from DB
-         * As there is one "running jumping" value, 1 result are expected
-         */
-        assertResponseCardinality("=tok:false:\"Running jumping\"", 1);
-        assertResponseCardinality("=tok:true:\"Running jumping\"", 1);
-        assertResponseCardinality("=tok:both:\"Running jumping\"", 1);
-        
         /*
          * Following queries will get results from SOLR
          * Out of the 5 'run corpus' documents
@@ -333,14 +278,6 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
 
 
         /*
-         * Following queries will get results directly from DB
-         * As there is none "Running jumping twice" value, 0 results are expected
-         */
-        assertResponseCardinality("=tok:false:\"Running jumping twice\"", 0);
-        assertResponseCardinality("=tok:true:\"Running jumping twice\"", 0);
-        assertResponseCardinality("=tok:both:\"Running jumping twice\"", 0);
-        
-        /*
          * Following queries will get results from SOLR
          * Out of the 5 'run corpus' documents
          * 0 results are expected:
@@ -349,7 +286,7 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
          * "title", "Running jumping twice jumpers",
          *
          */
-        assertResponseCardinality("=tok:false:\"Running jumping twice\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
+        assertResponseCardinality("=tok:false:\"Running jumping twice\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
         assertResponseCardinality("=tok:true:\"Running jumping twice\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
         assertResponseCardinality("=tok:both:\"Running jumping twice\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
     }
