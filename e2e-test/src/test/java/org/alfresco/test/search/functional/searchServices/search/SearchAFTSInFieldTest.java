@@ -29,6 +29,7 @@ package org.alfresco.test.search.functional.searchServices.search;
 import static java.util.List.of;
 
 import static jersey.repackaged.com.google.common.collect.Sets.newHashSet;
+import static org.alfresco.search.TestGroup.ACS_71n;
 import static org.alfresco.search.TestGroup.CROSS_LOCALE_SUPPORT_DISABLED;
 
 import java.util.ArrayList;
@@ -348,14 +349,28 @@ public class SearchAFTSInFieldTest extends AbstractE2EFunctionalTest
     }
 
     /** Check that a 501 error is returned when performing exact search on a tokenised field without cross-locale support. */
-    @Test (priority = 12, groups = CROSS_LOCALE_SUPPORT_DISABLED)
+    @Test (priority = 12, groups = { CROSS_LOCALE_SUPPORT_DISABLED, ACS_71n })
     public void testExactMatchWithoutCrossLocale()
     {
-        String query = "=cm:title:test and =cm:name:" + file1.getName();
+        // Force the query to hit Solr rather than the DB.
+        String query = "=cm:title:test and cm:name:*";
         RestRequestQueryModel queryModel = new RestRequestQueryModel();
         queryModel.setQuery(query);
         SearchRequest searchRequest = new SearchRequest(queryModel);
         restClient.authenticateUser(dataUser.getAdminUser()).withSearchAPI().search(searchRequest);
         restClient.assertStatusCodeIs(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    /** Check that a 200 success is returned when performing exact search against the DB (even on a tokenised field without cross-locale support). */
+    @Test (priority = 13)
+    public void testExactMatchAgainstDB()
+    {
+        // Using a simple query we will hit the DB.
+        String query = "=cm:title:test";
+        RestRequestQueryModel queryModel = new RestRequestQueryModel();
+        queryModel.setQuery(query);
+        SearchRequest searchRequest = new SearchRequest(queryModel);
+        restClient.authenticateUser(dataUser.getAdminUser()).withSearchAPI().search(searchRequest);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 }
