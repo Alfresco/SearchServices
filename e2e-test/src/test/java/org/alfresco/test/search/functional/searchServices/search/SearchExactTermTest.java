@@ -92,14 +92,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
          */
         
         /*
-         * Following queries will get results directly from DB
-         * As there is no "running" value, 0 results are expected
-         */
-        assertResponseCardinality("=tok:false:running", 0);
-        assertResponseCardinality("=tok:true:running", 0);
-        assertResponseCardinality("=tok:both:running", 0);
-        
-        /*
          * Following queries will get results from SOLR
          * Out of the 5 'run corpus' documents
          * 0 results are expected:
@@ -109,14 +101,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
         assertResponseCardinality("=tok:false:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
         assertException("=tok:true:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
         assertException("=tok:both:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
-        
-        /*
-         * Following queries will get results directly from DB
-         * 1 result is expected
-         */
-        assertResponseCardinality("=tok:false:Running", 1);
-        assertResponseCardinality("=tok:true:Running", 1);
-        assertResponseCardinality("=tok:both:Running", 1);
         
         /*
          * Following queries will get results from SOLR
@@ -132,15 +116,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
         assertException("=tok:true:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
         assertException("=tok:both:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
         
-        /*
-         * Following queries will get results directly from DB
-         * As there is no "Run" value, 0 results are expected
-         */
-        assertResponseCardinality("=tok:false:Run", 0);
-        assertResponseCardinality("=tok:true:Run", 0);
-        assertResponseCardinality("=tok:both:Run", 0);
-
-
         /*
          * Following queries will get results from SOLR
          * Out of the 5 'run corpus' documents
@@ -189,7 +164,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
         /*
          * Out of the 5 'run corpus' documents
          * 2 results are expected:
-         * Only one doc fits:
          * - "name", "Running jumping",
          * "description", "runners jumpers run everywhere",
          * - "name", "Running",
@@ -207,14 +181,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
          * We can't expect any search to work except full exact value search.
          */
 
-        /*
-         * Following queries will get results directly from DB
-         * As there is no "running" or "jumper" value, 0 results are expected
-         */
-        assertResponseCardinality("=tok:false:running =tok:false:jumpers", 0);
-        assertResponseCardinality("=tok:both:running =tok:both:jumpers", 0);
-        assertResponseCardinality("=tok:true:running =tok:true:jumpers", 0);
-        
         /*
          * Following queries will get results from SOLR
          * Out of the 5 'run corpus' documents
@@ -266,14 +232,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
          */
         
         /*
-         * Following queries will get results directly from DB
-         * As there is no "running jumping" value, 0 results are expected
-         */
-        assertResponseCardinality("=tok:false:\"running jumping\"", 0);
-        assertResponseCardinality("=tok:true:\"running jumping\"", 0);
-        assertResponseCardinality("=tok:both:\"running jumping\"", 0);
-
-        /*
          * Following queries will get results from SOLR
          * Out of the 5 'run corpus' documents
          * 0 results are expected:
@@ -287,14 +245,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
         assertException("=tok:both:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
 
         /*
-         * Following queries will get results directly from DB
-         * As there is one "running jumping" value, 1 result are expected
-         */
-        assertResponseCardinality("=tok:false:\"Running jumping\"", 1);
-        assertResponseCardinality("=tok:true:\"Running jumping\"", 1);
-        assertResponseCardinality("=tok:both:\"Running jumping\"", 1);
-        
-        /*
          * Following queries will get results from SOLR
          * Out of the 5 'run corpus' documents
          * 1 results are expected:
@@ -306,15 +256,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
         assertException("=tok:true:\"Running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
         assertException("=tok:both:\"Running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
 
-
-        /*
-         * Following queries will get results directly from DB
-         * As there is none "Running jumping twice" value, 0 results are expected
-         */
-        assertResponseCardinality("=tok:false:\"Running jumping twice\"", 0);
-        assertResponseCardinality("=tok:true:\"Running jumping twice\"", 0);
-        assertResponseCardinality("=tok:both:\"Running jumping twice\"", 0);
-        
         /*
          * Following queries will get results from SOLR
          * Out of the 5 'run corpus' documents
