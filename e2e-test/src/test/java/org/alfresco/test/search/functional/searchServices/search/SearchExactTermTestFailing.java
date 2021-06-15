@@ -32,11 +32,10 @@ import org.testng.annotations.Test;
  * This class is capturing expected results that are not working currently.
  * This test should be addressed by https://alfresco.atlassian.net/browse/SEARCH-2461
  */
-@Test(enabled=false)
 public class SearchExactTermTestFailing extends AbstractSearchExactTermTest
 {
     
-    @Test
+    @Test(enabled=false)
     public void exactSearch_singleTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception 
     {
         
@@ -66,7 +65,7 @@ public class SearchExactTermTestFailing extends AbstractSearchExactTermTest
 
     }
     
-    @Test
+    @Test(enabled=false)
     public void exactSearch_multiTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception 
     {
         /*
@@ -79,7 +78,7 @@ public class SearchExactTermTestFailing extends AbstractSearchExactTermTest
         
     }
     
-    @Test
+    @Test(enabled=false)
     public void exactSearch_phraseInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception 
     {
         
