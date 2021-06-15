@@ -73,26 +73,33 @@ public abstract class AbstractSearchExactTermTest extends AbstractE2EFunctionalT
     private void prepareExactSearchData(FolderModel testFolder) throws Exception {
 
         List<Map<String, String>> exactSearchData = asList(
+                    // Document #1                    
                     of("name", "Running",
-                            "description", "Running is a sport is a nice activity",
-                            "content", "when you are running you are doing an amazing sport",
-                            "title", "Running jumping"),
+                        "description", "Running is a sport is a nice activity",
+                        "content", "when you are running you are doing an amazing sport",
+                        "title", "Running jumping"),
+                    // Document #2                    
                     of("name", "Run",
-                            "description", "you are supposed to run jump",
-                            "content", "after many runs you are tired and if you jump it happens the same",
-                            "title", "Run : a philosophy"),
+                        "description", "you are supposed to run jump",
+                        "content", "after many runs you are tired and if you jump it happens the same",
+                        "title", "Run : a philosophy"),
+                    // Document #3                    
                     of("name", "Poetry",
-                            "description", "a document about poetry and jumpers",
-                            "content", "poetry is unrelated to sport",
-                            "title", "Running jumping twice jumpers"),
+                        "description", "a document about poetry and jumpers",
+                        "content", "poetry is unrelated to sport",
+                        "title", "Running jumping twice jumpers"),
+                    // Document #4                    
                     of("name", "Jump",
-                            "description", "a document about jumps",
-                            "content", "runnings jumpings",
-                            "title", "Running"),
+                        "description", "a document about jumps",
+                        "content", "runnings jumpings",
+                        "title", "Running"),
+                    // Document #5                    
                     of("name", "Running jumping",
-                            "description", "runners jumpers runs everywhere",
-                            "content", "run is Good as jump",
-                            "title", "Running the art of jumping"));
+                        "description", "runners jumpers runs everywhere",
+                        "content", "run is Good as jump",
+                        "title", "Running the art of jumping"));
+        
+        // tok:true, tok:false and tok:both have a copy of the value in cm:title field
 
         List<FileModel> createdFileModels = new ArrayList<>();
         range(0, exactSearchData.size())
