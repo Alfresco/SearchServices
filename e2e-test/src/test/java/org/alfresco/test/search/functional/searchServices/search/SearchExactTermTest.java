@@ -44,34 +44,30 @@ import org.testng.annotations.Test;
 public class SearchExactTermTest extends AbstractSearchExactTermTest
 {
     
+    /**
+     * Note these tests are searching in properties: cm:name, cm:title, cm:description, cm:content
+     * Since cm:name is the only one declared as Cross Locale by default in shared.properties, 
+     * following queries are being executed only for cm:name property.
+     */
     @Test
     public void exactSearch_singleTerm_shouldReturnResultsContainingExactTerm() throws Exception
     {
         /*
-         * Out of the 5 'run corpus' documents 
          * 1 result is expected:
-         * 
-         * - "name", "Run",
-         * "description", "you are supposed to run jump"
-         * 
+         * - Document #2 >> name: "Run"
          */
         assertResponseCardinality("=run", 1);
         
         /*
-         * No result for runner, one record has runners,
-         * you can see the difference between exact search and not
+         * No result for runner in cm:name property, one record has runners in "description" property.
+         * You can see the difference between exact search and not
          */
         assertResponseCardinality("=runner", 0);
         assertResponseCardinality("runner", 1);
         
         /*
-         * Out of the 5 'run corpus' documents
-         * Note that we are not using 'running' this time as 'Milestone' wiki page (coming from ootb content)
-         * is including "running" in the content
-         * 1 result is expected
-         * 
-         * - "name", "Jump",
-         * "description", "a document about jumps"
+         * 1 result is expected:
+         * - Document #2 >> name: "Jump"
          */
         assertResponseCardinality("=jump", 1);
         
@@ -82,92 +78,102 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     {
         
         /**
-         * tok:false is a copy field un-tokenized of tok:both/tok:true, so it has the exact same content but not analysed.
-         * This means we produce just a token in the index, exactly as the full content.
-         * We can't expect any search to work except full exact value search.
-         * 
          * Since REST API is getting the results from DB or Search Services, using single term expressions is always
          * retrieved from DB. Combining this single term with range queries (like cm:created) will ensure the results
          * are coming from SOLR. 
          */
         
-        /*
-         * Following queries will get results from SOLR
-         * Out of the 5 'run corpus' documents
-         * 0 results are expected:
-         * there is no result that have tok_false:"running"
-         *
+        /**
+         * Unsupported Exception is expected when using exact term search with tokenised properties
          */
-        assertResponseCardinality("=tok:false:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
         assertException("=tok:true:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
         assertException("=tok:both:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
         
         /*
-         * Following queries will get results from SOLR
-         * Out of the 5 'run corpus' documents
-         * 1 result is expected:
-         * 
-         * - "name", "Jump",
-         *  ...
-         *  "title", "Running"
-         *
+         * 1 result is expected for non-tokenised field (tok:false)
+         * - Document #4 >> title: "Running"
          */
         assertResponseCardinality("=tok:false:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
+        
+        /**
+         * Unsupported Exception is expected when using exact term search with tokenised properties
+         */
         assertException("=tok:true:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
         assertException("=tok:both:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
         
         /*
-         * Following queries will get results from SOLR
-         * Out of the 5 'run corpus' documents
-         * 0 results are expected:
-         * there is no result that have exactly tok:false:"Run"
+         * 0 results are expected: there is no result that have exactly cm:title:"Run"
          * The closest we have is record Run (tok:false:"Run : a philosophy")
          * As you can see we don't have a full match, so it's not in the results.
          *
          */
         assertResponseCardinality("=tok:false:Run AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
+        
+        /**
+         * Unsupported Exception is expected when using exact term search with tokenised properties
+         */
         assertException("=tok:true:Run AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
         assertException("=tok:both:Run AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
 
     }
     
+    /**
+     * These tests should be re-enabled once the following tickets have been solved:
+     * - https://alfresco.atlassian.net/browse/SEARCH-2461
+     * - https://alfresco.atlassian.net/browse/SEARCH-2953
+     */
+    @Test(enabled=false)
+    public void failing_exactSearch_singleTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception 
+    {
+        
+        // SEARCH-2953
+        assertResponseCardinality("=tok:false:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
+
+        // SEARCH-2461
+        assertResponseCardinality("=tok:false:running", 1);
+        assertException("=tok:true:running");
+        assertException("=tok:both:running");
+        
+        // SEARCH-2461
+        assertResponseCardinality("=tok:false:Running", 1);
+        assertException("=tok:true:Running");
+        assertException("=tok:both:Running");
+        
+        // SEARCH-2461
+        assertResponseCardinality("=tok:false:Run", 0);
+        assertException("=tok:true:Run");
+        assertException("=tok:both:Run");
+        
+    }
+
+    
+    /**
+     * Note these tests are searching in properties: cm:name, cm:title, cm:description, cm:content
+     * Since cm:name is the only one declared as Cross Locale by default in shared.properties, 
+     * following queries are being executed only for cm:name property.
+     */
     @Test
     public void exactSearch_multiTerm_shouldReturnResultsContainingExactTerm() throws Exception 
     {
         /*
-         * Out of the 5 'run corpus' documents
          * 2 results are expected:
-         *
-         * - "name", "Run",
-         * "description", "you are supposed to run jump",
-         * 
-         * - "name", "Jump",
-         * "description", "a document about jumps",
-         * 
+         * - Document #2 >> name: "Run"
+         * - Document #4 >> name: "Jump"
          */
         assertResponseCardinality("=run =jump", 2);
 
         /*
-         * No result for runner or jumper, one record has runners,
-         * and another record has jumpers
-         * 
-         * - "name", "Poetry",
-         *              "description", "a document about poetry and jumpers",
-         * - "name", "Running jumping",
-         *              "description", "runners jumpers run everywhere",
-         * 
-         * you can see the difference between exact search and not
+         * No result for runner or jumper in cm:name property
+         * One document has runners and another record has jumpers in description
+         * You can see the difference between exact search and not
          */
         assertResponseCardinality("=runner =jumper", 0);
         assertResponseCardinality("runner jumper", 2);
 
         /*
-         * Out of the 5 'run corpus' documents
          * 2 results are expected:
-         * - "name", "Running jumping",
-         * "description", "runners jumpers run everywhere",
-         * - "name", "Running",
-         * "title", "Running jumping"
+         * - Document #1 >> name: "Running"
+         * - Document #5 >> name: "Running jumping"
          */
         assertResponseCardinality("=running =jumping", 2);
     }
@@ -175,99 +181,127 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     @Test
     public void exactSearch_multiTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception 
     {
-        /**
-         * tok:false is a copy field un-tokenized of tok:both/tok:true, so it has the exact same content but not analysed.
-         * This means we produce just a token in the index, exactly as the full content.
-         * We can't expect any search to work except full exact value search.
-         */
-
+        
         /*
-         * Following queries will get results from SOLR
-         * Out of the 5 'run corpus' documents
-         * 0 results are expected:
-         * there is no result that have tok:false:"running" or "jumpers"
-         *
+         * 1 result is expected
+         * - Document #4 >> title: "Running"
          */
-        assertResponseCardinality("=tok:false:running =tok:false:jumpers AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
+        assertResponseCardinality("=tok:false:Running =tok:false:jumpers AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
+        
+        /**
+         * Unsupported Exception is expected when using exact term search with tokenised properties
+         */
         assertException("=tok:both:running =tok:both:jumpers AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
         assertException("=tok:true:running =tok:true:jumpers AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
     }
     
+    /**
+     * These tests should be re-enabled once the following tickets have been solved:
+     * - https://alfresco.atlassian.net/browse/SEARCH-2461
+     * - https://alfresco.atlassian.net/browse/SEARCH-2953
+     */
+    @Test(enabled=false)
+    public void failing_exactSearch_multiTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception 
+    {
+        // SEARCH-2953
+        assertResponseCardinality("=tok:false:running =tok:false:jumpers AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
+        
+        // SEARCH-2461
+        assertResponseCardinality("=tok:false:running =tok:false:jumpers", 1);
+        assertException("=tok:both:running =tok:both:jumpers");
+        assertException("=tok:true:running =tok:true:jumpers");
+
+    }    
+    
+    /**
+     * Note these tests are searching in properties: cm:name, cm:title, cm:description, cm:content
+     * Since cm:name is the only one declared as Cross Locale by default in shared.properties, 
+     * following queries are being executed only for cm:name property.
+     */
     @Test
     public void exactSearch_exactPhrase_shouldReturnResultsContainingExactPhrase() throws Exception 
     {
         /*
-         * Out of the 5 'run corpus' documents
-         * 0 results are expected.
+         * No result for "run jump" in cm:name property
          */
         assertResponseCardinality("=\"run jump\"", 0);
 
         /*
-         * No result for runner jumper, one record has runners jumpers,
-         * you can see the difference between exact search and not
-         * 
-         * "name", "Running jumping",
-         * "description", "runners jumpers run everywhere",
+         * No result for "runner jumper" in cm:name property
+         * One document has runners jumpers in description 
+         * You can see the difference between exact search and not
          */
         assertResponseCardinality("=\"runner jumper\"", 0);
         assertResponseCardinality("\"runner jumper\"", 1);
 
         /*
-         * Out of the 5 'run corpus' documents
-         * 1 results is expected:
-         *
-         * - "name", "Running jumping",
+         * 1 result is expected for exact term search
+         * - Document #5 >> name: "Running jumping"
          */
         assertResponseCardinality("=\"running jumping\"", 1);
+        
+        /*
+         * 4 results are expected for not exact term search: 
+         * - Document #1 >> name: "Running", description: "Running is a sport is a nice activity", content: "when you are running you are doing an amazing sport", title: "Running jumping" 
+         * - Document #3 >> title: "Running jumping twice jumpers" 
+         * - Document #4 >> content: "runnings jumpings", title: "Running" 
+         * - Document #5 >> name: "Running jumping", title: "Running the art of jumping" 
+         * 
+         * Since 'Milestone' wiki page (coming from ootb content) is including "running" in
+         * the content, we are checking for 5 results instead of 4
+         */
         assertResponseCardinality("\"running jumping\"", 5);
     }
     
     @Test
     public void exactSearch_phraseInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception 
     {
-        /**
-         * tok:false is a copy field un-tokenized of tok:both/tok:true, so it has the exact same content but not analysed.
-         * This means we produce just a token in the index, exactly as the full content.
-         * We can't expect any search to work except full exact value search.
-         */
-        
         /*
-         * Following queries will get results from SOLR
-         * Out of the 5 'run corpus' documents
-         * 0 results are expected:
-         * the closest we got was this one, but it is uppercase
-         * - "name", "Running",
-         * "title", "Running jumping",
-         *
+         * 1 result is expected for exact term search
+         * - Document #5 >> name: "Running jumping"
          */
-        assertResponseCardinality("=tok:false:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
+        assertResponseCardinality("=tok:false:\"Running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
+        
+        /**
+         * Unsupported Exception is expected when using exact term search with tokenised properties
+         */
         assertException("=tok:true:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
         assertException("=tok:both:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
 
         /*
-         * Following queries will get results from SOLR
-         * Out of the 5 'run corpus' documents
-         * 1 results are expected:
-         * - "name", "Running",
-         * "title", "Running jumping",
-         *
-         */
-        assertResponseCardinality("=tok:false:\"Running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
-        assertException("=tok:true:\"Running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
-        assertException("=tok:both:\"Running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
-
-        /*
-         * Following queries will get results from SOLR
-         * Out of the 5 'run corpus' documents
-         * 0 results are expected:
-         * the closest we got was this one, but it is uppercase
-         * - "name", "Poetry",
-         * "title", "Running jumping twice jumpers",
-         *
+         * No result for "Running jumping twice" in cm:name property is expected
          */
         assertResponseCardinality("=tok:false:\"Running jumping twice\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
+        
+        /**
+         * Unsupported Exception is expected when using exact term search with tokenised properties
+         */
         assertException("=tok:true:\"Running jumping twice\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
         assertException("=tok:both:\"Running jumping twice\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
     }
     
+    /**
+     * These tests should be re-enabled once the following tickets have been solved:
+     * - https://alfresco.atlassian.net/browse/SEARCH-2461
+     * - https://alfresco.atlassian.net/browse/SEARCH-2953
+     */
+    @Test(enabled=false)
+    public void failing_exactSearch_phraseInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception 
+    {
+        
+        // SEARCH-2953
+        assertResponseCardinality("=tok:false:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
+        
+        // SEARCH-2461
+        assertResponseCardinality("=tok:false:\"running jumping\"", 1);
+        assertResponseCardinality("=tok:false:\"Running jumping\"", 1);
+        assertException("=tok:true:\"Running jumping\"");
+        assertException("=tok:both:\"Running jumping\"");
+        
+        // SEARCH-2461
+        assertResponseCardinality("=tok:false:\"Running jumping twice\"", 0);
+        assertException("=tok:true:\"Running jumping twice\"");
+        assertException("=tok:both:\"Running jumping twice\"");
+        
+    }
 }
