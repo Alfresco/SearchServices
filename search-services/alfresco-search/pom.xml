@@ -62,6 +62,10 @@
                     <artifactId>xercesImpl</artifactId>
                     <groupId>xerces</groupId>
                 </exclusion>
+                <exclusion>
+                	<groupId>org.apache.xmlbeans</groupId>
+                	<artifactId>xmlbeans</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 

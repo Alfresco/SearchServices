@@ -29,7 +29,7 @@
    <properties>
       <maven.build.sourceVersion>11</maven.build.sourceVersion>
       <solr.base.version>6.6.5</solr.base.version>
-      <solr.version>${solr.base.version}-patched.4</solr.version>
+      <solr.version>${solr.base.version}-patched.6</solr.version>
       <!-- The location to download the solr zip file from. -->
       <!-- <solr.zip>https://archive.apache.org/dist/lucene/solr/${solr.version}/solr-${solr.version}.zip</solr.zip> -->
       <!-- Solr startup scripts do not work with any Java version higher than 9 so the scripts have been patched -->
