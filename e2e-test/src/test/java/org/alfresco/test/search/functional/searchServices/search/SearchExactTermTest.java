@@ -40,17 +40,17 @@ import org.testng.annotations.Test;
  * SOLR log is dumping the cause of the error, for instance:
  *   java.lang.UnsupportedOperationException: Exact Term search is not supported unless you configure the field 
  *   <{http://www.alfresco.org/model/tokenised/1.0}true> for cross locale search
+ *   
+ * Note that tests not specifying a searching field in the query (for instance, =run) are using 
+ * by default following properties: cm:name, cm:title, cm:description, cm:content
+ * Since cm:name is the only one declared as Cross Locale by default in shared.properties, 
+ * these kind of queries are being executed only for cm:name property.
  */
 public class SearchExactTermTest extends AbstractSearchExactTermTest
 {
     
-    /**
-     * Note these tests are searching in properties: cm:name, cm:title, cm:description, cm:content
-     * Since cm:name is the only one declared as Cross Locale by default in shared.properties, 
-     * following queries are being executed only for cm:name property.
-     */
     @Test
-    public void exactSearch_singleTerm_shouldReturnResultsContainingExactTerm() throws Exception
+    public void exactSearch_singleTerm_shouldReturnResultsContainingExactTermInName() throws Exception
     {
         /*
          * 1 result is expected:
@@ -74,13 +74,14 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     }
     
     @Test
-    public void exactSearch_singleTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception 
+    public void exactSearch_singleTermConjunction_shouldReturnFullFieldValueMatchOrException() throws Exception 
     {
         
         /**
          * Since REST API is getting the results from DB or Search Services, using single term expressions is always
-         * retrieved from DB. Combining this single term with range queries (like cm:created) will ensure the results
-         * are coming from SOLR. 
+         * retrieved from DB when using default configuration "solr.query.fts.queryConsistency=TRANSACTIONAL_IF_POSSIBLE".
+         * Combining this single term with range queries (like cm:created) will ensure the results
+         * are coming from SOLR in this mode.
          */
         
         /**
@@ -123,7 +124,7 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
      * - https://alfresco.atlassian.net/browse/SEARCH-2953
      */
     @Test(enabled=false)
-    public void failing_exactSearch_singleTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception 
+    public void failing_exactSearch_singleTermConjunction_shouldReturnFullFieldValueMatchOrException() throws Exception 
     {
         
         // SEARCH-2953
@@ -147,11 +148,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     }
 
     
-    /**
-     * Note these tests are searching in properties: cm:name, cm:title, cm:description, cm:content
-     * Since cm:name is the only one declared as Cross Locale by default in shared.properties, 
-     * following queries are being executed only for cm:name property.
-     */
     @Test
     public void exactSearch_multiTerm_shouldReturnResultsContainingExactTerm() throws Exception 
     {
@@ -213,11 +209,6 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
 
     }    
     
-    /**
-     * Note these tests are searching in properties: cm:name, cm:title, cm:description, cm:content
-     * Since cm:name is the only one declared as Cross Locale by default in shared.properties, 
-     * following queries are being executed only for cm:name property.
-     */
     @Test
     public void exactSearch_exactPhrase_shouldReturnResultsContainingExactPhrase() throws Exception 
     {
@@ -241,20 +232,18 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
         assertResponseCardinality("=\"running jumping\"", 1);
         
         /*
-         * 4 results are expected for not exact term search: 
-         * - Document #1 >> name: "Running", description: "Running is a sport is a nice activity", content: "when you are running you are doing an amazing sport", title: "Running jumping" 
+         * 5 results are expected for not exact term search: 
+         * - Document #1 >> name: "Running", description: "Running is a sport is a nice activity", content: "when you are running you are doing an amazing sport", title: "Running jumping"
+         * - Document #2 >> name: "Run", description: "you are supposed to run jump", content: "after many runs you are tired and if you jump it happens the same", title: "Run : a philosophy" 
          * - Document #3 >> title: "Running jumping twice jumpers" 
          * - Document #4 >> content: "runnings jumpings", title: "Running" 
          * - Document #5 >> name: "Running jumping", title: "Running the art of jumping" 
-         * 
-         * Since 'Milestone' wiki page (coming from ootb content) is including "running" in
-         * the content, we are checking for 5 results instead of 4
          */
         assertResponseCardinality("\"running jumping\"", 5);
     }
     
     @Test
-    public void exactSearch_phraseInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception 
+    public void exactSearch_phraseInFieldConjunction_shouldReturnFullFieldValueMatchOrException() throws Exception 
     {
         /*
          * 1 result is expected for exact term search
@@ -286,7 +275,7 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
      * - https://alfresco.atlassian.net/browse/SEARCH-2953
      */
     @Test(enabled=false)
-    public void failing_exactSearch_phraseInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception 
+    public void failing_exactSearch_phraseInFieldConjunction_shouldReturnFullFieldValueMatchOrException() throws Exception 
     {
         
         // SEARCH-2953

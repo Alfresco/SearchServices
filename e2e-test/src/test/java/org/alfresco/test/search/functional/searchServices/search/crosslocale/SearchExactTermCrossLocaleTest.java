@@ -70,13 +70,14 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
     }
     
     @Test
-    public void exactSearch_singleTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception 
+    public void exactSearch_singleTermConjunction_shouldReturnFullFieldValueMatchOrPartialFieldValueMatch() throws Exception 
     {
         
         /**
          * Since REST API is getting the results from DB or Search Services, using single term expressions is always
-         * retrieved from DB. Combining this single term with range queries (like cm:created) will ensure the results
-         * are coming from SOLR. 
+         * retrieved from DB when using default configuration "solr.query.fts.queryConsistency=TRANSACTIONAL_IF_POSSIBLE".
+         * Combining this single term with range queries (like cm:created) will ensure the results
+         * are coming from SOLR in this mode.
          */
         
         /*
@@ -174,14 +175,12 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
         assertResponseCardinality("runner jumper", 2);
 
         /*
-         * 4 results are expected from corpus:
+         * 5 results are expected:
          * - Document #1 >> name: "Running", description: "Running is a sport is a nice activity", content: "when you are running you are doing an amazing sport", title: "Running jumping"
+         * - Document #2 >> name: "Run", description: "you are supposed to run jump", content: "after many runs you are tired and if you jump it happens the same", title: "Run : a philosophy" 
          * - Document #3 >> title: "Running jumping twice jumpers"
          * - Document #4 >> content: "runnings jumpings", title: "Running"
          * - Document #5 >> name: "Running jumping", title: "Running the art of jumping"
-         * 
-         * Since 'Milestone' wiki page (coming from ootb content) is including "running" in the content,
-         * we are checking for 5 results instead of 4
          */
         assertResponseCardinality("=running =jumping", 5);
     }
@@ -257,7 +256,7 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
     }
     
     @Test
-    public void exactSearch_phraseInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception 
+    public void exactSearch_phraseInFieldConjunction_shouldReturnFullFieldValueMatchOrPartialFieldValueMatch() throws Exception 
     {
         /**
          * 2 results are expected for tokenised fields (tok:true, tok:both)
@@ -300,7 +299,7 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
      * - https://alfresco.atlassian.net/browse/SEARCH-2461
      * - https://alfresco.atlassian.net/browse/SEARCH-2953
      */
-    public void failing_exactSearch_phraseInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception 
+    public void failing_exactSearch_phraseInField_shouldReturnFullFieldValueMatchOrPartialFieldValueMatch() throws Exception 
     {
         
         // SEARCH-2953
