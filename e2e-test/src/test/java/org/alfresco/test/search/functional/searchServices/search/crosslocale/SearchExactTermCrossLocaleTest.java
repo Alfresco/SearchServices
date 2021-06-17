@@ -299,6 +299,7 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
      * - https://alfresco.atlassian.net/browse/SEARCH-2461
      * - https://alfresco.atlassian.net/browse/SEARCH-2953
      */
+    @Test(enabled=false)
     public void failing_exactSearch_phraseInField_shouldReturnFullFieldValueMatchOrPartialFieldValueMatch() throws Exception 
     {
         
