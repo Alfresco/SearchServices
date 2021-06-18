@@ -74,7 +74,58 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     }
     
     @Test
-    public void exactSearch_singleTermConjunction_shouldReturnFullFieldValueMatchOrException() throws Exception 
+    public void exactSearch_singleTermConjunction_shouldReturnFullFieldValueMatch() throws Exception 
+    {
+        
+        /**
+         * Since REST API is getting the results from DB or Search Services, using single term expressions is always
+         * retrieved from DB when using default configuration "solr.query.fts.queryConsistency=TRANSACTIONAL_IF_POSSIBLE".
+         * Combining this single term with range queries (like cm:created) will ensure the results
+         * are coming from SOLR in this mode.
+         */
+        
+        /*
+         * 1 result is expected for non-tokenised field (tok:false)
+         * - Document #4 >> title: "Running"
+         */
+        assertResponseCardinality("=tok:false:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
+        
+        /*
+         * 0 results are expected: there is no result that have exactly cm:title:"Run"
+         * The closest we have is record Run (tok:false:"Run : a philosophy")
+         * As you can see we don't have a full match, so it's not in the results.
+         *
+         */
+        assertResponseCardinality("=tok:false:Run AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
+        
+    }
+    
+    /**
+     * These tests should be re-enabled once the following tickets have been solved:
+     * - https://alfresco.atlassian.net/browse/SEARCH-2461
+     * - https://alfresco.atlassian.net/browse/SEARCH-2953
+     */
+    @Test(enabled=false)
+    public void failing_exactSearch_singleTermConjunction_shouldReturnFullFieldValueMatch() throws Exception 
+    {
+        
+        // SEARCH-2953
+        assertResponseCardinality("=tok:false:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
+
+        // SEARCH-2461
+        assertResponseCardinality("=tok:false:running", 1);
+        
+        // SEARCH-2461
+        assertResponseCardinality("=tok:false:Running", 1);
+        
+        // SEARCH-2461
+        assertResponseCardinality("=tok:false:Run", 0);
+        
+    }
+    
+    
+    @Test
+    public void exactSearch_singleTermConjunction_shouldReturnException() throws Exception 
     {
         
         /**
@@ -90,25 +141,11 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
         assertException("=tok:true:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
         assertException("=tok:both:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
         
-        /*
-         * 1 result is expected for non-tokenised field (tok:false)
-         * - Document #4 >> title: "Running"
-         */
-        assertResponseCardinality("=tok:false:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
-        
         /**
          * Unsupported Exception is expected when using exact term search with tokenised properties
          */
         assertException("=tok:true:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
         assertException("=tok:both:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
-        
-        /*
-         * 0 results are expected: there is no result that have exactly cm:title:"Run"
-         * The closest we have is record Run (tok:false:"Run : a philosophy")
-         * As you can see we don't have a full match, so it's not in the results.
-         *
-         */
-        assertResponseCardinality("=tok:false:Run AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
         
         /**
          * Unsupported Exception is expected when using exact term search with tokenised properties
@@ -121,32 +158,24 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     /**
      * These tests should be re-enabled once the following tickets have been solved:
      * - https://alfresco.atlassian.net/browse/SEARCH-2461
-     * - https://alfresco.atlassian.net/browse/SEARCH-2953
      */
     @Test(enabled=false)
-    public void failing_exactSearch_singleTermConjunction_shouldReturnFullFieldValueMatchOrException() throws Exception 
+    public void failing_exactSearch_singleTermConjunction_shouldReturnException() throws Exception 
     {
         
-        // SEARCH-2953
-        assertResponseCardinality("=tok:false:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
-
         // SEARCH-2461
-        assertResponseCardinality("=tok:false:running", 1);
         assertException("=tok:true:running");
         assertException("=tok:both:running");
         
         // SEARCH-2461
-        assertResponseCardinality("=tok:false:Running", 1);
         assertException("=tok:true:Running");
         assertException("=tok:both:Running");
         
         // SEARCH-2461
-        assertResponseCardinality("=tok:false:Run", 0);
         assertException("=tok:true:Run");
         assertException("=tok:both:Run");
         
     }
-
     
     @Test
     public void exactSearch_multiTerm_shouldReturnResultsContainingExactTerm() throws Exception 
@@ -243,7 +272,7 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     }
     
     @Test
-    public void exactSearch_phraseInFieldConjunction_shouldReturnFullFieldValueMatchOrException() throws Exception 
+    public void exactSearch_phraseInFieldConjunction_shouldReturnFullFieldValueMatch() throws Exception 
     {
         /*
          * 1 result is expected for exact term search
@@ -251,17 +280,43 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
          */
         assertResponseCardinality("=tok:false:\"Running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
         
+        /*
+         * No result for "Running jumping twice" in cm:name property is expected
+         */
+        assertResponseCardinality("=tok:false:\"Running jumping twice\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
+        
+    }
+    
+    /**
+     * These tests should be re-enabled once the following tickets have been solved:
+     * - https://alfresco.atlassian.net/browse/SEARCH-2461
+     * - https://alfresco.atlassian.net/browse/SEARCH-2953
+     */
+    @Test(enabled=false)
+    public void failing_exactSearch_phraseInFieldConjunction_shouldReturnFullFieldValueMatch() throws Exception 
+    {
+        
+        // SEARCH-2953
+        assertResponseCardinality("=tok:false:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
+        
+        // SEARCH-2461
+        assertResponseCardinality("=tok:false:\"running jumping\"", 1);
+        assertResponseCardinality("=tok:false:\"Running jumping\"", 1);
+        
+        // SEARCH-2461
+        assertResponseCardinality("=tok:false:\"Running jumping twice\"", 0);
+        
+    }
+    
+    @Test
+    public void exactSearch_phraseInFieldConjunction_shouldReturnOrException() throws Exception 
+    {
         /**
          * Unsupported Exception is expected when using exact term search with tokenised properties
          */
         assertException("=tok:true:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
         assertException("=tok:both:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']");
 
-        /*
-         * No result for "Running jumping twice" in cm:name property is expected
-         */
-        assertResponseCardinality("=tok:false:\"Running jumping twice\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
-        
         /**
          * Unsupported Exception is expected when using exact term search with tokenised properties
          */
@@ -272,25 +327,19 @@ public class SearchExactTermTest extends AbstractSearchExactTermTest
     /**
      * These tests should be re-enabled once the following tickets have been solved:
      * - https://alfresco.atlassian.net/browse/SEARCH-2461
-     * - https://alfresco.atlassian.net/browse/SEARCH-2953
      */
     @Test(enabled=false)
-    public void failing_exactSearch_phraseInFieldConjunction_shouldReturnFullFieldValueMatchOrException() throws Exception 
+    public void failing_exactSearch_phraseInFieldConjunction_shouldReturnException() throws Exception 
     {
         
-        // SEARCH-2953
-        assertResponseCardinality("=tok:false:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
-        
         // SEARCH-2461
-        assertResponseCardinality("=tok:false:\"running jumping\"", 1);
-        assertResponseCardinality("=tok:false:\"Running jumping\"", 1);
         assertException("=tok:true:\"Running jumping\"");
         assertException("=tok:both:\"Running jumping\"");
         
         // SEARCH-2461
-        assertResponseCardinality("=tok:false:\"Running jumping twice\"", 0);
         assertException("=tok:true:\"Running jumping twice\"");
         assertException("=tok:both:\"Running jumping twice\"");
         
     }
+    
 }
