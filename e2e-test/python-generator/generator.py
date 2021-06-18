@@ -253,6 +253,7 @@ if __name__ == '__main__':
     parser.add_argument('-sr', '--shardRange', type=int, help='Total number of nodes per shard with DB_ID_RANGE sharding (default 800)')
     parser.add_argument('-ct', '--disableCascadeTracking', action='store_true', help='Cascade Tracking Disabled')
     parser.add_argument('-ef', '--enableFingerprint', action='store_true', help='Enable Fingerprint feature')
+    parser.add_argument('-ecl', '--enableCrossLocale', action='store_true', help='Enable Cross Locale configuration')
     parser.add_argument('-sl', '--searchLogLevel', default='WARN', help='The log level for search (default WARN)',
                         choices=['TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR'])
     parser.add_argument('-o', '--output', default='.', help='The path of the directory to output to')
@@ -288,6 +289,7 @@ if __name__ == '__main__':
             'POSTGRES_IMAGE': args.postgres,
             'SEARCH_IMAGE': args.search,
             'SEARCH_LOG_LEVEL': args.searchLogLevel,
+            'ENABLE_CROSS_LOCALE': args.enableCrossLocale,
             'SEARCH_ENABLE_SPELLCHECK': str(args.spellcheck).lower(),
             'DISABLE_CASCADE_TRACKING': str(args.disableCascadeTracking).lower()
             }

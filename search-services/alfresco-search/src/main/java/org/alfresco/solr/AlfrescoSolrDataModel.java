@@ -36,7 +36,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -63,7 +62,6 @@ import org.alfresco.repo.dictionary.DictionaryDAOImpl;
 import org.alfresco.repo.dictionary.Facetable;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.dictionary.M2Model;
-import org.alfresco.repo.dictionary.M2ModelDiff;
 import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.i18n.StaticMessageLookup;
 import org.alfresco.repo.search.MLAnalysisMode;
@@ -81,12 +79,10 @@ import org.alfresco.repo.search.impl.querymodel.impl.lucene.QueryBuilderContext;
 import org.alfresco.repo.tenant.SingleTServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.AlfrescoClientDataModelServicesFactory.DictionaryKey;
@@ -867,8 +863,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
      */
     private void addExactSearchFields(PropertyDefinition propertyDefinition, IndexedField indexedField)
     {
-        if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
-                || !(propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
+        if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE))
         {
 
             indexedField.addField(getFieldForText(true, false, false, propertyDefinition), true, false);
@@ -876,11 +871,16 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
         else
         {
-            if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
+            if (crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName())
+                        || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
             {
                 indexedField.addField(getFieldForText(false, true, false, propertyDefinition), false, false);
-            } else{
-                throw new UnsupportedOperationException("Exact Term search is not supported unless you configure the field <"+propertyDefinition.getName()+"> for cross locale search");
+            }
+            else
+            {
+                throw new UnsupportedOperationException(
+                            "Exact Term search is not supported unless you configure the field <"
+                                        + propertyDefinition.getName() + "> for cross locale search");
             }
         }
     }
