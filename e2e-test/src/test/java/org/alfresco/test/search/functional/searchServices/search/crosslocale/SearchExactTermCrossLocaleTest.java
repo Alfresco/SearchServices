@@ -70,7 +70,54 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
     }
     
     @Test
-    public void exactSearch_singleTermConjunction_shouldReturnFullFieldValueMatchOrPartialFieldValueMatch() throws Exception 
+    public void exactSearch_singleTermConjunction_shouldReturnFullFieldValueMatch() throws Exception 
+    {
+        
+        /**
+         * Since REST API is getting the results from DB or Search Services, using single term expressions is always
+         * retrieved from DB when using default configuration "solr.query.fts.queryConsistency=TRANSACTIONAL_IF_POSSIBLE".
+         * Combining this single term with range queries (like cm:created) will ensure the results
+         * are coming from SOLR in this mode.
+         */
+        
+        /*
+         * 1 result is expected for non-tokenised field (tok:false)
+         * - Document #4 >> title: "Running"
+         */
+        assertResponseCardinality("=tok:false:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
+        
+        /*
+         * 0 results are expected for non-tokenised field (tok:false), as there is no title: "Run"
+         */
+        assertResponseCardinality("=tok:false:Run AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
+        
+    }
+    
+    /**
+     * These tests should be re-enabled once the following tickets have been solved:
+     * - https://alfresco.atlassian.net/browse/SEARCH-2461
+     * - https://alfresco.atlassian.net/browse/SEARCH-2953
+     */
+    @Test(enabled=false)
+    public void failing_exactSearch_singleTerm_shouldReturnFullFieldValueMatch() throws Exception 
+    {
+        
+        // SEARCH-2953
+        assertResponseCardinality("=tok:false:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
+
+        // SEARCH-2461
+        assertResponseCardinality("=tok:false:running", 1);
+        
+        // SEARCH-2461
+        assertResponseCardinality("=tok:false:Running", 1);
+        
+        // SEARCH-2461
+        assertResponseCardinality("=tok:false:Run", 0);
+                
+    }
+
+    @Test
+    public void exactSearch_singleTermConjunction_shouldReturnPartialFieldValueMatch() throws Exception 
     {
         
         /**
@@ -90,12 +137,6 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
         assertResponseCardinality("=tok:true:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 4);
         assertResponseCardinality("=tok:both:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 4);
         
-        /*
-         * 1 result is expected for non-tokenised field (tok:false)
-         * - Document #4 >> title: "Running"
-         */
-        assertResponseCardinality("=tok:false:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
-        
         /**
          * 4 results are expected for tokenised fields (tok:true, tok:both)
          * - Document #1 >> title: "Running jumping"
@@ -105,11 +146,6 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
          */
         assertResponseCardinality("=tok:true:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 4);
         assertResponseCardinality("=tok:both:Running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 4);
-        
-        /*
-         * 0 results are expected for non-tokenised field (tok:false), as there is no title: "Run"
-         */
-        assertResponseCardinality("=tok:false:Run AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
         
         /**
          * 1 result is expected for tokenised fields (tok:true, tok:both)
@@ -124,32 +160,24 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
     /**
      * These tests should be re-enabled once the following tickets have been solved:
      * - https://alfresco.atlassian.net/browse/SEARCH-2461
-     * - https://alfresco.atlassian.net/browse/SEARCH-2953
      */
     @Test(enabled=false)
-    public void failing_exactSearch_singleTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception 
+    public void failing_exactSearch_singleTerm_shouldReturnPartialFieldValueMatch() throws Exception 
     {
         
-        // SEARCH-2953
-        assertResponseCardinality("=tok:false:running AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
-
         // SEARCH-2461
-        assertResponseCardinality("=tok:false:running", 1);
         assertResponseCardinality("=tok:true:running", 4);
         assertResponseCardinality("=tok:both:running", 4);
         
         // SEARCH-2461
-        assertResponseCardinality("=tok:false:Running", 1);
         assertResponseCardinality("=tok:true:Running", 4);
         assertResponseCardinality("=tok:both:Running", 4);
         
         // SEARCH-2461
-        assertResponseCardinality("=tok:false:Run", 0);
         assertResponseCardinality("=tok:true:Run", 1);
         assertResponseCardinality("=tok:both:Run", 1);
                 
     }
-    
     
     /**
      * Note these tests are searching in cm:name, cm:title, cm:description and cm:content properties
@@ -186,7 +214,7 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
     }
     
     @Test
-    public void exactSearch_multiTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception 
+    public void exactSearch_multiTermInField_shouldReturnPartialFieldValueMatch() throws Exception 
     {
         /**
          * 4 results are expected for tokenised fields (tok:true, tok:both)
@@ -202,10 +230,24 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
     /**
      * These tests should be re-enabled once the following tickets have been solved:
      * - https://alfresco.atlassian.net/browse/SEARCH-2461
+     */
+    @Test(enabled=false)
+    public void failing_exactSearch_multiTermInField_shouldReturnPartialFieldValueMatch() throws Exception 
+    {
+        
+        // SEARCH-2461
+        assertResponseCardinality("=tok:both:running =tok:both:jumpers", 4);
+        assertResponseCardinality("=tok:true:running =tok:true:jumpers", 4);
+        
+    }
+    
+    /**
+     * These tests should be re-enabled once the following tickets have been solved:
+     * - https://alfresco.atlassian.net/browse/SEARCH-2461
      * - https://alfresco.atlassian.net/browse/SEARCH-2953
      */
     @Test(enabled=false)
-    public void failing_exactSearch_multiTermInFieldWithOnlyUnTokenizedAnalysis_shouldReturnFullFieldValueMatch() throws Exception 
+    public void failing_exactSearch_multiTermInField_shouldReturnFullFieldValueMatch() throws Exception 
     {
         
         // SEARCH-2953
@@ -213,11 +255,8 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
         
         // SEARCH-2461
         assertResponseCardinality("=tok:false:running =tok:false:jumpers", 0);
-        assertResponseCardinality("=tok:both:running =tok:both:jumpers", 4);
-        assertResponseCardinality("=tok:true:running =tok:true:jumpers", 4);
         
     }
-    
     
     /**
      * Note these tests are searching in cm:name, cm:title, cm:description and cm:content properties
@@ -256,7 +295,46 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
     }
     
     @Test
-    public void exactSearch_phraseInFieldConjunction_shouldReturnFullFieldValueMatchOrPartialFieldValueMatch() throws Exception 
+    public void exactSearch_phraseInFieldConjunction_shouldReturnFullFieldValueMatch() throws Exception 
+    {
+        /**
+         * 1 results is expected for non-tokenised field (tok:false)
+         * - Document #1 >> title: "Running jumping"
+         */
+        assertResponseCardinality("=tok:false:\"Running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
+        
+        /**
+         * No result is expected for non-tokenised field (tok:false), as there is no title: "Running jumping twice"
+         */
+        assertResponseCardinality("=tok:false:\"Running jumping twice\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
+        
+    }
+    
+    /**
+     * These tests should be re-enabled once the following tickets have been solved:
+     * - https://alfresco.atlassian.net/browse/SEARCH-2461
+     * - https://alfresco.atlassian.net/browse/SEARCH-2953
+     */
+    @Test(enabled=false)
+    public void failing_exactSearch_phraseInFieldConjunction_shouldReturnFullFieldValueMatch() throws Exception 
+    {
+        
+        // SEARCH-2953
+        assertResponseCardinality("=tok:false:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
+        
+        // SEARCH-2461
+        assertResponseCardinality("=tok:false:\"running jumping\"", 1);
+
+        // SEARCH-2461
+        assertResponseCardinality("=tok:false:\"Running jumping\"", 1);
+        
+        // SEARCH-2461
+        assertResponseCardinality("=tok:false:\"Running jumping twice\"", 0);
+        
+    }
+    
+    @Test
+    public void exactSearch_phraseInFieldConjunction_shouldReturnPartialFieldValueMatch() throws Exception 
     {
         /**
          * 2 results are expected for tokenised fields (tok:true, tok:both)
@@ -267,12 +345,6 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
         assertResponseCardinality("=tok:both:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 2);
 
         /**
-         * 1 results is expected for non-tokenised field (tok:false)
-         * - Document #1 >> title: "Running jumping"
-         */
-        assertResponseCardinality("=tok:false:\"Running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
-        
-        /**
          * 2 results are expected for tokenised fields (tok:true, tok:both)
          * - Document #1 >> title: "Running jumping"
          * - Document #3 >> title: "Running jumping twice jumpers"
@@ -280,11 +352,6 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
         assertResponseCardinality("=tok:true:\"Running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 2);
         assertResponseCardinality("=tok:both:\"Running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 2);
 
-        /**
-         * No result is expected for non-tokenised field (tok:false), as there is no title: "Running jumping twice"
-         */
-        assertResponseCardinality("=tok:false:\"Running jumping twice\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 0);
-        
         /**
          * 1 result is expected for tokenised fields (tok:true, tok:both)
          * - Document #3 >> title: "Running jumping twice jumpers"
@@ -297,27 +364,20 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
     /**
      * These tests should be re-enabled once the following tickets have been solved:
      * - https://alfresco.atlassian.net/browse/SEARCH-2461
-     * - https://alfresco.atlassian.net/browse/SEARCH-2953
      */
     @Test(enabled=false)
-    public void failing_exactSearch_phraseInField_shouldReturnFullFieldValueMatchOrPartialFieldValueMatch() throws Exception 
+    public void failing_exactSearch_phraseInFieldConjunction_shouldReturnPartialFieldValueMatch() throws Exception 
     {
         
-        // SEARCH-2953
-        assertResponseCardinality("=tok:false:\"running jumping\" AND cm:created:['" + fromDate + "' TO '" + toDate + "']", 1);
-        
         // SEARCH-2461
-        assertResponseCardinality("=tok:false:\"running jumping\"", 1);
         assertResponseCardinality("=tok:true:\"running jumping\"", 2);
         assertResponseCardinality("=tok:both:\"running jumping\"", 2);
 
         // SEARCH-2461
-        assertResponseCardinality("=tok:false:\"Running jumping\"", 1);
         assertResponseCardinality("=tok:true:\"Running jumping\"", 2);
         assertResponseCardinality("=tok:both:\"Running jumping\"", 2);
         
         // SEARCH-2461
-        assertResponseCardinality("=tok:false:\"Running jumping twice\"", 0);
         assertResponseCardinality("=tok:true:\"Running jumping twice\"", 1);
         assertResponseCardinality("=tok:both:\"Running jumping twice\"", 1);
         
