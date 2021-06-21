@@ -122,8 +122,6 @@ asm-commons-5.1.jar
 aspectjrt-1.8.0.jar
 attributes-binder-1.3.1.jar
 avatica-core-1.9.0.jar
-bcmail-jdk15on-1.47.jar
-bcprov-jdk15on-1.47.jar
 boilerpipe-1.1.0.jar
 caffeine-2.4.0.jar
 calcite-core-1.13.0.jar
