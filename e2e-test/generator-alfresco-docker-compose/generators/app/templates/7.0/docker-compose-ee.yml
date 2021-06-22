@@ -175,7 +175,7 @@ services:
                 -Dalfresco.secureComms.secret=secret
             " <% } %>
         ports:
-            - 8083:8983 <% if (httpMode == 'https') { %>
+            - 8084:8983 <% if (httpMode == 'https') { %>
         volumes:
             - ./keystores/solr:/opt/<%=searchPath%>/keystore <% } %>
     <% } %>
