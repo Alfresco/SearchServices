@@ -163,4 +163,14 @@ RUN if [ "$SEARCH_LOG_LEVEL" ] ; then \
   ${DIST_DIR}/solr/bin/search_config_setup.sh; \
 fi
 
+# Cross Locale
+ARG CROSS_LOCALE
+ENV CROSS_LOCALE $CROSS_LOCALE
+
+# Enable Cross Locale SOLR Configuration
+RUN if [ "$CROSS_LOCALE" == "true" ] ; then \
+    sed -i '/^bash.*/i sed -i "'"/alfresco.cross.locale.datatype/s/^#//g"'" $DIST_DIR/solrhome/conf/shared.properties\n' \
+    ${DIST_DIR}/solr/bin/search_config_setup.sh; \
+fi
+
 VOLUME ["${DIST_DIR}/keystore"]

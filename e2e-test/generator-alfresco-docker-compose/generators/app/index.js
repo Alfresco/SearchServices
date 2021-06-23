@@ -76,6 +76,12 @@ module.exports = class extends Generator {
         message: 'Would you like to compress Get Content responses?',
         default: false
       },
+      {
+        type: 'confirm',
+        name: 'crossLocale',
+        message: 'Do you want to enable Cross Locale configuration?',
+        default: false
+      },      
       // Enterprise only options
       {
         whenFunction: response => response.alfrescoVersion == 'enterprise' && !response.replication,
@@ -228,7 +234,8 @@ module.exports = class extends Generator {
         sharding: (this.props.sharding ? "true" : "false"),
         shardingMethod: (this.props.shardingMethod),
         gzip: (this.props.gzip ? "true" : "false"),
-        searchLogLevel: this.props.searchLogLevel
+        searchLogLevel: this.props.searchLogLevel,
+        crossLocale: (this.props.crossLocale ? 'true' : 'false')
       }
     );
 

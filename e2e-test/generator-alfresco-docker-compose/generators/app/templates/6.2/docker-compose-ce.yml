@@ -69,6 +69,7 @@ services:
             ENABLE_SLAVE: "false" <% } %>
             COMPRESS_CONTENT: "<%=gzip%>"
             SEARCH_LOG_LEVEL: <%=searchLogLevel%>
+            CROSS_LOCALE: "<%=crossLocale%>"
         mem_limit: 1200m
         environment:
             #Solr needs to know how to register itself with Alfresco
@@ -112,6 +113,7 @@ services:
             ENABLE_SLAVE: <% if (replication == 'master-master') { %>"false"<% } else { %>"true"<% } %>
             MASTER_HOST: solr6 <% } %>
             COMPRESS_CONTENT: "<%=gzip%>"
+            CROSS_LOCALE: "<%=crossLocale%>"
         mem_limit: 1200m
         environment:
             #Solr needs to know how to register itself with Alfresco

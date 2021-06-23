@@ -73,6 +73,7 @@ services:
             SHARDING_METHOD: <%=shardingMethod%> <% } %>
             COMPRESS_CONTENT: "<%=gzip%>"
             SEARCH_LOG_LEVEL: <%=searchLogLevel%>
+            CROSS_LOCALE: "<%=crossLocale%>"
         mem_limit: 1200m
         environment:
             #Solr needs to know how to register itself with Alfresco
@@ -131,6 +132,7 @@ services:
             SHARD_KEY: "shard:shardId" <% } %>
             SHARDING_METHOD: <%=shardingMethod%> <% } %>
             COMPRESS_CONTENT: "<%=gzip%>"
+            CROSS_LOCALE: "<%=crossLocale%>"
         mem_limit: 1200m
         environment:
             #Solr needs to know how to register itself with Alfresco

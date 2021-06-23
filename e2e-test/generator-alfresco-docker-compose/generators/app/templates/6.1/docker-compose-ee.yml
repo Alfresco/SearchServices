@@ -70,6 +70,7 @@ services:
             SHARD_KEY: "shard:shardId" <% } %>
             SHARDING_METHOD: <%=shardingMethod%> <% } %>
             SEARCH_LOG_LEVEL: <%=searchLogLevel%>
+            CROSS_LOCALE: "<%=crossLocale%>"
         mem_limit: 1200m
         environment:
             #Solr needs to know how to register itself with Alfresco
@@ -127,6 +128,7 @@ services:
             SHARD_KEY: "shard:shardId" <% } %> <% if (shardingMethod == 'EXPLICIT_ID' || shardingMethod == 'EXPLICIT_ID_FALLBACK_LRIS') { %>
             SHARD_KEY: "shard:shardId" <% } %>
             SHARDING_METHOD: <%=shardingMethod%> <% } %>
+            CROSS_LOCALE: "<%=crossLocale%>"
         mem_limit: 1200m
         environment:
             #Solr needs to know how to register itself with Alfresco
