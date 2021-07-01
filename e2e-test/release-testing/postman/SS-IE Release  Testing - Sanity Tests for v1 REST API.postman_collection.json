@@ -4959,7 +4959,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"query\": {\n        \"query\": \"ID:\\\"{{TestsFolderID}}\\\"\",\n        \"language\": \"afts\"\n    }\n}",
+							"raw": "{\n    \"query\": {\n        \"query\": \"ID:\\\"workspace://SpacesStore/{{TestsFolderID}}\\\"\",\n        \"language\": \"afts\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -11091,7 +11091,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"query\": {\n        \"query\": \"and(this file)\",\n        \"language\": \"afts\"\n    }\n}",
+							"raw": "{\n    \"query\": {\n        \"query\": \"and\\\\(this file\\\\)\",\n        \"language\": \"afts\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -12405,7 +12405,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"query\": {\n        \"query\": \"|test AND -presentation\",\n        \"language\": \"afts\"\n    }\n}",
+							"raw": "{\n    \"query\": {\n        \"query\": \"|test AND -presentation\",\n        \"language\": \"afts\"\n    },\n    \"paging\": {\n        \"maxItems\": \"1000\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
