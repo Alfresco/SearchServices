@@ -24,17 +24,16 @@ services:
                 -Dmetadata-keystore.password=mp6yc0UD9e
                 -Dmetadata-keystore.aliases=metadata
                 -Dmetadata-keystore.metadata.password=oKIWzVdEdA
-                -Dmetadata-keystore.metadata.algorithm=DESede     
-                <% if (httpMode == 'https') { %>
+                -Dmetadata-keystore.metadata.algorithm=DESede <% if (httpMode == 'https') { %>
                 -Dssl-keystore.password=kT9X6oe68t
                 -Dssl-keystore.aliases=ssl-alfresco-ca,ssl-repo
                 -Dssl-keystore.ssl-alfresco-ca.password=kT9X6oe68t
                 -Dssl-keystore.ssl-repo.password=kT9X6oe68t
-                -Dssl-truststore.password=kT9X6oe68t 
+                -Dssl-truststore.password=kT9X6oe68t
                 -Dssl-truststore.aliases=alfresco-ca,ssl-repo-client
                 -Dssl-truststore.alfresco-ca.password=kT9X6oe68t
-                -Dssl-truststore.ssl-repo-client.password=kT9X6oe68t <% } %>
-            "
+                -Dssl-truststore.ssl-repo-client.password=kT9X6oe68t<% } %>
+                "
             JAVA_OPTS: "
                 -Ddb.driver=org.postgresql.Driver
                 -Ddb.username=alfresco
@@ -105,13 +104,26 @@ services:
             #Create the default alfresco and archive cores
             SOLR_CREATE_ALFRESCO_DEFAULTS: "alfresco,archive"
             SOLR_JAVA_MEM: "-Xms1g -Xmx1g" <% if (httpMode == 'https') { %>
-            SOLR_SSL_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.truststore"
+            SOLR_SSL_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.truststore"
             SOLR_SSL_TRUST_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_TRUST_STORE_TYPE: "JCEKS"
-            SOLR_SSL_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
+            SOLR_SSL_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.keystore"
             SOLR_SSL_KEY_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_KEY_STORE_TYPE: "JCEKS"
             SOLR_SSL_NEED_CLIENT_AUTH: "true"
+            JAVA_TOOL_OPTIONS: "
+                -Dsolr.jetty.truststore.password=kT9X6oe68t
+                -Dsolr.jetty.keystore.password=kT9X6oe68t
+                -Dssl-keystore.password=kT9X6oe68t
+                -Dssl-keystore.aliases=ssl-alfresco-ca,ssl-repo-client
+                -Dssl-keystore.ssl-alfresco-ca.password=kT9X6oe68t
+                -Dssl-keystore.ssl-repo-client.password=kT9X6oe68t
+                -Dssl-truststore.password=kT9X6oe68t
+                -Dssl-truststore.aliases=ssl-alfresco-ca,ssl-repo,ssl-repo-client
+                -Dssl-truststore.ssl-alfresco-ca.password=kT9X6oe68t
+                -Dssl-truststore.ssl-repo.password=kT9X6oe68t
+                -Dssl-truststore.ssl-repo-client.password=kT9X6oe68t
+            "
             SOLR_OPTS: "
                 -Dsolr.ssl.checkPeerName=false
                 -Dsolr.allow.unsafe.resourceloading=true
@@ -162,13 +174,26 @@ services:
             #Create the default alfresco and archive cores
             SOLR_CREATE_ALFRESCO_DEFAULTS: "alfresco,archive"
             SOLR_JAVA_MEM: "-Xms1g -Xmx1g" <% if (httpMode == 'https') { %>
-            SOLR_SSL_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.truststore"
+            SOLR_SSL_TRUST_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.truststore"
             SOLR_SSL_TRUST_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_TRUST_STORE_TYPE: "JCEKS"
-            SOLR_SSL_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl.repo.client.keystore"
+            SOLR_SSL_KEY_STORE: "/opt/<%=searchPath%>/keystore/ssl-repo-client.keystore"
             SOLR_SSL_KEY_STORE_PASSWORD: "kT9X6oe68t"
             SOLR_SSL_KEY_STORE_TYPE: "JCEKS"
             SOLR_SSL_NEED_CLIENT_AUTH: "true"
+            JAVA_TOOL_OPTIONS: "
+                -Dsolr.jetty.truststore.password=kT9X6oe68t
+                -Dsolr.jetty.keystore.password=kT9X6oe68t
+                -Dssl-keystore.password=kT9X6oe68t
+                -Dssl-keystore.aliases=ssl-alfresco-ca,ssl-repo-client
+                -Dssl-keystore.ssl-alfresco-ca.password=kT9X6oe68t
+                -Dssl-keystore.ssl-repo-client.password=kT9X6oe68t
+                -Dssl-truststore.password=kT9X6oe68t
+                -Dssl-truststore.aliases=ssl-alfresco-ca,ssl-repo,ssl-repo-client
+                -Dssl-truststore.ssl-alfresco-ca.password=kT9X6oe68t
+                -Dssl-truststore.ssl-repo.password=kT9X6oe68t
+                -Dssl-truststore.ssl-repo-client.password=kT9X6oe68t
+            "
             SOLR_OPTS: "
                 -Dsolr.ssl.checkPeerName=false
                 -Dsolr.allow.unsafe.resourceloading=true
