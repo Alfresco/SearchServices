@@ -59,8 +59,8 @@ RUN if [ "$SOLR_COMMS" == "https" ] ; then \
       sed -i "s/\
 [[:space:]]\+<\/Engine>/\n\
         <\/Engine>\n\
-        <Connector port=\"8443\" protocol=\"org.apache.coyote.http11.Http11Protocol\"\n\
-            connectionTimeout=\"20000\"\n\        
+        <Connector port=\"8443\" protocol=\"HTTP\/1.1\"\n\
+            connectionTimeout=\"20000\"\n\
             SSLEnabled=\"true\" maxThreads=\"150\" scheme=\"https\"\n\
             keystoreFile=\"\/usr\/local\/tomcat\/alf_data\/keystore\/ssl.keystore\"\n\
             keystorePass=\"${KEYSTORE_PASS}\" keystoreType=\"${KEYSTORE_TYPE}\" secure=\"true\"\n\

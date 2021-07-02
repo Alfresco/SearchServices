@@ -3,7 +3,7 @@ const Generator = require('yeoman-generator');
 var banner = require('./banner')
 
 /**
- * This module buids a Docker Compose template to test
+ * This module builds a Docker Compose template to test
  * Repository and Search Services/Insight Engine with
  * different configurations.
 */
@@ -316,8 +316,7 @@ module.exports = class extends Generator {
 
     // Add resources for SSL configuration
     if (this.props.httpMode == 'https') {
-      // Currently Community 'latest' only supports OLD keystores and trustores format
-      var subfolder = (this.props.acsVersion == 'latest' && this.props.alfrescoVersion == 'enterprise') ? '7.x' : '6.x'
+      var subfolder = (this.props.acsVersion.startsWith('7')) ? '7.x' : '6.x'
       this.fs.copy(
         this.templatePath('keystores/' + subfolder + '/alfresco'),
         this.destinationPath('keystores/alfresco')
