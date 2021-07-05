@@ -2623,7 +2623,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"query\": {\n        \"query\": \"testing NOT presentation\",\n        \"language\": \"afts\"\n    }\n}",
+							"raw": "{\n    \"query\": {\n        \"query\": \"testing AND NOT presentation\",\n        \"language\": \"afts\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2769,7 +2769,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"query\": {\n        \"query\": \"testing !presentation\",\n        \"language\": \"afts\"\n    }\n}",
+							"raw": "{\n    \"query\": {\n        \"query\": \"testing AND !presentation\",\n        \"language\": \"afts\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2915,7 +2915,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"query\": {\n        \"query\": \"testing -presentation\",\n        \"language\": \"afts\"\n    }\n}",
+							"raw": "{\n    \"query\": {\n        \"query\": \"testing AND -presentation\",\n        \"language\": \"afts\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3061,7 +3061,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"query\": {\n        \"query\": \"NOT testing presentation\",\n        \"language\": \"afts\"\n    }\n}",
+							"raw": "{\n    \"query\": {\n        \"query\": \"NOT testing AND presentation\",\n        \"language\": \"afts\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3207,7 +3207,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"query\": {\n        \"query\": \"-testing presentation\",\n        \"language\": \"afts\"\n    }\n}",
+							"raw": "{\n    \"query\": {\n        \"query\": \"-testing AND presentation\",\n        \"language\": \"afts\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3353,7 +3353,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"query\": {\n        \"query\": \"!testing presentation\",\n        \"language\": \"afts\"\n    }\n}",
+							"raw": "{\n    \"query\": {\n        \"query\": \"!testing AND presentation\",\n        \"language\": \"afts\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3499,7 +3499,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"query\": {\n        \"query\": \"+presentation |testing\",\n        \"language\": \"afts\"\n    }\n}",
+							"raw": "{\n    \"query\": {\n        \"query\": \"+presentation AND |testing\",\n        \"language\": \"afts\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4718,7 +4718,7 @@
 					"response": []
 				},
 				{
-					"name": "9i Search in fields",
+					"name": "9i Search in fields (TEXT)",
 					"event": [
 						{
 							"listen": "test",
@@ -4864,7 +4864,7 @@
 					"response": []
 				},
 				{
-					"name": "9j Search in fields",
+					"name": "9j Search in fields (ID)",
 					"event": [
 						{
 							"listen": "test",
@@ -5010,7 +5010,7 @@
 					"response": []
 				},
 				{
-					"name": "9k Search in fields",
+					"name": "9k Search in fields (PARENT)",
 					"event": [
 						{
 							"listen": "test",
@@ -5105,7 +5105,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"query\": {\n        \"query\": \"PARENT:\\\"{{TestsFolderID}}\\\"\",\n        \"language\": \"afts\"\n    }\n}",
+							"raw": "{\n    \"query\": {\n        \"query\": \"PARENT:\\\"workspace://SpacesStore/{{TestsFolderID}}\\\"\",\n        \"language\": \"afts\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5156,7 +5156,7 @@
 					"response": []
 				},
 				{
-					"name": "9l Search in fields",
+					"name": "9l Search in fields (PRIMARYPARENT)",
 					"event": [
 						{
 							"listen": "test",
@@ -5251,7 +5251,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"query\": {\n        \"query\": \"PRIMARYPARENT:\\\"{{TestsFolderID}}\\\"\",\n        \"language\": \"afts\"\n    }\n}",
+							"raw": "{\n    \"query\": {\n        \"query\": \"PRIMARYPARENT:\\\"workspace://SpacesStore/{{TestsFolderID}}\\\"\",\n        \"language\": \"afts\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5302,7 +5302,7 @@
 					"response": []
 				},
 				{
-					"name": "9m Search in fields",
+					"name": "9m Search in fields (CLASS)",
 					"event": [
 						{
 							"listen": "test",
@@ -5448,7 +5448,7 @@
 					"response": []
 				},
 				{
-					"name": "9n Search in fields",
+					"name": "9n Search in fields (EXACTCLASS)",
 					"event": [
 						{
 							"listen": "test",
@@ -5594,7 +5594,7 @@
 					"response": []
 				},
 				{
-					"name": "9o Search in fields",
+					"name": "9o Search in fields (TYPE)",
 					"event": [
 						{
 							"listen": "test",
@@ -5740,7 +5740,7 @@
 					"response": []
 				},
 				{
-					"name": "9p Search in fields",
+					"name": "9p Search in fields (EXACTTYPE)",
 					"event": [
 						{
 							"listen": "test",
@@ -5886,7 +5886,7 @@
 					"response": []
 				},
 				{
-					"name": "9q Search in fields",
+					"name": "9q Search in fields (ASPECT)",
 					"event": [
 						{
 							"listen": "test",
@@ -6032,7 +6032,7 @@
 					"response": []
 				},
 				{
-					"name": "9r Search in fields",
+					"name": "9r Search in fields (EXACTASPECT)",
 					"event": [
 						{
 							"listen": "test",
@@ -6178,7 +6178,7 @@
 					"response": []
 				},
 				{
-					"name": "9s Search in fields",
+					"name": "9s Search in fields (ISUNSET)",
 					"event": [
 						{
 							"listen": "test",
@@ -6324,7 +6324,7 @@
 					"response": []
 				},
 				{
-					"name": "9t Search in fields",
+					"name": "9t Search in fields (ISNOTNULL)",
 					"event": [
 						{
 							"listen": "test",
@@ -6470,7 +6470,7 @@
 					"response": []
 				},
 				{
-					"name": "9u Search in fields",
+					"name": "9u Search in fields (EXISTS)",
 					"event": [
 						{
 							"listen": "test",
@@ -6616,7 +6616,7 @@
 					"response": []
 				},
 				{
-					"name": "9v Search in fields",
+					"name": "9v Search in fields (SITE)",
 					"event": [
 						{
 							"listen": "test",
@@ -6762,7 +6762,7 @@
 					"response": []
 				},
 				{
-					"name": "9w Search in fields",
+					"name": "9w Search in fields (TAG)",
 					"event": [
 						{
 							"listen": "test",
@@ -6908,7 +6908,7 @@
 					"response": []
 				},
 				{
-					"name": "9x Search in fields",
+					"name": "9x Search in fields (content)",
 					"event": [
 						{
 							"listen": "test",
@@ -7054,7 +7054,7 @@
 					"response": []
 				},
 				{
-					"name": "9y Search in fields",
+					"name": "9y Search in fields (content)",
 					"event": [
 						{
 							"listen": "test",
@@ -8523,7 +8523,7 @@
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
-									"utils.assertContainsNames(pm.response.json(), [\"Presentation\"], [\"Test\", \"Testing\", \"Tests\", \"Presentations\", \"sample document\"]);",
+									"utils.assertContainsNames(pm.response.json(), [\"Presentation\", \"Presentations\"], [\"Test\", \"Testing\", \"Tests\", \"sample document\"]);",
 									""
 								],
 								"type": "text/javascript"
@@ -8961,7 +8961,7 @@
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
-									"utils.assertContainsNames(pm.response.json(), [\"Test\", \"Presentation\"], [\"Testing\", \"Tests\", \"Presentations\", \"sample document\"]);",
+									"utils.assertEmpty(pm.response.json());",
 									""
 								],
 								"type": "text/javascript"
@@ -10129,7 +10129,7 @@
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
-									"utils.assertContainsNames(pm.response.json(), [], [\"Test\", \"Testing\", \"Tests\", \"Presentation\", \"Presentations\", \"sample document\"]);",
+									"utils.assertContainsNames(pm.response.json(), [\"Presentation\"], [\"Test\", \"Testing\", \"Tests\", \"Presentations\", \"sample document\"]);",
 									""
 								],
 								"type": "text/javascript"
@@ -11443,7 +11443,7 @@
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
-									"utils.assertContainsNames(pm.response.json(), [\"Test\", \"Presentation\"], [\"Testing\", \"Tests\", \"Presentations\", \"sample document\"]);",
+									"utils.assertContainsNames(pm.response.json(), [\"Test\", \"Testing\", \"Tests\", \"Presentation\"], [\"Presentations\", \"sample document\"]);",
 									""
 								],
 								"type": "text/javascript"
@@ -11589,7 +11589,7 @@
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
-									"utils.assertContainsNames(pm.response.json(), [\"Test\", \"Presentation\"], [\"Testing\", \"Tests\", \"Presentations\", \"sample document\"]);",
+									"utils.assertContainsNames(pm.response.json(), [\"Test\", \"Presentation\", \"Presentations\"], [\"Testing\", \"Tests\", \"sample document\"]);",
 									""
 								],
 								"type": "text/javascript"
@@ -11675,7 +11675,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"query\": {\n        \"query\": \"this is a \\\\-\",\n        \"language\": \"afts\"\n    }\n}",
+							"raw": "{\n    \"query\": {\n        \"query\": \"this is a \\\\-\",\n        \"language\": \"afts\"\n    },\n    \"paging\": {\n        \"maxItems\": \"1000\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -11735,7 +11735,7 @@
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
-									"utils.assertContainsNames(pm.response.json(), [\"Test\"], [\"Testing\", \"Tests\", \"Presentation\", \"Presentations\", \"sample document\"]);",
+									"utils.assertContainsNames(pm.response.json(), [\"Test\", \"Testing\", \"Tests\", \"Presentation\", \"Presentations\"], [\"sample document\"]);",
 									""
 								],
 								"type": "text/javascript"
@@ -11821,7 +11821,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"query\": {\n        \"query\": \"this is a \\\\ called test\",\n        \"language\": \"afts\"\n    }\n}",
+							"raw": "{\n    \"query\": {\n        \"query\": \"this is a \\\\ called test\",\n        \"language\": \"afts\"\n    },\n    \"paging\": {\n        \"maxItems\": \"1000\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
