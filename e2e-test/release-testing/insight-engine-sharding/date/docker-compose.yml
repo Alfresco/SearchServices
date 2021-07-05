@@ -11,16 +11,7 @@ services:
             COMPRESS_CONTENT: "false"
         mem_limit: 1800m
         environment:
-            JAVA_TOOL_OPTIONS: "
-                -Dencryption.keystore.type=JCEKS
-                -Dencryption.cipherAlgorithm=DESede/CBC/PKCS5Padding
-                -Dencryption.keyAlgorithm=DESede
-                -Dencryption.keystore.location=/usr/local/tomcat/shared/classes/alfresco/extension/keystore/keystore
-                -Dmetadata-keystore.password=mp6yc0UD9e
-                -Dmetadata-keystore.aliases=metadata
-                -Dmetadata-keystore.metadata.password=oKIWzVdEdA
-                -Dmetadata-keystore.metadata.algorithm=DESede
-                "
+            JAVA_TOOL_OPTIONS: "${JAVA_TOOL_OPTIONS}"
             JAVA_OPTS: "
                 -Ddb.driver=org.postgresql.Driver
                 -Ddb.username=alfresco
