@@ -11,6 +11,7 @@ services:
             COMPRESS_CONTENT: "false"
         mem_limit: 1800m
         environment:
+            JAVA_TOOL_OPTIONS: "${JAVA_TOOL_OPTIONS}"
             JAVA_OPTS: "
                 -Ddb.driver=org.postgresql.Driver
                 -Ddb.username=alfresco
@@ -21,11 +22,9 @@ services:
                 -Dsolr.secureComms=none
                 -Dsolr.baseUrl=/solr 
                 -Dindex.subsystem.name=solr6
-                
                 -Daos.baseUrlOverwrite=http://localhost:8080/alfresco/aos
                 -Dmessaging.broker.url=\"failover:(nio://activemq:61616)?timeout=3000&jms.useCompression=true\"
                 -Ddeployment.method=DOCKER_COMPOSE
-
                 -Dtransform.service.enabled=true
                 -Dtransform.service.url=http://transform-router:8095
                 -Dsfs.url=http://shared-file-store:8099/
@@ -35,7 +34,6 @@ services:
                 -Dimg.url=http://transform-core-aio:8090/
                 -Dtika.url=http://transform-core-aio:8090/
                 -Dtransform.misc.url=http://transform-core-aio:8090/
-
                 -Dcsrf.filter.enabled=false
                 -Dalfresco.restApi.basicAuthScheme=true
                 -Xms1500m -Xmx1500m

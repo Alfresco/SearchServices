@@ -37,4 +37,4 @@ qa/search/upgrade/solr-data
 qa/search/upgrade/solr-contentstore
 qa/upgrade/upgrade
 
-e2e-test/release-testing/**/.env
+release-testing/**/.env
