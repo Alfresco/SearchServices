@@ -23,6 +23,7 @@ SHARE_TRANSFORM_OPTS = ('-DlocalTransform.pdfrenderer.url=http://alfresco-pdf-re
 SHARDING_OPTS = '-Dsolr.useDynamicShardRegistration=true'
 JAVA_OPTS = ('-Ddb.driver=org.postgresql.Driver -Ddb.username=alfresco -Ddb.password=alfresco '
         '-Ddb.url=jdbc:postgresql://postgres:5432/alfresco -Dsolr.port=8983 '
+        '-Dsystem.acl.maxPermissionCheckEnabled=true '
         '-Dindex.subsystem.name=solr6 '
         '-Dalfresco.restApi.basicAuthScheme=true '
         # longer timeouts for CI

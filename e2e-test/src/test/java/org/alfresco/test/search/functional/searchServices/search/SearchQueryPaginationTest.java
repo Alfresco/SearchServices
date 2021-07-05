@@ -66,8 +66,7 @@ public class SearchQueryPaginationTest extends AbstractCmisE2ETest
         waitForMetadataIndexing(testFile.getName(), true);
     }
 
-    /** Disabled due to SEARCH-2948. */
-    @Test(enabled = false, priority = 1, groups = { TestGroup.ACS_62n})
+    @Test(priority = 1, groups = { TestGroup.ACS_62n})
     public void testCmisSearchWithPagination()
     {
        // Search for the cmis documents using cmis query
@@ -142,8 +141,7 @@ public class SearchQueryPaginationTest extends AbstractCmisE2ETest
         Assert.assertTrue(response.isEmpty(), "Empty Response, Error is expected when skipCount < 0");
     }
 
-    /** Disabled due to SEARCH-2948. */
-    @Test(enabled = false, priority = 2, groups = { TestGroup.ACS_62n})
+    @Test(priority = 2, groups = { TestGroup.ACS_62n})
     public void testPagination()
     {
        // Search for the files under the testFolder using cmis query
