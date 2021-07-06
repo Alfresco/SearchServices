@@ -54,6 +54,7 @@ public class TestGroup
     public static final String ACS_611n = "ACS_611n"; // Alfresco Content Services 6.1.1 or above
     public static final String ACS_62n = "ACS_62n"; // Alfresco Content Services 6.2 or above
     public static final String ACS_63n = "ACS_63n"; // Alfresco Content Services 6.3 or above
+    public static final String ACS_701n = "ACS_701n"; // Alfresco Content Services 7.0.1 or above
     public static final String ACS_71n = "ACS_71n"; // Alfresco Content Services 7.1 or above
 
     public static final String AGS_302 = "AGS_302"; // Alfresco governance Services 3.0.2 or above
