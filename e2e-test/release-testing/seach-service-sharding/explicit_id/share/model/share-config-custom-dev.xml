@@ -1,0 +1,27 @@
+<alfresco-config>
+
+    <!-- Add custom configuration -->
+
+    <config evaluator="string-compare" condition="DocumentLibrary">
+        <aspects>
+            <visible>
+                <aspect name="shard:sharding"/>
+            </visible>
+            <addable>
+            </addable>
+            <removeable>
+            </removeable>
+        </aspects>
+    </config>
+
+    <config evaluator="aspect" condition="shard:sharding">
+        <forms>
+            <form>
+                <field-visibility>
+                    <show id="shard:shardId" />
+                </field-visibility>
+            </form>
+        </forms>
+    </config>
+
+</alfresco-config>

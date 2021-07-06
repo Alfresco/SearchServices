@@ -1,5 +1,5 @@
 ARG ALFRESCO_TAG
-FROM alfresco/alfresco-content-repository:${ALFRESCO_TAG}
+FROM quay.io/alfresco/alfresco-content-repository:${ALFRESCO_TAG}
 
 ARG TOMCAT_DIR=/usr/local/tomcat
 ARG ALF_DATA_DIR=${TOMCAT_DIR}/alf_data
