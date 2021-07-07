@@ -31,7 +31,7 @@ Configurations have been generated mainly with [generator-alfresco-docker-compos
 Before executing the test you have init the docker-compose env file. To perform this operation run the init.sh script followed by the Alfresco version do you have to test, e.g.:
 
 ```
-$ init.sh 6.6.2
+$ sh init.sh 7.1.0-A8
 ```
 
 To create new configuration you need to create a file in this folder with the version as name and the .env extension.
@@ -65,6 +65,16 @@ JAVA_TOOL_OPTIONS= "-Dencryption.keystore.type=JCEKS
                 -Dmetadata-keystore.metadata.password=oKIWzVdEdA
                 -Dmetadata-keystore.metadata.algorithm=DESede"
 ```
+
+It is recommended to run docker-compose using the --build flag:
+
+```
+$ docker-compose up --build
+```
+
+This is necessary because, if you switch version, and you already built an image with the same name, the system will not recreate it.
+So if you don't force docker-compose to re-build images, you can face unexpected errors, or worse, testing something else.
+
 
 Docker Compose templates may need some modifications in order to be adapted to new configurations.
 
