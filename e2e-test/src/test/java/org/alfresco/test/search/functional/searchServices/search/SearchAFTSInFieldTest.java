@@ -29,7 +29,7 @@ package org.alfresco.test.search.functional.searchServices.search;
 import static java.util.List.of;
 
 import static jersey.repackaged.com.google.common.collect.Sets.newHashSet;
-import static org.alfresco.search.TestGroup.ACS_71n;
+import static org.alfresco.search.TestGroup.ACS_701n;
 import static org.alfresco.search.TestGroup.CROSS_LOCALE_SUPPORT_DISABLED;
 
 import java.util.ArrayList;
@@ -349,7 +349,7 @@ public class SearchAFTSInFieldTest extends AbstractE2EFunctionalTest
     }
 
     /** Check that a 501 error is returned when performing exact search on a tokenised field without cross-locale support. */
-    @Test (priority = 12, groups = { CROSS_LOCALE_SUPPORT_DISABLED, ACS_71n })
+    @Test (priority = 12, groups = { CROSS_LOCALE_SUPPORT_DISABLED, ACS_701n })
     public void testExactMatchWithoutCrossLocale()
     {
         // Force the query to hit Solr rather than the DB.
