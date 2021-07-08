@@ -26,23 +26,13 @@
 
 package org.alfresco.solr.security;
 
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.config.ConfigUtil;
-import org.apache.solr.core.SolrResourceLoader;
+
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Provides property values for Alfresco Communication using "secret" method:
@@ -58,12 +48,12 @@ public class SecretSharedPropertyCollector
     public final static String SECRET_SHARED_METHOD_KEY = "secret";
 
     // Property names for "secret" communication method
-    private static String SECURE_COMMS_PROPERTY = "alfresco.secureComms";
-    private static String SHARED_SECRET = "alfresco.secureComms.secret";
-    private static String SHARED_SECRET_HEADER = "alfresco.secureComms.secret.header";
+    static final String SECURE_COMMS_PROPERTY = "alfresco.secureComms";
+    private final static String SHARED_SECRET = "alfresco.secureComms.secret";
+    private final static String SHARED_SECRET_HEADER = "alfresco.secureComms.secret.header";
 
     // Save communication method as static value in order to improve performance 
-    private static String commsMethod;
+    static String commsMethod;
 
     /**
      * Check if communications method is "secret"
@@ -79,9 +69,8 @@ public class SecretSharedPropertyCollector
      * Get communication method from environment variables, shared properties or core properties.
      * @return Communication method: none, https, secret
      */
-    private static String getCommsMethod()
+    static String getCommsMethod()
     {
-
         if (commsMethod == null)
         {
 
@@ -96,69 +85,29 @@ public class SecretSharedPropertyCollector
                 if (commsMethod == null)
                 {
                     // Get configuration from deployed SOLR Cores
-                    Set<String> secureCommsSet = getCommsFromCores();
+                    Set<String> secureCommsSet = SecretSharedPropertyHelper.getCommsFromCores();
+
+                    // In case of multiple cores, *all* of them must have the same secureComms value.
+                    // From that perspective, you may find the second clause in the conditional statement
+                    // below not strictly necessary. The reason is that the check below is in charge to make
+                    // sure a consistent configuration about the secret shared property has been defined in all cores.
                     if (secureCommsSet.size() > 1 && secureCommsSet.contains(SECRET_SHARED_METHOD_KEY))
                     {
                         throw new RuntimeException(
                                     "No valid secure comms values: all the cores must be using \"secret\" communication method but found: "
                                                 + secureCommsSet);
                     }
-                    commsMethod = secureCommsSet.stream().findFirst().get();
+
+                    return commsMethod =
+                            secureCommsSet.isEmpty()
+                                    ? null
+                                    : secureCommsSet.iterator().next();
 
                 }
             }
         }
 
         return commsMethod;
-
-    }
-
-    /**
-     * Read different values of "alfresco.secureComms" property from every "solrcore.properties" files.
-     * @return List of different communication methods declared in SOLR Cores.
-     */
-    private static Set<String> getCommsFromCores()
-    {
-
-        Set<String> secureCommsSet = new HashSet<>();
-
-        try (Stream<Path> walk = Files.walk(Paths.get(SolrResourceLoader.locateSolrHome().toString())))
-        {
-
-            List<String> coreFiles = walk.map(x -> x.toString())
-                        .filter(f -> f.contains("solrcore.properties") && !f.contains("templates"))
-                        .collect(Collectors.toList());
-
-            coreFiles.forEach(coreFile -> {
-
-                Properties props = new Properties();
-                try
-                {
-                    props.load(new FileReader(coreFile));
-                }
-                catch (Exception e)
-                {
-                    throw new RuntimeException(e);
-                }
-                String prop = props.getProperty(SECURE_COMMS_PROPERTY);
-                if (prop != null)
-                {
-                    secureCommsSet.add(prop);
-                }
-                else
-                {
-                    secureCommsSet.add("none");
-                }
-
-            });
-
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-
-        return secureCommsSet;
 
     }
 
