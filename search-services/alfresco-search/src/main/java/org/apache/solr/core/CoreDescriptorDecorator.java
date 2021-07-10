@@ -91,12 +91,12 @@ public class CoreDescriptorDecorator
         
         try
         {
-            coreProperties.forEach(prop ->
-                 String value = ConfigUtil.locateProperty(prop, null);
-                 if (value != null) {
-                     properties.put(prop, value);
-                 }
-            );
+            for (String prop : coreProperties) {
+                String value = ConfigUtil.locateProperty(prop, null);
+                if (value != null) {
+                    properties.put(prop, value);
+                }
+            }
         }
         catch(Exception e)
         {
