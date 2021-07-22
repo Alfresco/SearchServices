@@ -28,12 +28,15 @@ package org.alfresco.solr.config;
 
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.SolrInformationServer;
+import org.apache.solr.core.CoreDescriptor;
+import org.apache.solr.core.CoreDescriptorDecorator;
 import org.junit.Test;
 
-import java.util.Map;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
 /**
  * Tests configuring and setup of Alfresco and Solr properties
