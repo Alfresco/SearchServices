@@ -91,11 +91,15 @@ public class CoreDescriptorDecorator
         
         try
         {
-            coreProperties.forEach(prop ->
-                 properties.put(prop, ConfigUtil.locateProperty(prop,properties.getProperty(prop)))
-            );
+            coreProperties.forEach(prop -> {
+                String value = ConfigUtil.locateProperty(prop, null);
+                if (value != null)
+                {
+                    properties.put(prop, value);
+                }
+            });
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             log.warn("Unable to locate alfresco host|port|baseUrl|ssl properties", e);
         }

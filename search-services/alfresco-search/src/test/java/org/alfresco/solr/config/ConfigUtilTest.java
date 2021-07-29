@@ -26,14 +26,17 @@
 
 package org.alfresco.solr.config;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Properties;
+
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.SolrInformationServer;
+import org.apache.solr.core.CoreDescriptor;
+import org.apache.solr.core.CoreDescriptorDecorator;
 import org.junit.Test;
 
-import java.util.Map;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
 /**
  * Tests configuring and setup of Alfresco and Solr properties
@@ -73,6 +76,42 @@ public class ConfigUtilTest {
         assertEquals("SOLR_SOLR_HOST",ConfigUtil.convertPropertyNameToEnvironmentParam(SolrInformationServer.SOLR_HOST));
         assertEquals("SOLR_SOLR_PORT",ConfigUtil.convertPropertyNameToEnvironmentParam(SolrInformationServer.SOLR_PORT));
         assertEquals("SOLR_SOLR_BASEURL",ConfigUtil.convertPropertyNameToEnvironmentParam(SolrInformationServer.SOLR_BASEURL));
+    }
+    
+    /**
+     * See https://github.com/Alfresco/SearchServices/pull/382
+     */
+    @Test
+    public void testMissingCoreProperty()
+    {
+        HashMap<String, String> coreProps = new HashMap<String, String>();
+        Properties saved = (Properties) System.getProperties().clone();
+        System.setProperty("alfresco.secureComms", "https");
+        for (String key : CoreDescriptorDecorator.SUBSTITUTABLE_PROPERTIES_SECURE)
+        {
+            // Intentionally omit store provider settings
+            if (!key.endsWith("store.provider"))
+            {
+                // Set store type as system property
+                if (key.endsWith("store.type"))
+                {
+                    System.setProperty(key, "JKS");
+                }
+                coreProps.put(key, "irrelevant");
+            }
+        }
+        Properties contProps = new Properties();
+        File tmp = new File("/tmp");
+        CoreDescriptor coreDesc = new CoreDescriptor("test", tmp.toPath(), coreProps, contProps, false);
+        CoreDescriptorDecorator decorator = new CoreDescriptorDecorator(coreDesc);
+        Properties decProps = decorator.getProperties();
+        // Verify store types are in system property
+        assertEquals("JKS", ConfigUtil.locateProperty("alfresco.encryption.ssl.keystore.type", null));
+        assertEquals("JKS", ConfigUtil.locateProperty("alfresco.encryption.ssl.truststore.type", null));
+        // Verify store types in CoreDescriptor came from system property
+        assertEquals("JKS", decProps.get("alfresco.encryption.ssl.keystore.type"));
+        assertEquals("JKS", decProps.get("alfresco.encryption.ssl.truststore.type"));
+        System.setProperties(saved);
     }
 
 }
