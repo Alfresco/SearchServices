@@ -84,14 +84,17 @@ public class ConfigUtilTest {
     @Test
     public void testMissingCoreProperty()
     {
-        HashMap<String,String> coreProps = new HashMap<String,String>();
-        Properties saved = (Properties)System.getProperties().clone();
+        HashMap<String, String> coreProps = new HashMap<String, String>();
+        Properties saved = (Properties) System.getProperties().clone();
         System.setProperty("alfresco.secureComms", "https");
-        for (String key : CoreDescriptorDecorator.SUBSTITUTABLE_PROPERTIES_SECURE) {
+        for (String key : CoreDescriptorDecorator.SUBSTITUTABLE_PROPERTIES_SECURE)
+        {
             // Intentionally omit store provider settings
-            if (!key.endsWith("store.provider")) {
+            if (!key.endsWith("store.provider"))
+            {
                 // Set store type as system property
-                if (key.endsWith("store.type")) {
+                if (key.endsWith("store.type"))
+                {
                     System.setProperty(key, "JKS");
                 }
                 coreProps.put(key, "irrelevant");
