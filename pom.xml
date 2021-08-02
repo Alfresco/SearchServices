@@ -39,7 +39,7 @@
       <licenseName>enterprise</licenseName>
       <license.update.dryrun>true</license.update.dryrun>
       <license.update.copyright>false</license.update.copyright>
-      <dependency.apache-commons-compress.version>1.20</dependency.apache-commons-compress.version>
+      <dependency.apache-commons-compress.version>1.21</dependency.apache-commons-compress.version>
    </properties>
    <dependencyManagement>
       <dependencies>
