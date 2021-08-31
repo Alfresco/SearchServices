@@ -90,9 +90,9 @@ aggdesigner-algorithm-6.0.jar https://github.com/julianhyde/aggdesigner
 
 
 === CDDL 1.1 ===
-jaxb-core-3.0.1.jar http://jaxb.java.net/
+jaxb-core-3.0.2.jar http://jaxb.java.net/
 jaxb-runtime-2.3.3.jar http://jaxb.java.net/
-jaxb-xjc-3.0.1.jar http://jaxb.java.net/
+jaxb-xjc-3.0.2.jar http://jaxb.java.net/
 
 
 === Eclipse Distribution License 1.0 (BSD) ===
