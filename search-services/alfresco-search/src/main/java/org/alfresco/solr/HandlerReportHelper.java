@@ -502,7 +502,10 @@ class HandlerReportHelper
         coreSummary.add("ContentTracker Enabled", contentTrkr.isEnabled());
         coreSummary.add("MetadataTracker Enabled", metaTrkr.isEnabled());
         coreSummary.add("AclTracker Enabled", aclTrkr.isEnabled());
-        coreSummary.add("CascadeTracker Enabled", cascadeTracker.isEnabled());
+        if (cascadeTracker != null)
+        {
+            coreSummary.add("CascadeTracker Enabled", cascadeTracker.isEnabled());
+        }
 
         // TX
 
