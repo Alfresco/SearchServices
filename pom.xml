@@ -39,7 +39,44 @@
       <licenseName>enterprise</licenseName>
       <license.update.dryrun>true</license.update.dryrun>
       <license.update.copyright>false</license.update.copyright>
+      <dependency.apache-commons-compress.version>1.21</dependency.apache-commons-compress.version>
+      <dependency.jakarta.xml.bind-api.version>3.0.1</dependency.jakarta.xml.bind-api.version>
+      <dependency.tika.version>1.27</dependency.tika.version>
    </properties>
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>${dependency.apache-commons-compress.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>${dependency.tika.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-java7</artifactId>
+            <version>${dependency.tika.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-parsers</artifactId>
+            <version>${dependency.tika.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-xmp</artifactId>
+            <version>${dependency.tika.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>${dependency.jakarta.xml.bind-api.version}</version>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
    <modules>
       <module>search-services</module>
       <module>insight-engine</module>
