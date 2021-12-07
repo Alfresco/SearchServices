@@ -127,6 +127,7 @@ mchange-commons-java-0.2.19.jar https://github.com/swaldman/mchange-commons-java
 c3p0-0.9.5.5.jar https://github.com/swaldman/c3p0/blob/c3p0-0.9.5.5/LICENSE
 
 
+
 === Eclipse Public License 2.0 ===
 jakarta.annotation-api-1.3.5.jar https://projects.eclipse.org/projects/ee4j.ca
 jakarta.transaction-api-1.3.3.jar https://projects.eclipse.org/projects/ee4j.jta
@@ -135,6 +136,7 @@ jakarta.transaction-api-1.3.3.jar https://projects.eclipse.org/projects/ee4j.jta
 === BSD ===
 jibx-run-1.3.3.jar http://jibx.sourceforge.net/
 dom4j-2.1.3.jar https://github.com/dom4j/dom4j/blob/master/LICENSE
+xmpcore-6.1.11.jar https://github.com/adobe/XMP-Toolkit-SDK/blob/main/LICENSE
 xmpcore-shaded-6.1.11.jar https://github.com/tballison/xmpcore-shaded/blob/6.1.11/src/main/resources/META-INF/LICENSE
 jai-imageio-core-1.4.0.jar https://github.com/jai-imageio/jai-imageio-core/blob/jai-imageio-core-1.4.0/README.md
 
@@ -263,6 +265,5 @@ tagsoup-1.2.1.jar
 t-digest-3.1.jar
 vorbis-java-core-0.8.jar
 vorbis-java-tika-0.8.jar
-xmpcore-5.1.2.jar
 xz-1.6.jar
 zookeeper-3.4.10.jar
