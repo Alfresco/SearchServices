@@ -42,6 +42,7 @@
       <dependency.apache-commons-compress.version>1.21</dependency.apache-commons-compress.version>
       <dependency.jakarta.xml.bind-api.version>3.0.1</dependency.jakarta.xml.bind-api.version>
       <dependency.tika.version>1.27</dependency.tika.version>
+      <dependency.hadoop.version>2.7.7</dependency.hadoop.version>
    </properties>
    <dependencyManagement>
       <dependencies>
@@ -79,6 +80,26 @@
             <groupId>com.adobe.xmp</groupId>
             <artifactId>xmpcore</artifactId>
             <version>6.1.11</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-annotations</artifactId>
+            <version>${dependency.hadoop.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-auth</artifactId>
+            <version>${dependency.hadoop.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>${dependency.hadoop.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-hdfs</artifactId>
+            <version>${dependency.hadoop.version}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>
