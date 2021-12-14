@@ -101,6 +101,10 @@ jna-5.8.0.jar https://github.com/java-native-access/jna/blob/5.8.0/LICENSE
 isoparser-1.9.41.7.jar http://www.apache.org/licenses/LICENSE-2.0.txt
 metadata-extractor-2.15.0.1.jar http://www.apache.org/licenses/LICENSE-2.0.txt
 jdom2-2.0.6.jar https://github.com/hunterhacker/jdom/blob/JDOM-2.0.6/LICENSE.txt
+hadoop-annotations-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
+hadoop-auth-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
+hadoop-common-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
+hadoop-hdfs-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
 
 
 === Creative Commons Public Domain ===
@@ -183,10 +187,6 @@ eigenbase-properties-1.1.5.jar
 fontbox-2.0.6.jar
 gmetric4j-1.0.7.jar
 guava-14.0.1.jar
-hadoop-annotations-2.7.4.jar
-hadoop-auth-2.7.4.jar
-hadoop-common-2.7.4.jar
-hadoop-hdfs-2.7.4.jar
 hppc-0.7.1.jar
 htrace-core-3.2.0-incubating.jar
 httpclient-4.4.1.jar
