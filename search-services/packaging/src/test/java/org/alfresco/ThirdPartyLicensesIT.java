@@ -31,14 +31,18 @@ import static java.util.stream.Collectors.toSet;
 
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 import org.junit.Test;
@@ -54,6 +58,8 @@ public class ThirdPartyLicensesIT
     private static final String SPRING_SURF_PREFIX = "spring-surf-";
     /** Start of the name of the zip file. */
     private static final String ALFRESCO_SEARCH_SERVICES = "alfresco-search-services";
+    /** The path to the target directory. */
+    private static final Path TARGET_PATH = Paths.get(ThirdPartyLicensesIT.class.getProtectionDomain().getCodeSource().getLocation().getPath(), "..");
 
     /**
      * Test that the dependencies in notice.txt match the actual dependencies, to ensure we've included third party
@@ -64,11 +70,8 @@ public class ThirdPartyLicensesIT
     @Test
     public void testLicensesDeclared() throws Exception
     {
-        // Get the path to the target directory.
-        Path targetPath = Paths.get(getClass().getProtectionDomain().getCodeSource().getLocation().getPath(), "..");
-
         // Try to find the zip file in the target directory.
-        Path zipPath = Files.find(targetPath, 1,
+        Path zipPath = Files.find(TARGET_PATH, 1,
                     (path, attribute) -> path.getFileName().toString().startsWith(ALFRESCO_SEARCH_SERVICES + "-")
                                 && path.toString().endsWith(".zip"))
                     .findFirst()
@@ -88,9 +91,29 @@ public class ThirdPartyLicensesIT
                         .filter(name -> !name.startsWith(SPRING_SURF_PREFIX))
                         .collect(toSet());
         }
+        Set<String> declared = getJarsFromNoticeFile();
 
-        // Get the dependencies referenced in notice.txt.
-        Path noticePath = Paths.get(targetPath.toString(), "classes", "licenses", "notice.txt");
+        // If the two lists don't match then fail the test and provide information about what's wrong.
+        if (!jars.equals(declared))
+        {
+            List<String> onlyInTarget = Sets.difference(jars, declared).stream().sorted().collect(toList());
+            List<String> onlyInNotice = Sets.difference(declared, jars).stream().sorted().collect(toList());
+
+            fail("Jar files in zip do not match those declared in notice.txt file.\n"
+                        + "Jars found but not declared: " + onlyInTarget + "\n"
+                        + "Jars declared but not found: " + onlyInNotice);
+        }
+    }
+
+    /**
+     * Get the dependencies referenced in notice.txt.
+     *
+     * @return The set of jar files.
+     * @throws IOException Unexpected
+     */
+    private Set<String> getJarsFromNoticeFile() throws IOException
+    {
+        Path noticePath = Paths.get(TARGET_PATH.toString(), "classes", "licenses", "notice.txt");
         List<String> lines = Files.readAllLines(noticePath);
         // Skip the header, which is all lines before the first "=== License Type ===" line.
         int headerSize = 0;
@@ -102,21 +125,40 @@ public class ThirdPartyLicensesIT
             }
             headerSize++;
         }
-        Set<String> declared = lines.stream()
+        return lines.stream()
                     .skip(headerSize)
                     .filter(line -> !line.isEmpty() && !line.startsWith("==="))
                     .map(line -> line.split(" ")[0])
                     .collect(toSet());
+    }
 
-        // If the two lists don't match then fail the test and provide information about what's wrong.
-        if (!jars.equals(declared))
+    /** Check that we don't have two different versions of the same artifact. */
+    @Test
+    public void testNoDuplicateArtifacts() throws Exception
+    {
+        Set<String> declared = getJarsFromNoticeFile();
+        Multimap<String, String> artifactToVersions = HashMultimap.create();
+        for (String jar : declared)
         {
-            List<String> onlyInTarget = Sets.difference(jars, declared).stream().sorted().collect(toList());
-            List<String> onlyInNotice = Sets.difference(declared, jars).stream().sorted().collect(toList());
+            String artifact = jar.replaceAll("^([^-]*)(-[^0-9][^-]*)*-[0-9].*$", "$1$2");
+            String version = jar.replaceAll("^([^-]*)(-[^0-9][^-]*)*-([0-9].*).jar$", "$3");
+            artifactToVersions.put(artifact, version);
+        }
 
-            fail("Jar files in zip do not match those declared in notice.txt file.\n"
-                        + "Jars found but not declared: " + onlyInTarget + "\n"
-                        + "Jars declared but not found: " + onlyInNotice);
+        boolean pass = true;
+        for (String artifact : artifactToVersions.keySet())
+        {
+            Collection<String> versions = artifactToVersions.get(artifact);
+            if (versions.size() > 1)
+            {
+                System.out.println("There are multiple versions of " + artifact + ": " + versions.toString());
+                pass = false;
+            }
+        }
+
+        if (!pass)
+        {
+            fail("Found duplicate libraries in the notice.txt file.");
         }
     }
 }
