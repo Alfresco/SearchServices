@@ -68,7 +68,6 @@ spring-expression-5.3.3.jar http://projects.spring.io/spring-framework/
 spring-jdbc-5.3.3.jar http://projects.spring.io/spring-framework/
 spring-orm-5.3.3.jar http://projects.spring.io/spring-framework/
 spring-tx-5.3.3.jar http://projects.spring.io/spring-framework/
-xercesImpl-2.12.1.jar http://xerces.apache.org/xerces2-j
 guessencoding-1.4.jar   http://docs.codehaus.org/display/GUESSENC/
 jug-2.0.0-asl.jar   http://jug.safehaus.org/
 acegi-security-0.8.2_patched.jar        http://sourceforge.net/projects/acegisecurity/
@@ -105,6 +104,10 @@ hadoop-annotations-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2
 hadoop-auth-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
 hadoop-common-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
 hadoop-hdfs-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
+org.restlet-2.3.12.jar https://github.com/restlet/restlet-framework-java/blob/2.3.12/README.md
+org.restlet.ext.servlet-2.3.12.jar https://github.com/restlet/restlet-framework-java/blob/2.3.12/README.md
+xercesImpl-2.11.0-alfresco-patched-20180402.jar http://www.apache.org/licenses/LICENSE-2.0.txt
+xml-apis-1.4.01.jar http://www.apache.org/licenses/LICENSE-2.0.txt
 
 
 === Creative Commons Public Domain ===
@@ -159,7 +162,6 @@ asm-5.1.jar
 asm-commons-5.1.jar
 aspectjrt-1.8.0.jar
 attributes-binder-1.3.1.jar
-avatica-core-1.9.0.jar
 boilerpipe-1.1.0.jar
 caffeine-2.4.0.jar
 calcite-core-1.13.0.jar
@@ -193,7 +195,6 @@ httpclient-4.4.1.jar
 httpcore-4.4.1.jar
 httpmime-4.4.1.jar
 icu4j-56.1.jar
-isoparser-1.1.18.jar
 jackcess-2.1.8.jar
 janino-2.7.6.jar
 java-libpst-0.8.1.jar
@@ -230,7 +231,6 @@ lucene-queryparser-6.6.5-patched.6.jar
 lucene-sandbox-6.6.5-patched.6.jar
 lucene-spatial-extras-6.6.5-patched.6.jar
 lucene-suggest-6.6.5-patched.6.jar
-metadata-extractor-2.9.1.jar
 metrics-core-3.2.2.jar
 metrics-ganglia-3.2.2.jar
 metrics-graphite-3.2.2.jar
@@ -240,8 +240,6 @@ morfologik-fsa-2.1.1.jar
 morfologik-polish-2.1.1.jar
 morfologik-stemming-2.1.1.jar
 noggit-0.6.jar
-org.restlet-2.3.0.jar
-org.restlet.ext.servlet-2.3.0.jar
 pdfbox-2.0.6.jar
 pdfbox-tools-2.0.6.jar
 poi-3.17-beta1.jar
