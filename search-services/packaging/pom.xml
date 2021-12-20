@@ -112,7 +112,7 @@
                                     <outputDirectory>${project.build.directory}/solr-libs</outputDirectory>
                                     <excludes>**/jackson-dataformat-smile-*.jar,**/asm-3.3.1.jar,**/jackson-core-asl-*.jar,**/jackson-mapper-asl-*.jar,**/dom4j-1.6.1.jar,
                                         **/annotations-1.0.0.jar,**/spring-context-support-*.jar,**/spring-web-*.jar,**/woodstox-core-asl-4.4.1.jar, **/isoparser-1.1.18.jar,
-                                        **/metadata-extractor-2.9.1.jar
+                                        **/metadata-extractor-2.9.1.jar,**/org.restlet.ext.servlet-2.3.0.jar
                                     </excludes>
                                 </artifactItem>
                             </artifactItems>
@@ -130,6 +130,12 @@
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-search</artifactId>
                                     <version>${project.version}</version>
+                                    <outputDirectory>${project.build.directory}/solr-libs/libs</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.restlet.jee</groupId>
+                                    <artifactId>org.restlet.ext.servlet</artifactId>
+                                    <version>${dependency.restlet.version}</version>
                                     <outputDirectory>${project.build.directory}/solr-libs/libs</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
@@ -167,6 +173,8 @@
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/hadoop-common-2.7.4.jar" />
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/hadoop-hdfs-2.7.4.jar" />
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/avatica-core-1.9.0.jar" />
+                                <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/org.restlet-2.3.0.jar" />
+                                <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/org.restlet.ext.servlet-2.3.0.jar" />
                             </target>
 
                         </configuration>

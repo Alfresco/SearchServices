@@ -43,6 +43,7 @@
       <dependency.jakarta.xml.bind-api.version>3.0.1</dependency.jakarta.xml.bind-api.version>
       <dependency.tika.version>1.27</dependency.tika.version>
       <dependency.hadoop.version>2.7.7</dependency.hadoop.version>
+      <dependency.restlet.version>2.3.12</dependency.restlet.version>
    </properties>
    <dependencyManagement>
       <dependencies>
@@ -100,6 +101,16 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-hdfs</artifactId>
             <version>${dependency.hadoop.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.restlet.jee</groupId>
+            <artifactId>org.restlet</artifactId>
+            <version>${dependency.restlet.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.restlet.jee</groupId>
+            <artifactId>org.restlet.ext.servlet</artifactId>
+            <version>${dependency.restlet.version}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

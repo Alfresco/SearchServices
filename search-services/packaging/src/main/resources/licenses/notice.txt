@@ -68,7 +68,6 @@ spring-expression-5.3.9.jar http://projects.spring.io/spring-framework/
 spring-jdbc-5.3.9.jar http://projects.spring.io/spring-framework/
 spring-orm-5.3.9.jar http://projects.spring.io/spring-framework/
 spring-tx-5.3.9.jar http://projects.spring.io/spring-framework/
-xercesImpl-2.12.1.jar http://xerces.apache.org/xerces2-j
 guessencoding-1.4.jar   http://docs.codehaus.org/display/GUESSENC/
 jug-2.0.0-asl.jar   http://jug.safehaus.org/
 acegi-security-0.8.2_patched.jar        http://sourceforge.net/projects/acegisecurity/
@@ -105,6 +104,10 @@ hadoop-annotations-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2
 hadoop-auth-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
 hadoop-common-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
 hadoop-hdfs-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
+org.restlet-2.3.12.jar https://github.com/restlet/restlet-framework-java/blob/2.3.12/README.md
+org.restlet.ext.servlet-2.3.12.jar https://github.com/restlet/restlet-framework-java/blob/2.3.12/README.md
+xercesImpl-2.11.0-alfresco-patched-20180402.jar http://www.apache.org/licenses/LICENSE-2.0.txt
+xml-apis-1.4.01.jar http://www.apache.org/licenses/LICENSE-2.0.txt
 
 
 === Creative Commons Public Domain ===
@@ -237,8 +240,6 @@ morfologik-fsa-2.1.1.jar
 morfologik-polish-2.1.1.jar
 morfologik-stemming-2.1.1.jar
 noggit-0.6.jar
-org.restlet-2.3.0.jar
-org.restlet.ext.servlet-2.3.0.jar
 pdfbox-2.0.6.jar
 pdfbox-tools-2.0.6.jar
 poi-3.17-beta1.jar
