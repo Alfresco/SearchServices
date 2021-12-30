@@ -222,18 +222,7 @@ public abstract class AbstractTracker implements Tracker
                 assert(assertTrackerStateRemainsNull());
             }
 
-            if(this.state == null)
-            {
-                this.state = getTrackerState();
-
-                LOGGER.debug("[{} / {} / {}]  Global Tracker State set to: {}", coreName, trackerId, iterationId, this.state.toString());
-                this.state.setRunning(true);
-            }
-            else
-            {
-                continueState();
-                this.state.setRunning(true);
-            }
+            updateTrackerState(iterationId);
 
             infoSrv.registerTrackerThread();
 
@@ -273,6 +262,21 @@ public abstract class AbstractTracker implements Tracker
 
             getRunLock().release();
         }
+    }
+
+    private synchronized void updateTrackerState(String iterationId) {
+        if(this.state == null)
+        {
+            this.state = getTrackerState();
+
+            LOGGER.debug("[{} / {} / {}]  Global Tracker State set to: {}", coreName, trackerId, iterationId, this.state.toString());
+        }
+        else
+        {
+            continueState();
+        }
+
+        this.state.setRunning(true);
     }
 
     /**
