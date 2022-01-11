@@ -56,7 +56,6 @@
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-langid</artifactId>
             <version>${solr.version}</version>
-            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>xercesImpl</artifactId>

@@ -41,7 +41,6 @@
       <license.update.copyright>false</license.update.copyright>
       <dependency.apache-commons-compress.version>1.21</dependency.apache-commons-compress.version>
       <dependency.jakarta.xml.bind-api.version>3.0.1</dependency.jakarta.xml.bind-api.version>
-      <dependency.tika.version>1.27</dependency.tika.version>
       <dependency.hadoop.version>2.7.7</dependency.hadoop.version>
       <dependency.restlet.version>2.3.12</dependency.restlet.version>
    </properties>
@@ -51,26 +50,6 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
             <version>${dependency.apache-commons-compress.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.apache.tika</groupId>
-            <artifactId>tika-core</artifactId>
-            <version>${dependency.tika.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.apache.tika</groupId>
-            <artifactId>tika-java7</artifactId>
-            <version>${dependency.tika.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.apache.tika</groupId>
-            <artifactId>tika-parsers</artifactId>
-            <version>${dependency.tika.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.apache.tika</groupId>
-            <artifactId>tika-xmp</artifactId>
-            <version>${dependency.tika.version}</version>
          </dependency>
          <dependency>
             <groupId>jakarta.xml.bind</groupId>
@@ -111,6 +90,34 @@
             <groupId>org.restlet.jee</groupId>
             <artifactId>org.restlet.ext.servlet</artifactId>
             <version>${dependency.restlet.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-langid</artifactId>
+            <version>${solr.version}</version>
+            <scope>provided</scope>
+            <exclusions>
+               <exclusion>
+                  <groupId>org.slf4j</groupId>
+                  <artifactId>slf4j-api</artifactId>
+               </exclusion>
+               <exclusion>
+                  <groupId>org.apache.tika</groupId>
+                  <artifactId>tika-core</artifactId>
+               </exclusion>
+               <exclusion>
+                  <groupId>org.apache.tika</groupId>
+                  <artifactId>tika-java7</artifactId>
+               </exclusion>
+               <exclusion>
+                  <groupId>org.apache.tika</groupId>
+                  <artifactId>tika-parsers</artifactId>
+               </exclusion>
+               <exclusion>
+                  <groupId>org.apache.tika</groupId>
+                  <artifactId>tika-xmp</artifactId>
+               </exclusion>
+            </exclusions>
          </dependency>
       </dependencies>
    </dependencyManagement>
