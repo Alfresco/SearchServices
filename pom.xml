@@ -44,6 +44,7 @@
       <dependency.tika.version>1.27</dependency.tika.version>
       <dependency.hadoop.version>2.7.7</dependency.hadoop.version>
       <dependency.restlet.version>2.3.12</dependency.restlet.version>
+      <dependency.jdom2.version>2.0.6.1</dependency.jdom2.version>
    </properties>
    <dependencyManagement>
       <dependencies>
@@ -111,6 +112,11 @@
             <groupId>org.restlet.jee</groupId>
             <artifactId>org.restlet.ext.servlet</artifactId>
             <version>${dependency.restlet.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.jdom</groupId>
+            <artifactId>jdom2</artifactId>
+            <version>${dependency.jdom2.version}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>
