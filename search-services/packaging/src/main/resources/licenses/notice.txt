@@ -83,7 +83,7 @@ jetty-xml-9.3.29.v20201019.jar https://www.eclipse.org/jetty/licenses.html
 woodstox-core-5.0.3.jar https://github.com/FasterXML/woodstox
 aggdesigner-algorithm-6.0.jar https://github.com/julianhyde/aggdesigner
 parso-2.0.14.jar https://github.com/epam/parso/blob/v2.0.14/LICENSE
-jdom2-2.0.6.jar https://github.com/hunterhacker/jdom/blob/JDOM-2.0.6/LICENSE.txt
+jdom2-2.0.6.1.jar https://github.com/hunterhacker/jdom/blob/JDOM-2.0.6.1/LICENSE.txt
 hadoop-annotations-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
 hadoop-auth-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
 hadoop-common-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
