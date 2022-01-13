@@ -248,7 +248,7 @@ poi-ooxml-schemas-3.17-beta1.jar
 poi-scratchpad-3.17-beta1.jar
 protobuf-java-3.1.0.jar
 rome-1.5.1.jar
-simple-xml-2.7.1.jar
+simple-xml-safe-2.7.1.jar
 slf4j-api-1.7.7.jar
 slf4j-log4j12-1.7.7.jar
 solr-analysis-extras-6.6.5-patched.6.jar
