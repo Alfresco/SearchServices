@@ -45,6 +45,7 @@
       <dependency.hadoop.version>2.7.7</dependency.hadoop.version>
       <dependency.restlet.version>2.3.12</dependency.restlet.version>
       <dependency.jdom2.version>2.0.6.1</dependency.jdom2.version>
+      <dependency.spring.version>5.3.7</dependency.spring.version>
    </properties>
    <dependencyManagement>
       <dependencies>
@@ -118,6 +119,7 @@
             <artifactId>jdom2</artifactId>
             <version>${dependency.jdom2.version}</version>
          </dependency>
+         <!-- spring framework is defined in "search-services" and "insight-engine" because "e2e-test" uses different versions -->
       </dependencies>
    </dependencyManagement>
    <modules>
