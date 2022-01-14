@@ -82,6 +82,19 @@
             <artifactId>solr-clustering</artifactId>
             <version>${solr.version}</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.simpleframework</groupId>
+                    <artifactId>simple-xml</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- replace simple-xml from solr-clustering with simple-xml-safe -->
+        <dependency>
+            <groupId>com.carrotsearch.thirdparty</groupId>
+            <artifactId>simple-xml-safe</artifactId>
+            <version>2.7.1</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
