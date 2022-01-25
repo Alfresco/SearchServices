@@ -127,6 +127,7 @@ tika-parsers-standard-package-2.1.0.jar https://github.com/apache/tika/blob/2.1.
 gson-2.8.5.jar https://github.com/google/gson/blob/gson-parent-2.8.5/LICENSE
 jackcess-encrypt-4.0.1.jar https://github.com/jahlborn/jackcessencrypt/blob/jackcess-encrypt-4.0.1/LICENSE.txt
 commons-csv-1.9.0.jar https://github.com/apache/commons-csv/blob/rel/commons-csv-1.9.0/LICENSE.txt
+simple-xml-safe-2.7.1.jar https://github.com/carrotsearch/simplexml-safe/blob/release/2.7.1/LICENSE.txt
 
 
 === CDDL 1.1 ===
@@ -262,7 +263,6 @@ poi-ooxml-schemas-3.17-beta1.jar
 poi-scratchpad-3.17-beta1.jar
 protobuf-java-3.1.0.jar
 rome-1.5.1.jar
-simple-xml-safe-2.7.1.jar
 slf4j-api-1.7.7.jar
 slf4j-log4j12-1.7.7.jar
 solr-analysis-extras-6.6.5-patched.6.jar
