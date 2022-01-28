@@ -1,0 +1,44 @@
+Copyright (c) 2005-2019 Alfresco Software, Ltd. and others.
+All rights reserved.  This program and the accompanying materials are made available under the terms of the Alfresco
+agreement located at www.alfresco.com/legal/agreements/ or other commercial agreement between Alfresco Software, Ltd.
+("Alfresco") and the user of this program.
+Portions of this product distribution require certain copyright or other notices to
+be included with the product distribution.  These notices may also appear in individual
+source files.
+
+Below is the list of licenses and modules used under corresponding licenses. Licenses for libraries used by Apache Solr are listed separately.
+
+
+=== MIT ===
+jquery-3.5.1.min.js https://github.com/jquery/jquery/blob/3.5.1/LICENSE.txt
+
+
+=== Part of Apache Solr (Licenses listed separately) ===
+angular-chosen.js
+angular-cookies.js
+angular-cookies.min.js
+angular-resource.min.js
+angular-route.js
+angular-route.min.js
+angular-sanitize.js
+angular-sanitize.min.js
+angular.js
+angular.min.js
+chosen.jquery.js
+chosen.jquery.min.js
+chosen.js
+console.js
+d3.js
+highlight.js
+jquery.ajaxfileupload.js
+jquery.blockUI.js
+jquery.cookie.js
+jquery.form.js
+jquery.jstree.js
+jquery.sammy.js
+jquery.timeago.js
+linker.js
+naturalSort.js
+ngtimeago.js
+order.js
+ZeroClipboard.js
