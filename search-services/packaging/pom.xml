@@ -175,6 +175,8 @@
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/avatica-core-1.9.0.jar" />
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/org.restlet-2.3.0.jar" />
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/org.restlet.ext.servlet-2.3.0.jar" />
+                                <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/libs/jquery-2.1.3.min.js" />
+                                <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/js/lib/jquery-1.7.2.min.js" />
                             </target>
 
                         </configuration>
@@ -295,6 +297,22 @@
                         </replacements>
                      </configuration>
                   </execution>
+                   <execution>
+                       <id>jquery-upgrade</id>
+                       <phase>prepare-package</phase>
+                       <goals>
+                           <goal>replace</goal>
+                       </goals>
+                       <configuration>
+                           <file>${solr.directory}/server/solr-webapp/webapp/index.html</file>
+                           <replacements>
+                               <replacement>
+                                   <token>libs/jquery-2.1.3.min.js</token>
+                                   <value>libs/jquery-3.5.1.min.js</value>
+                               </replacement>
+                           </replacements>
+                       </configuration>
+                   </execution>
                </executions>
             </plugin>
             <plugin>
