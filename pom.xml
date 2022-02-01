@@ -166,17 +166,10 @@
                   <configuration>
                      <failOnMissing>true</failOnMissing>
                      <excludedScopes>provided,test</excludedScopes>
-                     <excludedGroups>org.alfresco</excludedGroups>
-                     <licenseMerges>
-                        <licenseMerge>The Apache Software License, Version 2.0|Apache License, Version 2.0|Apache Public License 2.0|Apache 2.0|The Apache License, Version 2.0|Apache License 2.0|Apache Software License - Version 2.0|Apache 2|Apache License Version 2.0</licenseMerge>
-                        <licenseMerge>BSD 3 Clause|3-Clause BSD License|BSD 3-clause License</licenseMerge>
-                        <licenseMerge>Common Development and Distribution License|CDDL|CDDL+GPL License|CDDL + GPLv2 with classpath exception</licenseMerge>
-                        <licenseMerge>Eclipse Distribution License, Version 1.0|Eclipse Distribution License - v 1.0|EDL 1.0</licenseMerge>
-                        <licenseMerge>Eclipse Public License, Version 1.0|Eclipse Public License - Version 1.0|Eclipse Public License - v 1.0</licenseMerge>
-                        <licenseMerge>Eclipse Public License, Version 2.0|Eclipse Public License - Version 2.0|EPL 2.0</licenseMerge>
-                        <licenseMerge>Creative Commons License|CC0|Public Domain, per Creative Commons CC0</licenseMerge>
-                        <licenseMerge>The MIT License|MIT License</licenseMerge>
-                     </licenseMerges>
+                     <excludedGroups>^(org\.alfresco|com\.alfresco|org\.activiti|org\.gytheio).*</excludedGroups>
+                     <failIfWarning>false</failIfWarning>
+                     <includedLicenses>https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/includedLicenses.txt</includedLicenses>
+                     <licenseMergesUrl>https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/licenseMerges.txt</licenseMergesUrl>
                      <overrideUrl>https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/override-THIRD-PARTY.properties</overrideUrl>
                   </configuration>
                </execution>

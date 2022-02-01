@@ -11,20 +11,30 @@ Below is the list of licenses and modules used under corresponding licenses. Lic
 The Apache Solr project page is http://lucene.apache.org/solr/
 The Apache Lucene project page is https://lucene.apache.org/
 
-=== Common Public 1.0 ===
+=== CPL-1.0 ===
 wsdl4j-1.6.3.jar        http://sourceforge.net/projects/wsdl4j
 
 
-=== BSD 3 ===
+=== BSD-3-Clause ===
 antlr-runtime-3.5.2.jar http://www.antlr.org/
+jibx-run-1.3.3.jar http://jibx.sourceforge.net/
 ST4-4.0.8.jar   https://www.stringtemplate.org/license.html
 antlr-3.5.2.jar http://www.antlr.org/
 jaxen-1.2.0.jar http://www.cafeconleche.org/jaxen/
 jsr305-3.0.2.jar http://code.google.com/p/jsr-305/
+xmpcore-6.1.11.jar https://github.com/adobe/XMP-Toolkit-SDK/blob/main/LICENSE
 
 
-=== BSD variant License ===
+=== BSD-2-Clause ===
+jai-imageio-core-1.4.0.jar https://github.com/jai-imageio/jai-imageio-core/blob/jai-imageio-core-1.4.0/README.md
+
+
+=== BSD Variant (License for the Extreme! Lab) ===
 xpp3-1.1.4c.jar http://www.extreme.indiana.edu/dist/java-repository/xpp3/licenses/LICENSE.txt
+
+
+=== BSD Variant (DOM4J License) ===
+dom4j-2.1.3.jar https://github.com/dom4j/dom4j/blob/master/LICENSE
 
 
 === JSON ===
@@ -35,7 +45,7 @@ json-20210307.jar https://github.com/stleary/JSON-java
 junrar-7.4.0.jar https://github.com/junrar/junrar/blob/v7.4.0/LICENSE
 
 
-=== Apache 2.0 ===
+=== Apache-2.0 ===
 xml-resolver-1.2.jar    https://github.com/FasterXML/jackson
 neethi-3.1.1.jar http://ws.apache.org/commons/neethi/
 commons-dbcp-1.4.jar http://jakarta.apache.org/commons/
@@ -130,13 +140,13 @@ commons-csv-1.9.0.jar https://github.com/apache/commons-csv/blob/rel/commons-csv
 simple-xml-safe-2.7.1.jar https://github.com/carrotsearch/simplexml-safe/blob/release/2.7.1/LICENSE.txt
 
 
-=== CDDL 1.1 ===
+=== CDDL-1.1 ===
 jaxb-core-3.0.2.jar http://jaxb.java.net/
 jaxb-xjc-3.0.2.jar http://jaxb.java.net/
 jhighlight-1.0.3.jar https://github.com/codelibs/jhighlight/blob/jhighlight-1.0.3/LICENSE_CDDL.txt
 
 
-=== Eclipse Distribution License 1.0 (BSD) ===
+=== EDL-1.0 ===
 jakarta.activation-2.0.1.jar https://eclipse-ee4j.github.io/jaf
 jakarta.activation-api-1.2.2.jar https://eclipse-ee4j.github.io/jaf
 jakarta.jws-api-2.1.0.jar https://projects.eclipse.org/projects/ee4j.websocket/releases/1.1.1
@@ -146,24 +156,14 @@ txw2-2.3.3.jar https://eclipse-ee4j.github.io/jaxb-ri
 jaxb-runtime-2.3.3.jar  https://github.com/eclipse-ee4j/jaxb-ri/blob/2.3.4-RI/LICENSE.md
 
 
-=== Eclipse Public License 2.0 ===
+=== EPL-2.0 ===
 jakarta.annotation-api-1.3.5.jar https://projects.eclipse.org/projects/ee4j.ca
 jakarta.transaction-api-1.3.3.jar https://projects.eclipse.org/projects/ee4j.jta
-
-
-=== BSD ===
-jibx-run-1.3.3.jar http://jibx.sourceforge.net/
-dom4j-2.1.3.jar https://github.com/dom4j/dom4j/blob/master/LICENSE
-xmpcore-6.1.11.jar https://github.com/adobe/XMP-Toolkit-SDK/blob/main/LICENSE
-jai-imageio-core-1.4.0.jar https://github.com/jai-imageio/jai-imageio-core/blob/jai-imageio-core-1.4.0/README.md
 
 
 === MIT ===
 dd-plist-1.23.jar https://github.com/3breadt/dd-plist/blob/dd-plist-1.23/LICENSE.txt
 dec-0.1.2.jar http://www.opensource.org/licenses/mit-license.php
-
-
-=== MIT variant License ===
 bcmail-jdk15on-1.69.jar https://github.com/bcgit/bc-java/blob/r1rv69/LICENSE.html
 bcpkix-jdk15on-1.69.jar https://github.com/bcgit/bc-java/blob/r1rv69/LICENSE.html
 bcutil-jdk15on-1.69.jar https://github.com/bcgit/bc-java/blob/r1rv69/LICENSE.html
