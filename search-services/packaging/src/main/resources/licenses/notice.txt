@@ -38,7 +38,7 @@ dom4j-2.1.3.jar https://github.com/dom4j/dom4j/blob/master/LICENSE
 
 
 === JSON ===
-json-20210307.jar https://github.com/stleary/JSON-java
+json-20211205.jar https://github.com/stleary/JSON-java
 
 
 === UnRar License ===
@@ -93,7 +93,6 @@ jetty-xml-9.3.29.v20201019.jar https://www.eclipse.org/jetty/licenses.html
 woodstox-core-5.0.3.jar https://github.com/FasterXML/woodstox
 aggdesigner-algorithm-6.0.jar https://github.com/julianhyde/aggdesigner
 parso-2.0.14.jar https://github.com/epam/parso/blob/v2.0.14/LICENSE
-jdom2-2.0.6.1.jar https://github.com/hunterhacker/jdom/blob/JDOM-2.0.6.1/LICENSE.txt
 hadoop-annotations-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
 hadoop-auth-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
 hadoop-common-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
@@ -102,38 +101,38 @@ org.restlet-2.3.12.jar https://github.com/restlet/restlet-framework-java/blob/2.
 org.restlet.ext.servlet-2.3.12.jar https://github.com/restlet/restlet-framework-java/blob/2.3.12/README.md
 xercesImpl-2.11.0-alfresco-patched-20180402.jar http://www.apache.org/licenses/LICENSE-2.0.txt
 xml-apis-1.4.01.jar http://www.apache.org/licenses/LICENSE-2.0.txt
-spring-aop-5.3.13.jar https://github.com/spring-projects/spring-framework/blob/v5.3.13/LICENSE.txt
-spring-beans-5.3.13.jar https://github.com/spring-projects/spring-framework/blob/v5.3.13/LICENSE.txt
-spring-context-5.3.13.jar https://github.com/spring-projects/spring-framework/blob/v5.3.13/LICENSE.txt
-spring-core-5.3.13.jar https://github.com/spring-projects/spring-framework/blob/v5.3.13/LICENSE.txt
-spring-expression-5.3.13.jar https://github.com/spring-projects/spring-framework/blob/v5.3.13/LICENSE.txt
-spring-jdbc-5.3.13.jar https://github.com/spring-projects/spring-framework/blob/v5.3.13/LICENSE.txt
-spring-orm-5.3.13.jar https://github.com/spring-projects/spring-framework/blob/v5.3.13/LICENSE.txt
-spring-tx-5.3.13.jar https://github.com/spring-projects/spring-framework/blob/v5.3.13/LICENSE.txt
-tika-core-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-apple-module-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-audiovideo-module-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-cad-module-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-code-module-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-crypto-module-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-digest-commons-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-font-module-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-html-commons-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-html-module-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-image-module-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-mail-commons-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-mail-module-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-microsoft-module-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-miscoffice-module-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-news-module-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-ocr-module-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-pdf-module-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-pkg-module-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-text-module-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-xml-module-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-xmp-commons-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parser-zip-commons-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
-tika-parsers-standard-package-2.1.0.jar https://github.com/apache/tika/blob/2.1.0-rc2/LICENSE.txt
+spring-aop-5.3.15.jar https://github.com/spring-projects/spring-framework/blob/v5.3.15/LICENSE.txt
+spring-beans-5.3.15.jar https://github.com/spring-projects/spring-framework/blob/v5.3.15/LICENSE.txt
+spring-context-5.3.15.jar https://github.com/spring-projects/spring-framework/blob/v5.3.15/LICENSE.txt
+spring-core-5.3.15.jar https://github.com/spring-projects/spring-framework/blob/v5.3.15/LICENSE.txt
+spring-expression-5.3.15.jar https://github.com/spring-projects/spring-framework/blob/v5.3.15/LICENSE.txt
+spring-jdbc-5.3.15.jar https://github.com/spring-projects/spring-framework/blob/v5.3.15/LICENSE.txt
+spring-orm-5.3.15.jar https://github.com/spring-projects/spring-framework/blob/v5.3.15/LICENSE.txt
+spring-tx-5.3.15.jar https://github.com/spring-projects/spring-framework/blob/v5.3.15/LICENSE.txt
+tika-core-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-apple-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-audiovideo-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-cad-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-code-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-crypto-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-digest-commons-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-font-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-html-commons-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-html-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-image-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-mail-commons-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-mail-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-microsoft-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-miscoffice-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-news-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-ocr-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-pdf-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-pkg-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-text-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-xml-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-xmp-commons-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parser-zip-commons-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
+tika-parsers-standard-package-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
 gson-2.8.5.jar https://github.com/google/gson/blob/gson-parent-2.8.5/LICENSE
 jackcess-encrypt-4.0.1.jar https://github.com/jahlborn/jackcessencrypt/blob/jackcess-encrypt-4.0.1/LICENSE.txt
 commons-csv-1.9.0.jar https://github.com/apache/commons-csv/blob/rel/commons-csv-1.9.0/LICENSE.txt
@@ -164,9 +163,9 @@ jakarta.transaction-api-1.3.3.jar https://projects.eclipse.org/projects/ee4j.jta
 === MIT ===
 dd-plist-1.23.jar https://github.com/3breadt/dd-plist/blob/dd-plist-1.23/LICENSE.txt
 dec-0.1.2.jar http://www.opensource.org/licenses/mit-license.php
-bcmail-jdk15on-1.69.jar https://github.com/bcgit/bc-java/blob/r1rv69/LICENSE.html
-bcpkix-jdk15on-1.69.jar https://github.com/bcgit/bc-java/blob/r1rv69/LICENSE.html
-bcutil-jdk15on-1.69.jar https://github.com/bcgit/bc-java/blob/r1rv69/LICENSE.html
+bcmail-jdk15on-1.70.jar https://github.com/bcgit/bc-java/blob/r1rv69/LICENSE.html
+bcpkix-jdk15on-1.70.jar https://github.com/bcgit/bc-java/blob/r1rv69/LICENSE.html
+bcutil-jdk15on-1.70.jar https://github.com/bcgit/bc-java/blob/r1rv69/LICENSE.html
 
 
 === Part of Apache Solr (Licenses listed separately) ===
