@@ -13,6 +13,16 @@
             <filtered>false</filtered>
         </fileSet>
         <fileSet>
+            <directory>${project.build.outputDirectory}/solr/server/solr-webapp/webapp/js/lib</directory>
+            <outputDirectory>./solr/server/solr-webapp/webapp/js/lib</outputDirectory>
+            <filtered>false</filtered>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.outputDirectory}/solr/server/solr-webapp/webapp/libs</directory>
+            <outputDirectory>./solr/server/solr-webapp/webapp/libs</outputDirectory>
+            <filtered>false</filtered>
+        </fileSet>
+        <fileSet>
             <directory>${project.build.outputDirectory}</directory>
             <outputDirectory>.</outputDirectory>
             <filtered>true</filtered>
