@@ -2060,7 +2060,7 @@ public class SolrInformationServer implements InformationServer
                 if (nodesMetaDataFromRepository.isEmpty())
                 {
                     // Using exception for flow handling to jump to single node processing.
-                    throw new Exception("Error loading node metadata from repository for bulk delete.");
+                    throw new Exception("Error loading node metadata from repository for bulk update.");
                 }
                 
                 NEXT_NODE:
@@ -2124,7 +2124,7 @@ public class SolrInformationServer implements InformationServer
         }
         catch (Exception e)
         {
-            LOGGER.error(" Bulk indexing failed, do one node at a time. See the stacktrace below for further details.", e);
+            LOGGER.error("Bulk indexing failed, do one node at a time. See the stacktrace below for further details.", e);
             for (Node node : nodes)
             {
                 this.indexNode(node, true);
