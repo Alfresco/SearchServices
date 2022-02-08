@@ -17,7 +17,7 @@
       <suiteXmlFile>src/test/resources/SearchSuite.xml</suiteXmlFile>
       <test.exclude />
       <test.include />
-      <jackson.databind.version>2.9.10.7</jackson.databind.version>
+      <jackson.databind.version>2.9.10.8</jackson.databind.version>
       <licenseName>community</licenseName>
    </properties>
    <build>
