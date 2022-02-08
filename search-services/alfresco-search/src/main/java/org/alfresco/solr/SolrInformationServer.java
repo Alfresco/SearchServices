@@ -2059,7 +2059,7 @@ public class SolrInformationServer implements InformationServer
                 if (nodesMetaDataFromRepository.isEmpty())
                 {
                     // Using exception for flow handling to jump to single node processing.
-                    throw new Exception("Error loading node metadata from repository for bulk delete.");
+                    throw new Exception("Error loading node metadata from repository for bulk update.");
                 }
                 
                 NEXT_NODE:
