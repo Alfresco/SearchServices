@@ -386,7 +386,6 @@ The following environment variables are supported:
 | ENABLE_SPELLCHECK | true or false | Whether spellchecking is enabled or not. |
 | DISABLE_CASCADE_TRACKING | true or false | Whether cascade tracking is enabled or not. Disabling cascade tracking will improve performance, but result in some feature loss (e.g. path queries). |
 | ALFRESCO_SECURE_COMMS | https, secret or none | Whether communication with the repository is secured. See below. |
-| ALFRESCO_SECURE_COMMS_SHARED_SECRET | string | A shared secret for Solr and repository to authenticate each other |
 | SOLR_SSL_... | --- | These variables are also used to configure SSL. See below. |
 
 **Using Mutual Auth TLS (SSL)**
@@ -417,7 +416,7 @@ searchservices:develop
 
 **Using Shared secret authentication**
 
-An alternative is to use a shared secret in order to secure repo <-> solr commnunication. You just need to set `ALFRESCO_SECURE_COMMS=secret` **AND** `ALFRESCO_SECURE_COMMS_SHARED_SECRET=my_super_secret_secret`
+An alternative is to use a shared secret in order to secure repo <-> solr commnunication. You just need to set `ALFRESCO_SECURE_COMMS=secret` **AND** `JAVA_TOOL_OPTIONS="-Dalfresco.secureComms.secret=my_super_secret_secret"`
 
 SOLR Web Console will be available at:
 

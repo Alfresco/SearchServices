@@ -91,19 +91,17 @@ fi
 
 # By default Docker Image is using TLS Mutual Authentication (SSL) for communications with Repository
 # Plain HTTP can be enabled by setting ALFRESCO_SECURE_COMMS to 'none'
+# Plain HTTP with a secret word in the request header can be enabled by setting ALFRESCO_SECURE_COMMS to 'secret',
+# the secret word should be defined as a JVM argument like so: JAVA_TOOL_OPTIONS="-Dalfresco.secureComms.secret=my-secret-value"
 case "$ALFRESCO_SECURE_COMMS" in
    secret)
-      if [ -n "$ALFRESCO_SECURE_COMMS_SHARED_SECRET" ]; then
-         sed -i "s/alfresco.secureComms=https/alfresco.secureComms=secret\nalfresco.secureComms.secret=${ALFRESCO_SECURE_COMMS_SHARED_SECRET}\n/" $SOLR_RERANK_CORE_FILE $SOLR_NORERANK_CORE_FILE
-         if [[ -f ${PWD}/solrhome/alfresco/conf/solrcore.properties ]]; then
-             sed -i "s/alfresco.secureComms=https/alfresco.secureComms=secret\nalfresco.secureComms.secret=${ALFRESCO_SECURE_COMMS_SHARED_SECRET}\n/" ${PWD}/solrhome/alfresco/conf/solrcore.properties
-         fi
-         if [[ -f ${PWD}/solrhome/archive/conf/solrcore.properties ]]; then
-             sed -i "s/alfresco.secureComms=https/alfresco.secureComms=secret\nalfresco.secureComms.secret=${ALFRESCO_SECURE_COMMS_SHARED_SECRET}\n/" ${PWD}/solrhome/archive/conf/solrcore.properties
-         fi
-      else
-         LOG_WARN=1
-      fi
+     sed -i "s/alfresco.secureComms=https/alfresco.secureComms=secret\n/" $SOLR_RERANK_CORE_FILE $SOLR_NORERANK_CORE_FILE
+     if [[ -f ${PWD}/solrhome/alfresco/conf/solrcore.properties ]]; then
+         sed -i "s/alfresco.secureComms=https/alfresco.secureComms=secret\n/" ${PWD}/solrhome/alfresco/conf/solrcore.properties
+     fi
+     if [[ -f ${PWD}/solrhome/archive/conf/solrcore.properties ]]; then
+         sed -i "s/alfresco.secureComms=https/alfresco.secureComms=secret\n/" ${PWD}/solrhome/archive/conf/solrcore.properties
+     fi
    ;;
    none)
      sed -i "s/alfresco.secureComms=https/alfresco.secureComms=none\n/" $SOLR_RERANK_CORE_FILE $SOLR_NORERANK_CORE_FILE
@@ -117,7 +115,7 @@ case "$ALFRESCO_SECURE_COMMS" in
    https|'')
    ;;
    *)
-      LOG_WARN=2
+      LOG_WARN=1
    ;;
 esac
 
