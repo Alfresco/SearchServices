@@ -295,6 +295,7 @@ The following environment variables are supported:
 | DISABLE_CASCADE_TRACKING | true or false | Whether cascade tracking is enabled or not. Disabling cascade tracking will improve performance, but result in some feature loss (e.g. path queries). |
 | ALFRESCO_SECURE_COMMS | https or none | Whether communication with the repository is secured. See below. |
 | SOLR_SSL_... | --- | These variables are also used to configure SSL. See below. |
+| ALFRESCO_SECURE_COMMS | https, secret or none             | Whether communication with the repository is secured. See below. |
 
 **Using Mutual Auth TLS (SSL)**
 
@@ -327,6 +328,23 @@ SOLR Web Console will be available at:
 [https://localhost:8983/solr](https://localhost:8983/solr)
 
 *Note* You must install the `browser.p12` certificate in your browser in order to access to this URL.
+
+**Using Shared Secret Authentication**
+
+An alternative is to use a shared secret in order to secure repo <-> solr communication. You just need to set `ALFRESCO_SECURE_COMMS=secret` **AND** `JAVA_TOOL_OPTIONS="-Dalfresco.secureComms.secret=my_super_secret_secret"`.
+
+By default, the SOLR Web Console will be available at:
+
+[http://localhost:8983/solr](http://localhost:8983/solr)
+
+but you can also start the Jetty server in SSL mode as explained above, in that case the SOLR Web Console will be available at:
+
+[https://localhost:8983/solr](https://localhost:8983/solr)
+
+*Note* You must install the `browser.p12` certificate in your browser in order to access to this URL.
+
+In both cases, when trying to access the SOLR Web Console you will have to provide the `X-Alfresco-Search-Secret` header in the request, specifying as its value the same value that was used for the `-Dalfresco.secureComms.secret` property.
+You can do so natively on Safari through the `Dev Tools > Local Overrides` feature, or with a browser extension on Google Chrome/Firefox/Opera/Edge: [ModHeader](https://modheader.com/).
 
 **Using Plain HTTP**
 

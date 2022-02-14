@@ -3,6 +3,10 @@ set -e
 # By default its going to deploy "Master" setup configuration with "REPLICATION_TYPE=master".
 # Slave replica service can be enabled using "REPLICATION_TYPE=slave" environment value.
 
+log_warn() {
+	echo -e " ====WARN==== \n$*\nWARN CODE was $LOG_WARN" >&2
+}
+
 RERANK_TEMPLATE_PATH=$PWD/solrhome/templates/rerank/conf
 NORERANK_TEMPLATE_PATH=$PWD/solrhome/templates/noRerank/conf
 SOLR_RERANK_CONFIG_FILE=$RERANK_TEMPLATE_PATH/solrconfig.xml
@@ -87,16 +91,35 @@ fi
 
 # By default Docker Image is using TLS Mutual Authentication (SSL) for communications with Repository
 # Plain HTTP can be enabled by setting ALFRESCO_SECURE_COMMS to 'none'
-if [[ "none" == "$ALFRESCO_SECURE_COMMS" ]]; then
-   sed -i 's/alfresco.secureComms=https/alfresco.secureComms=none/' $SOLR_RERANK_CORE_FILE $SOLR_NORERANK_CORE_FILE
-   # Apply also the setting to existing SOLR cores property files when existing
-   if [[ -f ${PWD}/solrhome/alfresco/conf/solrcore.properties ]]; then
-       sed -i 's/alfresco.secureComms=https/alfresco.secureComms=none/' ${PWD}/solrhome/alfresco/conf/solrcore.properties
-   fi
-   if [[ -f ${PWD}/solrhome/archive/conf/solrcore.properties ]]; then
-       sed -i 's/alfresco.secureComms=https/alfresco.secureComms=none/' ${PWD}/solrhome/archive/conf/solrcore.properties
-   fi
-fi
+# Plain HTTP with a secret word in the request header can be enabled by setting ALFRESCO_SECURE_COMMS to 'secret',
+# the secret word should be defined as a JVM argument like so: JAVA_TOOL_OPTIONS="-Dalfresco.secureComms.secret=my-secret-value"
+case "$ALFRESCO_SECURE_COMMS" in
+   secret)
+     sed -i "s/alfresco.secureComms=https/alfresco.secureComms=secret\n/" $SOLR_RERANK_CORE_FILE $SOLR_NORERANK_CORE_FILE
+     if [[ -f ${PWD}/solrhome/alfresco/conf/solrcore.properties ]]; then
+         sed -i "s/alfresco.secureComms=https/alfresco.secureComms=secret\n/" ${PWD}/solrhome/alfresco/conf/solrcore.properties
+     fi
+     if [[ -f ${PWD}/solrhome/archive/conf/solrcore.properties ]]; then
+         sed -i "s/alfresco.secureComms=https/alfresco.secureComms=secret\n/" ${PWD}/solrhome/archive/conf/solrcore.properties
+     fi
+   ;;
+   none)
+     sed -i "s/alfresco.secureComms=https/alfresco.secureComms=none\n/" $SOLR_RERANK_CORE_FILE $SOLR_NORERANK_CORE_FILE
+     if [[ -f ${PWD}/solrhome/alfresco/conf/solrcore.properties ]]; then
+         sed -i "s/alfresco.secureComms=https/alfresco.secureComms=none\n/" ${PWD}/solrhome/alfresco/conf/solrcore.properties
+     fi
+     if [[ -f ${PWD}/solrhome/archive/conf/solrcore.properties ]]; then
+         sed -i "s/alfresco.secureComms=https/alfresco.secureComms=none\n/" ${PWD}/solrhome/archive/conf/solrcore.properties
+     fi
+   ;;
+   https|'')
+   ;;
+   *)
+      LOG_WARN=1
+   ;;
+esac
+
+[ -z $LOG_WARN ] || log_warn "something was wrong with the authentication config, defaulting to https mTLS auth.\nIf mTLS is not properly configured Search service might not work"
 
 if [[ true == "$ENABLE_SPELLCHECK" ]]; then
    sed -i 's/#alfresco.suggestable.property/alfresco.suggestable.property/' ${PWD}/solrhome/conf/shared.properties
