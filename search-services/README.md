@@ -331,7 +331,7 @@ SOLR Web Console will be available at:
 
 **Using Shared Secret Authentication**
 
-An alternative is to use a shared secret in order to secure repo <-> solr communication. You just need to set `ALFRESCO_SECURE_COMMS=secret` **AND** `JAVA_TOOL_OPTIONS="-Dalfresco.secureComms.secret=my_super_secret_secret"`.
+An alternative is to use a shared secret in order to secure repo <-> solr communication. You just need to set `ALFRESCO_SECURE_COMMS=secret` **AND** `SOLR_OPTS="-Dalfresco.secureComms.secret=my_super_secret_secret"`.
 
 By default, the SOLR Web Console will be available at:
 
