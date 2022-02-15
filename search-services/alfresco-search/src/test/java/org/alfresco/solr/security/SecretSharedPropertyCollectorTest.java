@@ -37,6 +37,7 @@ import java.util.Set;
 import static java.util.Collections.emptySet;
 import static org.alfresco.solr.security.SecretSharedPropertyCollector.SECRET_SHARED_METHOD_KEY;
 import static org.alfresco.solr.security.SecretSharedPropertyCollector.SECURE_COMMS_PROPERTY;
+import static org.alfresco.solr.security.SecretSharedPropertyCollector.SHARED_SECRET;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -45,15 +46,17 @@ import static org.mockito.Mockito.mockStatic;
 
 public class SecretSharedPropertyCollectorTest
 {
-    private final static String A_COMMS_METHOD = "aCommsMethod";
-    private final static String SET_THROUGH_SYSTEM_PROPERTY = "aCommsMethod_SetThroughSystemProperty";
-    private final static String SET_THROUGH_ALFRESCO_COMMON_CONFIG = "aCommsMethod_SetThroughAlfrescoCommonConfig";
-    private final static String COMMS_METHOD_FROM_SOLRCORE = "aCommsMethod_FromSolrCore";
+    private static final String A_COMMS_METHOD = "aCommsMethod";
+    private static final String SET_THROUGH_SYSTEM_PROPERTY = "aCommsMethod_SetThroughSystemProperty";
+    private static final String SET_THROUGH_ALFRESCO_COMMON_CONFIG = "aCommsMethod_SetThroughAlfrescoCommonConfig";
+    private static final String COMMS_METHOD_FROM_SOLRCORE = "aCommsMethod_FromSolrCore";
+    private static final String SECRET_VALUE = "my-secret";
 
     @Before
     public void setUp()
     {
         SecretSharedPropertyCollector.commsMethod = null;
+        assertNull(System.getProperty(SHARED_SECRET));
         assertNull(System.getProperty(SECURE_COMMS_PROPERTY));
         assertNull(AlfrescoSolrDataModel.getCommonConfig().getProperty(SECURE_COMMS_PROPERTY));
     }
@@ -61,8 +64,22 @@ public class SecretSharedPropertyCollectorTest
     @After
     public void tearDown()
     {
+        System.clearProperty(SHARED_SECRET);
         System.clearProperty(SECURE_COMMS_PROPERTY);
         AlfrescoSolrDataModel.getCommonConfig().remove(SECURE_COMMS_PROPERTY);
+    }
+
+    @Test
+    public void getSecret_shouldReturnTheSecretValue()
+    {
+        System.setProperty(SecretSharedPropertyCollector.SHARED_SECRET, SECRET_VALUE);
+        assertEquals(SECRET_VALUE, SecretSharedPropertyCollector.getSecret());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void getSecretWithMissingSecretValue_shouldThrowException()
+    {
+        SecretSharedPropertyCollector.getSecret();
     }
 
     @Test
@@ -162,4 +179,5 @@ public class SecretSharedPropertyCollectorTest
             SecretSharedPropertyCollector.getCommsMethod();
         }
     }
+
 }
