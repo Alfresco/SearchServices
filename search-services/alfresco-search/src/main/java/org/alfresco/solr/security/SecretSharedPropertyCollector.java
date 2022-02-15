@@ -45,12 +45,12 @@ import java.util.Set;
 public class SecretSharedPropertyCollector
 {
 
-    public final static String SECRET_SHARED_METHOD_KEY = "secret";
+    public static final String SECRET_SHARED_METHOD_KEY = "secret";
 
     // Property names for "secret" communication method
     static final String SECURE_COMMS_PROPERTY = "alfresco.secureComms";
-    private final static String SHARED_SECRET = "alfresco.secureComms.secret";
-    private final static String SHARED_SECRET_HEADER = "alfresco.secureComms.secret.header";
+    static final String SHARED_SECRET = "alfresco.secureComms.secret";
+    private static final String SHARED_SECRET_HEADER = "alfresco.secureComms.secret.header";
 
     // Save communication method as static value in order to improve performance 
     static String commsMethod;
@@ -126,7 +126,8 @@ public class SecretSharedPropertyCollector
 
         if (secret == null || secret.length() == 0)
         { 
-            throw new RuntimeException("Missing value for " + SHARED_SECRET + " configuration property"); 
+            throw new RuntimeException("Missing value for " + SHARED_SECRET + " configuration property. Make sure to"
+                + " pass this property as a JVM Argument (eg. -D" + SHARED_SECRET + "=my-secret-value).");
         }
 
         return secret;
