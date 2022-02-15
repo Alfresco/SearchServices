@@ -716,7 +716,7 @@ public class SolrInformationServer implements InformationServer
                             .set(CommonParams.FQ, FIELD_DOC_TYPE + ":" + DOC_TYPE_NODE)
                             .set(CommonParams.ROWS, 0)
                             .set(FacetParams.FACET, true)
-                            .add(FacetParams.FACET_QUERY, "{!key='OUTDATED'}LATEST_APPLIED_CONTENT_VERSION_ID:{-10 TO -10}");
+                            .add(FacetParams.FACET_QUERY, "{!key='OUTDATED'}LAST_INCOMING_CONTENT_VERSION_ID:\"-10\"");
 
             SolrQueryResponse response = cloud.getResponse(nativeRequestHandler, request, params);
 
@@ -2625,7 +2625,7 @@ public class SolrInformationServer implements InformationServer
      * - Do we have an entry in the local content store for the document X?
      * - If we didn't have that entry then FTSSTATUS was set to New
      *
-     * FTSSTatus = DIRTY
+     * FTSSTATUS = DIRTY
      *
      * When a node, which requires content, arrived here for being indexed, the "Dirty" status was set if
      *
@@ -2637,7 +2637,7 @@ public class SolrInformationServer implements InformationServer
      * something is different between the local document and the document which is in Solr".
      *
      * The content store allowed to workaround the problem: the code was deserializing the entry corresponding to the
-     * incoming node (which teoretically corresponded to the document indexed in Solr) so both versions were available
+     * incoming node (which theoretically corresponded to the document indexed in Solr) so both versions were available
      * for making decisions
      *
      * ------------------
@@ -2646,7 +2646,7 @@ public class SolrInformationServer implements InformationServer
      * about
      *
      * - the "INSERT" or "UPDATE" nature of the indexing operation that is going to be executed
-     * - the values of fields of a given document indeded in Solr
+     * - the values of fields of a given document indexed in Solr
      *
      * In order to indicate to the ContentTracker which documents will require the content update, we added two
      * additional fields in the schema:
@@ -2656,8 +2656,8 @@ public class SolrInformationServer implements InformationServer
      *          LATEST_APPLIED_CONTENT_VERSION_ID: as the name suggests, this is the latest DOCID applied to this document (again, not the lucene docid)
      *     </li>
      *     <li>
-     *          LAST_INCOMING_CONTENT_VERSION_ID: a field that will contains "-10" if the content is outdated, otherwise it will have the same value
-     *          of LATEST_APPLIED_CONTENT_VERSION_ID.
+     *          LAST_INCOMING_CONTENT_VERSION_ID: this call will set the field to "-10" as the content is outdated. The content tracker will then set it
+     *          to have same value as LATEST_APPLIED_CONTENT_VERSION_ID.
      *     </li>
      * </ul>
      *
@@ -2667,11 +2667,8 @@ public class SolrInformationServer implements InformationServer
     {
         ofNullable(value)
                 .map(ContentPropertyValue::getId)
-                .ifPresentOrElse(
-                        id -> {
-                            document.setField(LATEST_APPLIED_CONTENT_VERSION_ID, id);
-                            document.setField(LAST_INCOMING_CONTENT_VERSION_ID, Map.of("removeregex", "^(?!"+id+"$).*$"));},
-                        () ->  document.setField(LAST_INCOMING_CONTENT_VERSION_ID, CONTENT_OUTDATED_MARKER));
+                .ifPresent(id -> document.setField(LATEST_APPLIED_CONTENT_VERSION_ID, id));
+        document.setField(LAST_INCOMING_CONTENT_VERSION_ID, CONTENT_OUTDATED_MARKER);
     }
 
     private void addContentProperty(
