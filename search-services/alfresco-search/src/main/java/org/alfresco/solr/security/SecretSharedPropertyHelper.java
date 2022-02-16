@@ -58,11 +58,12 @@ class SecretSharedPropertyHelper
             };
 
     /**
-     * Read different values of "alfresco.secureComms" property from every "solrcore.properties" files.
-     *
+     * Read different values of the specified property from every "solrcore.properties" file.
+     * @param name The name of the property to read
+     * @param defaultValue The default value for the given property
      * @return List of different communication methods declared in SOLR Cores.
      */
-    static Set<String> getCommsFromCores()
+    static Set<String> getPropertyFromCores(String name, String defaultValue)
     {
         try (Stream<Path> walk = Files.walk(Paths.get(SolrResourceLoader.locateSolrHome().toString())))
         {
@@ -74,7 +75,7 @@ class SecretSharedPropertyHelper
 
             return solrCorePropertiesFiles.stream()
                     .map(toProperties)
-                    .map(properties -> properties.getProperty(SECURE_COMMS_PROPERTY, "none"))
+                    .map(properties -> properties.getProperty(name, defaultValue))
                     .collect(toSet());
         }
         catch (IOException e)

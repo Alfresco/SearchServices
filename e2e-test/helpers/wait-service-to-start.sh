@@ -14,7 +14,12 @@ do
 
    echo "Waiting for Service to start using endpoint: ${endpoint}"
 
-   until [[ "$(curl --output /dev/null -w ''%{http_code}'' --silent --head --fail ${endpoint})" == 200 ]] || [ "$COUNTER" -eq "$TIMEOUT" ]; do
+   additional_args=()
+   if [[ $endpoint == *"solr"* ]]; then
+     additional_args+=(-H "X-Alfresco-Search-Secret: secret")
+   fi
+
+   until [[ "$(curl --output /dev/null -w ''%{http_code}'' "${additional_args[@]}" --silent --head --fail ${endpoint})" == 200 ]] || [ "$COUNTER" -eq "$TIMEOUT" ]; do
       printf '.'
       sleep $WAIT_INTERVAL
       COUNTER=$(($COUNTER+$WAIT_INTERVAL))

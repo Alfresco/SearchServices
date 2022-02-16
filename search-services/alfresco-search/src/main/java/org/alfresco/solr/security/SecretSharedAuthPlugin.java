@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,6 +25,8 @@
  */
 
 package org.alfresco.solr.security;
+
+import static org.alfresco.solr.security.SecretSharedPropertyCollector.SECURE_COMMS_PROPERTY;
 
 import java.io.IOException;
 import java.util.Map;
@@ -49,6 +51,8 @@ import org.apache.solr.security.AuthenticationPlugin;
 public class SecretSharedAuthPlugin extends AuthenticationPlugin
 {
 
+    private static final String SECURE_COMMS_NONE = "none";
+
     /**
      * Verify that request header includes "secret" word when using "secret" communication method.
      * "alfresco.secureComms.secret" value is expected as Java environment variable.
@@ -69,16 +73,29 @@ public class SecretSharedAuthPlugin extends AuthenticationPlugin
                 return true;
             }
 
-            HttpServletResponse httpResponse = (HttpServletResponse) response;
-            httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN,
-                        "Authentication failure: \"" + SecretSharedPropertyCollector.SECRET_SHARED_METHOD_KEY
-                                    + "\" method has been selected, use the right request header with the secret word");
+            String errorMessage = "Authentication failure: \"" + SecretSharedPropertyCollector.SECRET_SHARED_METHOD_KEY
+                + "\" method has been selected, use the right request header with the secret word";
+            setErrorResponse(response, errorMessage);
+            return false;
+        }
+        else if (SECURE_COMMS_NONE.equals(SecretSharedPropertyCollector.getCommsMethod())
+            && !SecretSharedPropertyCollector.isAllowUnauthenticatedSolrEndpoint())
+        {
+            String errorMessage = "Authentication failure: \"" + SECURE_COMMS_PROPERTY
+                + "=none\" is no longer supported. Please use \"https\" or \"secret\" instead.";
+            setErrorResponse(response, errorMessage);
             return false;
         }
 
         chain.doFilter(request, response);
         return true;
 
+    }
+
+    private void setErrorResponse(ServletResponse response, String errorMessage) throws IOException
+    {
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+        httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, errorMessage);
     }
 
     @Override
