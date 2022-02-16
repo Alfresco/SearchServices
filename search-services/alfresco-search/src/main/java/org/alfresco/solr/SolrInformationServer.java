@@ -373,11 +373,11 @@ public class SolrInformationServer implements InformationServer
     public static final String AND = " AND ";
     public static final String OR = " OR ";
 
-    private static final String REQUEST_HANDLER_NATIVE = "/native";
+    static final String REQUEST_HANDLER_NATIVE = "/native";
 
     static final String REQUEST_HANDLER_GET = "/get";
     static final String RESPONSE_DEFAULT_ID = "doc";
-    private static final String RESPONSE_DEFAULT_IDS = "response";
+    static final String RESPONSE_DEFAULT_IDS = "response";
 
     static final String PREFIX_ERROR = "ERROR-";
 
