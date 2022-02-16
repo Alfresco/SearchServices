@@ -158,10 +158,10 @@ $ unzip alfresco-search-services-*.zip
 $ cd alfresco-search-services
 ```
 
-Change default Alfresco Communication protocol to `none`.
+Change default Alfresco Communication protocol to `none`, and set `alfresco.allowUnauthenticatedSolrEndpoint` to `true`:
 
 ```bash
-$ sed -i 's/alfresco.secureComms=https/alfresco.secureComms=none/' solrhome/templates/rerank/conf/solrcore.properties
+$ sed -i 's/alfresco.secureComms=https/alfresco.secureComms=none\nalfresco.allowUnauthenticatedSolrEndpoint=true/' solrhome/templates/rerank/conf/solrcore.properties
 ```
 
 *Note* Above line is written in GNU sed, you can use `gsed` from Mac OS X or just edit the file with a Text Editor.
