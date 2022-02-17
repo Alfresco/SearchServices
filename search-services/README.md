@@ -293,9 +293,8 @@ The following environment variables are supported:
 | SEARCH_LOG_LEVEL | ERROR, WARN, INFO, DEBUG or TRACE | The root logger level. |
 | ENABLE_SPELLCHECK | true or false | Whether spellchecking is enabled or not. |
 | DISABLE_CASCADE_TRACKING | true or false | Whether cascade tracking is enabled or not. Disabling cascade tracking will improve performance, but result in some feature loss (e.g. path queries). |
-| ALFRESCO_SECURE_COMMS | https or none | Whether communication with the repository is secured. See below. |
 | SOLR_SSL_... | --- | These variables are also used to configure SSL. See below. |
-| ALFRESCO_SECURE_COMMS | https, secret or none             | Whether communication with the repository is secured. See below. |
+| ALFRESCO_SECURE_COMMS | secret or https             | This property instructs Solr if it should enable Shared Secret authentication or mTLS authentication with HTTPS. See below. |
 
 **Using Mutual Auth TLS (SSL)**
 
@@ -331,7 +330,7 @@ SOLR Web Console will be available at:
 
 **Using Shared Secret Authentication**
 
-An alternative is to use a shared secret in order to secure repo <-> solr communication. You just need to set `ALFRESCO_SECURE_COMMS=secret` **AND** `SOLR_OPTS="-Dalfresco.secureComms.secret=my_super_secret_secret"`.
+An alternative is to use a shared secret in order to secure repo <-> solr communication. You just need to set `ALFRESCO_SECURE_COMMS=secret` **AND** `JAVA_TOOL_OPTIONS="-Dalfresco.secureComms.secret=my_super_secret_secret"`.
 
 By default, the SOLR Web Console will be available at:
 
@@ -346,19 +345,21 @@ but you can also start the Jetty server in SSL mode as explained above, in that 
 In both cases, when trying to access the SOLR Web Console you will have to provide the `X-Alfresco-Search-Secret` header in the request, specifying as its value the same value that was used for the `-Dalfresco.secureComms.secret` property.
 You can do so natively on Safari through the `Dev Tools > Local Overrides` feature, or with a browser extension on Google Chrome/Firefox/Opera/Edge: [ModHeader](https://modheader.com/).
 
-**Using Plain HTTP**
+**Using Shared Secret Authentication**
 
-By default Docker image is using SSL, so it's required to add an environment variable `ALFRESCO_SECURE_COMMS=none` to use SOLR in plain HTTP mode.
+By default Docker image is using SSL, so it's required to add an environment variable `ALFRESCO_SECURE_COMMS=secret` AND `JAVA_TOOL_OPTIONS="-Dalfresco.secureComms.secret=my_super_secret_secret"` to use SOLR with Shared Secret authentication.
 
 To run the docker image:
 
 ```bash
-$ docker run -p 8983:8983 -e ALFRESCO_SECURE_COMMS=none -e SOLR_CREATE_ALFRESCO_DEFAULTS=alfresco,archive searchservices:develop
+$ docker run -p 8983:8983 -e ALFRESCO_SECURE_COMMS=secret -e SOLR_CREATE_ALFRESCO_DEFAULTS=alfresco,archive -e JAVA_TOOL_OPTIONS="-Dalfresco.secureComms.secret=my_super_secret_secret" searchservices:develop
 ```
 
 SOLR Web Console will be available at:
 
 [http://localhost:8983/solr](http://localhost:8983/solr)
+
+You will have to provide the `X-Alfresco-Search-Secret` header in the request, specifying as its value the same value that was used for the `-Dalfresco.secureComms.secret` property.
 
 **Enabling YourKit Java Profiler**
 
@@ -387,12 +388,15 @@ solr6:
       SOLR_SOLR_HOST: "solr6"
       SOLR_SOLR_PORT: "8983"
       # HTTP settings
-      ALFRESCO_SECURE_COMMS: "none"
+      ALFRESCO_SECURE_COMMS: "secret"
       #Create the default alfresco and archive cores
       SOLR_CREATE_ALFRESCO_DEFAULTS: "alfresco,archive"
       SOLR_JAVA_MEM: "-Xms2g -Xmx2g"
       SOLR_OPTS: "
           -agentpath:/usr/local/YourKit-JavaProfiler-2019.8/bin/linux-x86-64/libyjpagent.so=port=10001,listen=all
+      "
+      JAVA_TOOL_OPTIONS: "
+          -Dalfresco.secureComms.secret=my_super_secret_secret
       "
   ports:
       - 8083:8983 #Browser port
@@ -418,7 +422,7 @@ During deployment time whenever Search Services or Insight Engine image starts, 
 To run the docker image:
 
 ```bash
-$ docker run -p 8984:8983 -e REPLICATION_TYPE=slave -e ALFRESCO_SECURE_COMMS=none -e SOLR_CREATE_ALFRESCO_DEFAULTS=alfresco,archive searchservices:develop
+$ docker run -p 8984:8983 -e REPLICATION_TYPE=slave -e ALFRESCO_SECURE_COMMS=secret -e SOLR_CREATE_ALFRESCO_DEFAULTS=alfresco,archive -e JAVA_TOOL_OPTIONS="-Dalfresco.secureComms.secret=my_super_secret_secret" searchservices:develop
 ```
 Solr-slave End point: [http://localhost:8984/solr](http://localhost:8984/solr)
 
@@ -426,7 +430,7 @@ To generate your own Docker-compose file please follow [generator-alfresco-docke
 
 ### Use Alfresco Search Services Docker Image with Docker Compose
 
-Sample configuration in a Docker Compose file using **Plain HTTP** protocol to communicate with Alfresco Repository.
+Sample configuration in a Docker Compose file using **Shared Secret Authentication** to communicate with Alfresco Repository.
 
 ```
 solr6:
@@ -440,10 +444,13 @@ solr6:
           SOLR_SOLR_HOST: "solr6"
           SOLR_SOLR_PORT: "8983"
           # HTTP settings
-          ALFRESCO_SECURE_COMMS: "none"
+          ALFRESCO_SECURE_COMMS: "secret"
           #Create the default alfresco and archive cores
           SOLR_CREATE_ALFRESCO_DEFAULTS: "alfresco,archive"
           SOLR_JAVA_MEM: "-Xms2g -Xmx2g"
+          JAVA_TOOL_OPTIONS: "
+              -Dalfresco.secureComms.secret=my_super_secret_secret
+          "
       ports:
           - 8083:8983 #Browser port
 ```
@@ -451,6 +458,8 @@ solr6:
 SOLR Web Console will be available at:
 
 [http://localhost:8983/solr](http://localhost:8983/solr)
+
+You will have to provide the `X-Alfresco-Search-Secret` header in the request, specifying as its value the same value that was used for the `-Dalfresco.secureComms.secret` property.
 
 
 Sample configuration in a Docker Compose file using **Mutual Auth TLS (SSL)** protocol to communicate with Alfresco Repository.
