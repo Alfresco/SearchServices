@@ -712,11 +712,10 @@ public class SolrInformationServer implements InformationServer
         {
             ModifiableSolrParams params =
                     new ModifiableSolrParams(request.getParams())
-                            .set(CommonParams.Q, "*:*")
-                            .set(CommonParams.FQ, FIELD_DOC_TYPE + ":" + DOC_TYPE_NODE)
+                            .set(CommonParams.Q, FIELD_DOC_TYPE + ":" + DOC_TYPE_NODE + " AND " + LATEST_APPLIED_CONTENT_VERSION_ID + ":*")
                             .set(CommonParams.ROWS, 0)
-                            .set(FacetParams.FACET, true)
-                            .add(FacetParams.FACET_QUERY, "{!key='OUTDATED'}LAST_INCOMING_CONTENT_VERSION_ID:\"-10\"");
+                            .set(FacetParams.FACET, "on")
+                            .add(FacetParams.FACET_QUERY, "{!key='OUTDATED'}" + LAST_INCOMING_CONTENT_VERSION_ID + ":\"" + CONTENT_OUTDATED_MARKER + "\"");
 
             SolrQueryResponse response = cloud.getResponse(nativeRequestHandler, request, params);
 
