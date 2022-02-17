@@ -42,6 +42,12 @@ RUN if [ "$$SOLR_COMMS" == "https" ] ; then \
             truststoreFile=\"\/usr\/local\/tomcat\/alf_data\/keystore\/ssl.truststore\"\n\
             truststorePass=\"$${TRUSTSTORE_PASS}\" truststoreType=\"$${TRUSTSTORE_TYPE}\" clientAuth=\"want\" sslProtocol=\"TLS\">\n\
         <\/Connector>/g" $${TOMCAT_DIR}/conf/server.xml; \
+    elif [ "$$SOLR_COMMS" == "none" ] ; then \
+      sed -i "s/<filter-class>org.alfresco.web.app.servlet.AlfrescoX509ServletFilter<\/filter-class>/&\n\
+        <init-param>\n\
+           <param-name>allow-unauthenticated-solr-endpoint<\/param-name>\n\
+           <param-value>true<\/param-value>\n\
+        <\/init-param>/" $${TOMCAT_DIR}/webapps/alfresco/WEB-INF/web.xml; \
     fi
 
 # Expose keystore folder
