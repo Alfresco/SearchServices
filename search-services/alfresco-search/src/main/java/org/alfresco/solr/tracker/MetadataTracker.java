@@ -808,7 +808,7 @@ public class MetadataTracker extends ActivatableTracker
         {
             LOGGER.debug(
                     "{}-[CORE {}] [DB_ID_RANGE] Last commit time is greater that max commit time in in range [{}-{}]. "
-                            + "Indexing only latest transaction.",
+                            + "Indexing only latest transaction if necessary.",
                     Thread.currentThread().getId(), coreName, dbIdRangeRouter.getStartRange(),
                     dbIdRangeRouter.getEndRange());
             shardOutOfRange = true;
@@ -832,10 +832,19 @@ public class MetadataTracker extends ActivatableTracker
             Transaction latestTransaction = new Transaction();
             latestTransaction.setCommitTimeMs(transactions.getMaxTxnCommitTime());
             latestTransaction.setId(transactions.getMaxTxnId());
-            transactions = new Transactions(
-                    Collections.singletonList(latestTransaction),
-                    transactions.getMaxTxnCommitTime(),
+
+            if (!isTransactionIndexed(latestTransaction))
+            {
+                transactions = new Transactions(Collections.singletonList(latestTransaction), transactions.getMaxTxnCommitTime(),
                     transactions.getMaxTxnId());
+                LOGGER.debug("{}:{}-[CORE {}] [DB_ID_RANGE] Latest transaction to be indexed {}",
+                        Thread.currentThread().getId(), coreName, latestTransaction);
+            }
+            else
+            {
+                // All up do date, don't return transactions
+                return new Transactions(Collections.emptyList(), 0L, 0L);
+            }
         }
 
         return transactions;
