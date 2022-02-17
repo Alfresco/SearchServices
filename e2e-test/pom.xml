@@ -10,14 +10,14 @@
    <name>Search Analytics E2E Tests</name>
    <description>Test Project to test Search Service and Analytics Features on a complete setup of Alfresco, Share</description>
    <properties>
-      <tas.rest.api.version>1.49</tas.rest.api.version>
-      <tas.cmis.api.version>1.16</tas.cmis.api.version>
-      <tas.utility.version>3.0.33</tas.utility.version>
+      <tas.rest.api.version>1.73</tas.rest.api.version>
+      <tas.cmis.api.version>1.31</tas.cmis.api.version>
+      <tas.utility.version>3.0.48</tas.utility.version>
       <rm.version>3.3.1</rm.version>
       <suiteXmlFile>src/test/resources/SearchSuite.xml</suiteXmlFile>
       <test.exclude />
       <test.include />
-      <jackson.databind.version>2.9.10.5</jackson.databind.version>
+      <jackson.databind.version>2.9.10.8</jackson.databind.version>
       <licenseName>community</licenseName>
    </properties>
    <build>
@@ -129,7 +129,7 @@
       <dependency>
          <groupId>org.projectlombok</groupId>
          <artifactId>lombok</artifactId>
-         <version>1.18.12</version>
+         <version>1.18.20</version>
          <scope>test</scope>
       </dependency>
       <dependency>

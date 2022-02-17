@@ -73,7 +73,7 @@ public class SecretSharedPropertyCollector
         // Shared configuration (shared.properties file)
         PROPERTY_LOCATORS.add((name, defaultValue) -> toSet(AlfrescoSolrDataModel.getCommonConfig().getProperty(name)));
         // Configuration for each deployed SOLR Core
-        PROPERTY_LOCATORS.add((name, defaultValue) -> SecretSharedPropertyHelper.getPropertyFromCores(name, defaultValue));
+        PROPERTY_LOCATORS.add(SecretSharedPropertyHelper::getPropertyFromCores);
     }
 
     /**
