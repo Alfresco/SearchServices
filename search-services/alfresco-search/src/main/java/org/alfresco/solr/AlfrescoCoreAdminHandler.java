@@ -45,7 +45,6 @@ import org.alfresco.solr.tracker.TrackerRegistry;
 import org.alfresco.solr.utils.Utils;
 import org.alfresco.util.Pair;
 import org.alfresco.util.shard.ExplicitShardingPolicy;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.io.FileUtils;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CoreAdminParams;
@@ -314,7 +313,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
 
             AlfrescoSolrDataModel.getInstance().close();
             SOLRAPIClientFactory.close();
-            MultiThreadedHttpConnectionManager.shutdownAll();
 
             coreNames().forEach(trackerRegistry::removeTrackersForCore);
             informationServers.clear();

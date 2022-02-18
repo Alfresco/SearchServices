@@ -38,7 +38,6 @@ import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.httpclient.HttpClientFactory.SecureCommsType;
 import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.apache.commons.httpclient.params.DefaultHttpParams;
 
 /**
  * This factory encapsulates the creation of a SOLRAPIClient and the management of that resource.
@@ -263,13 +262,6 @@ public class SOLRAPIClientFactory
             setMaxTotalConnections(maxTotalConnections);
             setMaxHostConnections(maxHostConnections);
             setSocketTimeout(socketTimeout);
-            init();
-        }
-
-        @Override
-        public void init()
-        {
-            DefaultHttpParams.setHttpParamsFactory(new NonBlockingHttpParamsFactory());
         }
 
     }
