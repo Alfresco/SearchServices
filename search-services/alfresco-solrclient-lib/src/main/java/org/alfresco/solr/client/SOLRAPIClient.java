@@ -60,8 +60,7 @@ import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.Pair;
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.URLCodec;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.util.DateUtil;
+import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -75,6 +74,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -111,6 +111,8 @@ public class SOLRAPIClient
     private static final String GET_TX_INTERVAL_COMMIT_TIME = "api/solr/transactionInterval";
 
     private static final String CHECKSUM_HEADER = "XAlfresco-modelChecksum";
+
+    private static final SimpleDateFormat httpHeaderDateFormat = new SimpleDateFormat("EEE', 'dd' 'MMM' 'yyyy' 'HH:mm:ss' 'Z", Locale.US);
 
     private AlfrescoHttpClient repositoryHttpClient;
     private SOLRDeserializer deserializer;
@@ -1030,7 +1032,7 @@ public class SOLRAPIClient
         Map<String, String> headers = new HashMap<>();
         if(modifiedSince != null)
         {
-            headers.put("If-Modified-Since", String.valueOf(DateUtil.formatDate(new Date(modifiedSince))));
+            headers.put("If-Modified-Since", httpHeaderDateFormat.format(new Date(modifiedSince)));
         }
         if (compression)
         {

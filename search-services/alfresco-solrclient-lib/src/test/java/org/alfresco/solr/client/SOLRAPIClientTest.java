@@ -26,16 +26,13 @@
 
 package org.alfresco.solr.client;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.security.AlgorithmParameters;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -48,11 +45,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.alfresco.encryption.DefaultEncryptionUtils;
-import org.alfresco.encryption.KeyProvider;
 import org.alfresco.encryption.KeyResourceLoader;
 import org.alfresco.encryption.KeyStoreParameters;
-import org.alfresco.encryption.MACUtils.MACInput;
 import org.alfresco.encryption.ssl.SSLEncryptionParameters;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.AlfrescoHttpClient;
@@ -76,13 +70,9 @@ import org.alfresco.repo.tenant.SingleTServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.DynamicallySizedThreadPoolExecutor;
-import org.alfresco.util.Pair;
 import org.alfresco.util.TraceableThreadFactory;
 import org.alfresco.util.cache.DefaultAsynchronouslyRefreshedCacheRegistry;
 import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
@@ -102,10 +92,6 @@ public class SOLRAPIClientTest extends TestCase
     // private static final String TEST_MODEL = "org/alfresco/repo/dictionary/dictionarydaotest_model.xml";
 
     private SOLRAPIClient client;
-
-    private SOLRAPIClient invalidKeyClient;
-
-    private SOLRAPIClient tamperWithClient;
 
     private DictionaryDAOImpl dictionaryDAO;
 
@@ -567,118 +553,4 @@ public class SOLRAPIClientTest extends TestCase
         assertTrue(diffs.size() > 0);
     }
 
-//    public void testMAC() throws IOException, JSONException
-//    {
-//        // dodyClient has a secret key that is not the same as the repository's. This
-//        // should fail with a 401
-//        try
-//        {
-//            Transactions transactions = invalidKeyClient.getTransactions(1298288417234l, null, null, null, 5);
-//        }
-//        catch (AuthenticationException e)
-//        {
-//            assertEquals("Should have caught unathorised request", e.getMethod().getStatusCode(), HttpStatus.SC_UNAUTHORIZED);
-//        }
-//
-//        try
-//        {
-//            tamperWithEncryptionService.setOverrideTimestamp(true);
-//            Transactions transactions = tamperWithClient.getTransactions(1298288417234l, null, null, null, 5);
-//        }
-//        catch (AuthenticationException e)
-//        {
-//            assertEquals("Should have caught unathorised request", e.getMethod().getStatusCode(), HttpStatus.SC_UNAUTHORIZED);
-//        }
-//        finally
-//        {
-//            tamperWithEncryptionService.setOverrideTimestamp(false);
-//        }
-//
-//        try
-//        {
-//            tamperWithEncryptionService.setOverrideMAC(true);
-//            Transactions transactions = tamperWithClient.getTransactions(1298288417234l, null, null, null, 5);
-//        }
-//        catch (AuthenticationException e)
-//        {
-//            assertEquals("Should have caught unathorised request", e.getMethod().getStatusCode(), HttpStatus.SC_UNAUTHORIZED);
-//        }
-//        finally
-//        {
-//            tamperWithEncryptionService.setOverrideMAC(false);
-//        }
-//    }
-
-    private void outputTextContent(SOLRAPIClient.GetTextContentResponse response) throws IOException
-    {
-        InputStream in = response.getContent();
-        if (in != null)
-        {
-            logger.debug("Text content:");
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-            String line = null;
-            while ((line = reader.readLine()) != null)
-            {
-                logger.debug(line);
-            }
-        }
-    }
-
-    /**
-     * Overrides request encryption to create dodgy MAC and timestamp on requests
-     */
-    private static class TestEncryptionUtils extends DefaultEncryptionUtils
-    {
-        private boolean overrideMAC = false;
-
-        private boolean overrideTimestamp = false;
-
-        public void setOverrideMAC(boolean overrideMAC)
-        {
-            this.overrideMAC = overrideMAC;
-        }
-
-        public void setOverrideTimestamp(boolean overrideTimestamp)
-        {
-            this.overrideTimestamp = overrideTimestamp;
-        }
-
-        @Override
-        public void setRequestAuthentication(HttpMethod method, byte[] message) throws IOException
-        {
-            if (method instanceof PostMethod)
-            {
-                // encrypt body
-                Pair<byte[], AlgorithmParameters> encrypted = encryptor.encrypt(KeyProvider.ALIAS_SOLR, null, message);
-                setRequestAlgorithmParameters(method, encrypted.getSecond());
-
-                ((PostMethod) method).setRequestEntity(new ByteArrayRequestEntity(encrypted.getFirst(), "application/octet-stream"));
-            }
-
-            long requestTimestamp = System.currentTimeMillis();
-
-            // add MAC header
-            byte[] mac = macUtils.generateMAC(KeyProvider.ALIAS_SOLR, new MACInput(message, requestTimestamp, getLocalIPAddress()));
-
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Setting MAC " + mac + " on HTTP request " + method.getPath());
-                logger.debug("Setting timestamp " + requestTimestamp + " on HTTP request " + method.getPath());
-            }
-
-            if (overrideMAC)
-            {
-                mac[0] += (byte) 1;
-            }
-            setRequestMac(method, mac);
-
-            if (overrideTimestamp)
-            {
-                requestTimestamp += 60000;
-            }
-            // prevent replays
-            setRequestTimestamp(method, requestTimestamp);
-        }
-    }
 }
