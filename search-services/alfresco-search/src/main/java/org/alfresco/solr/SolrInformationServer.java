@@ -712,7 +712,7 @@ public class SolrInformationServer implements InformationServer
         {
             ModifiableSolrParams params =
                     new ModifiableSolrParams(request.getParams())
-                            .set(CommonParams.Q, FIELD_DOC_TYPE + ":" + DOC_TYPE_NODE + " AND " + LATEST_APPLIED_CONTENT_VERSION_ID + ":*")
+                            .set(CommonParams.Q, FIELD_DOC_TYPE + ":" + DOC_TYPE_NODE + " AND " + FIELD_TYPE + ":\"{http://www.alfresco.org/model/content/1.0}content\"")
                             .set(CommonParams.ROWS, 0)
                             .set(FacetParams.FACET, "on")
                             .add(FacetParams.FACET_QUERY, "{!key='OUTDATED'}" + LAST_INCOMING_CONTENT_VERSION_ID + ":\"" + CONTENT_OUTDATED_MARKER + "\"");
