@@ -27,6 +27,7 @@
 package org.alfresco.solr;
 
 import static java.util.Optional.ofNullable;
+
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.ANY;
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.ASSOC_REF;
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.BOOLEAN;
@@ -45,6 +46,10 @@ import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.PATH;
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.PERIOD;
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.QNAME;
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.TEXT;
+import static org.alfresco.solr.SolrInformationServer.REQUEST_HANDLER_GET;
+import static org.alfresco.solr.SolrInformationServer.REQUEST_HANDLER_NATIVE;
+import static org.alfresco.solr.SolrInformationServer.RESPONSE_DEFAULT_ID;
+import static org.alfresco.solr.SolrInformationServer.RESPONSE_DEFAULT_IDS;
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_DAY_FIELD_SUFFIX;
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_HOUR_FIELD_SUFFIX;
 import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_MINUTE_FIELD_SUFFIX;
@@ -57,6 +62,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -76,12 +83,15 @@ import org.alfresco.solr.client.SOLRAPIClient;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.CommonParams;
+import org.apache.solr.common.util.NamedList;
 import org.apache.solr.common.util.SimpleOrderedMap;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.core.SolrResourceLoader;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.request.SolrRequestHandler;
+import org.apache.solr.response.BasicResultContext;
 import org.apache.solr.response.SolrQueryResponse;
+import org.apache.solr.search.DocList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -124,6 +134,8 @@ public class SolrInformationServerTest
     public void setUp()
     {
         when(core.getResourceLoader()).thenReturn(resourceLoader);
+        when(core.getRequestHandler(REQUEST_HANDLER_GET)).thenReturn(handler);
+        when(core.getRequestHandler(REQUEST_HANDLER_NATIVE)).thenReturn(handler);
         when(resourceLoader.getCoreProperties()).thenReturn(new Properties());
         infoServer = new SolrInformationServer(adminHandler, core, client)
         {
@@ -145,15 +157,14 @@ public class SolrInformationServerTest
         SolrDocument state = new SolrDocument();
 
         SimpleOrderedMap<SolrDocument> responseContent = new SimpleOrderedMap<>();
-        responseContent.add(SolrInformationServer.RESPONSE_DEFAULT_ID, state);
+        responseContent.add(RESPONSE_DEFAULT_ID, state);
 
         when(response.getValues()).thenReturn(responseContent);
-        when(core.getRequestHandler(SolrInformationServer.REQUEST_HANDLER_GET)).thenReturn(handler);
 
         SolrDocument document = infoServer.getState(core, request, id);
 
         assertEquals(id, request.getParams().get(CommonParams.ID));
-        verify(core).getRequestHandler(SolrInformationServer.REQUEST_HANDLER_GET);
+        verify(core).getRequestHandler(REQUEST_HANDLER_GET);
         verify(response).getValues();
 
         assertSame(state, document);
@@ -313,15 +324,14 @@ public class SolrInformationServerTest
         String id = String.valueOf(System.currentTimeMillis());
 
         SimpleOrderedMap<Object> responseContent = new SimpleOrderedMap<>();
-        responseContent.add(SolrInformationServer.RESPONSE_DEFAULT_ID, null);
+        responseContent.add(RESPONSE_DEFAULT_ID, null);
 
         when(response.getValues()).thenReturn(responseContent);
-        when(core.getRequestHandler(SolrInformationServer.REQUEST_HANDLER_GET)).thenReturn(handler);
 
         SolrDocument document = infoServer.getState(core, request, id);
 
         assertEquals(id, request.getParams().get(CommonParams.ID));
-        verify(core).getRequestHandler(SolrInformationServer.REQUEST_HANDLER_GET);
+        verify(core).getRequestHandler(REQUEST_HANDLER_GET);
         verify(response).getValues();
 
         assertNull(document);
@@ -417,5 +427,39 @@ public class SolrInformationServerTest
         });
 
     }
-    
+
+    /** Check that the FTS report is derived from the correct parts of the Solr response. */
+    @Test
+    public void testAddContentOutdatedAndUpdatedCounts()
+    {
+        // Pretend that there are three documents in total.
+        NamedList<Object> responseContent = new SimpleOrderedMap<>();
+        DocList docList = mock(DocList.class);
+        when(docList.matches()).thenReturn(3);
+        BasicResultContext basicResultContext = mock(BasicResultContext.class);
+        when(basicResultContext.getDocList()).thenReturn(docList);
+        responseContent.add(RESPONSE_DEFAULT_IDS, basicResultContext);
+
+        // Set the facet to say one document is outdated.
+        NamedList<Number> facetQueries = new SimpleOrderedMap<>();
+        facetQueries.add("OUTDATED", 1);
+        NamedList<NamedList<Number>> facetCounts = new SimpleOrderedMap<>();
+        facetCounts.add("facet_queries", facetQueries);
+        responseContent.add("facet_counts", facetCounts);
+
+        // Set up the request handler to return the fake response.
+        doAnswer(invocation -> {
+            SolrQueryResponse solrQueryResponse = invocation.getArgument(1);
+            solrQueryResponse.setAllValues(responseContent);
+            return null;
+        }).when(handler).handleRequest(any(SolrQueryRequest.class), any(SolrQueryResponse.class));
+
+        // Call the method under test.
+        NamedList<Object> report = new NamedList<>();
+        infoServer.addContentOutdatedAndUpdatedCounts(report);
+
+        // Check the report.
+        assertEquals("Expected two content nodes to be in sync.", report.get("Node count whose content is in sync"), 2L);
+        assertEquals("Expected one content node to need an update.", report.get("Node count whose content needs to be updated"), 1L);
+    }
 }
