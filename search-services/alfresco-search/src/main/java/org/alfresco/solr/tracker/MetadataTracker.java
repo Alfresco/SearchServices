@@ -601,31 +601,20 @@ public class MetadataTracker extends ActivatableTracker
     
     private void reindexNodes() throws IOException, AuthenticationException, JSONException
     {
-        boolean requiresCommit = false;
         while (nodesToReindex.peek() != null)
         {
             Long nodeId = nodesToReindex.poll();
             if (nodeId != null)
             {
-                // make sure it is cleaned out so we do not miss deletes
-                this.infoSrv.deleteByNodeId(nodeId);
-
                 Node node = new Node();
                 node.setId(nodeId);
                 node.setStatus(SolrApiNodeStatus.UNKNOWN);
                 node.setTxnId(Long.MAX_VALUE);
 
-                this.infoSrv.indexNode(node, true);
+                this.infoSrv.indexNodes(filterNodes(List.of(node)), true);
                 LOGGER.info("REINDEX ACTION - Node {} has been reindexed", node.getId());
-                requiresCommit = true;
             }
             checkShutdown();
-        }
-
-        if(requiresCommit)
-        {
-            checkShutdown();
-            //this.infoSrv.commit();
         }
     }
     
@@ -651,6 +640,44 @@ public class MetadataTracker extends ActivatableTracker
         }
     }
 
+    private List<Node> filterNodes(List<Node> nodes)
+    {
+        List<Node> filteredList = new ArrayList<>(nodes.size());
+        for(Node node : nodes)
+        {
+            if(docRouter.routeNode(shardCount, shardInstance, node))
+            {
+                filteredList.add(node);
+            }
+            else if (cascadeTrackerEnabled)
+            {
+                if(node.getStatus() == SolrApiNodeStatus.UPDATED)
+                {
+                    Node doCascade = new Node();
+                    doCascade.setAclId(node.getAclId());
+                    doCascade.setId(node.getId());
+                    doCascade.setNodeRef(node.getNodeRef());
+                    doCascade.setStatus(SolrApiNodeStatus.NON_SHARD_UPDATED);
+                    doCascade.setTenant(node.getTenant());
+                    doCascade.setTxnId(node.getTxnId());
+                    filteredList.add(doCascade);
+                }
+                else // DELETED & UNKNOWN
+                {
+                    // Make sure anything no longer relevant to this shard is deleted.
+                    Node doDelete = new Node();
+                    doDelete.setAclId(node.getAclId());
+                    doDelete.setId(node.getId());
+                    doDelete.setNodeRef(node.getNodeRef());
+                    doDelete.setStatus(SolrApiNodeStatus.NON_SHARD_DELETED);
+                    doDelete.setTenant(node.getTenant());
+                    doDelete.setTxnId(node.getTxnId());
+                    filteredList.add(doDelete);
+                }
+            }
+        }
+        return filteredList;
+    }
 
     private void purgeTransactions() throws IOException, JSONException
     {
@@ -1170,45 +1197,6 @@ public class MetadataTracker extends ActivatableTracker
         protected void onFail(Throwable failCausedBy)
         {
             setRollback(true, failCausedBy);
-        }
-        
-        private List<Node> filterNodes(List<Node> nodes)
-        {
-            List<Node> filteredList = new ArrayList<>(nodes.size());
-            for(Node node : nodes)
-            {
-                if(docRouter.routeNode(shardCount, shardInstance, node))
-                {
-                    filteredList.add(node);
-                }
-                else if (cascadeTrackerEnabled)
-                {
-                    if(node.getStatus() == SolrApiNodeStatus.UPDATED)
-                    {
-                        Node doCascade = new Node();
-                        doCascade.setAclId(node.getAclId());
-                        doCascade.setId(node.getId());
-                        doCascade.setNodeRef(node.getNodeRef());
-                        doCascade.setStatus(SolrApiNodeStatus.NON_SHARD_UPDATED);
-                        doCascade.setTenant(node.getTenant());
-                        doCascade.setTxnId(node.getTxnId());
-                        filteredList.add(doCascade);
-                    }
-                    else // DELETED & UNKNOWN
-                    {
-                        // Make sure anything no longer relevant to this shard is deleted.
-                        Node doDelete = new Node();
-                        doDelete.setAclId(node.getAclId());
-                        doDelete.setId(node.getId());
-                        doDelete.setNodeRef(node.getNodeRef());
-                        doDelete.setStatus(SolrApiNodeStatus.NON_SHARD_DELETED);
-                        doDelete.setTenant(node.getTenant());
-                        doDelete.setTxnId(node.getTxnId());
-                        filteredList.add(doDelete);
-                    }
-                }
-            }
-            return filteredList;
         }
     }
 
