@@ -606,15 +606,14 @@ public class MetadataTracker extends ActivatableTracker
             Long nodeId = nodesToReindex.poll();
             if (nodeId != null)
             {
-                Node node = new Node();
+                final Node node = new Node();
                 node.setId(nodeId);
                 node.setStatus(SolrApiNodeStatus.UNKNOWN);
                 node.setTxnId(Long.MAX_VALUE);
 
-                List<Node> filteredNode = filterNodes(List.of(node));
-                if (filteredNode.size() == 1)
+                for (final Node n : filterNodes(List.of(node)))
                 {
-                    this.infoSrv.indexNode(filteredNode.get(0), true);
+                    this.infoSrv.indexNode(n, true);
                     LOGGER.info("REINDEX ACTION - Node {} has been reindexed", node.getId());
                 }
             }
