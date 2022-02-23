@@ -614,7 +614,7 @@ public class MetadataTracker extends ActivatableTracker
                 for (final Node n : filterNodes(List.of(node)))
                 {
                     this.infoSrv.indexNode(n, true);
-                    LOGGER.info("REINDEX ACTION - Node {} has been reindexed", node.getId());
+                    LOGGER.info("REINDEX ACTION - Node {} has been reindexed", n.getId());
                 }
             }
             checkShutdown();
