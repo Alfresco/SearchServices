@@ -611,8 +611,12 @@ public class MetadataTracker extends ActivatableTracker
                 node.setStatus(SolrApiNodeStatus.UNKNOWN);
                 node.setTxnId(Long.MAX_VALUE);
 
-                this.infoSrv.indexNodes(filterNodes(List.of(node)), true);
-                LOGGER.info("REINDEX ACTION - Node {} has been reindexed", node.getId());
+                List<Node> filteredNode = filterNodes(List.of(node));
+                if (filteredNode.size() == 1)
+                {
+                    this.infoSrv.indexNode(filteredNode.get(0), true);
+                    LOGGER.info("REINDEX ACTION - Node {} has been reindexed", node.getId());
+                }
             }
             checkShutdown();
         }
