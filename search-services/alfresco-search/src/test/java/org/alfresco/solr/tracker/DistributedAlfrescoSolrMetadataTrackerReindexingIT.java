@@ -87,20 +87,19 @@ public class DistributedAlfrescoSolrMetadataTrackerReindexingIT extends Abstract
     @Test
     public void shouldReindexNodeOnlyOnShardWhereNodeBelongsTo() throws Exception
     {
-        fail("See if test is executed on CI.");
-//        putHandleDefaults();
-//
-//        long nodeId = indexNewNode();
-//
-//        assertThatNodeIsIndexedOnExactlyOneShard(nodeId);
-//
-//        final Instant end = Instant.now().plus(TEST_DURATION);
-//        while (Instant.now().isBefore(end))
-//        {
-//            triggerNodeIdReindexingOnAllShards(nodeId);
-//            assertThatNodeIsIndexedOnExactlyOneShard(nodeId);
-//            Thread.sleep(7_000);
-//        }
+        putHandleDefaults();
+
+        long nodeId = indexNewNode();
+
+        assertThatNodeIsIndexedOnExactlyOneShard(nodeId);
+
+        final Instant end = Instant.now().plus(TEST_DURATION);
+        while (Instant.now().isBefore(end))
+        {
+            triggerNodeIdReindexingOnAllShards(nodeId);
+            assertThatNodeIsIndexedOnExactlyOneShard(nodeId);
+            Thread.sleep(7_000);
+        }
     }
 
     private void triggerNodeIdReindexingOnAllShards(long nodeId) throws Exception
