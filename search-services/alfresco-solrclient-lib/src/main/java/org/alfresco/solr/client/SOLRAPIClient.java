@@ -492,7 +492,7 @@ public class SOLRAPIClient
         {
             String message = "Received a malformed JSON payload. Request was \"" +
                     req.getFullUri() +
-                    "Data: "
+                    "\" Data: "
                     + ofNullable(reader)
                     .map(LookAheadBufferedReader::lookAheadAndGetBufferedContent)
                     .orElse("Not available");
@@ -1156,7 +1156,7 @@ public class SOLRAPIClient
         {
             String message = "Received a malformed JSON payload. Request was \"" +
                     get.getFullUri() +
-                    "Data: "
+                    "\" Data: "
                     + ofNullable(reader)
                     .map(LookAheadBufferedReader::lookAheadAndGetBufferedContent)
                     .orElse("Not available");
@@ -1214,7 +1214,7 @@ public class SOLRAPIClient
         {
             String message = "Received a malformed JSON payload. Request was \"" +
                     get.getFullUri() +
-                    "Data: "
+                    "\" Data: "
                     + ofNullable(reader)
                     .map(LookAheadBufferedReader::lookAheadAndGetBufferedContent)
                     .orElse("Not available");
@@ -1609,7 +1609,7 @@ public class SOLRAPIClient
         {
             String message = "Received a malformed JSON payload. Request was \"" +
                     req.getFullUri() +
-                    "Data: "
+                    "\" Data: "
                     + ofNullable(reader)
                     .map(LookAheadBufferedReader::lookAheadAndGetBufferedContent)
                     .orElse("Not available");
