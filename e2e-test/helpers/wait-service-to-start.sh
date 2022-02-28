@@ -23,7 +23,7 @@ do
       printf '.'
       sleep $WAIT_INTERVAL
       COUNTER=$(($COUNTER+$WAIT_INTERVAL))
-      curl -vvv "${additional_args[@]}" --head --fail ${endpoint}
+      curl -vvv "${additional_args[@]}" --head ${endpoint}
    done
 
    if (("$COUNTER" < "$TIMEOUT")) ; then
