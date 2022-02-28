@@ -30,7 +30,6 @@ ENV SHARE_SERVICES_TAG $SHARE_SERVICES_TAG
 
 # From Alfresco Repository 7.0.0 Share Services AMP is not provided with default Docker Image
 RUN if [ ! -z "$SHARE_SERVICES_TAG" ] ; then \
-    yum -y update && \
     yum -y install wget && \
     yum clean all && \
     mkdir -p $TOMCAT_DIR/amps && \

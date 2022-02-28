@@ -27,7 +27,6 @@ RUN set -x \
         -u "${USERID}" \
         -o \
         "${USERNAME}" \
-   && yum update -y \
    && yum install -y unzip \
    && yum install -y lsof ca-certificates \
    && yum install -y wget \
