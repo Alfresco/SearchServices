@@ -4,7 +4,7 @@ set -x  # trace what gets exe
 
 WAIT_INTERVAL=1
 COUNTER=0
-TIMEOUT=120
+TIMEOUT=2000
 t0=`date +%s`
 
 declare -a endpoints=("${1:-http://localhost:8081/alfresco/}" "${1:-http://localhost:8083/solr/}")
@@ -23,7 +23,6 @@ do
       printf '.'
       sleep $WAIT_INTERVAL
       COUNTER=$(($COUNTER+$WAIT_INTERVAL))
-      curl -vvv "${additional_args[@]}" --head --fail ${endpoint}
    done
 
    if (("$COUNTER" < "$TIMEOUT")) ; then
