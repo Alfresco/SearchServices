@@ -35,8 +35,12 @@ import java.util.Properties;
 import java.util.Set;
 
 import static java.util.Collections.emptySet;
+
+import static org.alfresco.solr.security.SecretSharedPropertyCollector.ALLOW_UNAUTHENTICATED_SOLR_PROPERTY;
+import static org.alfresco.solr.security.SecretSharedPropertyCollector.PROPS_CACHE;
 import static org.alfresco.solr.security.SecretSharedPropertyCollector.SECRET_SHARED_METHOD_KEY;
 import static org.alfresco.solr.security.SecretSharedPropertyCollector.SECURE_COMMS_PROPERTY;
+import static org.alfresco.solr.security.SecretSharedPropertyCollector.SHARED_SECRET;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -45,30 +49,133 @@ import static org.mockito.Mockito.mockStatic;
 
 public class SecretSharedPropertyCollectorTest
 {
-    private final static String A_COMMS_METHOD = "aCommsMethod";
-    private final static String SET_THROUGH_SYSTEM_PROPERTY = "aCommsMethod_SetThroughSystemProperty";
-    private final static String SET_THROUGH_ALFRESCO_COMMON_CONFIG = "aCommsMethod_SetThroughAlfrescoCommonConfig";
-    private final static String COMMS_METHOD_FROM_SOLRCORE = "aCommsMethod_FromSolrCore";
+    private static final String A_COMMS_METHOD = "aCommsMethod";
+    private static final String SET_THROUGH_SYSTEM_PROPERTY = "aCommsMethod_SetThroughSystemProperty";
+    private static final String SET_THROUGH_ALFRESCO_COMMON_CONFIG = "aCommsMethod_SetThroughAlfrescoCommonConfig";
+    private static final String COMMS_METHOD_FROM_SOLRCORE = "aCommsMethod_FromSolrCore";
+    private static final String SECRET_VALUE = "my-secret";
+    private static final String SECURE_COMMS_NONE = "none";
+    private static final String TRUE = "true";
+    private static final String FALSE = "false";
+
+    private static final Set<String> PROPS_TO_CLEAR = Set.of(SHARED_SECRET, SECURE_COMMS_PROPERTY, ALLOW_UNAUTHENTICATED_SOLR_PROPERTY);
 
     @Before
     public void setUp()
     {
-        SecretSharedPropertyCollector.commsMethod = null;
-        assertNull(System.getProperty(SECURE_COMMS_PROPERTY));
-        assertNull(AlfrescoSolrDataModel.getCommonConfig().getProperty(SECURE_COMMS_PROPERTY));
+        PROPS_CACHE.clear();
+
+        for (String property : PROPS_TO_CLEAR)
+        {
+            assertNull(System.getProperty(property));
+            assertNull(AlfrescoSolrDataModel.getCommonConfig().getProperty(property));
+        }
     }
 
     @After
     public void tearDown()
     {
-        System.clearProperty(SECURE_COMMS_PROPERTY);
-        AlfrescoSolrDataModel.getCommonConfig().remove(SECURE_COMMS_PROPERTY);
+        for (String property : PROPS_TO_CLEAR)
+        {
+            System.clearProperty(property);
+            AlfrescoSolrDataModel.getCommonConfig().remove(property);
+        }
+    }
+
+    @Test
+    public void getSecret_shouldReturnTheSecretValue()
+    {
+        System.setProperty(SecretSharedPropertyCollector.SHARED_SECRET, SECRET_VALUE);
+        assertEquals(SECRET_VALUE, SecretSharedPropertyCollector.getSecret());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void getSecretWithMissingSecretValue_shouldThrowException()
+    {
+        SecretSharedPropertyCollector.getSecret();
+    }
+
+    @Test
+    public void allowUnauthenticatedSolrIsNotSet_shouldReturnFalse()
+    {
+        try(MockedStatic<SecretSharedPropertyHelper> mock = mockStatic(SecretSharedPropertyHelper.class))
+        {
+            mock.when(() -> SecretSharedPropertyHelper.getPropertyFromCores(ALLOW_UNAUTHENTICATED_SOLR_PROPERTY, FALSE))
+                .thenReturn(emptySet());
+            assertFalse(SecretSharedPropertyCollector.isAllowUnauthenticatedSolrEndpoint());
+        }
+    }
+
+    @Test
+    public void allowUnauthenticatedSolrIsTrueThroughSystemProperty_shouldReturnTrue()
+    {
+        System.setProperty(ALLOW_UNAUTHENTICATED_SOLR_PROPERTY, TRUE);
+        assertTrue(SecretSharedPropertyCollector.isAllowUnauthenticatedSolrEndpoint());
+    }
+
+    @Test
+    public void allowUnauthenticatedSolrIsFalseThroughSystemProperty_shouldReturnFalse()
+    {
+        System.setProperty(ALLOW_UNAUTHENTICATED_SOLR_PROPERTY, FALSE);
+        assertFalse(SecretSharedPropertyCollector.isAllowUnauthenticatedSolrEndpoint());
+    }
+
+    @Test
+    public void allowUnauthenticatedSolrIsTrueThroughAlfrescoProperties_shouldReturnTrue()
+    {
+        try(MockedStatic<AlfrescoSolrDataModel> mock = mockStatic(AlfrescoSolrDataModel.class))
+        {
+            var alfrescoCommonConfig = new Properties();
+            alfrescoCommonConfig.setProperty(ALLOW_UNAUTHENTICATED_SOLR_PROPERTY, TRUE);
+
+            mock.when(AlfrescoSolrDataModel::getCommonConfig).thenReturn(alfrescoCommonConfig);
+
+            assertTrue(SecretSharedPropertyCollector.isAllowUnauthenticatedSolrEndpoint());
+        }
+    }
+
+    @Test
+    public void allowUnauthenticatedSolrIsFalseThroughAlfrescoProperties_shouldReturnFalse()
+    {
+        try(MockedStatic<AlfrescoSolrDataModel> mock = mockStatic(AlfrescoSolrDataModel.class))
+        {
+            var alfrescoCommonConfig = new Properties();
+            alfrescoCommonConfig.setProperty(ALLOW_UNAUTHENTICATED_SOLR_PROPERTY, FALSE);
+
+            mock.when(AlfrescoSolrDataModel::getCommonConfig).thenReturn(alfrescoCommonConfig);
+
+            assertFalse(SecretSharedPropertyCollector.isAllowUnauthenticatedSolrEndpoint());
+        }
+    }
+
+    @Test
+    public void allowUnauthenticatedSolrIsTrueThroughSolrCores_shouldReturnTrue()
+    {
+        try(MockedStatic<SecretSharedPropertyHelper> mock = mockStatic(SecretSharedPropertyHelper.class))
+        {
+            mock.when(() -> SecretSharedPropertyHelper.getPropertyFromCores(ALLOW_UNAUTHENTICATED_SOLR_PROPERTY, FALSE))
+                .thenReturn(Set.of(TRUE));
+
+            assertTrue(SecretSharedPropertyCollector.isAllowUnauthenticatedSolrEndpoint());
+        }
+    }
+
+    @Test
+    public void allowUnauthenticatedSolrIsFalseThroughSolrCores_shouldReturnFalse()
+    {
+        try(MockedStatic<SecretSharedPropertyHelper> mock = mockStatic(SecretSharedPropertyHelper.class))
+        {
+            mock.when(() -> SecretSharedPropertyHelper.getPropertyFromCores(ALLOW_UNAUTHENTICATED_SOLR_PROPERTY, FALSE))
+                .thenReturn(Set.of(FALSE));
+
+            assertFalse(SecretSharedPropertyCollector.isAllowUnauthenticatedSolrEndpoint());
+        }
     }
 
     @Test
     public void commsMethodIsNotNull_shouldReturnThatValue()
     {
-        SecretSharedPropertyCollector.commsMethod = A_COMMS_METHOD;
+        PROPS_CACHE.put(SECURE_COMMS_PROPERTY, A_COMMS_METHOD);
         assertEquals(A_COMMS_METHOD, SecretSharedPropertyCollector.getCommsMethod());
 
         assertFalse(SecretSharedPropertyCollector.isCommsSecretShared());
@@ -77,7 +184,7 @@ public class SecretSharedPropertyCollectorTest
     @Test
     public void commsMethodIsNotNullAndIsSecret_shouldReturnThatValue()
     {
-        SecretSharedPropertyCollector.commsMethod = SECRET_SHARED_METHOD_KEY;
+        PROPS_CACHE.put(SECURE_COMMS_PROPERTY, SECRET_SHARED_METHOD_KEY);
         assertEquals(SECRET_SHARED_METHOD_KEY, SecretSharedPropertyCollector.getCommsMethod());
 
         assertTrue(SecretSharedPropertyCollector.isCommsSecretShared());
@@ -121,7 +228,8 @@ public class SecretSharedPropertyCollectorTest
     {
         try(MockedStatic<SecretSharedPropertyHelper> mock = mockStatic(SecretSharedPropertyHelper.class))
         {
-            mock.when(SecretSharedPropertyHelper::getCommsFromCores).thenReturn(Set.of(COMMS_METHOD_FROM_SOLRCORE));
+            mock.when(() -> SecretSharedPropertyHelper.getPropertyFromCores(SECURE_COMMS_PROPERTY, SECURE_COMMS_NONE))
+                .thenReturn(Set.of(COMMS_METHOD_FROM_SOLRCORE));
             assertEquals(COMMS_METHOD_FROM_SOLRCORE, SecretSharedPropertyCollector.getCommsMethod());
 
             assertFalse(SecretSharedPropertyCollector.isCommsSecretShared());
@@ -140,7 +248,8 @@ public class SecretSharedPropertyCollectorTest
     {
         try(MockedStatic<SecretSharedPropertyHelper> mock = mockStatic(SecretSharedPropertyHelper.class))
         {
-            mock.when(SecretSharedPropertyHelper::getCommsFromCores).thenReturn(emptySet());
+            mock.when(() -> SecretSharedPropertyHelper.getPropertyFromCores(SECURE_COMMS_PROPERTY, SECURE_COMMS_NONE))
+                .thenReturn(emptySet());
             assertNull(SecretSharedPropertyCollector.getCommsMethod());
 
             assertFalse(SecretSharedPropertyCollector.isCommsSecretShared());
@@ -156,10 +265,11 @@ public class SecretSharedPropertyCollectorTest
     {
         try(MockedStatic<SecretSharedPropertyHelper> mock = mockStatic(SecretSharedPropertyHelper.class))
         {
-            mock.when(SecretSharedPropertyHelper::getCommsFromCores)
-                    .thenReturn(Set.of(COMMS_METHOD_FROM_SOLRCORE, SECRET_SHARED_METHOD_KEY));
+            mock.when(() -> SecretSharedPropertyHelper.getPropertyFromCores(SECURE_COMMS_PROPERTY, SECURE_COMMS_NONE))
+                .thenReturn(Set.of(COMMS_METHOD_FROM_SOLRCORE, SECRET_SHARED_METHOD_KEY));
 
             SecretSharedPropertyCollector.getCommsMethod();
         }
     }
+
 }

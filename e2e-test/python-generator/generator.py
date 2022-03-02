@@ -129,7 +129,7 @@ def getSolrcoreReplacements(sharding, communication, fingerprint):
         solrcoreReplacements['alfresco.encryption.ssl.truststore.location=.*'] = 'alfresco.encryption.ssl.truststore.location=\\\\\\/opt\\\\\\/alfresco-search-services\\\\\\/keystore\\\\\\/ssl-repo-client.truststore'
         solrcoreReplacements['alfresco.encryption.ssl.truststore.type=.*'] = 'alfresco.encryption.ssl.truststore.type=JCEKS'
     elif communication == 'none':
-        solrcoreReplacements['alfresco.secureComms=https'] = 'alfresco.secureComms=none'
+        solrcoreReplacements['alfresco.secureComms=https'] = r'alfresco.secureComms=none\\\\\\\nalfresco.allowUnauthenticatedSolrEndpoint=true'
     else :
         solrcoreReplacements['alfresco.secureComms=https'] = 'alfresco.secureComms=secret'
     return solrcoreReplacements
@@ -325,6 +325,8 @@ if __name__ == '__main__':
     if args.communication == 'mtls':
         addAlfrescoMtlsConfig(dcYaml['services']['alfresco']['build']['args'])
         addAlfrescoVolumes(dcYaml['services']['alfresco'])
+    elif args.communication == 'none':
+        dcYaml['services']['alfresco']['build']['args']['SOLR_COMMS'] = 'none'
 
     if not args.share:
         deleteServices(dcYaml, 'share', 'alfresco-pdf-renderer', 'imagemagick')

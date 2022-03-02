@@ -26,13 +26,21 @@
 
 package org.alfresco.solr.security;
 
+import static java.util.function.Predicate.not;
+
 import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.solr.AlfrescoSolrDataModel;
 import org.alfresco.solr.config.ConfigUtil;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 /**
  * Provides property values for Alfresco Communication using "secret" method:
@@ -45,15 +53,28 @@ import java.util.Set;
 public class SecretSharedPropertyCollector
 {
 
-    public final static String SECRET_SHARED_METHOD_KEY = "secret";
+    public static final String SECRET_SHARED_METHOD_KEY = "secret";
 
     // Property names for "secret" communication method
     static final String SECURE_COMMS_PROPERTY = "alfresco.secureComms";
-    private final static String SHARED_SECRET = "alfresco.secureComms.secret";
-    private final static String SHARED_SECRET_HEADER = "alfresco.secureComms.secret.header";
+    static final String SHARED_SECRET = "alfresco.secureComms.secret";
+    static final String ALLOW_UNAUTHENTICATED_SOLR_PROPERTY = "alfresco.allowUnauthenticatedSolrEndpoint";
+    private static final String SHARED_SECRET_HEADER = "alfresco.secureComms.secret.header";
 
-    // Save communication method as static value in order to improve performance 
-    static String commsMethod;
+    // Memoize read properties to improve performance
+    static final Map<String, String> PROPS_CACHE = new ConcurrentHashMap<>();
+    // Ordered list of property location functions
+    private static final ArrayList<BiFunction<String, String, Set<String>>> PROPERTY_LOCATORS = new ArrayList<>();
+
+    static
+    {
+        // Environment variables
+        PROPERTY_LOCATORS.add((name, defaultValue) -> toSet(ConfigUtil.locateProperty(name, null)));
+        // Shared configuration (shared.properties file)
+        PROPERTY_LOCATORS.add((name, defaultValue) -> toSet(AlfrescoSolrDataModel.getCommonConfig().getProperty(name)));
+        // Configuration for each deployed SOLR Core
+        PROPERTY_LOCATORS.add(SecretSharedPropertyHelper::getPropertyFromCores);
+    }
 
     /**
      * Check if communications method is "secret"
@@ -66,49 +87,62 @@ public class SecretSharedPropertyCollector
     }
 
     /**
+     * Check if unauthenticated Solr access is allowed
+     * @return true if unauthenticated Solr access is allowed
+     */
+    public static boolean isAllowUnauthenticatedSolrEndpoint()
+    {
+        return Boolean.parseBoolean(PROPS_CACHE.computeIfAbsent(ALLOW_UNAUTHENTICATED_SOLR_PROPERTY,
+            key -> getProperty(key, "false")));
+    }
+
+    /**
      * Get communication method from environment variables, shared properties or core properties.
      * @return Communication method: none, https, secret
      */
     static String getCommsMethod()
     {
-        if (commsMethod == null)
+        return PROPS_CACHE.computeIfAbsent(SECURE_COMMS_PROPERTY,
+            key -> getProperty(key, "none", uniqueSecureCommsValidator()));
+    }
+
+    private static String getProperty(String name, String defaultValue)
+    {
+        return getProperty(name, defaultValue, null);
+    }
+
+    private static String getProperty(String name, String defaultValue, Consumer<Set<String>> propertySetValidator)
+    {
+        // Loop orderly through the property locators until the property is found
+        Set<String> propertySet = PROPERTY_LOCATORS.stream()
+            .map(propertyLocator -> propertyLocator.apply(name, defaultValue))
+            .filter(not(Set::isEmpty))
+            .findFirst()
+            .orElse(Set.of());
+
+        if (propertySetValidator != null)
         {
-
-            // Environment variable
-            commsMethod = ConfigUtil.locateProperty(SECURE_COMMS_PROPERTY, null);
-
-            if (commsMethod == null)
-            {
-                // Shared configuration (shared.properties file)
-                commsMethod = AlfrescoSolrDataModel.getCommonConfig().getProperty(SECURE_COMMS_PROPERTY);
-
-                if (commsMethod == null)
-                {
-                    // Get configuration from deployed SOLR Cores
-                    Set<String> secureCommsSet = SecretSharedPropertyHelper.getCommsFromCores();
-
-                    // In case of multiple cores, *all* of them must have the same secureComms value.
-                    // From that perspective, you may find the second clause in the conditional statement
-                    // below not strictly necessary. The reason is that the check below is in charge to make
-                    // sure a consistent configuration about the secret shared property has been defined in all cores.
-                    if (secureCommsSet.size() > 1 && secureCommsSet.contains(SECRET_SHARED_METHOD_KEY))
-                    {
-                        throw new RuntimeException(
-                                    "No valid secure comms values: all the cores must be using \"secret\" communication method but found: "
-                                                + secureCommsSet);
-                    }
-
-                    return commsMethod =
-                            secureCommsSet.isEmpty()
-                                    ? null
-                                    : secureCommsSet.iterator().next();
-
-                }
-            }
+            // Run the propertySetValidator to eg. verify value uniqueness among multiple cores
+            propertySetValidator.accept(propertySet);
         }
 
-        return commsMethod;
+        return propertySet.isEmpty() ? null : propertySet.iterator().next();
+    }
 
+    private static Consumer<Set<String>> uniqueSecureCommsValidator()
+    {
+        // In case of multiple cores, *all* of them must have the same secureComms value.
+        // From that perspective, you may find the second clause in the conditional statement
+        // below not strictly necessary. The reason is that the check below is in charge to make
+        // sure a consistent configuration about the secret shared property has been defined in all cores.
+        return secureCommsSet -> {
+            if (secureCommsSet.size() > 1 && secureCommsSet.contains(SECRET_SHARED_METHOD_KEY))
+            {
+                throw new RuntimeException(
+                    "No valid secure comms values: all the cores must be using \"secret\" communication method but found: "
+                        + secureCommsSet);
+            }
+        };
     }
 
     /**
@@ -126,7 +160,8 @@ public class SecretSharedPropertyCollector
 
         if (secret == null || secret.length() == 0)
         { 
-            throw new RuntimeException("Missing value for " + SHARED_SECRET + " configuration property"); 
+            throw new RuntimeException("Missing value for " + SHARED_SECRET + " configuration property. Make sure to"
+                + " pass this property as a JVM Argument (eg. -D" + SHARED_SECRET + "=my-secret-value).");
         }
 
         return secret;
@@ -165,6 +200,18 @@ public class SecretSharedPropertyCollector
             properties.setProperty(SHARED_SECRET_HEADER, getSecretHeader());
         }
         return properties;
+    }
+
+    private static Set<String> toSet(String value)
+    {
+        Set<String> propertySet = new HashSet<>();
+
+        if (value != null)
+        {
+            propertySet.add(value);
+        }
+
+        return propertySet;
     }
 
 }
