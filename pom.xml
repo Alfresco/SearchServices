@@ -46,6 +46,7 @@
       <dependency.restlet.version>2.3.12</dependency.restlet.version>
       <dependency.jdom2.version>2.0.6.1</dependency.jdom2.version>
       <dependency.spring.version>5.3.7</dependency.spring.version>
+      <dependency.httpclient.version>4.5.13</dependency.httpclient.version>
    </properties>
    <dependencyManagement>
       <dependencies>
@@ -120,6 +121,11 @@
             <version>${dependency.jdom2.version}</version>
          </dependency>
          <!-- spring framework is defined in "search-services" and "insight-engine" because "e2e-test" uses different versions -->
+         <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>${dependency.httpclient.version}</version>
+         </dependency>
       </dependencies>
    </dependencyManagement>
    <modules>

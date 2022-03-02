@@ -32,7 +32,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,7 +45,7 @@ import org.alfresco.httpclient.Response;
 import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.index.shard.ShardState;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.httpclient.HttpStatus;
+import org.apache.http.HttpStatus;
 import org.json.JSONException;
 
 // TODO error handling, including dealing with a repository that is not responsive (ConnectException in sendRemoteRequest)
