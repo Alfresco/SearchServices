@@ -1719,7 +1719,11 @@ public class SolrInformationServer implements InformationServer
 
                 Optional<Collection<NodeMetaData>> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
 
-                if (nodeMetaDatas.isEmpty() || nodeMetaDatas.get().isEmpty()) return;
+                if (nodeMetaDatas.isEmpty() || nodeMetaDatas.get().isEmpty())
+                {
+                    // Using exception for flow handling to jump to error node processing.
+                    throw new Exception("Error loading node metadata from repository.");
+                }
 
                 NodeMetaData nodeMetaData = nodeMetaDatas.get().iterator().next();
                 if (node.getTxnId() == Long.MAX_VALUE)
