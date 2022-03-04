@@ -1756,7 +1756,7 @@ public class SolrInformationServer implements InformationServer
                                             : null);
 
                     // UnindexedNodes are not indexed when solrcore property flag "recordUnindexedNodes" is set to false
-                    if (addDocCmd != null)
+                    if (addDocCmd.solrDoc != null)
                     {
                         processor.processAdd(addDocCmd);
                     }
@@ -2127,7 +2127,7 @@ public class SolrInformationServer implements InformationServer
         }
         catch (Exception e)
         {
-            LOGGER.error(" Bulk indexing failed, do one node at a time. See the stacktrace below for further details.", e);
+            LOGGER.error("Bulk indexing failed, do one node at a time. See the stacktrace below for further details.", e);
             for (Node node : nodes)
             {
                 this.indexNode(node, true);

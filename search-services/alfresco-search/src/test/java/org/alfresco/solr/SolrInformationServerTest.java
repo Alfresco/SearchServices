@@ -68,18 +68,29 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.alfresco.httpclient.AuthenticationException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.QueryConstants;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.NodeMetaDataParameters;
 import org.alfresco.solr.client.SOLRAPIClient;
+import org.alfresco.solr.client.StringPropertyValue;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.CommonParams;
@@ -92,6 +103,10 @@ import org.apache.solr.request.SolrRequestHandler;
 import org.apache.solr.response.BasicResultContext;
 import org.apache.solr.response.SolrQueryResponse;
 import org.apache.solr.search.DocList;
+import org.apache.solr.search.DocSlice;
+import org.apache.solr.update.AddUpdateCommand;
+import org.apache.solr.update.processor.UpdateRequestProcessor;
+import org.apache.solr.update.processor.UpdateRequestProcessorChain;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -130,6 +145,12 @@ public class SolrInformationServerTest
 
     private SolrQueryRequest request;
 
+    @Mock
+    private UpdateRequestProcessorChain updateRequestProcessorChain;
+
+    @Mock
+    private UpdateRequestProcessor updateRequestProcessor;
+
     @Before
     public void setUp()
     {
@@ -147,6 +168,10 @@ public class SolrInformationServerTest
         };
 
         request = infoServer.newSolrQueryRequest();
+
+        // mock updateProcessingChain -> createProcessor -> processAdd method calls
+        when(core.getUpdateProcessingChain(null)).thenReturn(updateRequestProcessorChain);
+        when(updateRequestProcessorChain.createProcessor(any(),any())).thenReturn(updateRequestProcessor);
     }
 
     @Test
@@ -462,4 +487,51 @@ public class SolrInformationServerTest
         assertEquals("Expected two content nodes to be in sync.", report.get("Node count whose content is in sync"), 2L);
         assertEquals("Expected one content node to need an update.", report.get("Node count whose content needs to be updated"), 1L);
     }
+
+    /** Test if a node with "cm:isIndexed"=false is ignored */
+    @Test
+    public void testUnindexedNode() throws IOException, AuthenticationException
+    {
+        // mocked node metadata
+        NodeMetaData nodeMetaData = new NodeMetaData();
+        nodeMetaData.setProperties(Map.of(ContentModel.PROP_IS_INDEXED, new StringPropertyValue("false")));
+        nodeMetaData.setAspects(Set.of(ContentModel.ASPECT_INDEX_CONTROL));
+        nodeMetaData.setType(ContentModel.TYPE_CONTENT);
+        nodeMetaData.setNodeRef(new NodeRef("workspace://SpacesStore/f7c71f35-b592-40e2-a15f-fccbadd6b4d3"));
+
+        when(client.getNodesMetaData(any(NodeMetaDataParameters.class))).thenReturn(Arrays.asList(nodeMetaData));
+
+        // when calling ".indexNode" method, ".deleteErrorNode" private method will need some resultContext, preferably with docListSize=0
+        // to ensure that, we need a "resultContext" with "matches"=0, which is created by having a "SolrQueryResponse" correctly setup,
+        // when the requestHandler handles the request
+        doAnswer(invocationOnMock -> {
+            SolrQueryRequest request = invocationOnMock.getArgument(0);
+            SolrQueryResponse response = invocationOnMock.getArgument(1);
+
+            NamedList<Object> namedList = new NamedList<>();
+            BasicResultContext rc = new BasicResultContext(new DocSlice(1, 1, new int[] {}, new float[] {}, 0, 0), null, null, null, request);
+            namedList.add("response", rc);
+            response.setAllValues(namedList);
+            return null;
+        }).when(handler).handleRequest(any(), any());
+
+        // checks if "UpdateRequestProcessor#processAdd" arguments contains DOC_TYPE as UnindexedNode
+        doAnswer(invocationOnMock -> {
+            AddUpdateCommand cmd = invocationOnMock.getArgument(0);
+            assertEquals("UnindexedNode", cmd.solrDoc.get("DOC_TYPE").getValue());
+            return null;
+        }).when(updateRequestProcessor).processAdd(any());
+
+        // Node to be fed to Solr
+        Node node = mock(Node.class);
+        when(node.getStatus()).thenReturn(Node.SolrApiNodeStatus.UPDATED);
+        when(node.getId()).thenReturn(865l);
+
+        // method to be tested - when we index a node with "cm:isIndexed", the node should not be indexed
+        infoServer.indexNode(node, false);
+
+        // verifies if the method was called
+        verify(updateRequestProcessor).processAdd(any());
+    }
+
 }
