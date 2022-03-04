@@ -1752,7 +1752,7 @@ public class SolrInformationServer implements InformationServer
                                             : null);
 
                     // UnindexedNodes are not indexed when solrcore property flag "recordUnindexedNodes" is set to false
-                    if (addDocCmd != null)
+                    if (addDocCmd.solrDoc != null)
                     {
                         processor.processAdd(addDocCmd);
                     }
