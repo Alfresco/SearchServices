@@ -14,7 +14,7 @@
     <packaging>pom</packaging>
     <name>Alfresco Solr Search parent</name>
     <properties>
-        <slf4j.version>1.7.30</slf4j.version>
+        <slf4j.version>1.7.36</slf4j.version>
         <cxf.version>3.2.14</cxf.version>
         <licenseName>community</licenseName>
     </properties>
