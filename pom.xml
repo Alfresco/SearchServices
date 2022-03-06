@@ -20,7 +20,21 @@
          <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-snapshots/</url>
       </snapshotRepository>
    </distributionManagement>
-   <scm>
+   <repositories>
+       <repository>
+           <id>atlassian-3rdparty</id>
+           <url>https://packages.atlassian.com/maven-3rdparty/</url>
+           <snapshots>
+               <enabled>false</enabled>
+               <checksumPolicy>warn</checksumPolicy>
+           </snapshots>
+           <releases>
+               <enabled>true</enabled>
+               <checksumPolicy>warn</checksumPolicy>
+           </releases>
+       </repository>
+   </repositories>
+    <scm>
       <connection>scm:git:https://github.com/Alfresco/InsightEngine.git</connection>
       <developerConnection>scm:git:https://github.com/Alfresco/InsightEngine.git</developerConnection>
       <url>https://github.com/Alfresco/InsightEngine</url>
@@ -47,6 +61,7 @@
       <dependency.jdom2.version>2.0.6.1</dependency.jdom2.version>
       <dependency.spring.version>5.3.7</dependency.spring.version>
       <dependency.httpclient.version>4.5.13</dependency.httpclient.version>
+      <dependency.codehaus.jackson.version>1.9.14-atlassian-6</dependency.codehaus.jackson.version>
    </properties>
    <dependencyManagement>
       <dependencies>
@@ -125,6 +140,16 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>${dependency.httpclient.version}</version>
+         </dependency>
+         <dependency>
+             <groupId>org.codehaus.jackson</groupId>
+             <artifactId>jackson-core-asl</artifactId>
+             <version>${dependency.codehaus.jackson.version}</version>
+         </dependency>
+         <dependency>
+             <groupId>org.codehaus.jackson</groupId>
+             <artifactId>jackson-mapper-asl</artifactId>
+             <version>${dependency.codehaus.jackson.version}</version>
          </dependency>
       </dependencies>
    </dependencyManagement>
