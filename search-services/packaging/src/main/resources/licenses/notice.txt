@@ -59,7 +59,8 @@ quartz-2.3.2.jar http://quartz-scheduler.org/
 jackson-core-2.12.2.jar https://github.com/FasterXML/jackson
 jackson-annotations-2.12.2.jar https://github.com/FasterXML/jackson
 jackson-databind-2.12.2.jar https://github.com/FasterXML/jackson
-commons-httpclient-3.1-HTTPCLIENT-1265.jar      http://jakarta.apache.org/commons/
+jackson-dataformat-smile-2.12.2.jar https://github.com/FasterXML/jackson
+commons-httpclient-3.1.jar      http://jakarta.apache.org/commons/
 spring-aop-5.3.7.jar http://projects.spring.io/spring-framework/
 spring-beans-5.3.7.jar http://projects.spring.io/spring-framework/
 spring-context-5.3.7.jar http://projects.spring.io/spring-framework/
@@ -71,19 +72,19 @@ spring-tx-5.3.7.jar http://projects.spring.io/spring-framework/
 guessencoding-1.4.jar   http://docs.codehaus.org/display/GUESSENC/
 jug-2.0.0-asl.jar   http://jug.safehaus.org/
 acegi-security-0.8.2_patched.jar        http://sourceforge.net/projects/acegisecurity/
-jetty-continuation-9.3.29.v20201019.jar https://www.eclipse.org/jetty/licenses.html
-jetty-deploy-9.3.29.v20201019.jar https://www.eclipse.org/jetty/licenses.html
-jetty-http-9.3.29.v20201019.jar https://www.eclipse.org/jetty/licenses.html
-jetty-io-9.3.29.v20201019.jar https://www.eclipse.org/jetty/licenses.html
-jetty-jmx-9.3.29.v20201019.jar https://www.eclipse.org/jetty/licenses.html
-jetty-rewrite-9.3.29.v20201019.jar https://www.eclipse.org/jetty/licenses.html
-jetty-security-9.3.29.v20201019.jar https://www.eclipse.org/jetty/licenses.html
-jetty-server-9.3.29.v20201019.jar https://www.eclipse.org/jetty/licenses.html
-jetty-servlet-9.3.29.v20201019.jar https://www.eclipse.org/jetty/licenses.html
-jetty-servlets-9.3.29.v20201019.jar https://www.eclipse.org/jetty/licenses.html
-jetty-util-9.3.29.v20201019.jar https://www.eclipse.org/jetty/licenses.html
-jetty-webapp-9.3.29.v20201019.jar https://www.eclipse.org/jetty/licenses.html
-jetty-xml-9.3.29.v20201019.jar https://www.eclipse.org/jetty/licenses.html
+jetty-continuation-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
+jetty-deploy-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
+jetty-http-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
+jetty-io-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
+jetty-jmx-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
+jetty-rewrite-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
+jetty-security-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
+jetty-server-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
+jetty-servlet-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
+jetty-servlets-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
+jetty-util-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
+jetty-webapp-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
+jetty-xml-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
 woodstox-core-5.0.3.jar https://github.com/FasterXML/woodstox
 aggdesigner-algorithm-6.0.jar https://github.com/julianhyde/aggdesigner
 tika-core-1.27.jar https://github.com/apache/tika/blob/1.27/LICENSE.txt
@@ -91,25 +92,27 @@ tika-java7-1.27.jar https://github.com/apache/tika/blob/1.27/LICENSE.txt
 tika-parsers-1.27.jar https://github.com/apache/tika/blob/1.27/LICENSE.txt
 tika-xmp-1.27.jar https://github.com/apache/tika/blob/1.27/LICENSE.txt
 jcommander-1.81.jar https://github.com/cbeust/jcommander/blob/1.81/license.txt
-jbig2-imageio-3.0.3.jar https://github.com/apache/pdfbox-jbig2/blob/3.0.3/LICENSE.txt
-parso-2.0.14.jar https://github.com/epam/parso/blob/v2.0.14/LICENSE
 preflight-2.0.24.jar https://github.com/apache/pdfbox/blob/2.0.24/LICENSE.txt
 xmpbox-2.0.24.jar https://github.com/apache/pdfbox/blob/2.0.24/LICENSE.txt
-openjson-1.0.12.jar https://github.com/openjson/openjson/blob/v1.0.12/LICENSE.txt
-jna-5.8.0.jar https://github.com/java-native-access/jna/blob/5.8.0/LICENSE
 isoparser-1.9.41.7.jar http://www.apache.org/licenses/LICENSE-2.0.txt
 metadata-extractor-2.15.0.1.jar http://www.apache.org/licenses/LICENSE-2.0.txt
-jdom2-2.0.6.1.jar https://github.com/hunterhacker/jdom/blob/JDOM-2.0.6.1/LICENSE.txt
 hadoop-annotations-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
 hadoop-auth-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
 hadoop-common-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
 hadoop-hdfs-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
+hadoop-annotations-2.10.1.jar https://github.com/apache/hadoop/blob/rel/release-2.10.1/LICENSE.txt
+hadoop-auth-2.10.1.jar https://github.com/apache/hadoop/blob/rel/release-2.10.1/LICENSE.txt
+hadoop-common-2.10.1.jar https://github.com/apache/hadoop/blob/rel/release-2.10.1/LICENSE.txt
+hadoop-hdfs-2.10.1.jar https://github.com/apache/hadoop/blob/rel/release-2.10.1/LICENSE.txt
+hadoop-hdfs-client-2.10.1.jar https://github.com/apache/hadoop/blob/rel/release-2.10.1/LICENSE.txt
 org.restlet-2.3.12.jar https://github.com/restlet/restlet-framework-java/blob/2.3.12/README.md
 org.restlet.ext.servlet-2.3.12.jar https://github.com/restlet/restlet-framework-java/blob/2.3.12/README.md
 xercesImpl-2.11.0-alfresco-patched-20180402.jar http://www.apache.org/licenses/LICENSE-2.0.txt
 xml-apis-1.4.01.jar http://www.apache.org/licenses/LICENSE-2.0.txt
 simple-xml-safe-2.7.1.jar https://github.com/carrotsearch/simplexml-safe/blob/release/2.7.1/LICENSE.txt
 reload4j-1.2.18.3.jar http://www.apache.org/licenses/LICENSE-2.0.txt
+jackson-core-asl-1.9.14-atlassian-6.jar http://www.apache.org/licenses/LICENSE-2.0.txt
+jackson-mapper-asl-1.9.14-atlassian-6.jar http://www.apache.org/licenses/LICENSE-2.0.txt
 
 
 === Creative Commons Public Domain ===
@@ -126,15 +129,12 @@ jakarta.activation-1.2.2.jar https://eclipse-ee4j.github.io/jaf
 jakarta.activation-api-1.2.2.jar https://eclipse-ee4j.github.io/jaf
 jakarta.jws-api-2.1.0.jar https://projects.eclipse.org/projects/ee4j.websocket/releases/1.1.1
 jakarta.xml.bind-api-3.0.1.jar https://projects.eclipse.org/projects/ee4j.jaxb
-istack-commons-runtime-3.0.12.jar https://projects.eclipse.org/projects/ee4j.jaxb-impl
-txw2-2.3.4.jar https://eclipse-ee4j.github.io/jaxb-ri
-jaxb-runtime-2.3.4.jar  https://github.com/eclipse-ee4j/jaxb-ri/blob/2.3.4-RI/LICENSE.md
+istack-commons-runtime-3.0.11.jar https://projects.eclipse.org/projects/ee4j.jaxb-impl
+txw2-2.3.3.jar https://eclipse-ee4j.github.io/jaxb-ri
+jaxb-runtime-2.3.3.jar  https://github.com/eclipse-ee4j/jaxb-ri/blob/2.3.4-RI/LICENSE.md
 
 
 === Eclipse Public License 1.0 ===
-mchange-commons-java-0.2.19.jar https://github.com/swaldman/mchange-commons-java/blob/v0.2.19/LICENSE
-c3p0-0.9.5.5.jar https://github.com/swaldman/c3p0/blob/c3p0-0.9.5.5/LICENSE
-
 
 
 === Eclipse Public License 2.0 ===
@@ -147,13 +147,10 @@ jibx-run-1.3.3.jar http://jibx.sourceforge.net/
 dom4j-2.1.3.jar https://github.com/dom4j/dom4j/blob/master/LICENSE
 xmpcore-6.1.11.jar https://github.com/adobe/XMP-Toolkit-SDK/blob/main/LICENSE
 xmpcore-shaded-6.1.11.jar https://github.com/tballison/xmpcore-shaded/blob/6.1.11/src/main/resources/META-INF/LICENSE
-jai-imageio-core-1.4.0.jar https://github.com/jai-imageio/jai-imageio-core/blob/jai-imageio-core-1.4.0/README.md
 
 
 === MIT ===
 dd-plist-1.23.jar https://github.com/3breadt/dd-plist/blob/dd-plist-1.23/LICENSE.txt
-jsoup-1.13.1.jar https://github.com/jhy/jsoup/blob/jsoup-1.13.1/LICENSE
-dec-0.1.2.jar http://www.opensource.org/licenses/mit-license.php
 
 
 === Part of Apache Solr (Licenses listed separately) ===
@@ -247,7 +244,7 @@ poi-3.17-beta1.jar
 poi-ooxml-3.17-beta1.jar
 poi-ooxml-schemas-3.17-beta1.jar
 poi-scratchpad-3.17-beta1.jar
-protobuf-java-3.1.0.jar
+protobuf-java-3.6.1.jar
 rome-1.5.1.jar
 slf4j-api-1.7.7.jar
 slf4j-log4j12-1.7.7.jar
