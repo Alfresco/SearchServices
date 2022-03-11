@@ -22,7 +22,7 @@
    </distributionManagement>
    <repositories>
        <repository>
-           <id>atlassian-3rdparty</id>
+           <id>atlassian</id>
            <url>https://packages.atlassian.com/maven-3rdparty/</url>
            <snapshots>
                <enabled>false</enabled>
@@ -43,7 +43,7 @@
    <properties>
       <maven.build.sourceVersion>11</maven.build.sourceVersion>
       <solr.base.version>6.6.5</solr.base.version>
-      <solr.version>${solr.base.version}-patched.8</solr.version>
+      <solr.version>${solr.base.version}-patched.9</solr.version>
       <!-- The location to download the solr zip file from. -->
       <!-- <solr.zip>https://archive.apache.org/dist/lucene/solr/${solr.version}/solr-${solr.version}.zip</solr.zip> -->
       <!-- Solr startup scripts do not work with any Java version higher than 9 so the scripts have been patched -->
@@ -276,10 +276,5 @@
         <version>1.0.0</version>
         <scope>provided</scope>
       </dependency>
-       <dependency>
-           <groupId>ch.qos.reload4j</groupId>
-           <artifactId>reload4j</artifactId>
-           <version>1.2.18.3</version>
-       </dependency>
    </dependencies>
 </project>
