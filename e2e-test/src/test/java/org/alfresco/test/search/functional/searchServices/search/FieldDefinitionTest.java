@@ -26,6 +26,9 @@
 
 package org.alfresco.test.search.functional.searchServices.search;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.utility.data.CustomObjectTypeProperties;
 import org.alfresco.utility.model.FileModel;
@@ -61,11 +64,17 @@ public class FieldDefinitionTest extends AbstractSearchServicesE2ETest {
         
         dataContent.usingUser(testUser).usingSite(testSite).createCustomContent(File2, "cmis:document", new CustomObjectTypeProperties());
 
+        List<String> mlMultipleValue = new ArrayList<String>();
+        mlMultipleValue.add("oranges");
+        mlMultipleValue.add("apples");
+        mlMultipleValue.add("pears");
+
         cmisApi.authenticateUser(testUser).usingResource(File2).addSecondaryTypes("P:allfieldtypes:text")
                 .updateProperty("allfieldtypes:textFree", "text field definition test")
                 .updateProperty("allfieldtypes:textPatternMany", "mltext field definition test")
 		        .updateProperty("allfieldtypes:textLOVWhole", "text field not tokenised")
-		        .updateProperty("allfieldtypes:mltextLOVWhole", "mltext field not tokenised");
+		        .updateProperty("allfieldtypes:mltextLOVWhole", "mltext field not tokenised")
+                        .updateProperty("allfieldtypes:multiplemltext", mlMultipleValue);
         
         waitForMetadataIndexing(File1.getName(), true);
         waitForMetadataIndexing(File2.getName(), true);
@@ -198,4 +207,21 @@ public class FieldDefinitionTest extends AbstractSearchServicesE2ETest {
 		restClient.assertStatusCodeIs(HttpStatus.OK);
 		Assert.assertEquals(response.getPagination().getCount(), 0);
 	}
+
+        // A test to test the multiple mltext field in the solr schema
+        @Test(priority = 8)
+        public void testmlTextFieldMuliple()
+        {
+            SearchResponse response = queryAsUser(testUser, "allfieldtypes_multiplemltext:\"oranges\"");
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+            Assert.assertEquals(response.getPagination().getCount(), 1);
+
+            response = queryAsUser(testUser, "allfieldtypes_multiplemltext:\"apple\"");
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+            Assert.assertEquals(response.getPagination().getCount(), 0);
+
+            response = queryAsUser(testUser, "allfieldtypes_multiplemltext:\"pear\"");
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+            Assert.assertEquals(response.getPagination().getCount(), 0);
+        }
 }
