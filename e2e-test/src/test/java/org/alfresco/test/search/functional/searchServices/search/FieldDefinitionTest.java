@@ -208,7 +208,7 @@ public class FieldDefinitionTest extends AbstractSearchServicesE2ETest {
 		Assert.assertEquals(response.getPagination().getCount(), 0);
 	}
 
-        // A test to test the multiple mltext field in the solr schema
+        // A test having multiple mltext field in the solr schema
         @Test(priority = 8)
         public void testmlTextFieldMuliple()
         {
@@ -218,10 +218,10 @@ public class FieldDefinitionTest extends AbstractSearchServicesE2ETest {
 
             response = queryAsUser(testUser, "allfieldtypes_multiplemltext:\"apple\"");
             restClient.assertStatusCodeIs(HttpStatus.OK);
-            Assert.assertEquals(response.getPagination().getCount(), 0);
+            Assert.assertEquals(response.getPagination().getCount(), 1);
 
             response = queryAsUser(testUser, "allfieldtypes_multiplemltext:\"pear\"");
             restClient.assertStatusCodeIs(HttpStatus.OK);
-            Assert.assertEquals(response.getPagination().getCount(), 0);
+            Assert.assertEquals(response.getPagination().getCount(), 1);
         }
 }
