@@ -80,7 +80,7 @@ public class FieldDefinitionTest extends AbstractSearchServicesE2ETest {
         mlMultipleValue.add("apples");
         mlMultipleValue.add("pears");
 
-        cmisApi.authenticateUser(testUser).usingResource(File).addSecondaryTypes("P:allfieldtypes:text")
+        cmisApi.authenticateUser(testUser).usingResource(File3).addSecondaryTypes("P:allfieldtypes:text")
                 .updateProperty("allfieldtypes:multiplemltext", mlMultipleValue);
 
         waitForMetadataIndexing(File1.getName(), true);
