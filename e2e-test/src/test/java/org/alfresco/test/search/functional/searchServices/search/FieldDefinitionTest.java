@@ -43,7 +43,7 @@ import org.testng.annotations.Test;
  */
 public class FieldDefinitionTest extends AbstractSearchServicesE2ETest {
 	
-	private FileModel File1, File2;
+	private FileModel File1, File2, File3;
 		
 	@BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -64,20 +64,28 @@ public class FieldDefinitionTest extends AbstractSearchServicesE2ETest {
         
         dataContent.usingUser(testUser).usingSite(testSite).createCustomContent(File2, "cmis:document", new CustomObjectTypeProperties());
 
+        cmisApi.authenticateUser(testUser).usingResource(File2).addSecondaryTypes("P:allfieldtypes:text")
+                .updateProperty("allfieldtypes:textFree", "text field definition test")
+                .updateProperty("allfieldtypes:textPatternMany", "mltext field definition test")
+		        .updateProperty("allfieldtypes:textLOVWhole", "text field not tokenised")
+		        .updateProperty("allfieldtypes:mltextLOVWhole", "mltext field not tokenised");
+
+        File3 = new FileModel("standard-file3.txt");
+
+        dataContent.usingUser(testUser).usingSite(testSite).createCustomContent(File3, "cmis:document",
+                new CustomObjectTypeProperties());
+
         List<String> mlMultipleValue = new ArrayList<String>();
         mlMultipleValue.add("oranges");
         mlMultipleValue.add("apples");
         mlMultipleValue.add("pears");
 
-        cmisApi.authenticateUser(testUser).usingResource(File2).addSecondaryTypes("P:allfieldtypes:text")
-                .updateProperty("allfieldtypes:textFree", "text field definition test")
-                .updateProperty("allfieldtypes:textPatternMany", "mltext field definition test")
-		        .updateProperty("allfieldtypes:textLOVWhole", "text field not tokenised")
-		        .updateProperty("allfieldtypes:mltextLOVWhole", "mltext field not tokenised")
-                        .updateProperty("allfieldtypes:multiplemltext", mlMultipleValue);
-        
+        cmisApi.authenticateUser(testUser).usingResource(File).addSecondaryTypes("P:allfieldtypes:text")
+                .updateProperty("allfieldtypes:multiplemltext", mlMultipleValue);
+
         waitForMetadataIndexing(File1.getName(), true);
         waitForMetadataIndexing(File2.getName(), true);
+        waitForMetadataIndexing(File3.getName(), true);
     }
 	
 	// A test to test the text field in the solr schema, using a single word 
@@ -212,7 +220,7 @@ public class FieldDefinitionTest extends AbstractSearchServicesE2ETest {
         @Test(priority = 8)
         public void testmlTextFieldMuliple()
         {
-            SearchResponse response = queryAsUser(testUser, "allfieldtypes_multiplemltext:\"oranges\"");
+            SearchResponse response = queryAsUser(testUser, "allfieldtypes_multiplemltext:\"orange\"");
             restClient.assertStatusCodeIs(HttpStatus.OK);
             Assert.assertEquals(response.getPagination().getCount(), 1);
 
