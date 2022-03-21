@@ -2330,6 +2330,9 @@ public class SolrInformationServer implements InformationServer
 
         List<String> localisedValues = getLocalisedValues(value);
 
+        // On ML multivalued fields, we cannot add multiple arrays to the set, we need to merge the values into the
+        // pre-set array created by our implementation of addField on PartialSolrInputDocument. This does not apply to
+        // SolrInputDocument that uses the default implementation of addField.
         if (merge)
         {
             localisedValues.forEach(val -> valueHolder.accept(storedFieldName, val));
