@@ -4,6 +4,8 @@
 	<queries>
 		<query value="SELECT * FROM tas:folder" expectedResults="3" />
 		<query value="SELECT * FROM tas:document" expectedResults="4" />
+		<query value="SELECT cmis:name, SCORE() AS &quot;score&quot; FROM tas:document" expectedResults="4" />
+		<query value="SELECT * FROM tas:document WHERE CONTAINS('*')" expectedResults="4" />
 		<query value="SELECT * FROM tas:folder WHERE IN_FOLDER('NODE_REF[siteId]')" expectedResults="2" />
 		<query value="SELECT * FROM tas:document WHERE IN_FOLDER('NODE_REF[siteId]')" expectedResults="1" />
 		<query value="SELECT * FROM cmis:document WHERE cmis:objectTypeId = 'D:tas:document'" expectedResults="4" />
