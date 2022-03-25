@@ -2321,14 +2321,27 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    void mltextProperty(QName propertyQName, MLTextPropertyValue value, final BiConsumer<String, Object> valueHolder)
+    void mltextProperty(QName propertyQName, MLTextPropertyValue value, final BiConsumer<String, Object> valueHolder, boolean merge)
     {
         AlfrescoSolrDataModel dataModel = AlfrescoSolrDataModel.getInstance();
         List<FieldInstance> fields = dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields();
 
         String storedFieldName = dataModel.getStoredMLTextField(propertyQName);
 
-        valueHolder.accept(storedFieldName, getLocalisedValues(value));
+        List<String> localisedValues = getLocalisedValues(value);
+
+        // On ML multivalued fields, we cannot add multiple arrays to the set, we need to merge the values into the
+        // pre-set array created by our implementation of addField on PartialSolrInputDocument. This does not apply to
+        // SolrInputDocument that uses the default implementation of addField.
+        if (merge)
+        {
+            localisedValues.forEach(val -> valueHolder.accept(storedFieldName, val));
+        }
+        else
+        {
+            valueHolder.accept(storedFieldName, localisedValues);
+        }
+
         fields.stream()
             .filter(FieldInstance::isSort)
             .forEach(field -> addMLTextProperty(valueHolder, field, value));
@@ -2406,7 +2419,7 @@ public class SolrInformationServer implements InformationServer
                     }
                     else if (value instanceof MLTextPropertyValue)
                     {
-                        mltextProperty(propertyQName,(MLTextPropertyValue) value, setAndCollect);
+                        mltextProperty(propertyQName,(MLTextPropertyValue) value, setAndCollect, false);
                     }
                     else if (value instanceof ContentPropertyValue)
                     {
@@ -2431,7 +2444,8 @@ public class SolrInformationServer implements InformationServer
                             }
                             else if (singleValue instanceof MLTextPropertyValue)
                             {
-                                mltextProperty(propertyQName,(MLTextPropertyValue) singleValue, addAndCollect);
+                                boolean merge = (document instanceof PartialSolrInputDocument);
+                                mltextProperty(propertyQName,(MLTextPropertyValue) singleValue, addAndCollect, merge);
                             }
                             else if (singleValue instanceof ContentPropertyValue)
                             {
