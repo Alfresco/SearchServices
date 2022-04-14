@@ -32,6 +32,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.adapters.IOpenBitSet;
 import org.alfresco.solr.client.SOLRAPIClientFactory;
 import org.alfresco.solr.config.ConfigUtil;
+import org.alfresco.solr.io.interceptor.SharedSecretRequestInterceptor;
+import org.alfresco.solr.security.SecretSharedPropertyCollector;
 import org.alfresco.solr.tracker.AclTracker;
 import org.alfresco.solr.tracker.ActivatableTracker;
 import org.alfresco.solr.tracker.ShardStatePublisher;
@@ -46,6 +48,7 @@ import org.alfresco.solr.utils.Utils;
 import org.alfresco.util.Pair;
 import org.alfresco.util.shard.ExplicitShardingPolicy;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpRequestInterceptor;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.SolrParams;
@@ -219,6 +222,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         String createDefaultCores = ConfigUtil.locateProperty(ALFRESCO_DEFAULTS, "");
         int numShards = Integer.parseInt(ConfigUtil.locateProperty(NUM_SHARDS, "1"));
         String shardIds = ConfigUtil.locateProperty(SHARD_IDS, null);
+        registerSolrClientInterceptors();
+
+
         if (createDefaultCores != null && !createDefaultCores.isEmpty())
         {
             Thread thread = new Thread(() ->
@@ -227,6 +233,26 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
                 setupNewDefaultCores(createDefaultCores, numShards, 1, 1, 1, shardIds);
             });
             thread.start();
+        }
+    }
+
+    /**
+     * Register the required {@link HttpRequestInterceptor}s
+     */
+    private static void registerSolrClientInterceptors()
+    {
+        try
+        {
+            if (SecretSharedPropertyCollector.isCommsSecretShared())
+            {
+                SharedSecretRequestInterceptor.register();
+            }
+        }
+        catch (Throwable t)
+        {
+            LOGGER.warn("It was not possible to add the Shared Secret Authentication interceptor. "
+                    + "Please make sure to pass the required -Dalfresco.secureComms=secret and "
+                    + "-Dalfresco.secureComms.secret=my-secret-value JVM args if trying to use Secret Authentication with Solr.");
         }
     }
 
