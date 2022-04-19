@@ -239,7 +239,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     /**
      * Register the required {@link HttpRequestInterceptor}s
      */
-    private static void registerSolrClientInterceptors()
+    public static void registerSolrClientInterceptors()
     {
         try
         {
