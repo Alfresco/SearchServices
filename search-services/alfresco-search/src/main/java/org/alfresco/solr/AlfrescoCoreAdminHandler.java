@@ -106,6 +106,7 @@ import static org.alfresco.solr.HandlerReportHelper.buildAclTxReport;
 import static org.alfresco.solr.HandlerReportHelper.buildNodeReport;
 import static org.alfresco.solr.HandlerReportHelper.buildTrackerReport;
 import static org.alfresco.solr.HandlerReportHelper.buildTxReport;
+import static org.alfresco.solr.InterceptorRegistry.registerSolrClientInterceptors;
 import static org.alfresco.solr.utils.Utils.isNotNullAndNotEmpty;
 import static org.alfresco.solr.utils.Utils.isNullOrEmpty;
 import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
@@ -236,25 +237,6 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         }
     }
 
-    /**
-     * Register the required {@link HttpRequestInterceptor}s
-     */
-    public static void registerSolrClientInterceptors()
-    {
-        try
-        {
-            if (SecretSharedPropertyCollector.isCommsSecretShared())
-            {
-                SharedSecretRequestInterceptor.register();
-            }
-        }
-        catch (Throwable t)
-        {
-            LOGGER.warn("It was not possible to add the Shared Secret Authentication interceptor. "
-                    + "Please make sure to pass the required -Dalfresco.secureComms=secret and "
-                    + "-Dalfresco.secureComms.secret=my-secret-value JVM args if trying to use Secret Authentication with Solr.");
-        }
-    }
 
     /**
      * Creates new default cores based on the "createDefaultCores" String passed in.
