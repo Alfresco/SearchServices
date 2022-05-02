@@ -26,6 +26,9 @@
 
 package org.alfresco.test.search.functional.searchServices.search;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.utility.data.CustomObjectTypeProperties;
 import org.alfresco.utility.model.FileModel;
@@ -40,7 +43,7 @@ import org.testng.annotations.Test;
  */
 public class FieldDefinitionTest extends AbstractSearchServicesE2ETest {
 	
-	private FileModel File1, File2;
+	private FileModel File1, File2, File3;
 		
 	@BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -66,9 +69,23 @@ public class FieldDefinitionTest extends AbstractSearchServicesE2ETest {
                 .updateProperty("allfieldtypes:textPatternMany", "mltext field definition test")
 		        .updateProperty("allfieldtypes:textLOVWhole", "text field not tokenised")
 		        .updateProperty("allfieldtypes:mltextLOVWhole", "mltext field not tokenised");
-        
+
+        File3 = new FileModel("standard-file3.txt");
+
+        dataContent.usingUser(testUser).usingSite(testSite).createCustomContent(File3, "cmis:document",
+                new CustomObjectTypeProperties());
+
+        List<String> mlMultipleValue = new ArrayList<String>();
+        mlMultipleValue.add("oranges");
+        mlMultipleValue.add("apples");
+        mlMultipleValue.add("pears");
+
+        cmisApi.authenticateUser(testUser).usingResource(File3).addSecondaryTypes("P:allfieldtypes:text")
+                .updateProperty("allfieldtypes:multiplemltext", mlMultipleValue);
+
         waitForMetadataIndexing(File1.getName(), true);
         waitForMetadataIndexing(File2.getName(), true);
+        waitForMetadataIndexing(File3.getName(), true);
     }
 	
 	// A test to test the text field in the solr schema, using a single word 
@@ -198,4 +215,21 @@ public class FieldDefinitionTest extends AbstractSearchServicesE2ETest {
 		restClient.assertStatusCodeIs(HttpStatus.OK);
 		Assert.assertEquals(response.getPagination().getCount(), 0);
 	}
+
+        // A test having multiple mltext field in the solr schema
+        @Test(priority = 8)
+        public void testmlTextFieldMuliple()
+        {
+            SearchResponse response = queryAsUser(testUser, "allfieldtypes_multiplemltext:\"orange\"");
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+            Assert.assertEquals(response.getPagination().getCount(), 1);
+
+            response = queryAsUser(testUser, "allfieldtypes_multiplemltext:\"apple\"");
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+            Assert.assertEquals(response.getPagination().getCount(), 1);
+
+            response = queryAsUser(testUser, "allfieldtypes_multiplemltext:\"pear\"");
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+            Assert.assertEquals(response.getPagination().getCount(), 1);
+        }
 }

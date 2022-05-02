@@ -126,6 +126,18 @@
                         <facetable>true</facetable>
                     </index>
                 </property>
+                <property name="allfieldtypes:multiplemltext">
+                    <title>mltextMultiple</title>
+                    <type>d:mltext</type>
+                    <mandatory>false</mandatory>
+                    <multiple>true</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>false</stored>
+                        <tokenised>both</tokenised>
+                        <facetable>true</facetable>
+                    </index>
+                </property>
                 <property name="allfieldtypes:textPatternMany">
                     <title>textPatternMany</title>
                     <type>d:text</type>
