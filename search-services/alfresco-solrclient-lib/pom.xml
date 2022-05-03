@@ -11,7 +11,7 @@
     </parent>
 
     <properties>
-        <dependency.alfresco-data-model.version>14.128</dependency.alfresco-data-model.version>
+        <dependency.alfresco-data-model.version>15.3</dependency.alfresco-data-model.version>
         <dependency.jackson.version>2.12.5</dependency.jackson.version>
     </properties>
 
