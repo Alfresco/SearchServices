@@ -32,6 +32,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.adapters.IOpenBitSet;
 import org.alfresco.solr.client.SOLRAPIClientFactory;
 import org.alfresco.solr.config.ConfigUtil;
+import org.alfresco.solr.io.interceptor.SharedSecretRequestInterceptor;
+import org.alfresco.solr.security.SecretSharedPropertyCollector;
 import org.alfresco.solr.tracker.AclTracker;
 import org.alfresco.solr.tracker.ActivatableTracker;
 import org.alfresco.solr.tracker.ShardStatePublisher;
@@ -46,6 +48,7 @@ import org.alfresco.solr.utils.Utils;
 import org.alfresco.util.Pair;
 import org.alfresco.util.shard.ExplicitShardingPolicy;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpRequestInterceptor;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.SolrParams;
@@ -103,6 +106,7 @@ import static org.alfresco.solr.HandlerReportHelper.buildAclTxReport;
 import static org.alfresco.solr.HandlerReportHelper.buildNodeReport;
 import static org.alfresco.solr.HandlerReportHelper.buildTrackerReport;
 import static org.alfresco.solr.HandlerReportHelper.buildTxReport;
+import static org.alfresco.solr.InterceptorRegistry.registerSolrClientInterceptors;
 import static org.alfresco.solr.utils.Utils.isNotNullAndNotEmpty;
 import static org.alfresco.solr.utils.Utils.isNullOrEmpty;
 import static org.alfresco.solr.utils.Utils.notNullOrEmpty;
@@ -219,6 +223,9 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         String createDefaultCores = ConfigUtil.locateProperty(ALFRESCO_DEFAULTS, "");
         int numShards = Integer.parseInt(ConfigUtil.locateProperty(NUM_SHARDS, "1"));
         String shardIds = ConfigUtil.locateProperty(SHARD_IDS, null);
+        registerSolrClientInterceptors();
+
+
         if (createDefaultCores != null && !createDefaultCores.isEmpty())
         {
             Thread thread = new Thread(() ->
@@ -229,6 +236,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
             thread.start();
         }
     }
+
 
     /**
      * Creates new default cores based on the "createDefaultCores" String passed in.
