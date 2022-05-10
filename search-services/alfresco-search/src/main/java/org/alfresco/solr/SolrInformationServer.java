@@ -149,6 +149,7 @@ import org.alfresco.solr.adapters.ISimpleOrderedMap;
 import org.alfresco.solr.adapters.SolrOpenBitSetAdapter;
 import org.alfresco.solr.adapters.SolrSimpleOrderedMap;
 import org.alfresco.solr.client.AclChangeSet;
+import org.alfresco.solr.client.AclChangeSets;
 import org.alfresco.solr.client.AclReaders;
 import org.alfresco.solr.client.AlfrescoModel;
 import org.alfresco.solr.client.ContentPropertyValue;
@@ -426,6 +427,7 @@ public class SolrInformationServer implements InformationServer
     private final long holeRetention;
     private final boolean fingerprintHasBeenEnabledOnThisInstance;
     private final int contentStreamLimit;
+    private final int statsFacetLimit;
 
     private long cleanContentLastPurged;
     
@@ -631,6 +633,8 @@ public class SolrInformationServer implements InformationServer
         contentStreamLimit = Integer.parseInt(coreConfiguration.getProperty("alfresco.contentStreamLimit", "10000000"));
         
         getPathsInNodeBatches = Boolean.parseBoolean(coreConfiguration.getProperty("alfresco.metadata.getPathsInNodeBatches", "true"));
+
+        statsFacetLimit = Integer.parseInt(coreConfiguration.getProperty("alfresco.stats.facetLimit", "100"));
 
         props = AlfrescoSolrDataModel.getCommonConfig();
         hostName = ConfigUtil.locateProperty(SOLR_HOST, props.getProperty(SOLR_HOST));
@@ -3687,6 +3691,7 @@ public class SolrInformationServer implements InformationServer
             IOpenBitSet idsInIndex = this.getOpenBitSetInstance();
             long batchStartId = minId;
             long batchEndId = Math.min(batchStartId + BATCH_FACET_TXS, maxId);
+            long lastIdEvaluated = 0;
 
             // Continues as long as the batch does not pass the maximum
             while (batchStartId <= maxId)
@@ -3698,6 +3703,7 @@ public class SolrInformationServer implements InformationServer
                 for (Map.Entry<String, Integer> idCount : idCounts)
                 {
                     long idInIndex = Long.parseLong(idCount.getKey());
+                    lastIdEvaluated = idInIndex;
 
                     // Only looks at facet values that fit the query
                     if (batchStartId <= idInIndex && idInIndex <= batchEndId)
@@ -3737,6 +3743,27 @@ public class SolrInformationServer implements InformationServer
                 batchEndId = Math.min(batchStartId + BATCH_FACET_TXS, maxId);
             }
 
+            // Verify we processed all items from request params, if not, send a warning
+            if (lastIdEvaluated != 0 && lastIdEvaluated < batchEndId)
+            {
+                try
+                {
+                    AclChangeSets changesets = repositoryClient.getAclChangeSets(null, lastIdEvaluated, null, lastIdEvaluated + 1,
+                            1);
+                    Long changeSetCommitTimeMs = changesets.getAclChangeSets().size() > 0
+                            ? changesets.getAclChangeSets().get(0).getCommitTimeMs()
+                            : 0L;
+
+                    LOGGER.warning("Not all items processed. Last acl changeset (id {} ) with commit time evaluated: {}",
+                            lastIdEvaluated, changeSetCommitTimeMs);
+                }
+                catch (JSONException | AuthenticationException | IOException e)
+                {
+                    LOGGER.warning("Not all items processed. Last acl changeset evaluated: {}", lastIdEvaluated);
+                }
+
+            }
+
             reporter.reportUniqueIdsInIndex(idsInIndex.cardinality());
         }
     }
@@ -3762,6 +3789,7 @@ public class SolrInformationServer implements InformationServer
                         .set(CommonParams.ROWS, 0)
                         .set(FacetParams.FACET, true)
                         .set(FacetParams.FACET_FIELD, field)
+                        .set(FacetParams.FACET_LIMIT, statsFacetLimit)
                         .set(FacetParams.FACET_MINCOUNT, minCount);
 
         SolrQueryResponse response = cloud.getResponse(nativeRequestHandler, request, params);
