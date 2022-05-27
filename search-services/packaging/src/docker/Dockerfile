@@ -61,7 +61,7 @@ EXPOSE 8983
 #    "
 #    ports:
 #        - 10001:10001
-RUN wget https://download.yourkit.com/yjp/2019.8/${JAVA_PROFILER}.zip -P /tmp/ && \
+RUN wget https://archive.yourkit.com/yjp/2019.8/${JAVA_PROFILER}.zip -P /tmp/ && \
   unzip /tmp/${JAVA_PROFILER}.zip -d /usr/local && \
   rm /tmp/${JAVA_PROFILER}.zip && \
   cp /usr/local/YourKit-JavaProfiler*/license-redist.txt /licenses/3rd-party/YourKit-license-redist.txt
