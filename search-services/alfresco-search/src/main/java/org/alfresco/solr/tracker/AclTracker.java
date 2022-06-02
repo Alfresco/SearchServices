@@ -723,9 +723,7 @@ public class AclTracker extends ActivatableTracker
 
                 this.state = getTrackerState();
                 
-                Long fromCommitTime = getChangeSetFromCommitTime(changeSetsFound,
-                        state.getLastChangeSetCommitTimeOnServer() == 0 ? state.getLastGoodChangeSetCommitTimeInIndex()
-                                : state.getLastChangeSetCommitTimeOnServer());
+                Long fromCommitTime = getChangeSetFromCommitTime(changeSetsFound, state.getLastGoodChangeSetCommitTimeInIndex());
                 aclChangeSets = getSomeAclChangeSets(changeSetsFound, fromCommitTime, timeStep, maxNumberOfAclChangeSets,
                         state.getTimeToStopIndexing());
                 
