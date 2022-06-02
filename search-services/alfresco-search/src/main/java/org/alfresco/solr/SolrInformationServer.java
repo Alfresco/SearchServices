@@ -3691,7 +3691,7 @@ public class SolrInformationServer implements InformationServer
             IOpenBitSet idsInIndex = this.getOpenBitSetInstance();
             long batchStartId = minId;
             long batchEndId = Math.min(batchStartId + BATCH_FACET_TXS, maxId);
-            long lastIdEvaluated = 0;
+            long idInIndex = 0L;
 
             // Continues as long as the batch does not pass the maximum
             while (batchStartId <= maxId)
@@ -3702,8 +3702,7 @@ public class SolrInformationServer implements InformationServer
                         field, 1); // Min count of 1 ensures that the id returned is in the index
                 for (Map.Entry<String, Integer> idCount : idCounts)
                 {
-                    long idInIndex = Long.parseLong(idCount.getKey());
-                    lastIdEvaluated = idInIndex;
+                    idInIndex = Long.parseLong(idCount.getKey());
 
                     // Only looks at facet values that fit the query
                     if (batchStartId <= idInIndex && idInIndex <= batchEndId)
@@ -3744,22 +3743,22 @@ public class SolrInformationServer implements InformationServer
             }
 
             // Verify we processed all items from request params, if not, send a warning
-            if (lastIdEvaluated != 0 && lastIdEvaluated < batchEndId)
+            if (idInIndex != 0L && idInIndex < batchEndId)
             {
                 try
                 {
-                    AclChangeSets changesets = repositoryClient.getAclChangeSets(null, lastIdEvaluated, null, lastIdEvaluated + 1,
+                    AclChangeSets changesets = repositoryClient.getAclChangeSets(null, idInIndex, null, idInIndex + 1,
                             1);
                     Long changeSetCommitTimeMs = changesets.getAclChangeSets().size() > 0
                             ? changesets.getAclChangeSets().get(0).getCommitTimeMs()
                             : 0L;
 
                     LOGGER.warning("Not all items processed. Last acl changeset (id {} ) with commit time evaluated: {}",
-                            lastIdEvaluated, changeSetCommitTimeMs);
+                            idInIndex, changeSetCommitTimeMs);
                 }
                 catch (JSONException | AuthenticationException | IOException e)
                 {
-                    LOGGER.warning("Not all items processed. Last acl changeset evaluated: {}", lastIdEvaluated);
+                    LOGGER.warning("Not all items processed. Last acl changeset evaluated: {}", idInIndex);
                 }
 
             }
