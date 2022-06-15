@@ -35,7 +35,7 @@
       <!-- Solr startup scripts do not work with any Java version higher than 9 so the scripts have been patched -->
       <solr.zip>https://artifacts.alfresco.com/nexus/content/repositories/public/org/apache/solr/solr/solr-${solr.version}/solr-solr-${solr.version}.zip</solr.zip>
       <solr.directory>${project.build.directory}/solr-${solr.version}</solr.directory>
-      <license-maven-plugin.version>2.0.1.alfresco-1</license-maven-plugin.version>
+      <license-maven-plugin.version>2.0.1.alfresco-2</license-maven-plugin.version>
       <licenseName>enterprise</licenseName>
       <license.update.dryrun>true</license.update.dryrun>
       <license.update.copyright>false</license.update.copyright>
