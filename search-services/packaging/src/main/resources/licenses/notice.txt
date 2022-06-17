@@ -70,9 +70,9 @@ cxf-rt-wsdl-3.2.14.jar https://cxf.apache.org/
 chemistry-opencmis-server-support-1.0.0.jar     http://chemistry.apache.org/
 chemistry-opencmis-server-bindings-1.0.0.jar    http://chemistry.apache.org/
 quartz-2.3.2.jar http://quartz-scheduler.org/
-jackson-core-2.12.5.jar https://github.com/FasterXML/jackson
-jackson-annotations-2.12.5.jar https://github.com/FasterXML/jackson
-jackson-databind-2.12.5.jar https://github.com/FasterXML/jackson
+jackson-core-2.13.3.jar https://github.com/FasterXML/jackson
+jackson-annotations-2.13.3.jar https://github.com/FasterXML/jackson
+jackson-databind-2.13.3.jar https://github.com/FasterXML/jackson
 commons-httpclient-3.1-HTTPCLIENT-1265.jar      http://jakarta.apache.org/commons/
 guessencoding-1.4.jar   http://docs.codehaus.org/display/GUESSENC/
 jug-2.0.0-asl.jar   http://jug.safehaus.org/
