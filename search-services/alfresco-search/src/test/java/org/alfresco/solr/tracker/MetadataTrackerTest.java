@@ -127,7 +127,7 @@ public class MetadataTrackerTest
         // Subsequent calls to getTransactions must return a different set of transactions to avoid an infinite loop
         when(repositoryClient.getTransactions(anyLong(), anyLong(), anyLong(), anyLong(), anyInt())).thenReturn(txs)
                     .thenReturn(txs).thenReturn(mock(Transactions.class));
-        when(repositoryClient.getTransactions(anyLong(), anyLong(), anyLong(), anyLong(), anyInt(), isNull(ShardState.class))).thenReturn(txs)
+        when(repositoryClient.getTransactions(anyLong(), anyLong(), anyLong(), anyLong(), anyInt(), isNull())).thenReturn(txs)
         .thenReturn(txs).thenReturn(mock(Transactions.class));
         when(repositoryClient.getTransactions(anyLong(), anyLong(), anyLong(), anyLong(), anyInt(), any(ShardState.class))).thenReturn(txs)
         .thenReturn(txs).thenReturn(mock(Transactions.class));
@@ -157,7 +157,7 @@ public class MetadataTrackerTest
         List<Transaction> txsList = new ArrayList<>();
         when(txs.getTransactions()).thenReturn(txsList);
 
-        when(repositoryClient.getTransactions(anyLong(), anyLong(), anyLong(), anyLong(), anyInt(), isNull(ShardState.class))).thenReturn(txs);
+        when(repositoryClient.getTransactions(anyLong(), anyLong(), anyLong(), anyLong(), anyInt(), isNull())).thenReturn(txs);
         when(repositoryClient.getTransactions(anyLong(), anyLong(), anyLong(), anyLong(), anyInt(), any(ShardState.class))).thenReturn(txs);
         when(repositoryClient.getTransactions(anyLong(), anyLong(), anyLong(), anyLong(), anyInt())).thenReturn(txs);
 
