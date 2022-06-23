@@ -30,8 +30,6 @@ import static java.util.Arrays.stream;
 import static java.util.stream.IntStream.range;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.when;
 import static org.alfresco.solr.AlfrescoSolrUtils.randomPositiveInteger;
 import static org.alfresco.solr.AlfrescoSolrUtils.randomShardCountGreaterThanOne;
 
