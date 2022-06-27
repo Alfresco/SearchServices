@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -30,8 +30,6 @@ import static java.util.Arrays.stream;
 import static java.util.stream.IntStream.range;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.when;
 import static org.alfresco.solr.AlfrescoSolrUtils.randomPositiveInteger;
 import static org.alfresco.solr.AlfrescoSolrUtils.randomShardCountGreaterThanOne;
 
