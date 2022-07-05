@@ -173,4 +173,17 @@ public class AlfrescoCollatableTextFieldTypeTest
         verify(mockCollator).compare("NotNull1", "NotNull2");
         assertEquals("Expected result to be obtained from collator.", comparisonResult, result);
     }
+
+    @Test
+    public void testMNT23094()
+    {
+        // Set up the document to have an encoded value for the field.
+        when(mockDocTerms.get(DOC)).thenReturn(new BytesRef("\u0000"));
+        when(mockDocsWithField.get(DOC)).thenReturn(false);
+
+        // Call the method under test.
+        textSortFieldComparator.compareBottom(DOC);
+
+        verify(mockCollator).compare(BOTTOM_STRING, "\u0000");
+    }
 }

@@ -179,7 +179,14 @@ public class AlfrescoCollatableTextFieldType extends StrField
             else if (withLocale.startsWith("\u0000"))
             {
                 String[] parts = withLocale.split("\u0000");
-                return parts[2];
+                if (parts != null && parts.length == 3)
+                {
+                    return parts[2];
+                }
+                else
+                {
+                    return withLocale;
+                }
             }
             else
             {
