@@ -162,36 +162,39 @@ public class AlfrescoCollatableTextFieldType extends StrField
             return values[slot];
         }
 
+        /**
+         * Finds the term string value for supplied doc
+         * 
+         * @param doc
+         *            the document id that was hit
+         * @param term
+         *            a {@link BytesRef} object representing an UTF8 encoded term in the index
+         * 
+         * @return the term value in string format
+         */
         private String findBestValue(int doc, BytesRef term)
         {
             if (term.length == 0 && docsWithField != null && docsWithField.get(doc) == false)
             {
                 return null;
             }
-            
+
+            // Converts the stored bytes (as UTF8) to string
             String withLocale = term.utf8ToString();
-            
-            // split strin into MLText object
-            if (withLocale == null)
+
+            if (withLocale != null && withLocale.startsWith("\u0000"))
             {
-                return withLocale;
-            }
-            else if (withLocale.startsWith("\u0000"))
-            {
+                // the array can either be [, locale, term value] or just [, locale] depending whether the term value used
+                // to perform the sort is empty or not
                 String[] parts = withLocale.split("\u0000");
+
                 if (parts != null && parts.length == 3)
                 {
                     return parts[2];
                 }
-                else
-                {
-                    return withLocale;
-                }
             }
-            else
-            {
-                return withLocale;
-            }
+
+            return withLocale;
         }
 
         /* (non-Javadoc)
