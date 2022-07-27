@@ -241,7 +241,7 @@ if __name__ == '__main__':
     parser.add_argument('-a', '--alfresco', default='quay.io/alfresco/dev:acs-for-search', help='The Alfresco image')
     parser.add_argument('-s', '--search', default='quay.io/alfresco/search-services:latest', help='The Search image')
     parser.add_argument('-e', '--share', help='The Share image (or omit for no UI)')
-    parser.add_argument('-p', '--postgres', default='postgres:10.1', help='The Postgres image')
+    parser.add_argument('-p', '--postgres', default='postgres:14.4', help='The Postgres image')
     parser.add_argument('-q', '--excludeAMQ', action='store_true', help='Exclude ActiveMQ (i.e. pre-ACS 6.1)')
     parser.add_argument('-t', '--transformer', choices=[LIBRE_OFFICE, AIO_TRANSFORMERS], help='Use external transformers. '
                         + '"{}" for legacy LibreOffice (i.e. ACS 5.2.x). '.format(LIBRE_OFFICE)
