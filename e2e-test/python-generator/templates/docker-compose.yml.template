@@ -29,7 +29,7 @@ services:
     ports:
       - 5432:5432
   activemq:
-    image: alfresco/alfresco-activemq:5.15.6
+    image: alfresco/alfresco-activemq:5.17.1-jre11-rockylinux8
     ports:
       - 8161:8161 # Web Console
       - 5672:5672 # AMQP
