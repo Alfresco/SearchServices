@@ -32,6 +32,9 @@
                <excludedGroups>${test.exclude}</excludedGroups>
                <groups>${test.include}</groups>
                <redirectTestOutputToFile>true</redirectTestOutputToFile>
+               <argLine>
+                  --add-opens=java.base/java.lang=ALL-UNNAMED
+               </argLine>
             </configuration>
          </plugin>
          <plugin>
