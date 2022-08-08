@@ -105,34 +105,24 @@ class HandlerReportHelper
         }
     }
 
-    static NamedList<Object> buildNodeReport(MetadataTracker tracker, Node node) throws JSONException
+    static NamedList<Object> buildNodeReport(AbstractTracker tracker, Node node) throws JSONException
     {
-        NodeReport nodeReport = tracker.checkNode(node);
-
-        NamedList<Object> nr = new SimpleOrderedMap<>();
-        nr.add("Node DBID", nodeReport.getDbid());
-        nr.add("DB TX", nodeReport.getDbTx());
-        nr.add("DB TX status", nodeReport.getDbNodeStatus().toString());
-        if (nodeReport.getIndexLeafDoc() != null)
-        {
-            nr.add("Leaf tx in Index", nodeReport.getIndexLeafTx());
-        }
-        if (nodeReport.getIndexAuxDoc() != null)
-        {
-            nr.add("Aux tx in Index", nodeReport.getIndexAuxTx());
-        }
-        nr.add("Indexed Node Doc Count", nodeReport.getIndexedNodeDocCount());
-        return nr;
+        return buildNodeReport(tracker, node.getId());
     }
 
-    static NamedList<Object> buildNodeReport(ShardStatePublisher publisher, Long dbid) throws JSONException
+    static NamedList<Object> buildNodeReport(AbstractTracker tracker, long dbid) throws JSONException
     {
-        NodeReport nodeReport = publisher.checkNode(dbid);
+        NodeReport nodeReport = tracker.checkNode(dbid);
 
         NamedList<Object> payload = new SimpleOrderedMap<>();
         payload.add("Node DBID", nodeReport.getDbid());
 
-        if (publisher.isOnMasterOrStandalone())
+        boolean isOnMasterOrStandaloneMode =
+                tracker instanceof MetadataTracker
+                        || (tracker instanceof ShardStatePublisher
+                                && ((ShardStatePublisher)tracker).isOnMasterOrStandalone());
+
+        if (isOnMasterOrStandaloneMode)
         {
             ofNullable(nodeReport.getDbTx()).ifPresent(value -> payload.add("DB TX", value));
             ofNullable(nodeReport.getDbNodeStatus()).map(Object::toString).ifPresent(value -> payload.add("DB TX Status", value));

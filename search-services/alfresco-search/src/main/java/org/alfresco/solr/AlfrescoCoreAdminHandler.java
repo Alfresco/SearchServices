@@ -32,8 +32,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.solr.adapters.IOpenBitSet;
 import org.alfresco.solr.client.SOLRAPIClientFactory;
 import org.alfresco.solr.config.ConfigUtil;
-import org.alfresco.solr.io.interceptor.SharedSecretRequestInterceptor;
-import org.alfresco.solr.security.SecretSharedPropertyCollector;
+import org.alfresco.solr.tracker.AbstractTracker;
 import org.alfresco.solr.tracker.AclTracker;
 import org.alfresco.solr.tracker.ActivatableTracker;
 import org.alfresco.solr.tracker.ShardStatePublisher;
@@ -48,7 +47,6 @@ import org.alfresco.solr.utils.Utils;
 import org.alfresco.util.Pair;
 import org.alfresco.util.shard.ExplicitShardingPolicy;
 import org.apache.commons.io.FileUtils;
-import org.apache.http.HttpRequestInterceptor;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.CoreAdminParams;
 import org.apache.solr.common.params.SolrParams;
@@ -1027,12 +1025,12 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
         coreNames().stream()
                 .filter(coreName -> requestedCoreName == null || coreName.equals(requestedCoreName))
                 .filter(trackerRegistry::hasTrackersForCore)
-                .map(coreName -> new Pair<>(coreName, coreStatePublisher(coreName)))
-                .filter(coreNameAndPublisher -> coreNameAndPublisher.getSecond() != null)
-                .forEach(coreNameAndPublisher ->
+                .map(coreName -> new Pair<>(coreName, nodeStatusChecker(coreName)))
+                .filter(coreNameAndNodeChecker -> coreNameAndNodeChecker.getSecond() != null)
+                .forEach(coreNameAndNodeChecker ->
                         report.add(
-                                coreNameAndPublisher.getFirst(),
-                                buildNodeReport(coreNameAndPublisher.getSecond(), nodeid)));
+                                coreNameAndNodeChecker.getFirst(),
+                                buildNodeReport(coreNameAndNodeChecker.getSecond(), nodeid)));
         return report;
     }
 
@@ -2102,14 +2100,19 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
     }
 
     /**
-     * Returns, for the given core, the component which is in charge to publish the core state.
+     * Returns, for the given core, the tracker which is in charge to check the nodes status.
+     * Depending on the shard nature, master/standalone or slave, the tracker instance could be different.
+     * In addition, also the information that a given tracker returns about a given node, could differ (e.g.
+     * minimal in case of a slave node, detailed for master or standalone nodes).
      *
      * @param coreName the owning core name.
-     * @return the component which is in charge to publish the core state.
+     * @return the component wwhich is in charge to check the nodes status.
      */
-    ShardStatePublisher coreStatePublisher(String coreName)
+    AbstractTracker nodeStatusChecker(String coreName)
     {
-        return trackerRegistry.getTrackerForCore(coreName, ShardStatePublisher.class);
+        return isMasterOrStandalone(coreName)
+                    ? trackerRegistry.getTrackerForCore(coreName, MetadataTracker.class)
+                    : trackerRegistry.getTrackerForCore(coreName, ShardStatePublisher.class);
     }
 
     /**
