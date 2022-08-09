@@ -2106,7 +2106,7 @@ public class AlfrescoCoreAdminHandler extends CoreAdminHandler
      * minimal in case of a slave node, detailed for master or standalone nodes).
      *
      * @param coreName the owning core name.
-     * @return the component wwhich is in charge to check the nodes status.
+     * @return the component which is in charge to check the nodes status.
      */
     AbstractTracker nodeStatusChecker(String coreName)
     {
