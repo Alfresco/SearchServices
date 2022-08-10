@@ -27,6 +27,7 @@
 package org.alfresco.solr.client;
 
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -39,7 +40,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 import org.alfresco.httpclient.Response;
 import org.alfresco.repo.dictionary.NamespaceDAO;
@@ -96,7 +96,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
                         .peek(aclChangeSet -> {
                             maxTime.set(Math.max(aclChangeSet.getCommitTimeMs(), maxTime.get()));
                             maxId.set(Math.max(aclChangeSet.getId(), maxId.get()));})
-                        .collect(Collectors.toList()), maxTime.get(), maxId.get());
+                        .collect(toList()), maxTime.get(), maxId.get());
         }
 
         return new AclChangeSets(
@@ -106,7 +106,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
                         .peek(aclChangeSet -> {
                             maxTime.set(Math.max(aclChangeSet.getCommitTimeMs(), maxTime.get()));
                             maxId.set(Math.max(aclChangeSet.getId(), maxId.get()));})
-                        .collect(Collectors.toList()), maxTime.get(), maxId.get());
+                        .collect(toList()), maxTime.get(), maxId.get());
     }
 
     /**
@@ -129,7 +129,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
                     .map(AclChangeSet::getId)
                     .map(ACL_MAP::get)
                     .flatMap(Collection::stream)
-                    .collect(Collectors.toList());
+                    .collect(toList());
     }
 
     /**
@@ -148,7 +148,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
         return acls.stream()
                 .map(Acl::getId)
                 .map(ACL_READERS_MAP::get)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
 
@@ -191,7 +191,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
                             .peek(txn -> {
                                 maxTime.set(Math.max(txn.getCommitTimeMs(), maxTime.get()));
                                 maxId.set(Math.max(txn.getId(), maxId.get()));})
-                            .collect(Collectors.toList()), maxTime.get(), maxId.get());
+                            .collect(toList()), maxTime.get(), maxId.get());
         }
 
         return new Transactions(
@@ -201,7 +201,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
                         .peek(txn -> {
                             maxTime.set(Math.max(txn.getCommitTimeMs(), maxTime.get()));
                             maxId.set(Math.max(txn.getId(), maxId.get()));})
-                        .collect(Collectors.toList()), maxTime.get(), maxId.get());
+                        .collect(toList()), maxTime.get(), maxId.get());
     }
 
     public List<Node> getNodes(GetNodesParameters parameters, int maxResults) throws IOException, JSONException
@@ -211,10 +211,22 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
         }
 
-        return parameters.getTransactionIds().stream()
-                    .map(NODE_MAP::get)
-                    .flatMap(Collection::stream)
-                    .collect(Collectors.toList());
+        return parameters.getTransactionIds() != null
+                    ? parameters.getTransactionIds().stream()
+                        .map(NODE_MAP::get)
+                        .flatMap(Collection::stream)
+                        .collect(toList())
+                    : NODE_MAP.values()
+                            .stream()
+                            .flatMap(Collection::stream)
+                            .filter(node -> {
+                                var fromNodeId = parameters.getFromNodeId();
+                                var toNodeId = parameters.getToNodeId();
+
+                                return (fromNodeId == null || node.getId() >= fromNodeId)
+                                        &&
+                                        (toNodeId == null || node.getId() <= toNodeId);})
+                            .collect(toList());
     }
 
     @Override
@@ -230,7 +242,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
                         identifiers.stream()
                             .map(NODE_META_DATA_MAP::get)
                             .map(metadata -> getOnlyRequestedMetadata(metadata, params))
-                            .collect(Collectors.toList()))
+                            .collect(toList()))
                 .orElseGet(() ->
                         ofNullable(params.getFromNodeId())
                                 .map(NODE_META_DATA_MAP::get)

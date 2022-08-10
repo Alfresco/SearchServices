@@ -226,7 +226,7 @@ public class AlfrescoCoreAdminHandlerIT
         when(trackerRegistry.getTrackerForCore(anyString(), eq(ShardStatePublisher.class)))
                 .thenReturn(coreStatePublisher);
 
-        assertSame(coreStatePublisher, alfrescoCoreAdminHandler.coreStatePublisher("ThisIsTheCoreName"));
+        assertSame(coreStatePublisher, alfrescoCoreAdminHandler.nodeStatusChecker("ThisIsTheCoreName"));
     }
 
     @Test
@@ -236,7 +236,7 @@ public class AlfrescoCoreAdminHandlerIT
 
         when(trackerRegistry.getTrackerForCore(anyString(), eq(ShardStatePublisher.class))).thenReturn(coreStateTracker);
 
-        assertSame(coreStateTracker, alfrescoCoreAdminHandler.coreStatePublisher("ThisIsTheCoreName"));
+        assertSame(coreStateTracker, alfrescoCoreAdminHandler.nodeStatusChecker("ThisIsTheCoreName"));
     }
 
     @Test
