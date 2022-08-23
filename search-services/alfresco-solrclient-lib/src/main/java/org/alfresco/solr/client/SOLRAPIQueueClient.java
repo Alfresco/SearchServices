@@ -40,11 +40,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import org.alfresco.httpclient.Response;
 import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.index.shard.ShardState;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.apache.http.HttpStatus;
 import org.json.JSONException;
 
@@ -161,6 +163,24 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
         return Collections.emptyList();
     }
 
+    public Long getNextTxCommitTime(String coreName, Long fromCommitTime) throws NoSuchMethodException {
+        throw new NoSuchMethodException();
+    }
+
+    public Pair<Long, Long> getTxIntervalCommitTime(String coreName, Long fromNodeId, Long toNodeId)
+    {
+        List<Transaction> transactions = TRANSACTION_QUEUE.stream()
+                .filter(txn -> NODE_MAP.get(txn.getId())
+                        .stream()
+                        .anyMatch(node -> node.getId() >= fromNodeId && node.getId() <= toNodeId))
+                .collect(Collectors.toList());
+
+        if (transactions.size() > 0){
+            return new Pair<>(transactions.get(0).getCommitTimeMs(), transactions.get(transactions.size() - 1).getCommitTimeMs());
+        } else {
+            return new Pair<>(-1l, -1l);
+        }
+    }
 
     public Transactions getTransactions(Long fromCommitTime, Long minTxnId, Long toCommitTime, Long maxTxnId, int maxResults) throws IOException, JSONException
     {

@@ -94,10 +94,6 @@ public class MetadataTracker extends ActivatableTracker
     private final ConcurrentLinkedQueue<Long> nodesToIndex = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<Long> nodesToPurge = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<String> queriesToReindex = new ConcurrentLinkedQueue<>();
-
-    private final boolean isRunningInProduction =
-            !Boolean.parseBoolean(System.getProperty("alfresco.test", "false"));
-
     private ForkJoinPool forkJoinPool;
 
     // Share run and write locks across all MetadataTracker threads
@@ -193,7 +189,7 @@ public class MetadataTracker extends ActivatableTracker
         
         // In order to apply performance optimizations, checking the availability of Repo Web Scripts is required.
         // As these services are available from ACS 6.2
-        if (checkRepoServicesAvailability && isRunningInProduction)
+        if (checkRepoServicesAvailability)
         {
             // Try invoking getNextTxCommitTime service
             try
@@ -870,7 +866,7 @@ public class MetadataTracker extends ActivatableTracker
             latestTransaction.setCommitTimeMs(transactions.getMaxTxnCommitTime());
             latestTransaction.setId(transactions.getMaxTxnId());
 
-            if (!isTransactionIndexed(latestTransaction))
+            if (isTransactionToBeIndexed(latestTransaction))
             {
                 transactions = new Transactions(Collections.singletonList(latestTransaction), transactions.getMaxTxnCommitTime(),
                         transactions.getMaxTxnId());
@@ -887,7 +883,7 @@ public class MetadataTracker extends ActivatableTracker
         return transactions;
     }
 
-    private boolean isTransactionIndexed(Transaction transaction)
+    private boolean isTransactionToBeIndexed(Transaction transaction)
     {
         try
         {
@@ -997,7 +993,7 @@ public class MetadataTracker extends ActivatableTracker
                 final AtomicInteger counterTransaction = new AtomicInteger();
                 Collection<List<Transaction>> txBatches = transactions.getTransactions().stream()
                         .peek(txnsFound::add)
-                        .filter(this::isTransactionIndexed)
+                        .filter(this::isTransactionToBeIndexed)
                         .collect(Collectors.groupingBy(transaction -> counterTransaction.getAndAdd(
                                 (int) (transaction.getDeletes() + transaction.getUpdates())) / transactionDocsBatchSize))
                         .values();
