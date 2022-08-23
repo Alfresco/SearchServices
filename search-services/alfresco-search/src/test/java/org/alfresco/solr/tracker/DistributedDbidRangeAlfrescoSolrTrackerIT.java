@@ -37,6 +37,7 @@ import org.alfresco.solr.client.Transaction;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
 import org.apache.solr.SolrTestCaseJ4;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -47,6 +48,7 @@ import java.util.List;
 import java.util.Properties;
 
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_DOC_TYPE;
+import static org.alfresco.solr.AlfrescoSolrUtils.MAX_WAIT_TIME;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAcl;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclChangeSet;
 import static org.alfresco.solr.AlfrescoSolrUtils.getAclReaders;
@@ -65,7 +67,7 @@ public class DistributedDbidRangeAlfrescoSolrTrackerIT extends AbstractAlfrescoD
     @BeforeClass
     public static void initData() throws Throwable
     {
-        initSolrServers(2, getSimpleClassName(), getShardMethod());
+        initSolrServers(3, getSimpleClassName(), getShardMethod());
     }
 
     @AfterClass
@@ -73,13 +75,14 @@ public class DistributedDbidRangeAlfrescoSolrTrackerIT extends AbstractAlfrescoD
     {
         dismissSolrServers();
     }
-    
-    @Test
-    public void testDbIdRange() throws Exception
-    {
-        putHandleDefaults();
 
-        int numAcls = 250;
+    @After
+    public void deleteDataFromIndex() throws Exception {
+        deleteByQueryAllClients("*:*");
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 0, MAX_WAIT_TIME);
+    }
+
+    private List<Acl> createAcls(int numAcls){
         AclChangeSet bulkAclChangeSet = getAclChangeSet(numAcls);
 
         List<Acl> bulkAcls = new ArrayList<>();
@@ -99,6 +102,17 @@ public class DistributedDbidRangeAlfrescoSolrTrackerIT extends AbstractAlfrescoD
                 bulkAcls,
                 bulkAclReaders);
 
+        return bulkAcls;
+    }
+    
+    @Test
+    public void testDbIdRange() throws Exception
+    {
+        putHandleDefaults();
+
+        int numAcls = 250;
+        var bulkAcls = createAcls(numAcls);
+
         int numNodes = 150;
         List<Node> nodes = new ArrayList<>();
         List<NodeMetaData> nodeMetaDatas = new ArrayList<>();
@@ -108,19 +122,54 @@ public class DistributedDbidRangeAlfrescoSolrTrackerIT extends AbstractAlfrescoD
         for(int i=0; i<numNodes; i++)
         {
             int aclIndex = i % numAcls;
-            Node node = getNode((long)i, bigTxn, bulkAcls.get(aclIndex), Node.SolrApiNodeStatus.UPDATED);
+            Node node = getNode(i, bigTxn, bulkAcls.get(aclIndex), Node.SolrApiNodeStatus.UPDATED);
             nodes.add(node);
             NodeMetaData nodeMetaData = getNodeMetaData(node, bigTxn, bulkAcls.get(aclIndex), "mike", null, false);
             nodeMetaDatas.add(nodeMetaData);
         }
 
         indexTransaction(bigTxn, nodes, nodeMetaDatas);
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes, 100000);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), numNodes, MAX_WAIT_TIME);
         waitForDocCountAllCores(new TermQuery(new Term(FIELD_DOC_TYPE, SolrInformationServer.DOC_TYPE_ACL)), numAcls, 80000);
 
         //The test framework has ranges 0-100, 100-200, ...
         assertShardCount(0, new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 100);
         assertShardCount(1, new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 50);
+    }
+
+    @Test
+    public void testIndexLastTransaction() throws Exception {
+
+        int numAcls = 1;
+        var acls = createAcls(numAcls);
+
+        // first range
+        Transaction firstRange = getTransaction(0, 1);
+        firstRange.setId(0);
+        var node = getNode( 5, firstRange, acls.get(0), Node.SolrApiNodeStatus.UPDATED );
+        indexTransaction(firstRange, List.of(node), List.of(getNodeMetaData(node, firstRange, acls.get(0), "mike", null, false)));
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 1, MAX_WAIT_TIME);
+
+        // second range
+        Transaction secondRange = getTransaction(0, 1);
+        secondRange.setId(1);
+        node = getNode( 105, firstRange, acls.get(0), Node.SolrApiNodeStatus.UPDATED );
+        indexTransaction(secondRange, List.of(node), List.of(getNodeMetaData(node, secondRange, acls.get(0), "mike", null, false)));
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 2, MAX_WAIT_TIME);
+
+        for (int i = 0; i< 50; i++){
+            Transaction trxThirdRange = getTransaction(0, 1);
+            trxThirdRange.setId(2 + i);
+            node = getNode( 230 + i, trxThirdRange, acls.get(0), Node.SolrApiNodeStatus.UPDATED );
+            indexTransaction(trxThirdRange, List.of(node), List.of(getNodeMetaData(node, trxThirdRange, acls.get(0), "mike", null, false)));
+        }
+
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 52, MAX_WAIT_TIME);
+
+        // Check all the shards have indexed the last transaction
+        assertShardCount(0, new TermQuery(new Term("S_TXID", "51")), 1);
+        assertShardCount(1, new TermQuery(new Term("S_TXID", "51")), 1);
+        assertShardCount(2, new TermQuery(new Term("S_TXID", "51")), 1);
     }
 
     protected static Properties getShardMethod()
