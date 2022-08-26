@@ -361,6 +361,9 @@ public class SolrInformationServer implements InformationServer
     private static final long CONTENT_OUTDATED_MARKER = -10;
     private static final long CONTENT_UPDATED_MARKER = -20;
 
+    private static final String CONTENT_FIELD_NAME = "contentFieldName";
+
+    private static final String CONTENT_LOCALE = "contentLocale";
     private static final String CONTENT_LOCALE_FIELD = "content@s__locale@{http://www.alfresco.org/model/content/1.0}content";
     private static final Set<String> ID_AND_CONTENT_VERSION_ID_AND_CONTENT_LOCALE =
             new HashSet<>(asList(FIELD_SOLR4_ID, LATEST_APPLIED_CONTENT_VERSION_ID, CONTENT_LOCALE_FIELD));
@@ -459,6 +462,8 @@ public class SolrInformationServer implements InformationServer
     private boolean isSkippingDocsInitialized;
 
     private final boolean dateFieldDestructuringHasBeenEnabledOnThisInstance;
+
+    private final boolean enabledIndexCustomContent;
 
     static class DocListCollector implements Collector, LeafCollector
     {
@@ -641,6 +646,8 @@ public class SolrInformationServer implements InformationServer
 
         port = portNumber(props);
         baseUrl = baseUrl(props);
+
+        enabledIndexCustomContent =  Boolean.parseBoolean(coreConfiguration.getProperty("solr.enableIndexingCustomContent", "false"));
 
         dateFieldDestructuringHasBeenEnabledOnThisInstance = Boolean.parseBoolean(coreConfiguration.getProperty("alfresco.destructureDateFields", "true"));
         LOGGER.info(
@@ -999,9 +1006,27 @@ public class SolrInformationServer implements InformationServer
                     String idString = id.stringValue();
                     TenantDbId tenantAndDbId = AlfrescoSolrDataModel.decodeNodeDocumentId(idString);
 
-                    ofNullable(document.getField(CONTENT_LOCALE_FIELD))
-                            .map(IndexableField::stringValue)
-                            .ifPresent(value -> tenantAndDbId.setProperty(CONTENT_LOCALE_FIELD, value));
+                    if (enabledIndexCustomContent)
+                    {
+
+                        document.getFields().stream()
+                                .filter(field -> field.name().startsWith(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX))
+                                .findFirst()
+                                .ifPresent(field -> {
+                                    tenantAndDbId.setProperty(CONTENT_FIELD_NAME, field.name());
+                                    tenantAndDbId.setProperty(CONTENT_LOCALE, field.stringValue());
+                                });
+                    }
+                    else
+                    {
+                        ofNullable(document.getField(CONTENT_LOCALE_FIELD))
+                                .map(IndexableField::stringValue)
+                                .ifPresent(value -> {
+                                    tenantAndDbId.setProperty(CONTENT_FIELD_NAME, CONTENT_LOCALE_FIELD);
+                                    tenantAndDbId.setProperty(CONTENT_LOCALE, value);
+                                });
+                    }
+
 
                     tenantAndDbId.setProperty(
                             LATEST_APPLIED_CONTENT_VERSION_ID,
@@ -1933,7 +1958,7 @@ public class SolrInformationServer implements InformationServer
                             docRef.tenant,
                             docRef.dbId));
 
-            if (docRef.optionalBag.containsKey(CONTENT_LOCALE_FIELD))
+            if (docRef.optionalBag.containsKey(CONTENT_FIELD_NAME))
             {
                 addContentToDoc(docRef, doc, docRef.dbId);
             }
@@ -2713,8 +2738,9 @@ public class SolrInformationServer implements InformationServer
 
     private void addContentToDoc(TenantDbId docRef, SolrInputDocument doc, long dbId) throws AuthenticationException, IOException
     {
-        String locale = (String) docRef.optionalBag.get(CONTENT_LOCALE_FIELD);
-        String qNamePart = CONTENT_LOCALE_FIELD.substring(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX.length());
+        String fieldName = (String) docRef.optionalBag.get(CONTENT_FIELD_NAME);
+        String locale = (String) docRef.optionalBag.get(CONTENT_LOCALE);
+        String qNamePart = fieldName.substring(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX.length());
         QName propertyQName = QName.createQName(qNamePart);
         addContentPropertyToDocUsingAlfrescoRepository(doc, propertyQName, dbId, locale);
     }
