@@ -169,7 +169,7 @@ public class DistributedDbidRangeAlfrescoSolrTrackerIT extends AbstractAlfrescoD
 
         // check the last transaction has been indexed in all the shards
 
-        var latestIndexedTransactionIdAsString = String.valueOf(latestIndexedTransactionId);
+        var latestIndexedTransactionIdAsString = String.valueOf(latestIndexedTransactionId - 1);
 
         assertShardCount(0, new TermQuery(new Term("S_TXID", latestIndexedTransactionIdAsString)), 1);
         assertShardCount(1, new TermQuery(new Term("S_TXID", latestIndexedTransactionIdAsString)), 1);
