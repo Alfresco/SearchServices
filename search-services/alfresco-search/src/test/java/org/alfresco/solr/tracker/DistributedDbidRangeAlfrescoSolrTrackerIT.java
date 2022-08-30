@@ -145,16 +145,17 @@ public class DistributedDbidRangeAlfrescoSolrTrackerIT extends AbstractAlfrescoD
     public void testIndexLastTransaction() throws Exception
     {
         var acls = createAcls(1);
-        int txId = 0;
+        int latestIndexedTransactionId = 0;
 
         // index 50 trx for each shard
-        for (int k = 0; k < 3; k++)
+        // Test configuration uses the following ranges: 0-100, 100-200, 200-300 (300-400 in case of a fourth shard which is not the case here)
+        for (int shardIndex = 0; shardIndex < 3; shardIndex++)
         {
-            for (int i = 0; i< 50; i++)
+            for (int nodeNumber = 0; nodeNumber< 50; nodeNumber++)
             {
                 Transaction trx = getTransaction(0, 1);
-                trx.setId(txId++);
-                var node = getNode(k*100 + 10 + i, trx, acls.get(0), Node.SolrApiNodeStatus.UPDATED);
+                trx.setId(latestIndexedTransactionId++);
+                var node = getNode(shardIndex*100 + 10 + nodeNumber, trx, acls.get(0), Node.SolrApiNodeStatus.UPDATED);
                 indexTransaction(trx, List.of(node), List.of(getNodeMetaData(node, trx, acls.get(0), "mike", null, false)));
             }
         }
@@ -167,9 +168,12 @@ public class DistributedDbidRangeAlfrescoSolrTrackerIT extends AbstractAlfrescoD
         assertShardCount(2, new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 50);
 
         // check the last transaction has been indexed in all the shards
-        assertShardCount(0, new TermQuery(new Term("S_TXID", "149")), 1);
-        assertShardCount(1, new TermQuery(new Term("S_TXID", "149")), 1);
-        assertShardCount(2, new TermQuery(new Term("S_TXID", "149")), 1);
+
+        var latestIndexedTransactionIdAsString = String.valueOf(latestIndexedTransactionId);
+
+        assertShardCount(0, new TermQuery(new Term("S_TXID", latestIndexedTransactionIdAsString)), 1);
+        assertShardCount(1, new TermQuery(new Term("S_TXID", latestIndexedTransactionIdAsString)), 1);
+        assertShardCount(2, new TermQuery(new Term("S_TXID", latestIndexedTransactionIdAsString)), 1);
     }
 
     protected static Properties getShardMethod()
