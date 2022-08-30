@@ -883,7 +883,7 @@ public class MetadataTracker extends ActivatableTracker
         return transactions;
     }
 
-    private boolean isTransactionToBeIndexed(Transaction transaction)
+    boolean isTransactionToBeIndexed(Transaction transaction)
     {
         try
         {
