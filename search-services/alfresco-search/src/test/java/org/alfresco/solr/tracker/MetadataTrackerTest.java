@@ -26,9 +26,6 @@
 
 package org.alfresco.solr.tracker;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +33,6 @@ import java.util.Properties;
 
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.repo.index.shard.ShardState;
-import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.NodeReport;
 import org.alfresco.solr.TrackerState;
@@ -55,6 +51,23 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MetadataTrackerTest
@@ -75,6 +88,9 @@ public class MetadataTrackerTest
     @Mock
     private TrackerStats trackerStats;
 
+    @Mock
+    private TrackerState trackerState;
+
     @Before
     public void setUp()
     {
@@ -84,12 +100,9 @@ public class MetadataTrackerTest
         this.metadataTracker = spy(new MetadataTracker(props, repositoryClient, coreName, srv));
 
         ModelTracker modelTracker = mock(ModelTracker.class);
-        when(modelTracker.hasModels()).thenReturn(true);
-        AlfrescoCoreAdminHandler adminHandler = mock(AlfrescoCoreAdminHandler.class);
         TrackerRegistry registry = new TrackerRegistry();
         registry.setModelTracker(modelTracker);
-        when(adminHandler.getTrackerRegistry()).thenReturn(registry);
-        when(srv.getAdminHandler()).thenReturn(adminHandler);
+        metadataTracker.state = trackerState;
     }
 
     @Test
@@ -188,23 +201,84 @@ public class MetadataTrackerTest
         assertEquals(TX_ID, nodeReport.getDbTx());
     }
 
+    @Test
+    public void incomingCommitTimeIsLesserThanLastIndexedTxCommitTime_transactionShouldBeMarkedAsIndexed() throws Exception {
+        var incomingTransactionCommitTime = 10L;
+        var lastIndexedTransactionCommitTime = incomingTransactionCommitTime + 1;
+
+        var incomingTransaction = new Transaction();
+        incomingTransaction.setId(1);
+        incomingTransaction.setCommitTimeMs(incomingTransactionCommitTime);
+
+        when(srv.txnInIndex(incomingTransaction.getId(), true)).thenReturn(true);
+        when(trackerState.getLastIndexedTxCommitTime()).thenReturn(lastIndexedTransactionCommitTime);
+
+        assertFalse(metadataTracker.isTransactionToBeIndexed(incomingTransaction));
+    }
+
+    @Test
+    public void incomingCommitTimeIsLesserThanLastIndexedTxCommitTimeButTheTransactionIsNotIndexed_transactionShouldBeMarkedAsToBeIndexed() throws Exception {
+        var incomingTransactionCommitTime = 10L;
+        var lastIndexedTransactionCommitTime = incomingTransactionCommitTime + 1;
+
+        var incomingTransaction = new Transaction();
+        incomingTransaction.setId(1);
+        incomingTransaction.setCommitTimeMs(incomingTransactionCommitTime);
+
+        when(srv.txnInIndex(incomingTransaction.getId(), true)).thenReturn(false);
+        when(trackerState.getLastIndexedTxCommitTime()).thenReturn(lastIndexedTransactionCommitTime);
+
+        assertTrue(metadataTracker.isTransactionToBeIndexed(incomingTransaction));
+    }
+
+    @Test
+    public void incomingCommitTimeIsGreaterThanLastIndexedTxCommitTime_transactionShouldBeMarkedAsToBeIndexed() {
+        var lastIndexedTransactionCommitTime = 10L;
+        var incomingTransactionCommitTime = lastIndexedTransactionCommitTime + 1;
+
+        var incomingTransaction = new Transaction();
+        incomingTransaction.setId(1);
+        incomingTransaction.setCommitTimeMs(incomingTransactionCommitTime);
+
+        when(trackerState.getLastIndexedTxCommitTime()).thenReturn(lastIndexedTransactionCommitTime);
+
+        assertTrue(metadataTracker.isTransactionToBeIndexed(incomingTransaction));
+    }
+
+    @Test
+    public void incomingCommitTimeIsGreaterThanLastIndexedTxCommitTimeButTheTransactionIsAlreadyIndexed_transactionShouldBeMarkedAsToBeIndexed() {
+        var lastIndexedTransactionCommitTime = 10L;
+        var incomingTransactionCommitTime = lastIndexedTransactionCommitTime + 1;
+
+        var incomingTransaction = new Transaction();
+        incomingTransaction.setId(1);
+        incomingTransaction.setCommitTimeMs(incomingTransactionCommitTime);
+
+        when(trackerState.getLastIndexedTxCommitTime()).thenReturn(lastIndexedTransactionCommitTime);
+
+        assertTrue(metadataTracker.isTransactionToBeIndexed(incomingTransaction));
+    }
+
+    @Test
+    public void anIOExceptionIsRaised_transactionShouldBeMarkedAsToBeIndexed() throws Exception {
+        var incomingTransactionCommitTime = 10L;
+        var lastIndexedTransactionCommitTime = incomingTransactionCommitTime + 1;
+
+        var incomingTransaction = new Transaction();
+        incomingTransaction.setId(1);
+        incomingTransaction.setCommitTimeMs(incomingTransactionCommitTime);
+
+        when(srv.txnInIndex(incomingTransaction.getId(), true)).thenThrow(new IOException());
+        when(trackerState.getLastIndexedTxCommitTime()).thenReturn(lastIndexedTransactionCommitTime);
+
+        assertTrue(metadataTracker.isTransactionToBeIndexed(incomingTransaction));
+    }
+
     private Node getNode()
     {
         Node node = new Node();
         node.setId(DB_ID);
         node.setTxnId(TX_ID);
         return node;
-    }
-    
-    @Test
-    @Ignore("Superseded by AlfrescoSolrTrackerTest")
-    public void testGetFullNodesForDbTransaction() throws AuthenticationException, IOException, JSONException
-    {
-        List<Node> nodes = getNodes();
-        when(repositoryClient.getNodes(any(GetNodesParameters.class), anyInt())).thenReturn(nodes);
-        
-        List<Node> nodes4Tx = this.metadataTracker.getFullNodesForDbTransaction(TX_ID);
-        
-        assertSame(nodes4Tx, nodes);
     }
 }
