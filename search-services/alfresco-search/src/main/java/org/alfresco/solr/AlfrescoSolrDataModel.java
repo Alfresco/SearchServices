@@ -36,6 +36,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -45,6 +46,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -128,16 +130,41 @@ import static org.alfresco.solr.SolrInformationServer.UNIT_OF_TIME_YEAR_FIELD_SU
  */
 public class AlfrescoSolrDataModel implements QueryConstants
 {
+    public static class ContentPropertySpecs {
+        public final String fieldName;
+        public final String locale;
+
+        public ContentPropertySpecs(String fieldName, String locale) {
+            this.fieldName = fieldName;
+            this.locale = locale;
+        }
+    }
+
     public static class TenantDbId
     {
         public String tenant;
         public Long dbId;
+
+        private List<ContentPropertySpecs> contentPropertySpecsList;
 
         public Map<String, Object> optionalBag = new HashMap<>();
 
         public void setProperty(String name, Object value)
         {
             optionalBag.put(name, value);
+        }
+
+        public boolean hasAtLeastOneContentProperty() {
+            return contentPropertySpecsList != null && !contentPropertySpecsList.isEmpty();
+        }
+
+        public void addContentPropertiesSpecs(List<ContentPropertySpecs> specsList)
+        {
+            contentPropertySpecsList = Collections.unmodifiableList(specsList);
+        }
+
+        public Stream<ContentPropertySpecs> contentPropertySpecsStream() {
+            return contentPropertySpecsList.stream();
         }
     }
 
