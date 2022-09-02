@@ -28,8 +28,10 @@ package org.alfresco.solr;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_ACLID;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_ACLTXCOMMITTIME;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_ACLTXID;
@@ -1006,27 +1008,17 @@ public class SolrInformationServer implements InformationServer
                     String idString = id.stringValue();
                     TenantDbId tenantAndDbId = AlfrescoSolrDataModel.decodeNodeDocumentId(idString);
 
-                    if (enabledIndexCustomContent)
-                    {
-
-                        document.getFields().stream()
-                                .filter(field -> field.name().startsWith(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX))
-                                .findFirst()
-                                .ifPresent(field -> {
-                                    tenantAndDbId.setProperty(CONTENT_FIELD_NAME, field.name());
-                                    tenantAndDbId.setProperty(CONTENT_LOCALE, field.stringValue());
-                                });
-                    }
-                    else
-                    {
-                        ofNullable(document.getField(CONTENT_LOCALE_FIELD))
-                                .map(IndexableField::stringValue)
-                                .ifPresent(value -> {
-                                    tenantAndDbId.setProperty(CONTENT_FIELD_NAME, CONTENT_LOCALE_FIELD);
-                                    tenantAndDbId.setProperty(CONTENT_LOCALE, value);
-                                });
-                    }
-
+                    tenantAndDbId.addContentPropertiesSpecs(
+                            enabledIndexCustomContent
+                                ? document.getFields().stream()
+                                    .filter(field -> field.name().startsWith(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX))
+                                    .map(field -> new AlfrescoSolrDataModel.ContentPropertySpecs(field.name(),field.stringValue()))
+                                    .collect(toList())
+                                : ofNullable(document.getField(CONTENT_LOCALE_FIELD))
+                                    .map(IndexableField::stringValue)
+                                    .map(value -> new AlfrescoSolrDataModel.ContentPropertySpecs(CONTENT_LOCALE_FIELD, value))
+                                    .map(Collections::singletonList)
+                                    .orElse(emptyList()));
 
                     tenantAndDbId.setProperty(
                             LATEST_APPLIED_CONTENT_VERSION_ID,
@@ -1904,7 +1896,7 @@ public class SolrInformationServer implements InformationServer
             nmdp.setMaxResults(1);
             // Gets only one
             Optional<Collection<NodeMetaData>> nodeMetaDatas = getNodesMetaDataFromRepository(nmdp);
-            allNodeMetaDatas.addAll(nodeMetaDatas.orElse(Collections.emptyList()));
+            allNodeMetaDatas.addAll(nodeMetaDatas.orElse(emptyList()));
         }
 
         return allNodeMetaDatas;
@@ -1958,7 +1950,7 @@ public class SolrInformationServer implements InformationServer
                             docRef.tenant,
                             docRef.dbId));
 
-            if (docRef.optionalBag.containsKey(CONTENT_FIELD_NAME))
+            if (docRef.hasAtLeastOneContentProperty())
             {
                 addContentToDoc(docRef, doc, docRef.dbId);
             }
@@ -2010,8 +2002,8 @@ public class SolrInformationServer implements InformationServer
             categorizeNodes(nodes, nodeIdsToNodes, nodeStatusToNodeIds);
 
             List<Long> deletedNodeIds = notNullOrEmpty(nodeStatusToNodeIds.get(SolrApiNodeStatus.DELETED));
-            List<Long> shardDeletedNodeIds = Collections.emptyList();
-            List<Long> shardUpdatedNodeIds = Collections.emptyList();
+            List<Long> shardDeletedNodeIds = emptyList();
+            List<Long> shardUpdatedNodeIds = emptyList();
             if (cascadeTrackingEnabled())
             {
                 shardDeletedNodeIds = notNullOrEmpty(nodeStatusToNodeIds.get(SolrApiNodeStatus.NON_SHARD_DELETED));
@@ -2463,7 +2455,7 @@ public class SolrInformationServer implements InformationServer
                                 dataModel.getIndexedFieldNamesForProperty(propertyQName).getFields()
                                     .stream()
                                     .map(FieldInstance::getField)
-                                    .collect(Collectors.toList()));
+                                    .collect(toList()));
     
                         for (PropertyValue singleValue : typedValue.getValues())
                         {
@@ -2736,13 +2728,17 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    private void addContentToDoc(TenantDbId docRef, SolrInputDocument doc, long dbId) throws AuthenticationException, IOException
+    private void addContentToDoc(TenantDbId docRef, SolrInputDocument doc, long dbId)
     {
-        String fieldName = (String) docRef.optionalBag.get(CONTENT_FIELD_NAME);
-        String locale = (String) docRef.optionalBag.get(CONTENT_LOCALE);
-        String qNamePart = fieldName.substring(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX.length());
-        QName propertyQName = QName.createQName(qNamePart);
-        addContentPropertyToDocUsingAlfrescoRepository(doc, propertyQName, dbId, locale);
+        docRef.contentPropertySpecsStream()
+                .forEach(propertySpecs -> {
+                    try {
+                        var propertyQName = QName.createQName(propertySpecs.fieldName.substring(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX.length()));
+                        addContentPropertyToDocUsingAlfrescoRepository(doc, propertyQName, dbId, propertySpecs.locale);
+                    } catch (AuthenticationException | IOException exception) {
+                        throw new RuntimeException(exception);
+                    }
+                });
     }
 
 
@@ -2855,7 +2851,7 @@ public class SolrInformationServer implements InformationServer
     {
         if (mlTextPropertyValue == null)
         {
-            return Collections.emptyList();
+            return emptyList();
         }
 
         List<String> values = new ArrayList<>();
@@ -2917,7 +2913,7 @@ public class SolrInformationServer implements InformationServer
                         .stream()
                         .filter(Objects::nonNull)
                         .map(mlTextPropertyValue::getValue)
-                        .collect(Collectors.toList());
+                        .collect(toList());
 
             if (!localisedValues.isEmpty())
             {
