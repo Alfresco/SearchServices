@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -65,7 +65,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
     public final static List<Transaction> TRANSACTION_QUEUE = Collections.synchronizedList(new ArrayList<>());
     public final static Map<Long, List<Node>> NODE_MAP = Collections.synchronizedMap(new HashMap<>());
     public final static Map<Long, NodeMetaData> NODE_META_DATA_MAP = Collections.synchronizedMap(new HashMap<>());
-    public final static Map<Long, String> NODE_CONTENT_MAP =  Collections.synchronizedMap(new HashMap<>());
+    public final static Map<Long, Map<QName, String>> NODE_CONTENT_MAP =  Collections.synchronizedMap(new HashMap<>());
 
     private static boolean throwException;
 
@@ -153,7 +153,6 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
                 .map(ACL_READERS_MAP::get)
                 .collect(toList());
     }
-
 
     public List<AlfrescoModelDiff> getModelsDiff(String coreName, List<AlfrescoModel> currentModels) throws IOException, JSONException
     {
@@ -365,7 +364,7 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
 
         if(NODE_CONTENT_MAP.containsKey(nodeId))
         {
-            return new GetTextContentResponse(new DummyResponse(NODE_CONTENT_MAP.get(nodeId)));
+            return new GetTextContentResponse(new DummyResponse(NODE_CONTENT_MAP.get(nodeId).get(propertyQName)));
         }
 
         return new GetTextContentResponse(new DummyResponse("Hello world " + nodeId));

@@ -26,6 +26,7 @@
 
 package org.alfresco.solr;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.parsers.FTSQueryParser;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -85,6 +86,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 
 import static java.util.Optional.of;
@@ -662,7 +664,7 @@ public abstract class AbstractAlfrescoSolrIT implements SolrTestFiles, AlfrescoS
         for(NodeMetaData nodeMetaData : nodeMetaDatas)
         {
             SOLRAPIQueueClient.NODE_META_DATA_MAP.put(nodeMetaData.getId(), nodeMetaData);
-            SOLRAPIQueueClient.NODE_CONTENT_MAP.put(nodeMetaData.getId(), content.get(i++));
+            SOLRAPIQueueClient.NODE_CONTENT_MAP.put(nodeMetaData.getId(), Map.of(ContentModel.PROP_CONTENT, content.get(i++)));
         }
 
         //Next add the transaction to the queue
