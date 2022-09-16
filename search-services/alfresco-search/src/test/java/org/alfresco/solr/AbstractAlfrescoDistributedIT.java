@@ -29,6 +29,8 @@ package org.alfresco.solr;
 import static java.util.Arrays.asList;
 import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_DOC_TYPE;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
@@ -79,6 +81,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
@@ -772,6 +775,23 @@ public abstract class AbstractAlfrescoDistributedIT extends SolrITInitializer
     }
 
     public static void indexTransaction(Transaction transaction, List<Node> nodes, List<NodeMetaData> nodeMetaDatas, List<String> content)
+    {
+        //First map the nodes to a transaction.
+        SOLRAPIQueueClient.NODE_MAP.put(transaction.getId(), nodes);
+
+        //Next map a node to the NodeMetaData
+        int i=0;
+        for(NodeMetaData nodeMetaData : nodeMetaDatas)
+        {
+            SOLRAPIQueueClient.NODE_META_DATA_MAP.put(nodeMetaData.getId(), nodeMetaData);
+            SOLRAPIQueueClient.NODE_CONTENT_MAP.put(nodeMetaData.getId(), Map.of(ContentModel.PROP_CONTENT, content.get(i++)));
+        }
+
+        //Next add the transaction to the queue
+        SOLRAPIQueueClient.TRANSACTION_QUEUE.add(transaction);
+    }
+
+    public static void indexTransactionWithMultipleContentFields(Transaction transaction, List<Node> nodes, List<NodeMetaData> nodeMetaDatas, List<Map<QName, String>> content)
     {
         //First map the nodes to a transaction.
         SOLRAPIQueueClient.NODE_MAP.put(transaction.getId(), nodes);
