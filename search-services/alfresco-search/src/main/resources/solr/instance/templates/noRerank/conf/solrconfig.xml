@@ -1913,10 +1913,6 @@
       <int name="buckets">10</int>
   </queryParser>
 
-  <xi:include href="solrconfig_insight.xml" xmlns:xi="http://www.w3.org/2001/XInclude">
-    <xi:fallback/>
-  </xi:include>
-
   <searchComponent name="setLocale"     class="org.alfresco.solr.component.SetLocaleComponent" />
   <searchComponent name="clearLocale"   class="org.alfresco.solr.component.ClearLocaleComponent" />
   <searchComponent name="rewriteFacetParameters"     class="org.alfresco.solr.component.RewriteFacetParametersComponent" />

@@ -516,10 +516,6 @@
 
     <queryParser name="cmis" class="org.alfresco.solr.query.CmisQParserPlugin"/>
 
-    <xi:include href="solrconfig_insight.xml" xmlns:xi="http://www.w3.org/2001/XInclude">
-        <xi:fallback/>
-    </xi:include>
-
     <queryParser name="mimetype" class="org.alfresco.solr.query.MimetypeGroupingQParserPlugin" >
         <str name="mapping">conf/mime_types.csv</str>
     </queryParser>
@@ -594,4 +590,3 @@
     <transformer name="cached" class="org.alfresco.solr.transformer.AlfrescoFieldMapperTransformerFactory" />
     <transformer name="fieldMapper" class="org.alfresco.solr.transformer.AlfrescoFieldMapperTransformerFactory" />
 </config>
-
