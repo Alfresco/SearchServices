@@ -105,27 +105,27 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         response4.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(priority=5)
-    public void testSearchUpdateContent() throws Exception
-    {        
-        SearchRequest searchReq = new SearchRequest();
-        RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery("cm:content:unique");
-        queryReq.setUserQuery("unique");
-        searchReq.setQuery(queryReq);
-        SearchResponse response4 = queryAsUser(testUser, "cm:content:unique");
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        response4.assertThat().entriesListIsNotEmpty();
-
-        file4 = new FileModel(unique_searchString + ".txt", "uniquee", "description", FileType.TEXT_PLAIN,
-                "The new content for the field");
-
-        waitForMetadataIndexing(file4.getName(), true);
-
-        SearchResponse response5 = queryAsUser(testUser, "cm:content:new");
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        response5.assertThat().entriesListIsNotEmpty();
-    }
+//    @Test(priority=5)
+//    public void testSearchUpdateContent() throws Exception
+//    {
+//        SearchRequest searchReq = new SearchRequest();
+//        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+//        queryReq.setQuery("cm:content:unique");
+//        queryReq.setUserQuery("unique");
+//        searchReq.setQuery(queryReq);
+//        SearchResponse response4 = queryAsUser(testUser, "cm:content:unique");
+//        restClient.assertStatusCodeIs(HttpStatus.OK);
+//        response4.assertThat().entriesListIsNotEmpty();
+//
+//        file4 = new FileModel(unique_searchString + ".txt", "uniquee", "description", FileType.TEXT_PLAIN,
+//                "The new content for the field");
+//
+//        waitForMetadataIndexing(file4.getName(), true);
+//
+//        SearchResponse response5 = queryAsUser(testUser, "cm:content:new");
+//        restClient.assertStatusCodeIs(HttpStatus.OK);
+//        response5.assertThat().entriesListIsNotEmpty();
+//    }
 
     @Test(priority=6)
     public void testSearchTextFile() throws Exception
