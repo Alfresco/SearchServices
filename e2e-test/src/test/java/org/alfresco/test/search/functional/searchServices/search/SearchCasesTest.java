@@ -50,11 +50,11 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     public void dataPreparation() throws Exception
     {
         searchServicesDataPreparation();
-        waitForContentIndexing(file4.getContent(), true);
+        Assert.assertTrue(waitForContentIndexing(file4.getContent(), true));
     }
 
     @Test(priority=1)
-    public void testSearchNameField() throws Exception
+    public void testSearchNameField()
     {        
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -67,7 +67,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     }
 
     @Test(priority=2)
-    public void testSearchTitleField() throws Exception
+    public void testSearchTitleField()
     {        
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -80,7 +80,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     }
 
     @Test(priority=3)
-    public void testSearchDescriptionField() throws Exception
+    public void testSearchDescriptionField()
     {        
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -93,7 +93,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     }
 
     @Test(priority=4)
-    public void testSearchContentField() throws Exception
+    public void testSearchContentField()
     {        
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -105,30 +105,28 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         response4.assertThat().entriesListIsNotEmpty();
     }
 
-//    @Test(priority=5)
-//    public void testSearchUpdateContent() throws Exception
-//    {
-//        SearchRequest searchReq = new SearchRequest();
-//        RestRequestQueryModel queryReq = new RestRequestQueryModel();
-//        queryReq.setQuery("cm:content:unique");
-//        queryReq.setUserQuery("unique");
-//        searchReq.setQuery(queryReq);
-//        SearchResponse response4 = queryAsUser(testUser, "cm:content:unique");
-//        restClient.assertStatusCodeIs(HttpStatus.OK);
-//        response4.assertThat().entriesListIsNotEmpty();
-//
-//        file4 = new FileModel(unique_searchString + ".txt", "uniquee", "description", FileType.TEXT_PLAIN,
-//                "The new content for the field");
-//
-//        waitForMetadataIndexing(file4.getName(), true);
-//
-//        SearchResponse response5 = queryAsUser(testUser, "cm:content:new");
-//        restClient.assertStatusCodeIs(HttpStatus.OK);
-//        response5.assertThat().entriesListIsNotEmpty();
-//    }
+    @Test(priority=5)
+    public void testSearchUpdateContent()
+    {
+        SearchRequest searchReq = new SearchRequest();
+
+        SearchResponse response4 = queryAsUser(testUser, "cm:content:brown");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response4.assertThat().entriesListIsNotEmpty();
+        String newContent = "The quick red fox jumps over the lazy dog";
+
+        dataContent.usingUser(adminUserModel).usingSite(testSite).usingResource(file)
+                .updateContent(newContent);
+
+        Assert.assertTrue(waitForContentIndexing("red", true));
+
+        SearchResponse response5 = queryAsUser(testUser, "cm:content:brown");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response5.assertThat().entriesListIsEmpty();
+    }
 
     @Test(priority=6)
-    public void testSearchTextFile() throws Exception
+    public void testSearchTextFile()
     {        
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -141,7 +139,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     }
 
     @Test(priority=7)
-    public void testSearchPDFFile() throws Exception
+    public void testSearchPDFFile()
     {        
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -154,7 +152,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     }
 
     @Test(priority=8)
-    public void testSearchDocxFile() throws Exception
+    public void testSearchDocxFile()
     {        
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -167,7 +165,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     }
 
     @Test(priority=9)
-    public void testSearchODTFile() throws Exception
+    public void testSearchODTFile()
     {        
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -190,11 +188,11 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
      * }
      */
     @Test(priority=10)
-    public void searchWithFactedFields() throws Exception
+    public void searchWithFactedFields()
     {
         SearchRequest query = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery("cm:content:" + unique_searchString);
+        queryReq.setQuery("cm:content:unique");
         query.setQuery(queryReq);
 
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
@@ -206,6 +204,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
 
         SearchResponse response = query(query);
 
+        Assert.assertNotNull(response.getContext().getFacetsFields());
         Assert.assertFalse(response.getContext().getFacetsFields().isEmpty());
         Assert.assertNull(response.getContext().getFacetQueries());
         Assert.assertNull(response.getContext().getFacets());
@@ -221,31 +220,8 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         bucket1.assertThat().field("count").is(1);
     }
 
-//    Test for highlighting that is part of the test cases but has been commented out as a different configuration is needed for highlighting
-//    @Test(priority=11)
-//    public void searchWithHighLight() throws Exception
-//    {
-//        waitForContentIndexing(file2.getContent(), true);
-//
-//        RestRequestQueryModel queryReq = new RestRequestQueryModel();
-//        queryReq.setQuery("cm:content:cars");
-//        queryReq.setUserQuery("cars");
-//
-//        RestRequestHighlightModel highlight = new RestRequestHighlightModel();
-//        highlight.setPrefix("¿");
-//        highlight.setPostfix("?");
-//        highlight.setMergeContiguous(true);
-//        List<RestRequestFieldsModel> fields = new ArrayList<>();
-//        fields.add(new RestRequestFieldsModel("cm:content"));
-//        highlight.setFields(fields);
-//        SearchResponse nodes = query(queryReq, highlight);
-//        nodes.assertThat().entriesListIsNotEmpty();
-//        ResponseHighLightModel hl = nodes.getEntryByIndex(0).getSearch().getHighlight().get(0);
-//        hl.assertThat().field("snippets").contains("The landrover discovery is not a sports ¿car?");
-//    }
-
     @Test(priority=12)
-    public void testSearchPhraseQueries() throws Exception
+    public void testSearchPhraseQueries()
     {        
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -258,7 +234,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     }
 
     @Test(priority=13)
-    public void testSearchExactTermQueries() throws Exception
+    public void testSearchExactTermQueries()
     {        
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -271,7 +247,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     }
 
     @Test(priority=14)
-    public void testSearchConjunctionQueries() throws Exception
+    public void testSearchConjunctionQueries()
     {        
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -284,7 +260,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     }
 
     @Test(priority=15)
-    public void testSearchDisjunctionQueries() throws Exception
+    public void testSearchDisjunctionQueries()
     {        
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -297,7 +273,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     }
 
     @Test(priority=16)
-    public void testSearchNegationQueries() throws Exception
+    public void testSearchNegationQueries()
     {        
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -310,7 +286,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     }
 
     @Test(priority=17)
-    public void testSearchWildcardQueries() throws Exception
+    public void testSearchWildcardQueries()
     {        
         SearchRequest searchReq = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -323,7 +299,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     }
 
     @Test(priority=18)
-    public void searchSpecialCharacters() throws Exception
+    public void searchSpecialCharacters()
     {
         String specialCharfileName = "è¥äæ§ç§-åæ.pdf";
         FileModel file = new FileModel(specialCharfileName, "è¥äæ§ç§-åæ¬¯¸" + "è¥äæ§ç§-åæ¬¯¸", "è¥äæ§ç§-åæ¬¯¸", FileType.TEXT_PLAIN,
