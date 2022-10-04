@@ -1160,27 +1160,40 @@
 
        https://wiki.apache.org/solr/SolrCloud/
     -->
-    <requestHandler name="/replication" class="org.alfresco.solr.handler.AlfrescoReplicationHandler">
-    <!--
-       To enable simple master/slave replication, uncomment one of the 
-       sections below, depending on whether this solr instance should be
-       the "master" or a "slave".  If this instance is a "slave" you will 
-       also need to fill in the masterUrl to point to a real machine.
-    -->
-    <!--
-       <lst name="master">
-         <str name="replicateAfter">commit</str>
-         <str name="replicateAfter">startup</str>
-         <str name="confFiles">schema.xml,stopwords.txt</str>
-       </lst>
-    -->
-    <!--
-       <lst name="slave">
-         <str name="masterUrl">http://your-master-hostname:8983/solr/alfresco</str>
-         <str name="pollInterval">00:00:60</str>
-       </lst>
-    -->
-  </requestHandler>
+    <requestHandler name="/replication" class="solr.ReplicationHandler">
+
+        <!--
+           To enable simple master/slave replication, uncomment one of the
+           sections below, depending on whether this solr instance should be
+           the "master" or a "slave".  If this instance is a "slave" you will
+           also need to fill in the masterUrl to point to a real machine.
+        -->
+        <!--
+           <lst name="master">
+             <str name="replicateAfter">commit</str>
+             <str name="replicateAfter">startup</str>
+             <str name="confFiles">schema.xml,stopwords.txt</str>
+           </lst>
+        -->
+        <!--
+           <lst name="slave">
+             <str name="masterUrl">http://your-master-hostname:8983/solr/alfresco</str>
+             <str name="pollInterval">00:00:60</str>
+           </lst>
+        -->
+
+        <!--
+        This invariant is needed to prevent the usage of location parameter in the replication handler APIs.
+        There is no validation for location parameter. This results in a vulnerability described in https://nvd.nist.gov/vuln/detail/CVE-2020-13941
+
+        If the solr.backup.dir property is not specified, it is set to the Solr’s data directory.
+
+        -->
+        <lst name="invariants">
+            <str name="location">${solr.backup.dir:.}/${solr.core.name}</str>
+        </lst>
+
+    </requestHandler>
 
   <!-- Search Components
 

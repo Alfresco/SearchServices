@@ -197,6 +197,9 @@
             <str name="masterUrl">{masterURL}</str>
             <str name="pollInterval">00:00:02</str>
         </lst>
+        <lst name="invariants">
+            <str name="location">${solr.backup.dir:.}/${solr.core.name}</str>
+        </lst>
     </requestHandler>
 
     <!-- An alternate set representation that uses an integer hash to store filters (sets of docids).
