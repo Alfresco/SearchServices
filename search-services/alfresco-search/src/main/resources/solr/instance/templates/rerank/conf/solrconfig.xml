@@ -1180,9 +1180,11 @@
       <!--
       This invariant is needed to prevent the usage of location parameter in the replication handler APIs.
       There is no validation for location parameter. This results in a vulnerability described in https://nvd.nist.gov/vuln/detail/CVE-2020-13941
+
+      If the solr.backup.dir property is not specified, it is set to the Solr’s data directory.
       -->
       <lst name="invariants">
-          <str name="location">${solr.backup.dir:.}</str>
+          <str name="location">${solr.backup.dir:.}/${solr.core.name}</str>
       </lst>
 
   </requestHandler>
