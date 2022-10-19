@@ -12,7 +12,7 @@
 
     <properties>
         <dependency.alfresco-data-model.version>17.30</dependency.alfresco-data-model.version>
-        <dependency.jackson.version>2.13.3</dependency.jackson.version>
+        <dependency.jackson.version>2.13.4.1</dependency.jackson.version>
     </properties>
 
     <dependencies>
