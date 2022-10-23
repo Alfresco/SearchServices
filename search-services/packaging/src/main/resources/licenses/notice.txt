@@ -24,11 +24,6 @@ jaxen-1.2.0.jar http://www.cafeconleche.org/jaxen/
 jsr305-3.0.2.jar http://code.google.com/p/jsr-305/
 xmpcore-6.1.11.jar https://github.com/adobe/XMP-Toolkit-SDK/blob/main/LICENSE
 
-
-=== BSD-2-Clause ===
-jai-imageio-core-1.4.0.jar https://github.com/jai-imageio/jai-imageio-core/blob/jai-imageio-core-1.4.0/README.md
-
-
 === BSD Variant (License for the Extreme! Lab) ===
 xpp3-1.1.4c.jar http://www.extreme.indiana.edu/dist/java-repository/xpp3/licenses/LICENSE.txt
 
@@ -39,11 +34,6 @@ dom4j-2.1.3.jar https://github.com/dom4j/dom4j/blob/master/LICENSE
 
 === JSON ===
 json-20220320.jar https://github.com/stleary/JSON-java
-
-
-=== UnRar License ===
-junrar-7.4.0.jar https://github.com/junrar/junrar/blob/v7.4.0/LICENSE
-
 
 === Apache-2.0 ===
 xml-resolver-1.2.jar    https://github.com/FasterXML/jackson
@@ -92,7 +82,6 @@ jetty-webapp-9.3.29.v20201019.jar https://www.eclipse.org/jetty/licenses.html
 jetty-xml-9.3.29.v20201019.jar https://www.eclipse.org/jetty/licenses.html
 woodstox-core-5.0.3.jar https://github.com/FasterXML/woodstox
 aggdesigner-algorithm-6.0.jar https://github.com/julianhyde/aggdesigner
-parso-2.0.14.jar https://github.com/epam/parso/blob/v2.0.14/LICENSE
 hadoop-annotations-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
 hadoop-auth-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
 hadoop-common-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
@@ -110,41 +99,13 @@ spring-expression-5.3.21.jar https://github.com/spring-projects/spring-framework
 spring-jdbc-5.3.21.jar https://github.com/spring-projects/spring-framework/blob/v5.3.21/LICENSE.txt
 spring-orm-5.3.21.jar https://github.com/spring-projects/spring-framework/blob/v5.3.21/LICENSE.txt
 spring-tx-5.3.21.jar https://github.com/spring-projects/spring-framework/blob/v5.3.21/LICENSE.txt
-tika-core-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-apple-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-audiovideo-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-cad-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-code-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-crypto-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-digest-commons-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-font-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-html-commons-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-html-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-image-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-mail-commons-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-mail-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-microsoft-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-miscoffice-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-news-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-ocr-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-pdf-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-pkg-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-text-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-xml-module-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-xmp-commons-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parser-zip-commons-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
-tika-parsers-standard-package-2.2.1.jar https://github.com/apache/tika/blob/2.2.1-rc2/LICENSE.txt
 gson-2.8.9.jar https://github.com/google/gson/blob/gson-parent-2.8.9/LICENSE
-jackcess-encrypt-4.0.1.jar https://github.com/jahlborn/jackcessencrypt/blob/jackcess-encrypt-4.0.1/LICENSE.txt
-commons-csv-1.9.0.jar https://github.com/apache/commons-csv/blob/rel/commons-csv-1.9.0/LICENSE.txt
 simple-xml-safe-2.7.1.jar https://github.com/carrotsearch/simplexml-safe/blob/release/2.7.1/LICENSE.txt
 
 
 === CDDL-1.1 ===
 jaxb-core-3.0.2.jar http://jaxb.java.net/
 jaxb-xjc-3.0.2.jar http://jaxb.java.net/
-jhighlight-1.0.3.jar https://github.com/codelibs/jhighlight/blob/jhighlight-1.0.3/LICENSE_CDDL.txt
-
 
 === EDL-1.0 ===
 jakarta.activation-2.0.1.jar https://eclipse-ee4j.github.io/jaf
@@ -159,15 +120,6 @@ jaxb-runtime-2.3.3.jar  https://github.com/eclipse-ee4j/jaxb-ri/blob/2.3.4-RI/LI
 === EPL-2.0 ===
 jakarta.annotation-api-2.1.1.jar https://projects.eclipse.org/projects/ee4j.ca
 jakarta.transaction-api-1.3.3.jar https://projects.eclipse.org/projects/ee4j.jta
-
-
-=== MIT ===
-dd-plist-1.23.jar https://github.com/3breadt/dd-plist/blob/dd-plist-1.23/LICENSE.txt
-dec-0.1.2.jar http://www.opensource.org/licenses/mit-license.php
-bcmail-jdk15on-1.70.jar https://github.com/bcgit/bc-java/blob/r1rv69/LICENSE.html
-bcpkix-jdk15on-1.70.jar https://github.com/bcgit/bc-java/blob/r1rv69/LICENSE.html
-bcutil-jdk15on-1.70.jar https://github.com/bcgit/bc-java/blob/r1rv69/LICENSE.html
-
 
 === Part of Apache Solr (Licenses listed separately) ===
 antlr4-runtime-4.5.1-1.jar
@@ -201,7 +153,6 @@ curator-framework-2.8.0.jar
 curator-recipes-2.8.0.jar
 curvesapi-1.04.jar
 eigenbase-properties-1.1.5.jar
-fontbox-2.0.6.jar
 gmetric4j-1.0.7.jar
 guava-14.0.1.jar
 hppc-0.7.1.jar
@@ -216,7 +167,6 @@ java-libpst-0.8.1.jar
 javax.servlet-api-3.1.0.jar
 jcl-over-slf4j-1.7.7.jar
 jdom-1.0.jar
-jempbox-1.8.13.jar
 jmatio-1.2.jar
 joda-time-2.2.jar
 jsonic-1.2.7.jar
@@ -255,12 +205,6 @@ morfologik-fsa-2.1.1.jar
 morfologik-polish-2.1.1.jar
 morfologik-stemming-2.1.1.jar
 noggit-0.6.jar
-pdfbox-2.0.6.jar
-pdfbox-tools-2.0.6.jar
-poi-3.17-beta1.jar
-poi-ooxml-3.17-beta1.jar
-poi-ooxml-schemas-3.17-beta1.jar
-poi-scratchpad-3.17-beta1.jar
 protobuf-java-3.1.0.jar
 rome-1.5.1.jar
 slf4j-api-1.7.7.jar
