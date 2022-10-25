@@ -92,8 +92,6 @@ tika-java7-1.27.jar https://github.com/apache/tika/blob/1.27/LICENSE.txt
 tika-parsers-1.27.jar https://github.com/apache/tika/blob/1.27/LICENSE.txt
 tika-xmp-1.27.jar https://github.com/apache/tika/blob/1.27/LICENSE.txt
 jcommander-1.81.jar https://github.com/cbeust/jcommander/blob/1.81/license.txt
-preflight-2.0.24.jar https://github.com/apache/pdfbox/blob/2.0.24/LICENSE.txt
-xmpbox-2.0.24.jar https://github.com/apache/pdfbox/blob/2.0.24/LICENSE.txt
 isoparser-1.9.41.7.jar http://www.apache.org/licenses/LICENSE-2.0.txt
 metadata-extractor-2.15.0.1.jar http://www.apache.org/licenses/LICENSE-2.0.txt
 hadoop-annotations-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
@@ -185,7 +183,6 @@ curator-framework-2.8.0.jar
 curator-recipes-2.8.0.jar
 curvesapi-1.04.jar
 eigenbase-properties-1.1.5.jar
-fontbox-2.0.6.jar
 gmetric4j-1.0.7.jar
 guava-14.0.1.jar
 hppc-0.7.1.jar
@@ -200,7 +197,6 @@ java-libpst-0.8.1.jar
 javax.servlet-api-3.1.0.jar
 jcl-over-slf4j-1.7.7.jar
 jdom-1.0.jar
-jempbox-1.8.13.jar
 jmatio-1.2.jar
 joda-time-2.2.jar
 jsonic-1.2.7.jar
@@ -238,12 +234,6 @@ morfologik-fsa-2.1.1.jar
 morfologik-polish-2.1.1.jar
 morfologik-stemming-2.1.1.jar
 noggit-0.6.jar
-pdfbox-2.0.6.jar
-pdfbox-tools-2.0.6.jar
-poi-3.17-beta1.jar
-poi-ooxml-3.17-beta1.jar
-poi-ooxml-schemas-3.17-beta1.jar
-poi-scratchpad-3.17-beta1.jar
 protobuf-java-3.6.1.jar
 rome-1.5.1.jar
 slf4j-api-1.7.7.jar
