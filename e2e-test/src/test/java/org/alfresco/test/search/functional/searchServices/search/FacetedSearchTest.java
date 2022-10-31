@@ -343,7 +343,7 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
         bucket1.assertThat().field("label").is(testUser.getUsername());
         bucket1.assertThat().field("display").is("FN-" + testUser.getUsername() + " LN-" + testUser.getUsername());
         bucket1.assertThat().field("filterQuery").is("modifier:\"" + testUser.getUsername() + "\"");
-        bucket1.assertThat().field("metrics").is("[{entry=null, type=count, value={count=1}}]");
+        bucket1.assertThat().field("metrics").is("[{type=count, value={count=1}, entry=null}]");
     }
     
     /**
@@ -410,11 +410,11 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
         RestGenericBucketModel bucket = model.getBuckets().get(0);
         bucket.assertThat().field("label").is("{en}first");
         bucket.assertThat().field("filterQuery").is("cm:addressees:\"{en}first\"");
-        bucket.assertThat().field("metrics").is("[{entry=null, type=count, value={count=1}}]");
+        bucket.assertThat().field("metrics").is("[{type=count, value={count=1}, entry=null}]");
         bucket = model.getBuckets().get(1);
         bucket.assertThat().field("label").is("{en}second");
         bucket.assertThat().field("filterQuery").is("cm:addressees:\"{en}second\"");
-        bucket.assertThat().field("metrics").is("[{entry=null, type=count, value={count=1}}]");
+        bucket.assertThat().field("metrics").is("[{type=count, value={count=1}, entry=null}]");
         
         // Facets for cm:addressee (singel valued)
         model = response.getContext().getFacets().get(1);
@@ -423,7 +423,7 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
         bucket = model.getBuckets().get(0);
         bucket.assertThat().field("label").is("{en}first");
         bucket.assertThat().field("filterQuery").is("cm:addressee:\"{en}first\"");
-        bucket.assertThat().field("metrics").is("[{entry=null, type=count, value={count=1}}]");
+        bucket.assertThat().field("metrics").is("[{type=count, value={count=1}, entry=null}]");
         
     }
 }
