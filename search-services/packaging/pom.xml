@@ -214,6 +214,12 @@
                                 <replace token="GC logging" value="GC logging${line.separator}${alfresco.gc.logs.win}" dir="${solr.directory}">
                                     <include name="**/bin/solr.in.cmd" />
                                 </replace>
+                                <replace token="#GC_TUNE=&quot;-XX:NewRatio=3 -XX:SurvivorRatio=4    etc." value="${alfresco.gc.tune}" dir="${solr.directory}">
+                                    <include name="**/bin/solr.in.sh" />
+                                </replace>
+                                <replace token="REM set GC_TUNE=-XX:NewRatio=3 -XX:SurvivorRatio=4     etc." value="${alfresco.gc.tune.win}" dir="${solr.directory}">
+                                    <include name="**/bin/solr.in.cmd" />
+                                </replace>
                                 <replace token="# Anything you add to the SOLR_OPTS" value="${alfresco.search.config}${line.separator}${line.separator}# Anything you add to the SOLR_OPTS" dir="${solr.directory}">
                                     <include name="**/bin/solr.in.sh" />
                                 </replace>
