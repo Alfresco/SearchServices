@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services E2E Test
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -71,13 +71,13 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
         file = new FileModel("pangram.txt", "pangram" + title, description, FileType.TEXT_PLAIN,
                 description + " The quick brown fox jumps over the lazy dog");
 
-        file2 = new FileModel("cars.txt", "cars" + title, description, FileType.TEXT_PLAIN,
-                "The landrover discovery is not a sports car ");
+        file2 = new FileModel("cars.PDF", "cars", description, FileType.TEXT_PLAIN,
+                "The landrover discovery is not a sports car");
 
-        file3 = new FileModel("alfresco.txt", "alfresco", "alfresco", FileType.TEXT_PLAIN,
+        file3 = new FileModel("alfresco.docx", "alfresco", "alfresco", FileType.TEXT_PLAIN,
                 "Alfresco text file for search ");
 
-        file4 = new FileModel(unique_searchString + ".txt", "uniquee" + title, description, FileType.TEXT_PLAIN,
+        file4 = new FileModel(unique_searchString + ".ODT", "uniquee" + title, description, FileType.TEXT_PLAIN,
                 "Unique text file for search ");
 
 
