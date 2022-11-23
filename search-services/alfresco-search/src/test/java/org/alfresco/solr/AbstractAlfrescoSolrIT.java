@@ -42,7 +42,6 @@ import org.apache.chemistry.opencmis.commons.impl.json.JSONValue;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.util.Time;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.apache.solr.SolrTestCaseJ4;
@@ -277,7 +276,7 @@ public abstract class AbstractAlfrescoSolrIT implements SolrTestFiles, AlfrescoS
         if (CORE_NOT_YET_CREATED)
         {
 
-            testExecutionSolrHome = TEST_EXECUTION_FOLDER + "/" + Time.now() + "/solrhome";
+            testExecutionSolrHome = TEST_EXECUTION_FOLDER + "/" + System.currentTimeMillis() + "/solrhome";
             testSolrCollection = testExecutionSolrHome + "/collection1";
             testSolrConf = testSolrCollection + "/conf/";
             templateConf = testExecutionSolrHome + "/templates/%s/conf/";

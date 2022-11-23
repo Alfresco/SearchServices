@@ -26,22 +26,23 @@
 
 package org.alfresco.solr.client;
 
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-
-import java.util.Properties;
-
 import org.alfresco.encryption.KeyResourceLoader;
 import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.solr.client.SOLRAPIClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import java.util.Properties;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SOLRAPIClientFactoryTest

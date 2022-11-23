@@ -34,8 +34,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.concurrent.NotThreadSafe;
-
 import org.alfresco.solr.InformationServerCollectionProvider;
 import org.alfresco.solr.adapters.ISimpleOrderedMap;
 import org.alfresco.util.Pair;
@@ -385,7 +383,6 @@ public class TrackerStats
 
     }
 
-    @NotThreadSafe
     public static class IncrementalStats
     {
         Date start = new Date();

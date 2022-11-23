@@ -52,12 +52,6 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.params.HighlightParams;
-import org.apache.solr.handler.component.AlfrescoSolrHighlighter;
-import org.apache.solr.handler.component.HighlightComponent;
-import org.apache.solr.highlight.SolrHighlighter;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 

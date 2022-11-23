@@ -10,17 +10,20 @@
         <version>2.0.6-SNAPSHOT</version>
     </parent>
 
-    <properties>
-        <dependency.alfresco-data-model.version>13.4</dependency.alfresco-data-model.version>
-        <dependency.jackson.version>2.12.2</dependency.jackson.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-data-model</artifactId>
             <version>${dependency.alfresco-data-model.version}</version>
             <exclusions>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.tika</groupId>
+                    <artifactId>tika-core</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
@@ -31,35 +34,30 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.tika</groupId>
-                    <artifactId>tika-parsers-standard-package</artifactId>
+                    <artifactId>tika-parsers</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>${dependency.jackson.version}</version>
         </dependency>
-        
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>${dependency.jackson.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${dependency.jackson.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-smile</artifactId>
+        </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
@@ -69,26 +67,22 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>4.6.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-reload4j</artifactId>
-            <version>${slf4j.version}</version>
         </dependency>
     </dependencies>
 
     <build>
         <finalName>solrclient</finalName>
         <plugins>
-            <!-- Create a jar of test classes -->
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <executions>
@@ -106,7 +100,7 @@
                 <configuration>
                     <excludes>
                         <!-- Excluding this test, because it requires the 
-                            keystore which is a part of SystemBuildTest. TODO: Consider moving this test 
+                            keystore which is a part of SystemBuildTest.
                             into that project or making it pass on its own. -->
                         <exclude>**/SOLRAPIClientTest.java</exclude>
                     </excludes>

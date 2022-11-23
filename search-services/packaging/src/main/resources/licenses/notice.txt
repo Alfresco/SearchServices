@@ -14,53 +14,57 @@ The Apache Lucene project page is https://lucene.apache.org/
 === Common Public 1.0 ===
 wsdl4j-1.6.3.jar        http://sourceforge.net/projects/wsdl4j
 
-
 === BSD 3 ===
 antlr-runtime-3.5.2.jar http://www.antlr.org/
 ST4-4.0.8.jar   https://www.stringtemplate.org/license.html
 antlr-3.5.2.jar http://www.antlr.org/
 jaxen-1.2.0.jar http://www.cafeconleche.org/jaxen/
-jsr305-3.0.1.jar http://code.google.com/p/jsr-305/
-
 
 === BSD variant License ===
 xpp3-1.1.4c.jar http://www.extreme.indiana.edu/dist/java-repository/xpp3/licenses/LICENSE.txt
 
-
 === JSON ===
 json-20210307.jar https://github.com/stleary/JSON-java
 
-
 === Apache 2.0 ===
+error_prone_annotations-2.11.0.jar https://github.com/google/error-prone
+jsr305-3.0.2.jar https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305/1.3.9
+geronimo-jta_1.1_spec-1.1.1.jar https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-jta_1.1_spec/1.1.1
+proj4j-1.1.5.jar https://github.com/locationtech/proj4j
+j2objc-annotations-1.3.jar https://github.com/google/j2objc
+accessors-smart-2.4.7.jar https://github.com/netplex/json-smart-v2
+json-path-2.7.0.jar https://github.com/json-path/JsonPath
+json-smart-2.4.7.jar https://github.com/netplex/json-smart-v2
+json-simple-1.1.1.jar https://github.com/fangyidong/json-simple
+apiguardian-api-1.1.2.jar https://github.com/apiguardian-team/apiguardian
 xml-resolver-1.2.jar    https://github.com/FasterXML/jackson
 neethi-3.1.1.jar http://ws.apache.org/commons/neethi/
-commons-dbcp-1.4.jar http://jakarta.apache.org/commons/
 commons-logging-1.2.jar http://jakarta.apache.org/commons/
 commons-lang3-3.11.jar http://jakarta.apache.org/commons/
-commons-pool-1.5.4.jar http://jakarta.apache.org/commons/
 commons-compress-1.21.jar https://commons.apache.org/proper/commons-compress/
 chemistry-opencmis-commons-impl-1.1.0.jar      http://chemistry.apache.org/
 chemistry-opencmis-commons-api-1.1.0.jar       http://chemistry.apache.org/
 xmlschema-core-2.2.5.jar http://ws.apache.org/commons/XmlSchema/
 HikariCP-java7-2.4.13.jar https://github.com/brettwooldridge/HikariCP
-cxf-core-3.2.14.jar https://cxf.apache.org/
-cxf-rt-bindings-soap-3.2.14.jar https://cxf.apache.org/
-cxf-rt-bindings-xml-3.2.14.jar https://cxf.apache.org/
-cxf-rt-databinding-jaxb-3.2.14.jar https://cxf.apache.org/
-cxf-rt-frontend-jaxws-3.2.14.jar https://cxf.apache.org/
-cxf-rt-frontend-simple-3.2.14.jar https://cxf.apache.org/
-cxf-rt-transports-http-3.2.14.jar https://cxf.apache.org/
-cxf-rt-ws-addr-3.2.14.jar https://cxf.apache.org/
-cxf-rt-ws-policy-3.2.14.jar https://cxf.apache.org/
-cxf-rt-wsdl-3.2.14.jar https://cxf.apache.org/
+cxf-core-3.4.8.jar https://cxf.apache.org/
+cxf-rt-bindings-soap-3.4.8.jar https://cxf.apache.org/
+cxf-rt-bindings-xml-3.4.8.jar https://cxf.apache.org/
+cxf-rt-databinding-jaxb-3.4.8.jar https://cxf.apache.org/
+cxf-rt-frontend-jaxws-3.4.8.jar https://cxf.apache.org/
+cxf-rt-frontend-simple-3.4.8.jar https://cxf.apache.org/
+cxf-rt-transports-http-3.4.8.jar https://cxf.apache.org/
+cxf-rt-ws-addr-3.4.8.jar https://cxf.apache.org/
+cxf-rt-ws-policy-3.4.8.jar https://cxf.apache.org/
+cxf-rt-wsdl-3.4.8.jar https://cxf.apache.org/
 chemistry-opencmis-server-support-1.0.0.jar     http://chemistry.apache.org/
 chemistry-opencmis-server-bindings-1.0.0.jar    http://chemistry.apache.org/
+failureaccess-1.0.1.jar https://mvnrepository.com/artifact/com.google.guava/failureaccess/1.0.1
+listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar https://mvnrepository.com/artifact/com.google.guava/listenablefuture
 quartz-2.3.2.jar http://quartz-scheduler.org/
-jackson-core-2.12.2.jar https://github.com/FasterXML/jackson
-jackson-annotations-2.12.2.jar https://github.com/FasterXML/jackson
-jackson-databind-2.12.2.jar https://github.com/FasterXML/jackson
-jackson-dataformat-smile-2.12.2.jar https://github.com/FasterXML/jackson
-commons-httpclient-3.1.jar      http://jakarta.apache.org/commons/
+jackson-core-2.13.4.jar https://github.com/FasterXML/jackson
+jackson-annotations-2.13.4.jar https://github.com/FasterXML/jackson
+jackson-databind-2.13.4.2.jar https://github.com/FasterXML/jackson
+commons-httpclient-3.1-HTTPCLIENT-1265.jar http://jakarta.apache.org/commons/
 spring-aop-5.3.18.jar http://projects.spring.io/spring-framework/
 spring-beans-5.3.18.jar http://projects.spring.io/spring-framework/
 spring-context-5.3.18.jar http://projects.spring.io/spring-framework/
@@ -85,24 +89,7 @@ jetty-servlets-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
 jetty-util-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
 jetty-webapp-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
 jetty-xml-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
-woodstox-core-5.0.3.jar https://github.com/FasterXML/woodstox
-aggdesigner-algorithm-6.0.jar https://github.com/julianhyde/aggdesigner
-tika-core-1.27.jar https://github.com/apache/tika/blob/1.27/LICENSE.txt
-tika-java7-1.27.jar https://github.com/apache/tika/blob/1.27/LICENSE.txt
-tika-parsers-1.27.jar https://github.com/apache/tika/blob/1.27/LICENSE.txt
-tika-xmp-1.27.jar https://github.com/apache/tika/blob/1.27/LICENSE.txt
-jcommander-1.81.jar https://github.com/cbeust/jcommander/blob/1.81/license.txt
-isoparser-1.9.41.7.jar http://www.apache.org/licenses/LICENSE-2.0.txt
-metadata-extractor-2.15.0.1.jar http://www.apache.org/licenses/LICENSE-2.0.txt
-hadoop-annotations-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
-hadoop-auth-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
-hadoop-common-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
-hadoop-hdfs-2.7.7.jar https://github.com/apache/hadoop/blob/rel/release-2.7.7/LICENSE.txt
-hadoop-annotations-2.10.1.jar https://github.com/apache/hadoop/blob/rel/release-2.10.1/LICENSE.txt
-hadoop-auth-2.10.1.jar https://github.com/apache/hadoop/blob/rel/release-2.10.1/LICENSE.txt
-hadoop-common-2.10.1.jar https://github.com/apache/hadoop/blob/rel/release-2.10.1/LICENSE.txt
-hadoop-hdfs-2.10.1.jar https://github.com/apache/hadoop/blob/rel/release-2.10.1/LICENSE.txt
-hadoop-hdfs-client-2.10.1.jar https://github.com/apache/hadoop/blob/rel/release-2.10.1/LICENSE.txt
+woodstox-core-6.2.8.jar https://github.com/FasterXML/woodstox
 org.restlet-2.3.12.jar https://github.com/restlet/restlet-framework-java/blob/2.3.12/README.md
 org.restlet.ext.servlet-2.3.12.jar https://github.com/restlet/restlet-framework-java/blob/2.3.12/README.md
 xercesImpl-2.11.0-alfresco-patched-20180402.jar http://www.apache.org/licenses/LICENSE-2.0.txt
@@ -111,10 +98,6 @@ simple-xml-safe-2.7.1.jar https://github.com/carrotsearch/simplexml-safe/blob/re
 reload4j-1.2.18.3.jar http://www.apache.org/licenses/LICENSE-2.0.txt
 jackson-core-asl-1.9.14-atlassian-6.jar http://www.apache.org/licenses/LICENSE-2.0.txt
 jackson-mapper-asl-1.9.14-atlassian-6.jar http://www.apache.org/licenses/LICENSE-2.0.txt
-
-
-=== Creative Commons Public Domain ===
-jcip-annotations-1.0.jar https://jcip.net/listings.html
 
 
 === CDDL 1.1 ===
@@ -127,10 +110,11 @@ jakarta.activation-1.2.2.jar https://eclipse-ee4j.github.io/jaf
 jakarta.activation-api-1.2.2.jar https://eclipse-ee4j.github.io/jaf
 jakarta.jws-api-2.1.0.jar https://projects.eclipse.org/projects/ee4j.websocket/releases/1.1.1
 jakarta.xml.bind-api-3.0.1.jar https://projects.eclipse.org/projects/ee4j.jaxb
-istack-commons-runtime-3.0.11.jar https://projects.eclipse.org/projects/ee4j.jaxb-impl
-txw2-2.3.3.jar https://eclipse-ee4j.github.io/jaxb-ri
-jaxb-runtime-2.3.3.jar  https://github.com/eclipse-ee4j/jaxb-ri/blob/2.3.4-RI/LICENSE.md
-
+jakarta.xml.soap-api-1.4.2.jar https://projects.eclipse.org/projects/ee4j.jaxb
+jakarta.xml.ws-api-2.3.3.jar https://projects.eclipse.org/projects/ee4j.jaxb
+istack-commons-runtime-3.0.12.jar https://github.com/eclipse-ee4j/jaxb-istack-commons
+txw2-2.3.4.jar https://eclipse-ee4j.github.io/jaxb-ri
+jaxb-runtime-2.3.4.jar  https://github.com/eclipse-ee4j/jaxb-ri/blob/2.3.4-RI/LICENSE.md
 
 === Eclipse Public License 1.0 ===
 
@@ -138,18 +122,15 @@ jaxb-runtime-2.3.3.jar  https://github.com/eclipse-ee4j/jaxb-ri/blob/2.3.4-RI/LI
 === Eclipse Public License 2.0 ===
 jakarta.annotation-api-1.3.5.jar https://projects.eclipse.org/projects/ee4j.ca
 jakarta.transaction-api-1.3.3.jar https://projects.eclipse.org/projects/ee4j.jta
-
+jts-io-common-1.19.0.jar https://locationtech.github.io/jts/
+jts-core-1.19.0.jar https://locationtech.github.io/jts/
 
 === BSD ===
 jibx-run-1.3.3.jar http://jibx.sourceforge.net/
 dom4j-2.1.3.jar https://github.com/dom4j/dom4j/blob/master/LICENSE
-xmpcore-6.1.11.jar https://github.com/adobe/XMP-Toolkit-SDK/blob/main/LICENSE
-xmpcore-shaded-6.1.11.jar https://github.com/tballison/xmpcore-shaded/blob/6.1.11/src/main/resources/META-INF/LICENSE
-
 
 === MIT ===
-dd-plist-1.23.jar https://github.com/3breadt/dd-plist/blob/dd-plist-1.23/LICENSE.txt
-
+checker-qual-3.12.0.jar https://checkerframework.org/
 
 === Part of Apache Solr (Licenses listed separately) ===
 antlr4-runtime-4.5.1-1.jar
@@ -161,10 +142,6 @@ aspectjrt-1.8.0.jar
 attributes-binder-1.3.1.jar
 boilerpipe-1.1.0.jar
 caffeine-2.4.0.jar
-calcite-core-1.13.0.jar
-calcite-linq4j-1.13.0.jar
-avatica-core-1.13.0.jar
-avatica-metrics-1.13.0.jar
 carrot2-guava-18.0.jar
 carrot2-mini-3.15.0.jar
 commons-cli-1.2.jar
@@ -176,15 +153,21 @@ commons-configuration-1.6.jar
 commons-exec-1.3.jar
 commons-fileupload-1.3.3.jar
 commons-io-2.5.jar
+calcite-core-1.32.0.jar
+calcite-linq4j-1.32.0.jar
+avatica-core-1.22.0.jar
+avatica-metrics-1.22.0.jar
 commons-lang-2.6.jar
 commons-math3-3.4.1.jar
 curator-client-2.8.0.jar
 curator-framework-2.8.0.jar
 curator-recipes-2.8.0.jar
+commons-compiler-3.1.8.jar
+janino-3.1.8.jar
 curvesapi-1.04.jar
 eigenbase-properties-1.1.5.jar
 gmetric4j-1.0.7.jar
-guava-14.0.1.jar
+guava-31.1-jre.jar
 hppc-0.7.1.jar
 htrace-core-3.2.0-incubating.jar
 httpclient-4.5.13.jar
@@ -192,7 +175,6 @@ httpcore-4.4.1.jar
 httpmime-4.4.1.jar
 icu4j-56.1.jar
 jackcess-2.1.8.jar
-janino-2.7.6.jar
 java-libpst-0.8.1.jar
 javax.servlet-api-3.1.0.jar
 jcl-over-slf4j-1.7.7.jar
@@ -235,6 +217,7 @@ morfologik-polish-2.1.1.jar
 morfologik-stemming-2.1.1.jar
 noggit-0.6.jar
 protobuf-java-3.6.1.jar
+protobuf-java-3.19.6.jar
 rome-1.5.1.jar
 slf4j-api-1.7.7.jar
 slf4j-log4j12-1.7.7.jar
