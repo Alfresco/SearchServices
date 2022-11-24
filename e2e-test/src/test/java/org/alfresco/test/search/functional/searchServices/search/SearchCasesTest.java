@@ -104,8 +104,6 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=5)
     public void testSearchUpdateContent()
     {
-        SearchRequest searchReq = new SearchRequest();
-
         SearchResponse response4 = queryAsUser(testUser, "cm:content:brown");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         response4.assertThat().entriesListIsNotEmpty();
@@ -117,8 +115,10 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         Assert.assertTrue(waitForContentIndexing("red", true));
 
         SearchResponse response5 = queryAsUser(testUser, "cm:content:brown");
+
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        response5.assertThat().entriesListIsEmpty();
+        int initialEntriesSize = response4.getEntries().size();
+        response5.assertThat().entriesListCountIs( initialEntriesSize - 1);
     }
 
     @Test(priority=6)
@@ -184,7 +184,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
      * }
      */
     @Test(priority=10)
-    public void searchWithFactedFields()
+    public void searchWithFacedFields()
     {
         SearchRequest query = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -213,7 +213,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         bucket1.assertThat().field("label").is(testUser.getUsername());
         bucket1.assertThat().field("display").is("FN-" + testUser.getUsername() + " LN-" + testUser.getUsername());
         bucket1.assertThat().field("filterQuery").is("modifier:\"" + testUser.getUsername() + "\"");
-        bucket1.assertThat().field("count").is(1);
+        bucket1.assertThat().field("count").isGreaterThan(0);
     }
 
     @Test(priority=12)
