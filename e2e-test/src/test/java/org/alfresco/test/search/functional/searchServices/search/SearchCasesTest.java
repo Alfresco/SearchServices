@@ -29,6 +29,7 @@ import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.RestResultBucketsModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.hamcrest.Matchers;
@@ -107,16 +108,30 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         SearchResponse response4 = queryAsUser(testUser, "cm:content:brown");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         response4.assertThat().entriesListIsNotEmpty();
-        String newContent = "The quick red fox jumps over the lazy dog";
 
+        //TODO: remove - temp check for debugging
+        SearchResponse responseRB = queryAsUser(testUser, "cm:content:red");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        String beforeUpdate = "brown entries: " + response4.getEntries().size() + "  red entries: " + responseRB.getEntries().size();
+        Assert.assertEquals(beforeUpdate, "brown entries: 1  red entries: 0");
+
+        String newContent = "The quick red fox jumps over the lazy dog";
         dataContent.usingUser(adminUserModel).usingSite(testSite).usingResource(file)
                 .updateContent(newContent);
-
         Assert.assertTrue(waitForContentIndexing("red", true));
 
-        SearchResponse response5 = queryAsUser(testUser, "cm:content:brown");
+        //TODO: remove - artificially long wait for debugging
+        Utility.waitToLoopTime(60);
 
+        SearchResponse response5 = queryAsUser(testUser, "cm:content:brown");
         restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        //TODO: remove - temp check for debugging
+        SearchResponse responseRA = queryAsUser(testUser, "cm:content:red");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        String afterUpdate = "brown entries: " + response5.getEntries().size() + "  red entries: " + responseRA.getEntries().size();
+        Assert.assertEquals(afterUpdate, "brown entries: 0  red entries: 1");
+
         int initialEntriesSize = response4.getEntries().size();
         response5.assertThat().entriesListCountIs( initialEntriesSize - 1);
     }
