@@ -105,6 +105,12 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=5)
     public void testSearchUpdateContent()
     {
+        //TODO: remove - temp check for debugging
+        SearchResponse responsePB = queryAsUser(testUser, "cm:content:purpleisnotthereyet");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        String beforeAnything = "purple entries: " + responsePB.getEntries().size() + "  purple entries: " + responsePB.getEntries().size();
+        Assert.assertEquals(beforeAnything, "purpleisnotthereyet entries: 0");
+
         SearchResponse response4 = queryAsUser(testUser, "cm:content:brown");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         response4.assertThat().entriesListIsNotEmpty();
