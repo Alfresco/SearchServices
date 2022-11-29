@@ -22,6 +22,7 @@
  */
 package org.alfresco.test.search.functional.searchServices.search;
 
+import org.alfresco.rest.exception.EmptyRestModelCollectionException;
 import org.alfresco.rest.search.FacetFieldBucket;
 import org.alfresco.rest.search.RestRequestFacetFieldModel;
 import org.alfresco.rest.search.RestRequestFacetFieldsModel;
@@ -103,23 +104,29 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     }
 
     @Test(priority=5)
-    public void testSearchUpdateContent()
+    public void testSearchUpdateContent() throws EmptyRestModelCollectionException
     {
         //TODO: remove - temp check for debugging
-        SearchResponse responsePBQ = queryAsUser(testUser, "cm:content:purple");
+        SearchResponse responsePBQ = queryAsUser(testUser, "cm:content:purplenotthereyet");
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        String beforeAnything = "purple entries: " + responsePBQ.getEntries().size();
-        Assert.assertEquals(beforeAnything, "purple entries: 0");
+        String beforeAnything = "purplenotthereyet entries: " + responsePBQ.getEntries().size();
+        if (responsePBQ.getEntries().size() != 0)
+        {
+            String msg = "Name: " + responsePBQ.getEntryByIndex(0).getName();
+            String content = " Content: " + responsePBQ.getEntryByIndex(0).getContent().toString();
+            Assert.assertEquals( beforeAnything, msg + content);
+        }
+        Assert.assertEquals( beforeAnything, "purplenotthereyet entries: 0");
 
         SearchResponse response4 = queryAsUser(testUser, "cm:content:brown");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         response4.assertThat().entriesListIsNotEmpty();
 
         //TODO: remove - temp check for debugging
-        SearchResponse responsePAQ = queryAsUser(testUser, "cm:content:purple");
+        SearchResponse responsePAQ = queryAsUser(testUser, "cm:content:purplenotthereyet");
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        String afterQuery = "purple entries after query: " + responsePAQ.getEntries().size();
-        Assert.assertEquals(afterQuery, "purple entries after query: 0");
+        String afterQuery = "purplenotthereyet entries after query: " + responsePAQ.getEntries().size();
+        Assert.assertEquals(afterQuery, "purplenotthereyet entries after query: 0");
 
         String newContent = "The quick purple fox jumps over the lazy dog";
         dataContent.usingUser(adminUserModel).usingSite(testSite).usingResource(file)
