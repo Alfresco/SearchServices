@@ -28,7 +28,7 @@ function getSummary() {
         {
           resultStr = resultStr + "<dt style=\"width: 45%;\">" + index + ": </dt><dd style=\"width: 45%;\">" + responseObj.Summary.alfresco[summaryList[index]] + "</dd>"
         }
-        document.getElementById("summaryReportLink").innerHTML = "<a href=\"" + window.location.pathname + "admin/cores?action=SUMMARY&wt=xml\" target=\"new\">View full report (opens in a new window)</a>"; 
+        document.getElementById("summaryReportLink").innerHTML = "<a href=\"" + encodeURI(window.location.pathname) + "admin/cores?action=SUMMARY&wt=xml\" target=\"new\">View full report (opens in a new window)</a>";
         document.getElementById("reportSummaryResults").innerHTML = resultStr;
       }
     }
@@ -71,7 +71,7 @@ function getftsStatus() {
         var newVal = (ftsValues["New"]) ? (ftsValues["New"]) : 0;        
         resultStr = resultStr + "<dt>FTS Status New: </dt><dd>"  + newVal + "</dd>";
 
-        document.getElementById("ftsStatusReportLink").innerHTML = "<a href=\"" + window.location.pathname + "admin/cores?action=REPORT&wt=xml\" target=\"_blank\">View full report (opens in a new window)</a><br/>Note: The FTS status report can take some time to generate";
+        document.getElementById("ftsStatusReportLink").innerHTML = "<a href=\"" + encodeURI(window.location.pathname) + "admin/cores?action=REPORT&wt=xml\" target=\"_blank\">View full report (opens in a new window)</a><br/>Note: The FTS status report can take some time to generate";
 
         document.getElementById("reportFTSStatusResults").innerHTML = resultStr;
       }
@@ -141,9 +141,9 @@ getftsStatus();
 <div>
   
   <script type="text/javascript"> 
-    document.getElementById("errorLink").innerHTML = "<a href=\"" + window.location.pathname + "alfresco/query?q=ERROR*&wt=xml\" target=\"_blank\">Solr Errors</a>"; 
-    document.getElementById("exceptionMessageLink").innerHTML = "<a href=\"" + window.location.pathname + "alfresco/query?q=EXCEPTIONMESSAGE:*&wt=xml\" target=\"_blank\">Solr Exception Messages</a>";     
-    document.getElementById("exceptionStackLink").innerHTML = "<a href=\"" + window.location.pathname + "alfresco/query?q=EXCEPTIONSTACK:*\" target=\"_blank\">Solr Exceptions Stack</a>";   
+    document.getElementById("errorLink").innerHTML = "<a href=\"" + ncodeURI(window.location.pathname) + "alfresco/query?q=ERROR*&wt=xml\" target=\"_blank\">Solr Errors</a>";
+    document.getElementById("exceptionMessageLink").innerHTML = "<a href=\"" + encodeURI(window.location.pathname) + "alfresco/query?q=EXCEPTIONMESSAGE:*&wt=xml\" target=\"_blank\">Solr Exception Messages</a>";
+    document.getElementById("exceptionStackLink").innerHTML = "<a href=\"" + encodeURI(window.location.pathname) + "alfresco/query?q=EXCEPTIONSTACK:*\" target=\"_blank\">Solr Exceptions Stack</a>";
   </script> 
   
   
