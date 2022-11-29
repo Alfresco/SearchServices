@@ -106,20 +106,20 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     public void testSearchUpdateContent()
     {
         //TODO: remove - temp check for debugging
-        SearchResponse responsePB = queryAsUser(testUser, "cm:content:purpleisnotthereyet");
+        SearchResponse responsePBQ = queryAsUser(testUser, "cm:content:purple");
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        String beforeAnything = "purple entries: " + responsePB.getEntries().size() + "  purple entries: " + responsePB.getEntries().size();
-        Assert.assertEquals(beforeAnything, "purpleisnotthereyet entries: 0");
+        String beforeAnything = "purple entries: " + responsePBQ.getEntries().size();
+        Assert.assertEquals(beforeAnything, "purple entries: 0");
 
         SearchResponse response4 = queryAsUser(testUser, "cm:content:brown");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         response4.assertThat().entriesListIsNotEmpty();
 
         //TODO: remove - temp check for debugging
-        SearchResponse responseRB = queryAsUser(testUser, "cm:content:purple");
+        SearchResponse responsePAQ = queryAsUser(testUser, "cm:content:purple");
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        String beforeUpdate = "brown entries: " + response4.getEntries().size() + "  purple entries: " + responseRB.getEntries().size();
-        Assert.assertEquals(beforeUpdate, "brown entries: 1  purple entries: 0");
+        String afterQuery = "purple entries after query: " + responsePAQ.getEntries().size();
+        Assert.assertEquals(afterQuery, "purple entries after query: 0");
 
         String newContent = "The quick purple fox jumps over the lazy dog";
         dataContent.usingUser(adminUserModel).usingSite(testSite).usingResource(file)
