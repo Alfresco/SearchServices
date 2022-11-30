@@ -22,7 +22,6 @@
  */
 package org.alfresco.test.search.functional.searchServices.search;
 
-import org.alfresco.rest.exception.EmptyRestModelCollectionException;
 import org.alfresco.rest.search.FacetFieldBucket;
 import org.alfresco.rest.search.RestRequestFacetFieldModel;
 import org.alfresco.rest.search.RestRequestFacetFieldsModel;
@@ -30,7 +29,7 @@ import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.RestResultBucketsModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
-import org.alfresco.utility.Utility;
+import org.alfresco.util.GUID;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.hamcrest.Matchers;
@@ -104,49 +103,46 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     }
 
     @Test(priority=5)
-    public void testSearchUpdateContent() throws EmptyRestModelCollectionException
+    public void testSearchUpdateContent()
     {
-        //TODO: remove - temp check for debugging
-        SearchResponse responsePBQ = queryAsUser(testUser, "cm:content:purplenotthereyet");
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        String beforeAnything = "purplenotthereyet entries: " + responsePBQ.getEntries().size();
-        if (responsePBQ.getEntries().size() != 0)
-        {
-            String msg = "Name: " + responsePBQ.getEntryByIndex(0).getName();
-            String content = " Content: " + responsePBQ.getEntryByIndex(0).getContent().toString();
-            Assert.assertEquals( beforeAnything, msg + content);
-        }
-        Assert.assertEquals( beforeAnything, "purplenotthereyet entries: 0");
+        FileModel updateableFile;
+        String originalText = GUID.generate();
+        String newText = GUID.generate();
 
-        SearchResponse response4 = queryAsUser(testUser, "cm:content:brown");
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        response4.assertThat().entriesListIsNotEmpty();
+        // Create test file to be accessed only by this test method to avoid inconsistency when querying updates
+        String filename = "File-" + originalText + ".txt";
+        String title = "Title: File for testing by testSearchUpdateContent only";
+        String description = "Description: Contains updatable unique string to test query after content update: ";
+        updateableFile = new FileModel(filename, title, description, FileType.TEXT_PLAIN,
+                description + originalText + " is a unique string");
+        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(updateableFile);
+        Assert.assertTrue(waitForContentIndexing(originalText, true));
 
-        //TODO: remove - temp check for debugging
-        SearchResponse responsePAQ = queryAsUser(testUser, "cm:content:purplenotthereyet");
+        // Verify that 1 occurrence of the original text is found
+        SearchResponse response1 = queryAsUser(testUser, "cm:content:" + originalText);
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        String afterQuery = "purplenotthereyet entries after query: " + responsePAQ.getEntries().size();
-        Assert.assertEquals(afterQuery, "purplenotthereyet entries after query: 0");
+        Assert.assertEquals(response1.getEntries().size(), 1, "Expected 1 original text before update");
 
-        String newContent = "The quick purple fox jumps over the lazy dog";
-        dataContent.usingUser(adminUserModel).usingSite(testSite).usingResource(file)
+        // Verify that 0 occurrences of the replacement text are found
+        SearchResponse response2 = queryAsUser(testUser, "cm:content:" + newText);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        Assert.assertEquals(response2.getEntries().size(), 0, "Expected 0 new text before update");
+
+        // Update the content
+        String newContent = description + newText + " is a unique string";
+        dataContent.usingUser(adminUserModel).usingSite(testSite).usingResource(updateableFile)
                 .updateContent(newContent);
-        Assert.assertTrue(waitForContentIndexing("purple", true));
+        Assert.assertTrue(waitForContentIndexing(newText, true));
 
-        //TODO: remove - artificially long wait for debugging
-        Utility.waitToLoopTime(60);
-
-        SearchResponse response5 = queryAsUser(testUser, "cm:content:brown");
+        // Verify that 0 occurrences of the original text are found
+        SearchResponse response3 = queryAsUser(testUser, "cm:content:" + originalText);
         restClient.assertStatusCodeIs(HttpStatus.OK);
+        Assert.assertEquals(response3.getEntries().size(), 0, "Expected 0 original text after update");
 
-        //TODO: remove - temp check for debugging
-        SearchResponse responseRA = queryAsUser(testUser, "cm:content:purple");
+        // Verify that 1 occurrence of the replacement text is found
+        SearchResponse response4 = queryAsUser(testUser, "cm:content:" + newText);
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        String afterUpdate = "brown entries: " + response5.getEntries().size() + "  purple entries: " + responseRA.getEntries().size();
-        Assert.assertEquals(afterUpdate, "brown entries: 0  purple entries: 1");
-
-        int initialEntriesSize = response4.getEntries().size();
-        response5.assertThat().entriesListCountIs( initialEntriesSize - 1);
+        Assert.assertEquals(response4.getEntries().size(), 1, "Expected 1 new text before update");
     }
 
     @Test(priority=6)
