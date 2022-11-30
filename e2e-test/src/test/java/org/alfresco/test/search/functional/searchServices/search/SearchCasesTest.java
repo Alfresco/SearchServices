@@ -29,7 +29,6 @@ import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.RestResultBucketsModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
-import org.alfresco.util.GUID;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.hamcrest.Matchers;
@@ -106,8 +105,8 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     public void testSearchUpdateContent()
     {
         FileModel updateableFile;
-        String originalText = GUID.generate();
-        String newText = GUID.generate();
+        String originalText = String.valueOf(System.currentTimeMillis());
+        String newText = String.valueOf(System.currentTimeMillis() + 300000);
 
         // Create test file to be accessed only by this test method to avoid inconsistency when querying updates
         String filename = "File-" + originalText + ".txt";
