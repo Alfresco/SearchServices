@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -30,6 +30,7 @@ import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
+import org.testng.Assert;
 
 import static java.util.List.of;
 
@@ -83,8 +84,19 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
 
         of(file, file2, file3, file4).forEach(
                 f -> dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(f)
-        );
+                                             );
 
         waitForMetadataIndexing(file4.getName(), true);
+    }
+
+    protected FileModel createFileWithProvidedText(String filename, String providedText)
+    {
+        String title = "Title: File containing " + providedText;
+        String description = "Description: Contains provided string: " + providedText;
+        FileModel uniqueFile = new FileModel(filename, title, description, FileType.TEXT_PLAIN,
+                "The content " + providedText + " is a provided string");
+        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(uniqueFile);
+        Assert.assertTrue(waitForContentIndexing(providedText, true));
+        return uniqueFile;
     }
 }

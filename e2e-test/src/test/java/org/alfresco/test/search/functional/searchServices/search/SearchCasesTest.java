@@ -104,18 +104,11 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=5)
     public void testSearchUpdateContent()
     {
-        FileModel updateableFile;
         String originalText = String.valueOf(System.currentTimeMillis());
         String newText = String.valueOf(System.currentTimeMillis() + 300000);
 
-        // Create test file to be accessed only by this test method to avoid inconsistency when querying updates
-        String filename = "File-" + originalText + ".txt";
-        String title = "Title: File for testing by testSearchUpdateContent only";
-        String description = "Description: Contains updatable unique string to test query after content update: ";
-        updateableFile = new FileModel(filename, title, description, FileType.TEXT_PLAIN,
-                description + originalText + " is a unique string");
-        dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(updateableFile);
-        Assert.assertTrue(waitForContentIndexing(originalText, true));
+        // Create test file to be accessed only by this test method to avoid inconsistent results when querying updates
+        FileModel updateableFile = createFileWithProvidedText(originalText + ".txt", originalText);
 
         // Verify that 1 occurrence of the original text is found
         SearchResponse response1 = queryAsUser(testUser, "cm:content:" + originalText);
@@ -128,7 +121,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         Assert.assertEquals(response2.getEntries().size(), 0, "Expected 0 new text before update");
 
         // Update the content
-        String newContent = description + newText + " is a unique string";
+        String newContent = "Description: Contains provided string: " + newText;
         dataContent.usingUser(adminUserModel).usingSite(testSite).usingResource(updateableFile)
                 .updateContent(newContent);
         Assert.assertTrue(waitForContentIndexing(newText, true));
@@ -209,9 +202,14 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=10)
     public void searchWithFacedFields()
     {
+        String uniqueText = String.valueOf(System.currentTimeMillis());
+
+        // Create test file to be accessed only by this test method to avoid inconsistent results
+        createFileWithProvidedText(uniqueText + ".ODT", uniqueText);
+
         SearchRequest query = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery("cm:content:unique");
+        queryReq.setQuery("cm:content:" + uniqueText);
         query.setQuery(queryReq);
 
         RestRequestFacetFieldsModel facetFields = new RestRequestFacetFieldsModel();
@@ -236,7 +234,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         bucket1.assertThat().field("label").is(testUser.getUsername());
         bucket1.assertThat().field("display").is("FN-" + testUser.getUsername() + " LN-" + testUser.getUsername());
         bucket1.assertThat().field("filterQuery").is("modifier:\"" + testUser.getUsername() + "\"");
-        bucket1.assertThat().field("count").isGreaterThan(0);
+        bucket1.assertThat().field("count").is(1);
     }
 
     @Test(priority=12)
