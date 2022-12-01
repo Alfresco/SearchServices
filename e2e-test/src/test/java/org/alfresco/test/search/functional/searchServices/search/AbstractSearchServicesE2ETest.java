@@ -27,10 +27,12 @@
 package org.alfresco.test.search.functional.searchServices.search;
 
 import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 
 import static java.util.List.of;
 
@@ -48,10 +50,15 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
 {
     private static final String SEARCH_DATA_SAMPLE_FOLDER = "FolderSearch";
 
+    /** The maximum time to wait for content indexing to complete (in ms). */
+    private static final int MAX_TIME = 120 * 1000;
+    /** The frequency to check the report (in ms). */
+    private static final int RETRY_INTERVAL = 30000;
+
     protected FileModel file, file2, file3, file4;
     protected FolderModel folder;
 
-    public void searchServicesDataPreparation()
+    public void searchServicesDataPreparation() throws InterruptedException
     {
         /*
          * Create the following file structure for preconditions :
@@ -86,17 +93,23 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
                 f -> dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(f)
                                              );
 
-        waitForMetadataIndexing(file4.getName(), true);
+        Utility.sleep(RETRY_INTERVAL, MAX_TIME, () -> {
+            waitForMetadataIndexing(file4.getName(), true);
+        });
     }
 
-    protected FileModel createFileWithProvidedText(String filename, String providedText)
+    protected FileModel createFileWithProvidedText(String filename, String providedText) throws InterruptedException
     {
         String title = "Title: File containing " + providedText;
         String description = "Description: Contains provided string: " + providedText;
         FileModel uniqueFile = new FileModel(filename, title, description, FileType.TEXT_PLAIN,
                 "The content " + providedText + " is a provided string");
         dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(uniqueFile);
-        Assert.assertTrue(waitForContentIndexing(providedText, true));
+
+        Utility.sleep(RETRY_INTERVAL, MAX_TIME, () -> {
+            Assert.assertTrue(waitForContentIndexing(providedText, true));
+        });
+
         return uniqueFile;
     }
 }
