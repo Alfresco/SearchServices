@@ -102,7 +102,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     }
 
     @Test(priority=5)
-    public void testSearchUpdateContent()
+    public void testSearchUpdateContent() throws InterruptedException
     {
         String originalText = String.valueOf(System.currentTimeMillis());
         String newText = String.valueOf(System.currentTimeMillis() + 300000);
@@ -200,7 +200,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
      * }
      */
     @Test(priority=10)
-    public void searchWithFacedFields()
+    public void searchWithFacedFields() throws InterruptedException
     {
         String uniqueText = String.valueOf(System.currentTimeMillis());
 
