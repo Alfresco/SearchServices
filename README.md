@@ -2,6 +2,9 @@
 
 This repository includes the source code for Alfresco Search Services and Insight Engine products.
 
+### The master branch for this repository is now deprecated.
+Please use release/v2.0.x instead.
+
 **Alfresco Search Services** provides searching capabilities to Alfresco Content Services by leveraging [Apache SOLR](https://lucene.apache.org/solr/) core features. This product is used for both Enterprise and Community releases of Alfresco Content Services and it lives in [GitHub](https://github.com/Alfresco/SearchServices).
 
 The official documentation for this product can be found at [Alfresco Search Services](https://docs.alfresco.com/search-community/concepts/search-home.html).

@@ -2,6 +2,9 @@
 
 Alfresco Search Services using Alfresco and Apache Solr
 
+### The master branch for this repository is now deprecated.
+Please use release/v2.0.x instead.
+
 ### Get the code
 
 Git:
