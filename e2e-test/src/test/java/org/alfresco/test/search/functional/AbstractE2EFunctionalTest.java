@@ -83,7 +83,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringContextTests
 {
     /** The number of retries that a query will be tried before giving up. */
-    protected static final int SEARCH_MAX_ATTEMPTS = 60;
+    protected static final int SEARCH_MAX_ATTEMPTS = 120;
 
     private static final Logger LOGGER = LogFactory.getLogger();
 
