@@ -27,12 +27,10 @@
 package org.alfresco.test.search.functional.searchServices.search;
 
 import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
-import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
 
 import static java.util.List.of;
 
@@ -92,10 +90,7 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
         of(file, file2, file3, file4).forEach(
                 f -> dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(f)
                                              );
-
-        Utility.sleep(RETRY_INTERVAL, MAX_TIME, () -> {
-            waitForMetadataIndexing(file4.getName(), true);
-        });
+        waitForMetadataIndexing(file4.getName(), true);
     }
 
     protected FileModel createFileWithProvidedText(String filename, String providedText) throws InterruptedException
@@ -105,10 +100,7 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
         FileModel uniqueFile = new FileModel(filename, title, description, FileType.TEXT_PLAIN,
                 "The content " + providedText + " is a provided string");
         dataContent.usingUser(testUser).usingSite(testSite).usingResource(folder).createContent(uniqueFile);
-
-        Utility.sleep(RETRY_INTERVAL, MAX_TIME, () -> {
-            Assert.assertTrue(waitForContentIndexing(providedText, true));
-        });
+        Assert.assertTrue(waitForContentIndexing(providedText, true));
 
         return uniqueFile;
     }
