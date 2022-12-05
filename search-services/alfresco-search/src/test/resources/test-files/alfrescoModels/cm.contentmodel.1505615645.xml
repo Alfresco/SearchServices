@@ -1829,6 +1829,17 @@
                     <mandatory>false</mandatory>
                     <index enabled="true"/>
                 </property>
+                <property name="audio:trackType">
+                    <title>Track Number</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>true</stored>
+                        <tokenised>false</tokenised>
+                        <facetable>false</facetable>
+                    </index>
+                </property>
                 <property name="audio:releaseDate">
                     <title>Release Date</title>
                     <type>d:date</type>
