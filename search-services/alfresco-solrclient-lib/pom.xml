@@ -22,19 +22,15 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.tika</groupId>
-                    <artifactId>tika-core</artifactId>
+                    <artifactId>*</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.apache.tika</groupId>
-                    <artifactId>tika-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.tika</groupId>
-                    <artifactId>tika-parsers</artifactId>
+                    <groupId>com.zaxxer</groupId>
+                    <artifactId>SparseBitSet</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
