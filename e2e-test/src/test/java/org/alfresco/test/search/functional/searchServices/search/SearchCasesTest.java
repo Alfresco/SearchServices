@@ -81,9 +81,6 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         SearchResponse response4 = queryAsUser(testUser, "cm:content:" + newText);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         Assert.assertEquals(response4.getEntries().size(), 1, "Expected 1 new text before update");
-
-        //TODO remove this
-        throw new IllegalArgumentException("Temporary exception to prove test is run");
     }
 
     /**

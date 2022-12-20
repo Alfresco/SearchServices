@@ -52,8 +52,6 @@ public class SearchSimpleCasesTest extends AbstractSearchServicesE2ETest
         SearchResponse response = queryAsUser(testUser, "cm:name:pangram");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         response.assertThat().entriesListIsNotEmpty();
-        //TODO remove this
-        throw new IllegalArgumentException("Temporary exception to prove test is run");
     }
 
     @Test(priority=2)
