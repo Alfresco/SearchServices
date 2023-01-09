@@ -937,9 +937,7 @@ public class MetadataTracker extends ActivatableTracker
                 */
                 this.state = getTrackerState();
 
-                Long fromCommitTime = getTxFromCommitTime(txnsFound,
-                        state.getLastIndexedTxCommitTime() == 0 ? state.getLastGoodTxCommitTimeInIndex()
-                                : state.getLastIndexedTxCommitTime());
+                Long fromCommitTime = getTxFromCommitTime(txnsFound,state.getLastGoodTxCommitTimeInIndex());
 
                 // Get transaction list to be indexed
                 if (docRouter instanceof DBIDRangeRouter && txIntervalCommitTimeServiceAvailable)
