@@ -295,7 +295,6 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
      */
     public boolean isContentInSearchResults(String userQuery, String contentToFind, boolean expectedInResults) {
 
-        String expectedStatusCode = HttpStatus.OK.toString();
         String contentName = (contentToFind == null) ? "" : contentToFind;
 
         SearchRequest searchRequest = createQuery(userQuery);
@@ -305,32 +304,34 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         {
             try
             {
-                SearchResponse response = query(searchRequest);
-
-                if (restClient.getStatusCode().matches(expectedStatusCode))
+                if (expectedInResults == isContentFoundWithRequest(searchRequest, contentName))
                 {
-                    boolean found = isContentInSearchResponse(response, contentName);
+                    return true;
+                }
 
-                    // Exit loop if result is as expected.
-                    if (expectedInResults == found)
-                    {
-                        return true;
-                    }
-                    // Wait for the solr indexing (eventual consistency).
-                    Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing. Retry Attempt: " + (searchCount + 1));
-                }
-                else
-                {
-                    throw new RuntimeException("API returned status code:" + restClient.getStatusCode() + " Expected: " + expectedStatusCode + "; Response body: " + response);
-                }
+                // Wait for the solr indexing (eventual consistency).
+                Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing. Retry Attempt: " + (searchCount + 1));
             }
-            catch (EmptyJsonResponseException e)
+            catch (EmptyJsonResponseException ignore)
             {
-                // Ignore the empty JSON response and try again
             }
         }
 
         return false;
+    }
+
+    private boolean isContentFoundWithRequest(SearchRequest searchRequest, String contentName)
+    {
+        SearchResponse response = query(searchRequest);
+
+        if (restClient.getStatusCode().matches(HttpStatus.OK.toString()))
+        {
+            return isContentInSearchResponse(response, contentName);
+        }
+        else
+        {
+            throw new RuntimeException("API returned status code:" + restClient.getStatusCode() + " Expected: " + HttpStatus.OK + "; Response body: " + response);
+        }
     }
 
     /**
