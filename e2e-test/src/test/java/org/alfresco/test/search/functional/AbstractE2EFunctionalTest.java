@@ -2,23 +2,23 @@
  * #%L
  * Alfresco Search Services E2E Test
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -43,6 +43,7 @@ import org.alfresco.dataprep.ContentService;
 import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.core.RestProperties;
 import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.rest.exception.EmptyJsonResponseException;
 import org.alfresco.rest.exception.EmptyRestModelCollectionException;
 import org.alfresco.rest.model.RestRequestSpellcheckModel;
 import org.alfresco.rest.search.Pagination;
@@ -120,7 +121,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     protected SiteModel testSite, testSite2;
 
     protected static String unique_searchString;
-    
+
     protected static String shardingMethod = "DB_ID";
     protected int shardCount = 0;
 
@@ -294,7 +295,6 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
      */
     public boolean isContentInSearchResults(String userQuery, String contentToFind, boolean expectedInResults) {
 
-        String expectedStatusCode = HttpStatus.OK.toString();
         String contentName = (contentToFind == null) ? "" : contentToFind;
 
         SearchRequest searchRequest = createQuery(userQuery);
@@ -302,27 +302,36 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         // Repeat search until the query results are as expected or Search Retry count is hit
         for (int searchCount = 0; searchCount < SEARCH_MAX_ATTEMPTS; searchCount++)
         {
-            SearchResponse response = query(searchRequest);
-
-            if (restClient.getStatusCode().matches(expectedStatusCode))
+            try
             {
-                boolean found = isContentInSearchResponse(response, contentName);
-
-                // Exit loop if result is as expected.
-                if (expectedInResults == found)
+                if (expectedInResults == isContentFoundWithRequest(searchRequest, contentName))
                 {
                     return true;
                 }
+
                 // Wait for the solr indexing (eventual consistency).
                 Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing. Retry Attempt: " + (searchCount + 1));
             }
-            else
+            catch (EmptyJsonResponseException ignore)
             {
-                throw new RuntimeException("API returned status code:" + restClient.getStatusCode() + " Expected: " + expectedStatusCode + "; Response body: " + response);
             }
         }
 
         return false;
+    }
+
+    private boolean isContentFoundWithRequest(SearchRequest searchRequest, String contentName)
+    {
+        SearchResponse response = query(searchRequest);
+
+        if (restClient.getStatusCode().matches(HttpStatus.OK.toString()))
+        {
+            return isContentInSearchResponse(response, contentName);
+        }
+        else
+        {
+            throw new RuntimeException("API returned status code:" + restClient.getStatusCode() + " Expected: " + HttpStatus.OK + "; Response body: " + response);
+        }
     }
 
     /**
@@ -439,7 +448,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     {
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.setQuery(queryModel);
-        
+
         if (ofNullable(paging).isPresent())
         {
             searchRequest.setPaging(paging);
@@ -508,7 +517,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
 
         // Include lists in failure message as TestNG won't do this for lists.
         assertEquals(names, expectedNames, "Unexpected results for query: " + query + " Expected: " + expectedNames + " but got " + names);
-    
+
         return response;
     }
 
@@ -522,11 +531,11 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     protected SearchResponse testSearchQueryUnordered(String query, Set<String> expectedNames, SearchLanguage queryLanguage)
     {
         SearchResponse response = performSearch(testUser, query, queryLanguage, getDefaultPagingOptions());
-    
+
         Set<String> names = response.getEntries().stream().map(s -> s.getModel().getName()).collect(Collectors.toSet());
-    
+
         assertEquals(names, expectedNames, "Unexpected results for query: " + query);
-    
+
         return response;
     }
 
@@ -553,7 +562,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     /**
      * Returns pagination object with alfresco default settings
      * Sets skipCount = 0, maxItems = 100
-     * 
+     *
      * @return
      */
     private Pagination getDefaultPagingOptions()
@@ -574,7 +583,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     protected Pagination setPaging(Integer skipCount, Integer maxItems)
     {
         Pagination paging = new Pagination();
-        
+
         if (ofNullable(skipCount).isPresent())
         {
             paging.setSkipCount(skipCount);
@@ -584,7 +593,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         {
             paging.setMaxItems(maxItems);
         }
-        
+
         return paging;
     }
 
@@ -645,7 +654,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     public String getShardMethod() throws JsonProcessingException, EmptyRestModelCollectionException
     {
         RestShardInfoModelCollection info = getShardInfo();
-        
+
         return shardingMethod = ofNullable(info)
                 .map(RestShardInfoModelCollection::getEntries)
                 .map(Collection::iterator).filter(Iterator::hasNext)
@@ -664,7 +673,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     public int getShardCount() throws JsonProcessingException, EmptyRestModelCollectionException
     {
         RestShardInfoModelCollection info = getShardInfo();
-        
+
         return shardCount = ofNullable(info)
                 .map(RestShardInfoModelCollection::getEntries)
                 .map(Collection::iterator)

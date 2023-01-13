@@ -25,6 +25,7 @@ package org.alfresco.test.search.functional.searchServices.search;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.hamcrest.Matchers;
@@ -235,10 +236,18 @@ public class SearchSimpleCasesTest extends AbstractSearchServicesE2ETest
 
         SearchRequest searchReq = createQuery("name:'" + specialCharfileName + "'");
         SearchResponse nodes = query(searchReq);
-
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        nodes.assertThat().entriesListIsNotEmpty();
 
+        int searchCount = 0;
+        while (nodes.isEmpty() && searchCount < SEARCH_MAX_ATTEMPTS)
+        {
+            // Wait for the solr indexing (eventual consistency).
+            Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Results After Indexing. Retry Attempt: " + (searchCount + 1));
+            nodes = query(searchReq);
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+        }
+
+        nodes.assertThat().entriesListIsNotEmpty();
         restClient.onResponse().assertThat().body("list.entries.entry[0].name", Matchers.equalToIgnoringCase(specialCharfileName));
     }
 }
