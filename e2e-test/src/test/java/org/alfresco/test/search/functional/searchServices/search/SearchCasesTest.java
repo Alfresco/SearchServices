@@ -50,7 +50,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         Assert.assertTrue(waitForContentIndexing(file4.getContent(), true));
     }
 
-    @Test(priority=5)
+    @Test(priority=1)
     public void testSearchUpdateContent() throws InterruptedException
     {
         String originalText = String.valueOf(System.currentTimeMillis());
@@ -96,7 +96,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
      *  }
      * }
      */
-    @Test(priority=10)
+    @Test(priority=2)
     public void searchWithFacedFields() throws InterruptedException
     {
         String uniqueText = String.valueOf(System.currentTimeMillis());
@@ -134,7 +134,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         bucket1.assertThat().field("count").is(1);
     }
 
-    @Test(priority=18)
+    @Test(priority=3)
     public void searchSpecialCharacters()
     {
         String specialCharfileName = "è¥äæ§ç§-åæ.pdf";
