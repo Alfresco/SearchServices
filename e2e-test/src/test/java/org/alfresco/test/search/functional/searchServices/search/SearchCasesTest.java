@@ -29,7 +29,10 @@ import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.RestResultBucketsModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
+import org.hamcrest.Matchers;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -47,7 +50,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         Assert.assertTrue(waitForContentIndexing(file4.getContent(), true));
     }
 
-    @Test(priority=5)
+    @Test(priority=1)
     public void testSearchUpdateContent() throws InterruptedException
     {
         String originalText = String.valueOf(System.currentTimeMillis());
@@ -93,7 +96,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
      *  }
      * }
      */
-    @Test(priority=10)
+    @Test(priority=2)
     public void searchWithFacedFields() throws InterruptedException
     {
         String uniqueText = String.valueOf(System.currentTimeMillis());
@@ -129,5 +132,32 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         bucket1.assertThat().field("display").is("FN-" + testUser.getUsername() + " LN-" + testUser.getUsername());
         bucket1.assertThat().field("filterQuery").is("modifier:\"" + testUser.getUsername() + "\"");
         bucket1.assertThat().field("count").is(1);
+    }
+
+    @Test(priority=3)
+    public void searchSpecialCharacters()
+    {
+        String specialCharfileName = "è¥äæ§ç§-åæ.pdf";
+        FileModel file = new FileModel(specialCharfileName, "è¥äæ§ç§-åæ¬¯¸" + "è¥äæ§ç§-åæ¬¯¸", "è¥äæ§ç§-åæ¬¯¸", FileType.TEXT_PLAIN,
+                "Text file with Special Characters: " + specialCharfileName);
+        dataContent.usingUser(testUser).usingSite(testSite).createContent(file);
+
+        waitForIndexing(file.getName(), true);
+
+        SearchRequest searchReq = createQuery("name:'" + specialCharfileName + "'");
+        SearchResponse nodes = query(searchReq);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        int searchCount = 0;
+        while (nodes.isEmpty() && searchCount < SEARCH_MAX_ATTEMPTS)
+        {
+            // Wait for the solr indexing (eventual consistency).
+            Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Results After Indexing. Retry Attempt: " + (searchCount + 1));
+            nodes = query(searchReq);
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+        }
+
+        nodes.assertThat().entriesListIsNotEmpty();
+        restClient.onResponse().assertThat().body("list.entries.entry[0].name", Matchers.equalToIgnoringCase(specialCharfileName));
     }
 }

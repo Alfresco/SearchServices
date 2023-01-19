@@ -25,10 +25,6 @@ package org.alfresco.test.search.functional.searchServices.search;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
-import org.alfresco.utility.Utility;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FileType;
-import org.hamcrest.Matchers;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -222,32 +218,5 @@ public class SearchSimpleCasesTest extends AbstractSearchServicesE2ETest
         SearchResponse response6 = queryAsUser(testUser, "al?res*");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         response6.assertThat().entriesListIsNotEmpty();
-    }
-
-    @Test(priority=18)
-    public void searchSpecialCharacters()
-    {
-        String specialCharfileName = "è¥äæ§ç§-åæ.pdf";
-        FileModel file = new FileModel(specialCharfileName, "è¥äæ§ç§-åæ¬¯¸" + "è¥äæ§ç§-åæ¬¯¸", "è¥äæ§ç§-åæ¬¯¸", FileType.TEXT_PLAIN,
-                "Text file with Special Characters: " + specialCharfileName);
-        dataContent.usingUser(testUser).usingSite(testSite).createContent(file);
-
-        waitForIndexing(file.getName(), true);
-
-        SearchRequest searchReq = createQuery("name:'" + specialCharfileName + "'");
-        SearchResponse nodes = query(searchReq);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-
-        int searchCount = 0;
-        while (nodes.isEmpty() && searchCount < SEARCH_MAX_ATTEMPTS)
-        {
-            // Wait for the solr indexing (eventual consistency).
-            Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Results After Indexing. Retry Attempt: " + (searchCount + 1));
-            nodes = query(searchReq);
-            restClient.assertStatusCodeIs(HttpStatus.OK);
-        }
-
-        nodes.assertThat().entriesListIsNotEmpty();
-        restClient.onResponse().assertThat().body("list.entries.entry[0].name", Matchers.equalToIgnoringCase(specialCharfileName));
     }
 }
