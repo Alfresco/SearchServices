@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services E2E Test
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,10 +26,15 @@
 
 package org.alfresco.test.search.functional.searchServices.search;
 
+import org.alfresco.rest.exception.EmptyJsonResponseException;
+import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.test.search.functional.AbstractE2EFunctionalTest;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.UserModel;
+import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 
 import static java.util.List.of;
@@ -47,6 +52,10 @@ import static java.util.List.of;
 public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctionalTest
 {
     private static final String SEARCH_DATA_SAMPLE_FOLDER = "FolderSearch";
+    private static final int MAX_ATTEMPTS_TO_RETRY_QUERY = 10;
+    private static final int MAX_WAIT_IN_SECONDS_BEFORE_RETRY_QUERY = 5;
+    private static final int MAX_ATTEMPTS_TO_READ_RESPONSE = 10;
+    private static final int MAX_WAIT_IN_SECONDS_BEFORE_REREAD_RESPONSE = 2;
 
     /** The maximum time to wait for content indexing to complete (in ms). */
     private static final int MAX_TIME = 120 * 1000;
@@ -103,5 +112,47 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
         Assert.assertTrue(waitForContentIndexing(providedText, true));
 
         return uniqueFile;
+    }
+
+    protected SearchResponse queryUntilResponseEntriesListNotEmpty(UserModel user, String queryString)
+    {
+       SearchResponse response = queryUntilStatusIsOk(user, queryString);
+       if (restClient.getStatusCode().matches(HttpStatus.OK.toString()))
+       {
+           for (int readAttempts = 0; readAttempts < MAX_ATTEMPTS_TO_READ_RESPONSE; readAttempts++)
+           {
+               if (!response.isEmpty())
+               {
+                   return response;
+               }
+               Utility.waitToLoopTime(MAX_WAIT_IN_SECONDS_BEFORE_REREAD_RESPONSE, "Re-reading empty response. Retry Attempt: " + (readAttempts + 1));
+           }
+       }
+
+       return response;
+    }
+
+    private SearchResponse queryUntilStatusIsOk(UserModel user, String queryString)
+    {
+        // Repeat query until status is OK or Query Retry limit is hit
+        for (int queryAttempts = 0; queryAttempts < MAX_ATTEMPTS_TO_RETRY_QUERY - 1; queryAttempts++)
+        {
+            try
+            {
+                SearchResponse response = queryAsUser(user, queryString);
+                if (restClient.getStatusCode().matches(HttpStatus.OK.toString()))
+                {
+                    return response;
+                }
+
+                // Wait for pipeline to calm down
+                Utility.waitToLoopTime(MAX_WAIT_IN_SECONDS_BEFORE_RETRY_QUERY, "Re-trying query for valid status code. Retry Attempt: " + (queryAttempts + 1));
+            }
+            catch (EmptyJsonResponseException ignore)
+            {
+            }
+        }
+        // Final attempt
+        return queryAsUser(user, queryString);
     }
 }

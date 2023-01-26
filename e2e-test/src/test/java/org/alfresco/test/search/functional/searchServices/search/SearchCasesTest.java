@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services E2E Test
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -51,6 +51,162 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
     }
 
     @Test(priority=1)
+    public void testSearchNameField()
+    {
+        SearchRequest searchReq = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("cm:name:pangram");
+        queryReq.setUserQuery("pangram");
+        searchReq.setQuery(queryReq);
+        SearchResponse response = queryAsUser(testUser, "cm:name:pangram");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response.assertThat().entriesListIsNotEmpty();
+    }
+
+    @Test(priority=2)
+    public void testSearchTitleField()
+    {
+        SearchRequest searchReq = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("cm:title:cars");
+        queryReq.setUserQuery("cars");
+        searchReq.setQuery(queryReq);
+        SearchResponse response2 = queryAsUser(testUser, "cm:title:cars");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response2.assertThat().entriesListIsNotEmpty();
+    }
+
+    @Test(priority=3)
+    public void testSearchDescriptionField()
+    {
+        SearchRequest searchReq = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("cm:description:alfresco");
+        queryReq.setUserQuery("alfresco");
+        searchReq.setQuery(queryReq);
+        SearchResponse response3 = queryAsUser(testUser, "cm:description:alfresco");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response3.assertThat().entriesListIsNotEmpty();
+    }
+
+    @Test(priority=4)
+    public void testSearchTextFile()
+    {
+        SearchRequest searchReq = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("cm:name:pangram.txt");
+        queryReq.setUserQuery("pangram.txt");
+        searchReq.setQuery(queryReq);
+        SearchResponse response6 = queryAsUser(testUser, "cm:name:pangram.txt");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response6.assertThat().entriesListIsNotEmpty();
+    }
+
+    @Test(priority=5)
+    public void testSearchPDFFile()
+    {
+        SearchRequest searchReq = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("cm:name:cars.PDF");
+        queryReq.setUserQuery("cars.PDF");
+        searchReq.setQuery(queryReq);
+        SearchResponse response6 = queryAsUser(testUser, "cm:name:cars.PDF");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response6.assertThat().entriesListIsNotEmpty();
+    }
+
+    @Test(priority=6)
+    public void testSearchDocxFile()
+    {
+        SearchRequest searchReq = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("cm:name:alfresco.docx");
+        queryReq.setUserQuery("alfresco.docx");
+        searchReq.setQuery(queryReq);
+        SearchResponse response6 = queryAsUser(testUser, "cm:name:alfresco.docx");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response6.assertThat().entriesListIsNotEmpty();
+    }
+
+    @Test(priority=7)
+    public void testSearchPhraseQueries()
+    {
+        SearchRequest searchReq = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("cm:name:alfresco");
+        queryReq.setUserQuery("alfresco");
+        searchReq.setQuery(queryReq);
+        SearchResponse response6 = queryAsUser(testUser, "The quick brown fox jumps over the lazy dog");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response6.assertThat().entriesListIsNotEmpty();
+    }
+
+    @Test(priority=8)
+    public void testSearchExactTermQueries()
+    {
+        SearchRequest searchReq = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("cm:name:alfresco");
+        queryReq.setUserQuery("alfresco");
+        searchReq.setQuery(queryReq);
+        SearchResponse response6 = queryAsUser(testUser, "=alfresco");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response6.assertThat().entriesListIsNotEmpty();
+    }
+
+    @Test(priority=9)
+    public void testSearchConjunctionQueries()
+    {
+        SearchRequest searchReq = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("cm:name:unique");
+        queryReq.setUserQuery("unique");
+        searchReq.setQuery(queryReq);
+        SearchResponse response6 = queryAsUser(testUser, "unique AND search");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response6.assertThat().entriesListIsNotEmpty();
+    }
+
+    @Test(priority=10)
+    public void testSearchDisjunctionQueries()
+    {
+        SearchRequest searchReq = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("cm:name:cars");
+        queryReq.setUserQuery("cars");
+        searchReq.setQuery(queryReq);
+        SearchResponse response6 = queryAsUser(testUser, "file OR discovery");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response6.assertThat().entriesListIsNotEmpty();
+    }
+
+    @Test(priority=11)
+    public void testSearchNegationQueries()
+    {
+        SearchRequest searchReq = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("cm:name:pangram");
+        queryReq.setUserQuery("pangram");
+        searchReq.setQuery(queryReq);
+        SearchResponse response6 = queryAsUser(testUser, "pangram NOT pan");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response6.assertThat().entriesListIsNotEmpty();
+    }
+
+    @Test(priority=12)
+    public void testSearchWildcardQueries()
+    {
+        SearchRequest searchReq = new SearchRequest();
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("cm:name:alfresco");
+        queryReq.setUserQuery("alfresco");
+        searchReq.setQuery(queryReq);
+        SearchResponse response6 = queryAsUser(testUser, "al?res*");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        response6.assertThat().entriesListIsNotEmpty();
+    }
+
+    @Test(priority=13)
     public void testSearchUpdateContent() throws InterruptedException
     {
         String originalText = String.valueOf(System.currentTimeMillis());
@@ -96,7 +252,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
      *  }
      * }
      */
-    @Test(priority=2)
+    @Test(priority=14)
     public void searchWithFacedFields() throws InterruptedException
     {
         String uniqueText = String.valueOf(System.currentTimeMillis());
@@ -134,7 +290,7 @@ public class SearchCasesTest extends AbstractSearchServicesE2ETest
         bucket1.assertThat().field("count").is(1);
     }
 
-    @Test(priority=3)
+    @Test(priority=15)
     public void searchSpecialCharacters()
     {
         String specialCharfileName = "è¥äæ§ç§-åæ.pdf";
