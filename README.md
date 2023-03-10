@@ -10,6 +10,8 @@ The official documentation for this product can be found at [Alfresco Search Ser
 
 The official documentation for this product can be found at [Alfresco Search and Insight Engine](https://docs.alfresco.com/sie/concepts/Search-Insight-Engine-overview.html).
 
+> ⚠ The previous master branch has been renamed to `bak-master` and is deprecated. The current master used to be called `release/V2.0.x`.
+
 
 ### Alfresco Search Services
 
