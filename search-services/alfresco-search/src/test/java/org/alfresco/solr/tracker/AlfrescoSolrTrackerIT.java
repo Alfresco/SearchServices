@@ -254,23 +254,7 @@ public class AlfrescoSolrTrackerIT extends AbstractAlfrescoSolrIT
 
         logger.info("#################### Passed Eighth Test ##############################");
 
-
-        //Add document with isContentIndexed=false
-
-        Transaction txnNoContent = getTransaction(0, 1);
-        Node noContentNode = getNode(txnNoContent, acl, Node.SolrApiNodeStatus.UPDATED);
-        NodeMetaData noContentMetaData = getNodeMetaData(noContentNode, txnNoContent, acl, "mike", null, false);
-        noContentMetaData.getProperties().put(ContentModel.PROP_IS_CONTENT_INDEXED, new StringPropertyValue("false"));
-        noContentMetaData.getProperties().put(ContentModel.PROP_CONTENT, new ContentPropertyValue(Locale.UK, 298L, "UTF-8", "text/json", null));
-        indexTransaction(txnNoContent, list(noContentNode), list(noContentMetaData));
-
-        //This tests that the mime type has been added for this document. It is the only document with text/json in the index.
-        waitForDocCount(new TermQuery(new Term("content@s__mimetype@{http://www.alfresco.org/model/content/1.0}content", "text/json")), 1, MAX_WAIT_TIME);
-        //Many of the tests beyond this point rely on a specific count of documents in the index that have content.
-        //This document should not have had the content indexed so the tests following will pass.
-        //If the content had been indexed the tests following this one would have failed.
-        //This proves that the ContentModel.PROP_IS_CONTENT_INDEXED property is being followed by the tracker
-
+        testIsContentIndexed(acl);
 
         //Try bulk loading
 
@@ -434,5 +418,49 @@ public class AlfrescoSolrTrackerIT extends AbstractAlfrescoSolrIT
         //And the error node should be present
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(errorNode.getId()))), 1, MAX_WAIT_TIME);
         logger.info("#################### Passed Nineteenth Test ##############################");
+    }
+
+    // test cm:isContentIndexed property
+    private void testIsContentIndexed(Acl acl) throws Exception
+    {
+        // number of existing documents before running this test
+        final int previousNumberOfDocuments = 2;
+
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), previousNumberOfDocuments, MAX_WAIT_TIME);
+
+        // adds a document with cm:indexControl aspect with "cm:isIndexed" as true and "cm:isContentIndexed" is false
+        Transaction txnWithAspect = getTransaction(0, 1);
+        Node aspectNode = getNode(txnWithAspect, acl, Node.SolrApiNodeStatus.UPDATED);
+        NodeMetaData aspectNodeMetaData = getNodeMetaData(aspectNode, txnWithAspect, acl, "mike", null, false);
+        aspectNodeMetaData.getAspects().add(ContentModel.ASPECT_INDEX_CONTROL);
+        aspectNodeMetaData.getProperties().put(ContentModel.PROP_IS_INDEXED, new StringPropertyValue("true"));
+        aspectNodeMetaData.getProperties().put(ContentModel.PROP_IS_CONTENT_INDEXED, new StringPropertyValue("false"));
+        indexTransaction(txnWithAspect, list(aspectNode), list(aspectNodeMetaData));
+
+        // the new document is not supposed to be indexed
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), previousNumberOfDocuments, MAX_WAIT_TIME);
+
+        // switch "cm:isContentIndexed" from false to true
+        Transaction txnContentIndexedFromTrueToFalse = getTransaction(0, 1);
+        aspectNodeMetaData.getProperties().put(ContentModel.PROP_IS_CONTENT_INDEXED, new StringPropertyValue("true"));
+        indexTransaction(txnContentIndexedFromTrueToFalse, list(aspectNode), list(aspectNodeMetaData));
+
+        // it's supposed the new document to be indexed
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), previousNumberOfDocuments+1, MAX_WAIT_TIME);
+
+        // switch "cm:isContentIndexed" from true to false
+        Transaction txnContentIndexedFromFalseToTrue = getTransaction(0, 1);
+        aspectNodeMetaData.getProperties().put(ContentModel.PROP_IS_CONTENT_INDEXED, new StringPropertyValue("false"));
+        indexTransaction(txnContentIndexedFromFalseToTrue, list(aspectNode), list(aspectNodeMetaData));
+
+        // it's supposed the new document not to be indexed again
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), previousNumberOfDocuments, MAX_WAIT_TIME);
+
+        // delete document
+        Transaction txnDeleteContentIndexed = getTransaction(1, 0);
+        indexTransaction(txnDeleteContentIndexed, list(aspectNode), list(aspectNodeMetaData));
+
+        // it's supposed to the new document disappear
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), previousNumberOfDocuments, MAX_WAIT_TIME);
     }
 }

@@ -121,7 +121,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import com.carrotsearch.hppc.IntArrayList;
@@ -1767,7 +1766,7 @@ public class SolrInformationServer implements InformationServer
                                             .map(StringPropertyValue::getValue)
                                             .map(Boolean::parseBoolean)
                                             .orElse(true);
-                    
+
                     addDocCmd.solrDoc = isIndexed
                                 ? populateWithMetadata(
                                             basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new),
@@ -2175,7 +2174,12 @@ public class SolrInformationServer implements InformationServer
                 document,
                 contentIndexingHasBeenEnabledOnThisInstance);
 
-        keepContentFields(document);
+        if( isContentIndexedForNode( metadata.getProperties()) )
+        {
+            keepContentFields(document);
+        } else {
+            deleteContentField(document);
+        }
 
         LOGGER.debug("Document size (fields) after getting properties from node {} metadata: {}", metadata.getId(), document.size());
 
@@ -2406,11 +2410,6 @@ public class SolrInformationServer implements InformationServer
         boolean contentIndexingIsEnabled =
                 contentIndexingHasBeenEnabledOnThisInstance
                         && contentIndexingHasBeenRequestedForThisNode;
-
-        if (!contentIndexingIsEnabled)
-        {
-            markAsContentInSynch(document);
-        }
 
         final BiConsumer<String, Object> setValue = document::setField;
         final BiConsumer<String, Object> addValue = document::addField;
@@ -2817,7 +2816,7 @@ public class SolrInformationServer implements InformationServer
         }
     }
 
-    private void keepContentFields(PartialSolrInputDocument doc)
+    private void applyContentFields(PartialSolrInputDocument doc, BiConsumer<PartialSolrInputDocument, String> consumer)
     {
         String qNamePart = CONTENT_LOCALE_FIELD.substring(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX.length());
         QName propertyQName = QName.createQName(qNamePart);
@@ -2825,20 +2824,28 @@ public class SolrInformationServer implements InformationServer
         dataModel.getIndexedFieldForSpecializedPropertyMetadata(propertyQName, AlfrescoSolrDataModel.SpecializedFieldType.TRANSFORMATION_STATUS)
                 .getFields()
                 .stream()
-                .forEach(field -> doc.keepField(field.getField()));
+                .forEach(field -> consumer.accept(doc, field.getField()));
 
         dataModel.getIndexedFieldForSpecializedPropertyMetadata(propertyQName, AlfrescoSolrDataModel.SpecializedFieldType.TRANSFORMATION_EXCEPTION)
                 .getFields()
                 .stream()
-                .forEach(field -> doc.keepField(field.getField()));
+                .forEach(field -> consumer.accept(doc, field.getField()));
 
         dataModel.getIndexedFieldForSpecializedPropertyMetadata(propertyQName, AlfrescoSolrDataModel.SpecializedFieldType.TRANSFORMATION_TIME)
                 .getFields()
                 .stream()
-                .forEach(field -> doc.keepField(field.getField()));
+                .forEach(field -> consumer.accept(doc, field.getField()));
 
-        doc.keepField(FINGERPRINT_FIELD);
-        doc.keepField(dataModel.getStoredContentField(propertyQName));
+        consumer.accept(doc, FINGERPRINT_FIELD);
+        consumer.accept(doc, dataModel.getStoredContentField(propertyQName));
+    }
+
+    private void deleteContentField(PartialSolrInputDocument doc) {
+        applyContentFields( doc, (doc2, field) -> doc2.removeField(field) );
+    }
+    private void keepContentFields(PartialSolrInputDocument doc)
+    {
+        applyContentFields(doc, (doc2, field) -> doc2.keepField(field));
     }
 
     private String languageFrom(String locale)
