@@ -45,12 +45,12 @@ import org.testng.annotations.Test;
 public class SearchSolrAPITest extends AbstractE2EFunctionalTest
 {
     @Test(priority = 1)
-    public void testGetSolrConfig() throws Exception
+    public void testGetSolrConfig()
     {
         RestTextResponse response = restClient.authenticateUser(adminUserModel).withSolrAPI().getConfig();
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
-        restClient.onResponse().assertThat().content(Matchers.containsString("config"));
+        restClient.onResponse().assertThat().body(Matchers.containsString("config"));
         Assert.assertNotNull(response.getJsonValueByPath("config.requestHandler"));
         Assert.assertNotNull(response.getJsonObjectByPath("config.requestHandler"));
 
@@ -65,7 +65,7 @@ public class SearchSolrAPITest extends AbstractE2EFunctionalTest
     }
     
     @Test(priority = 2)
-    public void testEditSolrConfig() throws Exception
+    public void testEditSolrConfig()
     {
         String expectedError = "solrconfig editing is not enabled due to disable.configEdit";
 
@@ -85,7 +85,7 @@ public class SearchSolrAPITest extends AbstractE2EFunctionalTest
         restClient.authenticateUser(adminUserModel).withSolrAPI().postConfig(postBody);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
 
-        restClient.onResponse().assertThat().content(Matchers.containsString(expectedError));
+        restClient.onResponse().assertThat().body(Matchers.containsString(expectedError));
 
         // TODO: Following asserts fail with error: 
         /*
@@ -97,21 +97,21 @@ public class SearchSolrAPITest extends AbstractE2EFunctionalTest
     }
 
     @Test(priority = 3)
-    public void testGetSolrConfigOverlay() throws Exception
+    public void testGetSolrConfigOverlay()
     {
         restClient.authenticateUser(adminUserModel).withSolrAPI().getConfigOverlay();
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
-        restClient.onResponse().assertThat().content(Matchers.containsString("overlay"));
+        restClient.onResponse().assertThat().body(Matchers.containsString("overlay"));
     }
 
     @Test(priority = 4)
-    public void testGetSolrConfigParams() throws Exception
+    public void testGetSolrConfigParams()
     {
         restClient.authenticateUser(adminUserModel).withSolrAPI().getConfigParams();
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
-        restClient.onResponse().assertThat().content(Matchers.containsString("response"));
+        restClient.onResponse().assertThat().body(Matchers.containsString("response"));
     }
 
     @Test(priority = 5)
