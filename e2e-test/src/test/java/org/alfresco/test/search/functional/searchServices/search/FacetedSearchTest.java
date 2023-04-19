@@ -110,7 +110,7 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
      * }}
      */
     @BeforeClass(alwaysRun = true)
-    public void dataPreparation() throws Exception
+    public void dataPreparation()
     {
         searchServicesDataPreparation();
         waitForContentIndexing(file4.getContent(), true);
@@ -118,7 +118,7 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
 
     @Test(groups={TestGroup.CONFIG_ENABLED_CASCADE_TRACKER})
     @TestRail(section = { TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.REGRESSION, description = "Checks facet queries for the Search api")
-    public void searchWithQueryFaceting() throws Exception
+    public void searchWithQueryFaceting()
     {
         SearchRequest query = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -154,11 +154,10 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
     
     /**
      * Verify this query is returning the same results for both single server and shard environments.
-     * @throws Exception
      */
     @Test(groups={TestGroup.CONFIG_SHARDING})
     @TestRail(section = { TestGroup.REST_API, TestGroup.SEARCH}, executionType = ExecutionType.ACCEPTANCE, description = "Checks facet queries for the Search api in Shard environments")
-    public void searchWithQueryFacetingCluster() throws Exception
+    public void searchWithQueryFacetingCluster()
     {
         searchWithQueryFaceting();
     }
@@ -205,7 +204,7 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
     @Test
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
               description = "Checks facet queries for the Search api")
-    public void searchQueryFacetingWithGroup() throws Exception
+    public void searchQueryFacetingWithGroup()
     {
         SearchRequest query = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -270,7 +269,7 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
     @Test
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
               description = "Checks facet queries for the Search api")
-    public void searchWithFactedFields() throws Exception
+    public void searchWithFactedFields()
     {
         SearchRequest query = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -316,7 +315,7 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
     @Test
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
               description = "Checks facet queries for the Search api")
-    public void searchWithFactedFieldsFacetFormatV2() throws Exception
+    public void searchWithFactedFieldsFacetFormatV2()
     {
         SearchRequest query = new SearchRequest();
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
@@ -343,7 +342,9 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
         bucket1.assertThat().field("label").is(testUser.getUsername());
         bucket1.assertThat().field("display").is("FN-" + testUser.getUsername() + " LN-" + testUser.getUsername());
         bucket1.assertThat().field("filterQuery").is("modifier:\"" + testUser.getUsername() + "\"");
-        bucket1.assertThat().field("metrics").is("[{entry=null, type=count, value={count=1}}]");
+        bucket1.assertThat().field("metrics.entry").is("[null]")
+               .and().field("metrics.type").is("[count]")
+               .and().field("metrics.value").is("[{count=1}]");
     }
     
     /**
@@ -361,7 +362,7 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
     @Test
     @TestRail(section = {TestGroup.REST_API, TestGroup.SEARCH }, executionType = ExecutionType.REGRESSION,
               description = "Checks facet queries for the Search api, single and multi-valued properties")
-    public void searchWithMultiValuedFieldsFacet() throws Exception
+    public void searchWithMultiValuedFieldsFacet()
     {
         
         // Create properties with single (cm:addressee) and multi-valued (cm:addressees) values
@@ -410,11 +411,15 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
         RestGenericBucketModel bucket = model.getBuckets().get(0);
         bucket.assertThat().field("label").is("{en}first");
         bucket.assertThat().field("filterQuery").is("cm:addressees:\"{en}first\"");
-        bucket.assertThat().field("metrics").is("[{entry=null, type=count, value={count=1}}]");
+        bucket.assertThat().field("metrics.entry").is("[null]")
+              .and().field("metrics.type").is("[count]")
+              .and().field("metrics.value").is("[{count=1}]");
         bucket = model.getBuckets().get(1);
         bucket.assertThat().field("label").is("{en}second");
         bucket.assertThat().field("filterQuery").is("cm:addressees:\"{en}second\"");
-        bucket.assertThat().field("metrics").is("[{entry=null, type=count, value={count=1}}]");
+        bucket.assertThat().field("metrics.entry").is("[null]")
+              .and().field("metrics.type").is("[count]")
+              .and().field("metrics.value").is("[{count=1}]");
         
         // Facets for cm:addressee (singel valued)
         model = response.getContext().getFacets().get(1);
@@ -423,7 +428,8 @@ public class FacetedSearchTest extends AbstractSearchServicesE2ETest
         bucket = model.getBuckets().get(0);
         bucket.assertThat().field("label").is("{en}first");
         bucket.assertThat().field("filterQuery").is("cm:addressee:\"{en}first\"");
-        bucket.assertThat().field("metrics").is("[{entry=null, type=count, value={count=1}}]");
-        
+        bucket.assertThat().field("metrics.entry").is("[null]")
+              .and().field("metrics.type").is("[count]")
+              .and().field("metrics.value").is("[{count=1}]");
     }
 }

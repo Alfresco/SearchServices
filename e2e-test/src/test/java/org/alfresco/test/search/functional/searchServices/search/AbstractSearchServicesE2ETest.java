@@ -65,7 +65,7 @@ public abstract class AbstractSearchServicesE2ETest extends AbstractE2EFunctiona
     protected FileModel file, file2, file3, file4;
     protected FolderModel folder;
 
-    public void searchServicesDataPreparation() throws InterruptedException
+    public void searchServicesDataPreparation()
     {
         /*
          * Create the following file structure for preconditions :
