@@ -22,8 +22,6 @@
  */
 package org.alfresco.test.search.functional.searchServices.search;
 
-import org.alfresco.rest.search.RestRequestQueryModel;
-import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
@@ -41,25 +39,15 @@ public class SearchSimpleCasesTest extends AbstractSearchServicesE2ETest
     @Test(priority=1)
     public void testSearchContentField()
     {
-        SearchRequest searchReq = new SearchRequest();
-        RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery("cm:content:unique");
-        queryReq.setUserQuery("unique");
-        searchReq.setQuery(queryReq);
         SearchResponse response4 = queryUntilResponseEntriesListNotEmpty(testUser, "cm:content:unique");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         response4.assertThat().entriesListIsNotEmpty();
     }
 
     @Test(priority=2)
-    public void testSearchODTFile()
+    public void testSearchDocxFile()
     {
-        SearchRequest searchReq = new SearchRequest();
-        RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery("cm:name:unique.ODT");
-        queryReq.setUserQuery("unique.ODT");
-        searchReq.setQuery(queryReq);
-        SearchResponse response6 = queryUntilResponseEntriesListNotEmpty(testUser, "cm:name:unique.ODT");
+        SearchResponse response6 = queryUntilResponseEntriesListNotEmpty(testUser, "cm:name:alfresco.docx");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         response6.assertThat().entriesListIsNotEmpty();
     }
