@@ -765,7 +765,6 @@ public class AclTracker extends ActivatableTracker
                 {
                     aclCount = indexBatchOfChangeSets(changeSetBatch);
                     // Update last committed transactions
-                    setLastChangeSetIdAndCommitTimeInTrackerState(changeSetBatch, state);
                     indexAclChangeSetAfterWorker(changeSetBatch, state);
 
                     long endElapsed = System.nanoTime();
@@ -773,6 +772,9 @@ public class AclTracker extends ActivatableTracker
                     startElapsed = endElapsed;
                     totalAclCount += aclCount;
                 }
+
+                // Update state with server data on last transactions processed
+                setLastChangeSetIdAndCommitTimeInTrackerState(aclChangeSets.getAclChangeSets(), state);
 
             }
             catch(InterruptedException | ExecutionException e)
