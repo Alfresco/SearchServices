@@ -2837,7 +2837,20 @@ public class SolrInformationServer implements InformationServer
                 .forEach(field -> consumer.accept(doc, field.getField()));
 
         consumer.accept(doc, FINGERPRINT_FIELD);
-        consumer.accept(doc, dataModel.getStoredContentField(propertyQName));
+
+        List<String> contentProperties = doc.getFieldNames().stream()
+                .filter(field -> field.startsWith(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX))
+                .map(field -> {
+                    String part = field.substring(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX.length());
+                    QName property = QName.createQName(part);
+                    return dataModel.getStoredContentField(property);
+                })
+                .collect(toList());
+
+        for (String contentProperty : contentProperties)
+        {
+            consumer.accept(doc, contentProperty);
+        }
     }
 
     private void deleteContentField(PartialSolrInputDocument doc) {

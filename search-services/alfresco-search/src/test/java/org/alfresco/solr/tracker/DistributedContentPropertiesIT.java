@@ -26,27 +26,6 @@
 
 package org.alfresco.solr.tracker;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.solr.AbstractAlfrescoDistributedIT;
-import org.alfresco.solr.client.Acl;
-import org.alfresco.solr.client.ContentPropertyValue;
-import org.alfresco.solr.client.Node;
-import org.alfresco.solr.client.NodeMetaData;
-import org.alfresco.solr.client.Transaction;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.TermQuery;
-import org.apache.solr.SolrTestCaseJ4;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Stream;
-
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
@@ -58,6 +37,32 @@ import static org.alfresco.solr.AlfrescoSolrUtils.getNode;
 import static org.alfresco.solr.AlfrescoSolrUtils.getNodeMetaData;
 import static org.alfresco.solr.AlfrescoSolrUtils.getTransaction;
 import static org.alfresco.solr.AlfrescoSolrUtils.indexAclChangeSet;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Stream;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.solr.AbstractAlfrescoDistributedIT;
+import org.alfresco.solr.client.Acl;
+import org.alfresco.solr.client.ContentPropertyValue;
+import org.alfresco.solr.client.Node;
+import org.alfresco.solr.client.NodeMetaData;
+import org.alfresco.solr.client.Transaction;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.BooleanQuery.Builder;
+import org.apache.lucene.search.TermQuery;
+import org.apache.solr.SolrTestCaseJ4;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 @SolrTestCaseJ4.SuppressSSL
 public class DistributedContentPropertiesIT extends AbstractAlfrescoDistributedIT
@@ -338,6 +343,83 @@ public class DistributedContentPropertiesIT extends AbstractAlfrescoDistributedI
                 new TermQuery(
                         new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "elit")),
                 0, MAX_WAIT_TIME);
+    }
+
+    @Test
+    public void testMNT23669() throws Exception
+    {
+        putHandleDefaults();
+
+        // ACL
+        var aclChangeSet = getAclChangeSet(1, 1);
+        var acl = getAcl(aclChangeSet);
+        var aclReaders = getAclReaders(aclChangeSet, acl, singletonList("joel"), singletonList("phil"), null);
+        indexAclChangeSet(aclChangeSet, singletonList(acl), singletonList(aclReaders));
+
+        // Nodes
+        var howManyTestNodes = 2;
+        var transaction = getTransaction(0, howManyTestNodes);
+        var nodes = nodes(howManyTestNodes, transaction, acl);
+        var metadata =
+                metadata(nodes, transaction, acl)
+                    .stream()
+                    .peek(nodeMetadata -> nodeMetadata.getProperties().put(ContentModel.PROP_PERSONDESC, new ContentPropertyValue(Locale.US, 0L, "UTF-8", "text/plain", null)))
+                    .collect(toList());
+
+        var howManyNodesWithContent = howManyTestNodes;
+        var baseCmContentText = "Test default content property";
+        var basePersonDescriptionText = "custom content property text";
+
+        // Index for the first time
+        indexTransactionWithMultipleContentFields(
+                transaction,
+                nodes,
+                metadata,
+                textContentWithMultipleContentFields(nodes, baseCmContentText, basePersonDescriptionText, howManyNodesWithContent));
+
+        // Ensure nodes are searchable using the current value
+        waitForDocCount(
+                new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}" + ContentModel.PROP_PERSONDESC.getLocalName(), "custom")),
+                howManyNodesWithContent,
+                MAX_WAIT_TIME);
+
+        // New transaction
+        transaction = getTransaction(0, howManyTestNodes);
+        for (var node : nodes)
+        {
+            node.setTxnId(transaction.getId());
+        }
+
+        // Reindex nodes with a new custom content property value
+        basePersonDescriptionText = "changing value for person description";
+        indexTransactionWithMultipleContentFields(
+                transaction,
+                nodes,
+                metadata,
+                textContentWithMultipleContentFields(nodes, baseCmContentText, basePersonDescriptionText, howManyNodesWithContent));
+
+        // Build query that will search for old OR new value
+        Builder builder = new BooleanQuery.Builder();
+        Builder customContentBuilder = new BooleanQuery.Builder();
+        TermQuery oldValueQuery = new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}" + ContentModel.PROP_PERSONDESC.getLocalName(), "custom"));
+        TermQuery newValueQuery = new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}" + ContentModel.PROP_PERSONDESC.getLocalName(), "changing"));
+        customContentBuilder.add(new BooleanClause(oldValueQuery, BooleanClause.Occur.SHOULD));
+        customContentBuilder.add(new BooleanClause(newValueQuery, BooleanClause.Occur.SHOULD));
+        builder.add(new BooleanClause(customContentBuilder.build(), BooleanClause.Occur.MUST));
+
+        // The query always has to return the expected number of results which means node are always searchable, either by the old OR new value
+        SolrClient client = getStandaloneClients().get(0);
+        int totalHits = 0;
+        for (int i = 0; i < 15; i++)
+        {
+            QueryResponse response = client.query(luceneToSolrQuery(builder.build()));
+            totalHits = (int) response.getResults().getNumFound();
+            if (totalHits != howManyNodesWithContent)
+            {
+                fail("(" + i + ") Expecting " + howManyNodesWithContent + " results but " + totalHits + " have been returned");
+            }
+            Thread.sleep(1000);
+        }
     }
 
     private List<Node> nodes(int howMany, Transaction transaction, Acl acl)
