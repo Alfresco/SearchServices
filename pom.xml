@@ -57,8 +57,7 @@
       <dependency.alfresco.xml-factory.version>1.3</dependency.alfresco.xml-factory.version>
       <dependency.alfresco-data-model.version>17.141</dependency.alfresco-data-model.version>
 
-      <dependency.jackson.version>2.13.4</dependency.jackson.version>
-      <dependency.jackson-databind.version>2.13.4.2</dependency.jackson-databind.version>
+      <dependency.jackson.version>2.15.0</dependency.jackson.version>
 
       <dependency.google.guava.version>31.1-jre</dependency.google.guava.version>
       <dependency.apache-commons-compress.version>1.21</dependency.apache-commons-compress.version>
@@ -126,7 +125,7 @@
          <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${dependency.jackson-databind.version}</version>
+            <version>${dependency.jackson.version}</version>
          </dependency>
 
          <dependency>
