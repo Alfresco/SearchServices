@@ -4,7 +4,7 @@ To run Insight Engine tests, minimum version of Repo is ACS 6.0, additionally ru
 For more details about the related projects or their deployment see: [Search-Discovery] (https://git.alfresco.com/search_discovery) and (https://github.com/Alfresco/SearchServices).
 
 # Prerequisites
-Java 11
+Java 17
 
 Maven 3.2.0
 
