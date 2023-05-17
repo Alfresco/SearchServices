@@ -61,9 +61,9 @@ chemistry-opencmis-server-bindings-1.0.0.jar    http://chemistry.apache.org/
 failureaccess-1.0.1.jar https://mvnrepository.com/artifact/com.google.guava/failureaccess/1.0.1
 listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar https://mvnrepository.com/artifact/com.google.guava/listenablefuture
 quartz-2.3.2.jar http://quartz-scheduler.org/
-jackson-core-2.15.0.jar https://github.com/FasterXML/jackson
-jackson-annotations-2.15.0.jar https://github.com/FasterXML/jackson
-jackson-databind-2.15.0.jar https://github.com/FasterXML/jackson
+jackson-core-2.15.1.jar https://github.com/FasterXML/jackson
+jackson-annotations-2.15.1.jar https://github.com/FasterXML/jackson
+jackson-databind-2.15.1.jar https://github.com/FasterXML/jackson
 commons-httpclient-3.1-HTTPCLIENT-1265.jar http://jakarta.apache.org/commons/
 spring-aop-5.3.23.jar http://projects.spring.io/spring-framework/
 spring-beans-5.3.23.jar http://projects.spring.io/spring-framework/
