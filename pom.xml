@@ -60,7 +60,7 @@
       <dependency.jackson.version>2.15.0</dependency.jackson.version>
 
       <dependency.google.guava.version>31.1-jre</dependency.google.guava.version>
-      <dependency.apache-commons-compress.version>1.21</dependency.apache-commons-compress.version>
+      <dependency.apache-commons-compress.version>1.23.0</dependency.apache-commons-compress.version>
       <dependency.apache-commons-lang3.version>3.11</dependency.apache-commons-lang3.version>
       <dependency.apache-commons-lang.version>2.6</dependency.apache-commons-lang.version>
       <dependency.jakarta.xml.bind-api.version>3.0.1</dependency.jakarta.xml.bind-api.version>
