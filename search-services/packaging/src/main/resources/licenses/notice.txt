@@ -170,7 +170,7 @@ gmetric4j-1.0.7.jar
 guava-31.1-jre.jar
 hppc-0.7.1.jar
 htrace-core-3.2.0-incubating.jar
-httpclient-4.5.13.jar
+httpclient-4.5.14.jar
 httpcore-4.4.1.jar
 httpmime-4.4.1.jar
 icu4j-56.1.jar

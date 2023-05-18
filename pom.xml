@@ -65,7 +65,7 @@
       <dependency.apache-commons-lang.version>2.6</dependency.apache-commons-lang.version>
       <dependency.jakarta.xml.bind-api.version>3.0.1</dependency.jakarta.xml.bind-api.version>
       <dependency.restlet.version>2.3.12</dependency.restlet.version>
-      <dependency.httpclient.version>4.5.13</dependency.httpclient.version>
+      <dependency.httpclient.version>4.5.14</dependency.httpclient.version>
       <dependency.codehaus.jackson.version>1.9.14-atlassian-6</dependency.codehaus.jackson.version>
       <dependency.carrotsearch.thirdpaty.simple-xml-safe.version>2.7.1</dependency.carrotsearch.thirdpaty.simple-xml-safe.version>
 
