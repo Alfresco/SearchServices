@@ -102,8 +102,8 @@ gson-2.8.9.jar https://github.com/google/gson/blob/gson-parent-2.8.9/LICENSE
 
 
 === CDDL 1.1 ===
-jaxb-impl-2.3.3.jar http://jaxb.java.net/
-jaxb-xjc-2.3.3.jar http://jaxb.java.net/
+jaxb-core-4.0.2.jar http://jaxb.java.net/
+jaxb-xjc-4.0.2.jar http://jaxb.java.net/
 
 
 === Eclipse Distribution License 1.0 (BSD) ===
