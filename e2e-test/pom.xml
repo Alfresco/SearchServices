@@ -12,7 +12,7 @@
    <properties>
       <tas.rest.api.version>23.1.0.105</tas.rest.api.version>
       <tas.cmis.api.version>23.1.0.101</tas.cmis.api.version>
-      <tas.utility.version>4.0.0</tas.utility.version>
+      <tas.utility.version>4.0.4</tas.utility.version>
       <rm.version>3.3.1</rm.version>
       <suiteXmlFile>src/test/resources/SearchSuite.xml</suiteXmlFile>
       <test.exclude />
