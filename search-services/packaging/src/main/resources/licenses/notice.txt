@@ -32,9 +32,7 @@ jsr305-3.0.2.jar https://mvnrepository.com/artifact/com.google.code.findbugs/jsr
 geronimo-jta_1.1_spec-1.1.1.jar https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-jta_1.1_spec/1.1.1
 proj4j-1.1.5.jar https://github.com/locationtech/proj4j
 j2objc-annotations-1.3.jar https://github.com/google/j2objc
-accessors-smart-2.4.7.jar https://github.com/netplex/json-smart-v2
-json-path-2.7.0.jar https://github.com/json-path/JsonPath
-json-smart-2.4.7.jar https://github.com/netplex/json-smart-v2
+json-path-2.8.0.jar https://github.com/json-path/JsonPath
 json-simple-1.1.1.jar https://github.com/fangyidong/json-simple
 apiguardian-api-1.1.2.jar https://github.com/apiguardian-team/apiguardian
 xml-resolver-1.2.jar    https://github.com/FasterXML/jackson
