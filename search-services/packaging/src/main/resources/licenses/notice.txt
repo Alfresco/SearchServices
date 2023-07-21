@@ -27,11 +27,11 @@ xpp3-1.1.4c.jar http://www.extreme.indiana.edu/dist/java-repository/xpp3/license
 json-20220320.jar https://github.com/stleary/JSON-java
 
 === Apache 2.0 ===
-error_prone_annotations-2.11.0.jar https://github.com/google/error-prone
+error_prone_annotations-2.18.0.jar https://github.com/google/error-prone
 jsr305-3.0.2.jar https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305/1.3.9
 geronimo-jta_1.1_spec-1.1.1.jar https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-jta_1.1_spec/1.1.1
 proj4j-1.1.5.jar https://github.com/locationtech/proj4j
-j2objc-annotations-1.3.jar https://github.com/google/j2objc
+j2objc-annotations-2.8.jar https://github.com/google/j2objc
 json-path-2.8.0.jar https://github.com/json-path/JsonPath
 json-simple-1.1.1.jar https://github.com/fangyidong/json-simple
 apiguardian-api-1.1.2.jar https://github.com/apiguardian-team/apiguardian
@@ -129,7 +129,7 @@ jibx-run-1.3.3.jar http://jibx.sourceforge.net/
 dom4j-2.1.3.jar https://github.com/dom4j/dom4j/blob/master/LICENSE
 
 === MIT ===
-checker-qual-3.12.0.jar https://checkerframework.org/
+checker-qual-3.33.0.jar https://checkerframework.org/
 
 === Part of Apache Solr (Licenses listed separately) ===
 antlr4-runtime-4.5.1-1.jar
@@ -165,6 +165,7 @@ janino-3.1.10.jar
 curvesapi-1.04.jar
 eigenbase-properties-1.1.5.jar
 gmetric4j-1.0.7.jar
+guava-32.1.1-jre.jar
 guava-31.1-jre.jar
 hppc-0.7.1.jar
 htrace-core-3.2.0-incubating.jar
