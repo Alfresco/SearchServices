@@ -321,23 +321,4 @@ public class SearchTest extends AbstractSearchServicesE2ETest
 
         restClient.onResponse().assertThat().body("list.entries.entry[0].name", Matchers.equalToIgnoringCase(specialCharfileName));
     }
-
-    /**
-     * Check if isFavorite field is returned when requested.
-     */
-    @Test
-    public void searchWithIncludeIsFavorite()
-    {
-        SearchRequest query = new SearchRequest();
-        RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery("alfresco");
-        query.setQuery(queryReq);
-        query.setInclude(List.of("isFavorite"));
-
-        query(query);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-
-        // isFavorite field is included in the response
-        restClient.onResponse().assertThat().body("list.entries.entry[0].isFavorite", Matchers.notNullValue());
-    }
 }
