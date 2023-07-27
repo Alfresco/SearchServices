@@ -59,7 +59,7 @@
 
       <dependency.jackson.version>2.15.2</dependency.jackson.version>
 
-      <dependency.google.guava.version>31.1-jre</dependency.google.guava.version>
+      <dependency.google.guava.version>32.1.1-jre</dependency.google.guava.version>
       <dependency.apache-commons-compress.version>1.23.0</dependency.apache-commons-compress.version>
       <dependency.apache-commons-lang3.version>3.12.0</dependency.apache-commons-lang3.version>
       <dependency.apache-commons-lang.version>2.6</dependency.apache-commons-lang.version>
@@ -71,7 +71,7 @@
 
       <dependency.xpp3.version>1.1.4c</dependency.xpp3.version>
       <dependency.jaxen.version>1.2.0</dependency.jaxen.version>
-      <dependency.jaxb-xjc.version>4.0.2</dependency.jaxb-xjc.version>
+      <dependency.jaxb-xjc.version>4.0.3</dependency.jaxb-xjc.version>
 
       <dependency.calcite.version>1.32.0</dependency.calcite.version>
       <dependency.slf4j.version>1.7.36</dependency.slf4j.version>
@@ -83,7 +83,7 @@
       <dependency.mockito.version>5.4.0</dependency.mockito.version>
       <dependency.carrotsearch.randomizedtesting.version>2.8.1</dependency.carrotsearch.randomizedtesting.version>
       <dependency.chemistry.opencmis.version>1.1.0</dependency.chemistry.opencmis.version>
-      <dependency.protobuf.version>3.19.6</dependency.protobuf.version>
+      <dependency.protobuf.version>3.23.4</dependency.protobuf.version>
       <dependency.jayway.jsonpath.version>2.8.0</dependency.jayway.jsonpath.version>
       <dependency.janino.version>3.1.10</dependency.janino.version>
    </properties>
