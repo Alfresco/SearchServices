@@ -41,7 +41,7 @@
       <tag>HEAD</tag>
    </scm>
    <properties>
-      <maven.build.sourceVersion>17</maven.build.sourceVersion>
+      <maven.build.sourceVersion>11</maven.build.sourceVersion>
       <solr.base.version>6.6.5</solr.base.version>
       <solr.version>${solr.base.version}-patched.11</solr.version>
       <!-- The location to download the solr zip file from. -->
