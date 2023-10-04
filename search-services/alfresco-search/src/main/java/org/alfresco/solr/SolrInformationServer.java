@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -366,6 +366,7 @@ public class SolrInformationServer implements InformationServer
 
     private static final String CONTENT_LOCALE = "contentLocale";
     private static final String CONTENT_LOCALE_FIELD = "content@s__locale@{http://www.alfresco.org/model/content/1.0}content";
+    private static final String CONTENT_TRANSFORM_STATUS_FIELD = "content@s__tr_status@{http://www.alfresco.org/model/content/1.0}content";
     private static final Set<String> ID_AND_CONTENT_VERSION_ID_AND_CONTENT_LOCALE =
             new HashSet<>(asList(FIELD_SOLR4_ID, LATEST_APPLIED_CONTENT_VERSION_ID, CONTENT_LOCALE_FIELD));
 
@@ -932,10 +933,12 @@ public class SolrInformationServer implements InformationServer
 
             DelegatingCollector delegatingCollector = new TxnCacheFilter(cleanContentCache); //Filter transactions that have already been processed.
             delegatingCollector.setLastDelegate(collector);
+
+            searcher.search(documentsWithTransformFailedQuery(), collector);
+
             searcher.search(documentsWithOutdatedContentQuery(), delegatingCollector);
 
             LOGGER.debug("{}-[CORE {}] Processing {} documents with content to be indexed", Thread.currentThread().getId(), core.getName(), collector.getTotalHits());
-
 
             if(collector.getTotalHits() == 0)
             {
@@ -946,6 +949,10 @@ public class SolrInformationServer implements InformationServer
             LOGGER.debug("Found {} documents with outdated text content.", collector.getTotalHits());
 
             ScoreDoc[] scoreDocs = collector.topDocs().scoreDocs;
+            if(scoreDocs.length == 0)
+            {
+                return emptyList();
+            }
             List<LeafReaderContext> leaves = searcher.getTopReaderContext().leaves();
             int index = ReaderUtil.subIndex(scoreDocs[0].doc, leaves);
             LeafReaderContext context = leaves.get(index);
@@ -956,6 +963,7 @@ public class SolrInformationServer implements InformationServer
             //The TxnCollector collects the transaction ids from the matching documents
             //The txnIds are limited to a range >= the txnFloor and < an arbitrary transaction ceiling.
             TxnCollector txnCollector = new TxnCollector(txnFloor);
+            searcher.search(documentsWithTransformFailedQuery(), txnCollector);
             searcher.search(documentsWithOutdatedContentQuery(), txnCollector);
             LongHashSet txnSet = txnCollector.getTxnSet();
 
@@ -980,13 +988,19 @@ public class SolrInformationServer implements InformationServer
 
             //Get the docs with dirty content for the transactions gathered above.
             DocListCollector docListCollector = new DocListCollector();
+            DocListCollector transformFailedDocListCollector = new DocListCollector();
             BooleanQuery.Builder builder2 = new BooleanQuery.Builder();
+            BooleanQuery.Builder builder3 = new BooleanQuery.Builder();
 
             builder2.add(documentsWithOutdatedContentQuery(), BooleanClause.Occur.MUST);
             builder2.add(new QueryWrapperFilter(txnFilterQuery), BooleanClause.Occur.MUST);
+            builder3.add(documentsWithTransformFailedQuery(), BooleanClause.Occur.MUST);
 
             searcher.search(builder2.build(), docListCollector);
             IntArrayList docList = docListCollector.getDocs();
+            int beforeTransformFailedSize = docList.size();
+            searcher.search(builder3.build(), transformFailedDocListCollector);
+            docList.addAll(transformFailedDocListCollector.getDocs());
             int size = docList.size();
 
             List<Long> processedTxns = new ArrayList<>();
@@ -1000,7 +1014,9 @@ public class SolrInformationServer implements InformationServer
 
                 long txnId = longs.get(doc - context.docBase);
 
-                if(!cleanContentCache.containsKey(txnId))
+                boolean isTransformFailed = i >= beforeTransformFailedSize;
+
+                if(!cleanContentCache.containsKey(txnId) || isTransformFailed)
                 {
                     processedTxns.add(txnId);
                     IndexableField id = document.getField(FIELD_SOLR4_ID);
@@ -1009,11 +1025,11 @@ public class SolrInformationServer implements InformationServer
 
                     tenantAndDbId.addContentPropertiesSpecs(
                             enabledIndexCustomContent
-                                ? document.getFields().stream()
-                                    .filter(field -> field.name().startsWith(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX))
-                                    .map(field -> new AlfrescoSolrDataModel.ContentPropertySpecs(field.name(),field.stringValue()))
-                                    .collect(toList())
-                                : ofNullable(document.getField(CONTENT_LOCALE_FIELD))
+                                    ? document.getFields().stream()
+                                              .filter(field -> field.name().startsWith(AlfrescoSolrDataModel.CONTENT_S_LOCALE_PREFIX))
+                                              .map(field -> new AlfrescoSolrDataModel.ContentPropertySpecs(field.name(), field.stringValue()))
+                                              .collect(toList())
+                                    : ofNullable(document.getField(CONTENT_LOCALE_FIELD))
                                     .map(IndexableField::stringValue)
                                     .map(value -> new AlfrescoSolrDataModel.ContentPropertySpecs(CONTENT_LOCALE_FIELD, value))
                                     .map(Collections::singletonList)
@@ -3883,6 +3899,13 @@ public class SolrInformationServer implements InformationServer
                     .add(onlyDocumentsWhoseContentNeedsToBeUpdated, BooleanClause.Occur.MUST)
                     .add(onlyDocumentsThatRepresentNodes, BooleanClause.Occur.MUST)
                     .build();
+    }
+
+    private Query documentsWithTransformFailedQuery()
+    {
+        Query q = new TermQuery(new Term(CONTENT_TRANSFORM_STATUS_FIELD, "transform_failed"));
+
+        return new BooleanQuery.Builder().add(q, BooleanClause.Occur.MUST).build();
     }
 
     private void deleteById(String field, Long id) throws IOException
