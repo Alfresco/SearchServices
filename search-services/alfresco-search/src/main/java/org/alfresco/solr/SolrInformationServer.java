@@ -99,6 +99,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.IsoFields;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -125,7 +126,6 @@ import java.util.zip.GZIPInputStream;
 
 import com.carrotsearch.hppc.IntArrayList;
 import com.carrotsearch.hppc.LongHashSet;
-import com.carrotsearch.hppc.cursors.LongCursor;
 
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.model.ContentModel;
@@ -465,6 +465,8 @@ public class SolrInformationServer implements InformationServer
     private final boolean dateFieldDestructuringHasBeenEnabledOnThisInstance;
 
     private final boolean enabledIndexCustomContent;
+    private final int contentIndexingTxnIdLookupBatchSize;
+    private final int contentIndexingTxnProcessingBatchSize;
 
     static class DocListCollector implements Collector, LeafCollector
     {
@@ -528,14 +530,15 @@ public class SolrInformationServer implements InformationServer
     static class TxnCollector extends DelegatingCollector
     {
         private NumericDocValues currentLongs;
-        private final LongHashSet txnSet = new LongHashSet(1000);
+        private final LongHashSet txnSet;
         private final long txnFloor;
         private final long txnCeil;
 
-        TxnCollector(long txnFloor)
+        TxnCollector(long txnFloor, int txnIdLookupMaxOffset)
         {
             this.txnFloor = txnFloor;
-            this.txnCeil = txnFloor+500;
+            this.txnCeil = txnFloor + txnIdLookupMaxOffset;
+            this.txnSet = new LongHashSet(txnIdLookupMaxOffset);
         }
 
         @Override
@@ -649,6 +652,9 @@ public class SolrInformationServer implements InformationServer
         baseUrl = baseUrl(props);
 
         enabledIndexCustomContent =  Boolean.parseBoolean(coreConfiguration.getProperty("solr.enableIndexingCustomContent", "false"));
+
+        contentIndexingTxnIdLookupBatchSize = Math.max(1, Integer.parseInt(coreConfiguration.getProperty("alfresco.content.txnIdLookupBatchSize", "500")));
+        contentIndexingTxnProcessingBatchSize = Math.max(1, Integer.parseInt(coreConfiguration.getProperty("alfresco.content.txnProcessingBatchSize", "500")));
 
         dateFieldDestructuringHasBeenEnabledOnThisInstance = Boolean.parseBoolean(coreConfiguration.getProperty("alfresco.destructureDateFields", "true"));
         LOGGER.info(
@@ -954,8 +960,8 @@ public class SolrInformationServer implements InformationServer
 
             //Find the next N transactions
             //The TxnCollector collects the transaction ids from the matching documents
-            //The txnIds are limited to a range >= the txnFloor and < an arbitrary transaction ceiling.
-            TxnCollector txnCollector = new TxnCollector(txnFloor);
+            //The txnIds are limited to a range >= the txnFloor and < a transaction ceiling with configurable offset.
+            TxnCollector txnCollector = new TxnCollector(txnFloor, contentIndexingTxnIdLookupBatchSize);
             searcher.search(documentsWithOutdatedContentQuery(), txnCollector);
             LongHashSet txnSet = txnCollector.getTxnSet();
 
@@ -968,9 +974,13 @@ public class SolrInformationServer implements InformationServer
             FieldType fieldType = searcher.getSchema().getField(FIELD_INTXID).getType();
             BooleanQuery.Builder builder = new BooleanQuery.Builder();
 
-            for (LongCursor cursor : txnSet)
+            // sort to process oldest to newest transactions
+            long[] txnArray = txnSet.toArray();
+            Arrays.sort(txnArray);
+
+            for (int txnIdx = 0; txnIdx < txnArray.length && txnIdx < contentIndexingTxnProcessingBatchSize; txnIdx++)
             {
-                long txnID = cursor.value;
+                long txnID = txnArray[txnIdx];
                 //Build up the query for the filter of transactions we need to pull the dirty content for.
                 TermQuery txnIDQuery = new TermQuery(new Term(FIELD_INTXID, fieldType.readableToIndexed(Long.toString(txnID))));
                 builder.add(new BooleanClause(txnIDQuery, BooleanClause.Occur.SHOULD));
