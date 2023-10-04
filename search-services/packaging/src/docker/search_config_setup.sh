@@ -18,7 +18,7 @@ LOG_PROPERTIES=$PWD/logs/log4j.properties
 
 if [[ $REPLICATION_TYPE == "master" ]]; then
 
-   findStringMaster='<requestHandler name="\/replication" class="solr\.ReplicationHandler">'
+   findStringMaster='<requestHandler name="\/replication" class="org\.alfresco\.solr\.handler\.AlfrescoReplicationHandler">'
 
    replaceStringMaster="\n\t<lst name=\"master\"> \n"
 
@@ -63,7 +63,7 @@ if [[ $REPLICATION_TYPE == "slave" ]]; then
       REPLICATION_POLL_INTERVAL=00:00:30
    fi
 
-   sed -i 's/<requestHandler name="\/replication" class="solr\.ReplicationHandler">/<requestHandler name="\/replication" class="solr\.ReplicationHandler">\
+   sed -i 's/<requestHandler name="\/replication" class="org\.alfresco\.solr\.handler\.AlfrescoReplicationHandler">/<requestHandler name="\/replication" class="org\.alfresco\.solr\.handler\.AlfrescoReplicationHandler">\
       <lst name="slave">\
          <str name="masterUrl">'$REPLICATION_MASTER_PROTOCOL':\/\/'$REPLICATION_MASTER_HOST':'$REPLICATION_MASTER_PORT'\/solr\/${solr.core.name}<\/str>\
          <str name="pollInterval">'$REPLICATION_POLL_INTERVAL'<\/str>\
