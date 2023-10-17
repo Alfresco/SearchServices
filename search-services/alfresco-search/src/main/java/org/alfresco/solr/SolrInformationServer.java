@@ -2427,6 +2427,11 @@ public class SolrInformationServer implements InformationServer
                 contentIndexingHasBeenEnabledOnThisInstance
                         && contentIndexingHasBeenRequestedForThisNode;
 
+        if (!contentIndexingIsEnabled)
+        {
+            markAsContentInSynch(document);
+        }
+
         final BiConsumer<String, Object> setValue = document::setField;
         final BiConsumer<String, Object> addValue = document::addField;
         final BiConsumer<String, Object> collectName = (name, value) -> addFieldIfNotSet(document, name);
