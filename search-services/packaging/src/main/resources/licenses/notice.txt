@@ -23,8 +23,8 @@ jaxen-1.2.0.jar http://www.cafeconleche.org/jaxen/
 === BSD variant License ===
 xpp3-1.1.4c.jar http://www.extreme.indiana.edu/dist/java-repository/xpp3/licenses/LICENSE.txt
 
-=== JSON ===
-json-20220320.jar https://github.com/stleary/JSON-java
+=== Public Domain ===
+json-20231013.jar https://github.com/stleary/JSON-java
 
 === Apache 2.0 ===
 error_prone_annotations-2.18.0.jar https://github.com/google/error-prone

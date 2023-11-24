@@ -55,7 +55,7 @@
       <license.update.copyright>false</license.update.copyright>
 
       <dependency.alfresco.xml-factory.version>1.3</dependency.alfresco.xml-factory.version>
-      <dependency.alfresco-data-model.version>17.141</dependency.alfresco-data-model.version>
+      <dependency.alfresco-data-model.version>17.190</dependency.alfresco-data-model.version>
 
       <dependency.jackson.version>2.15.2</dependency.jackson.version>
 
