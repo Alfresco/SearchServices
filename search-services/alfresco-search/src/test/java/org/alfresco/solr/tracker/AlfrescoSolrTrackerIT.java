@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -41,6 +41,7 @@ import static org.alfresco.solr.AlfrescoSolrUtils.list;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.adaptor.QueryConstants;
@@ -50,8 +51,8 @@ import org.alfresco.solr.AbstractAlfrescoSolrIT;
 import org.alfresco.solr.client.Acl;
 import org.alfresco.solr.client.AclChangeSet;
 import org.alfresco.solr.client.AclReaders;
+import org.alfresco.solr.client.ContentPropertyValue;
 import org.alfresco.solr.client.Node;
-import org.alfresco.solr.client.Node.SolrApiNodeStatus;
 import org.alfresco.solr.client.NodeMetaData;
 import org.alfresco.solr.client.SOLRAPIQueueClient;
 import org.alfresco.solr.client.StringPropertyValue;
@@ -97,7 +98,6 @@ public class AlfrescoSolrTrackerIT extends AbstractAlfrescoSolrIT
         SOLRAPIQueueClient.ACL_READERS_MAP.clear();
         SOLRAPIQueueClient.ACL_MAP.clear();
         SOLRAPIQueueClient.NODE_MAP.clear();
-        SOLRAPIQueueClient.NODE_FAILED_TRANSFORM_LIST.clear();
     }
 
 
@@ -144,23 +144,20 @@ public class AlfrescoSolrTrackerIT extends AbstractAlfrescoSolrIT
         //Next create two nodes to update for the transaction
         Node folderNode = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
         Node fileNode = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
-        Node transformFailedNode = getNode(txn, acl, SolrApiNodeStatus.UPDATED);
         Node errorNode = getNode(txn, acl, Node.SolrApiNodeStatus.UPDATED);
         logger.info("######### error node:"+errorNode.getId());
 
         //Next create the NodeMetaData for each node. TODO: Add more metadata
         NodeMetaData folderMetaData = getNodeMetaData(folderNode, txn, acl, "mike", null, false);
-        NodeMetaData fileMetaData = getNodeMetaData(fileNode, txn, acl, "mike", ancestors(folderMetaData.getNodeRef()), false);
-        NodeMetaData transformFailedMetaData = getNodeMetaData(transformFailedNode, txn, acl, "lisa", ancestors(folderMetaData.getNodeRef()), false);
+        NodeMetaData fileMetaData   = getNodeMetaData(fileNode, txn, acl, "mike", ancestors(folderMetaData.getNodeRef()), false);
         //The errorNodeMetaData will cause an exception.
-        NodeMetaData errorMetaData = getNodeMetaData(errorNode, txn, acl, "lisa", ancestors(folderMetaData.getNodeRef()), true);
-        SOLRAPIQueueClient.NODE_FAILED_TRANSFORM_LIST.add(transformFailedNode.getId());
+        NodeMetaData errorMetaData   = getNodeMetaData(errorNode, txn, acl, "lisa", ancestors(folderMetaData.getNodeRef()), true);
 
         //Index the transaction, nodes, and nodeMetaDatas.
         //Note that the content is automatically created by the test framework.
         indexTransaction(txn,
-                         list(errorNode, folderNode, fileNode, transformFailedNode),
-                         list(errorMetaData, folderMetaData, fileMetaData, transformFailedMetaData));
+                         list(errorNode, folderNode, fileNode),
+                         list(errorMetaData, folderMetaData, fileMetaData));
 
         //Check for the TXN state stamp.
         logger.info("#################### Started Second Test ##############################");
@@ -198,24 +195,16 @@ public class AlfrescoSolrTrackerIT extends AbstractAlfrescoSolrIT
         logger.info("#################### Passed Fourth Test ##############################");
 
 
+
+
         //Check for the error doc
 
         waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_DOC_TYPE, "ErrorNode")), 1, MAX_WAIT_TIME);
 
         logger.info("#################### Passed Fifth Test ##############################");
 
-        builder = new BooleanQuery.Builder();
-        builder.add(new BooleanClause(new TermQuery(new Term("content@s__tr_status@{http://www.alfresco.org/model/content/1.0}content", "transform_failed")), BooleanClause.Occur.MUST));
-        waitForDocCount(builder.build(), 1, MAX_WAIT_TIME);
 
-        SOLRAPIQueueClient.NODE_FAILED_TRANSFORM_LIST.clear();
 
-        //Check if the node with the transform_failed status has been reindexed
-        builder = new BooleanQuery.Builder();
-        builder.add(new BooleanClause(new TermQuery(new Term("content@s__tr_status@{http://www.alfresco.org/model/content/1.0}content", "transform_failed")), BooleanClause.Occur.MUST));
-        waitForDocCount(builder.build(), 0, MAX_WAIT_TIME);
-
-        logger.info("#################### Passed Sixth Test ##############################");
 
         //Mark the folder as needing cascade
         Transaction txn1 = getTransaction(0, 1);
@@ -239,7 +228,7 @@ public class AlfrescoSolrTrackerIT extends AbstractAlfrescoSolrIT
         builder.add(new BooleanClause(LegacyNumericRangeQuery.newLongRange(QueryConstants.FIELD_S_TXID, txn1.getId(), txn1.getId() + 1, true, false), BooleanClause.Occur.MUST));
         waitForDocCount(builder.build(), 1, MAX_WAIT_TIME);
 
-        logger.info("#################### Passed Seventh Test ##############################");
+        logger.info("#################### Passed Sixth Test ##############################");
 
 
         TermQuery termQuery1 = new TermQuery(new Term(QueryConstants.FIELD_ANCESTOR, nodeRef.toString()));
@@ -257,13 +246,13 @@ public class AlfrescoSolrTrackerIT extends AbstractAlfrescoSolrIT
         assertQ(req, "*[count(//doc)=1]","//result/doc[1]/long[@name='DBID'][.='" + fileNode.getId() + "']");
 
 
-        logger.info("#################### Passed Eighth Test ##############################");
+        logger.info("#################### Passed Seventh Test ##############################");
 
 
         //Check that both documents have been indexed and have content.
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 3, MAX_WAIT_TIME);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 2, MAX_WAIT_TIME);
 
-        logger.info("#################### Passed Ninth Test ##############################");
+        logger.info("#################### Passed Eighth Test ##############################");
 
         testIsContentIndexed(acl);
 
@@ -284,9 +273,9 @@ public class AlfrescoSolrTrackerIT extends AbstractAlfrescoSolrIT
 
         logger.info("############################ Bulk Nodes:" + nodes.size());
         indexTransaction(txn2, nodes, nodeMetaDatas);
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 553, MAX_WAIT_TIME);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 552, MAX_WAIT_TIME);
 
-        logger.info("#################### Passed Tenth Test ##############################");
+        logger.info("#################### Passed Ninth Test ##############################");
 
         for(int i=0; i<1000; i++)
         {
@@ -300,9 +289,9 @@ public class AlfrescoSolrTrackerIT extends AbstractAlfrescoSolrIT
             indexTransaction(txnX, nodesX, nodeMetaDatasX);
         }
 
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 1553, MAX_WAIT_TIME);
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 1552, MAX_WAIT_TIME);
 
-        logger.info("#################### Passed Eleventh Test ##############################");
+        logger.info("#################### Passed Tenth Test ##############################");
 
 
         //Test the maintenance methods
@@ -319,7 +308,7 @@ public class AlfrescoSolrTrackerIT extends AbstractAlfrescoSolrIT
         builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_OWNER, "amy")), BooleanClause.Occur.MUST));
         waitForDocCount(builder.build(), 1, MAX_WAIT_TIME);
 
-        logger.info("#################### Passed Twelfth Test ##############################");
+        logger.info("#################### Passed Eleventh Test ##############################");
 
 
         // Wait for a document that has the new owner and the content populated.
@@ -328,7 +317,7 @@ public class AlfrescoSolrTrackerIT extends AbstractAlfrescoSolrIT
         builder.add(new BooleanClause(new TermQuery(new Term(QueryConstants.FIELD_OWNER, "jill")), BooleanClause.Occur.MUST));
         waitForDocCount(builder.build(), 1, MAX_WAIT_TIME);
 
-        logger.info("#################### Passed Thirteenth Test ##############################");
+        logger.info("#################### Passed Twelth Test ##############################");
 
 
 
@@ -410,7 +399,7 @@ public class AlfrescoSolrTrackerIT extends AbstractAlfrescoSolrIT
 
         waitForDocCount(new TermQuery(new Term(QueryConstants.FIELD_READER, "paul")), 0, MAX_WAIT_TIME); //paul should be purged
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", Long.toString(fileNode.getId()))), 0, MAX_WAIT_TIME);
-        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 1002, MAX_WAIT_TIME); // Refects the purged node and transaction
+        waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), 1001, MAX_WAIT_TIME); // Refects the purged node and transaction
 
         logger.info("#################### Passed Eighteenth Test ##############################");
 
@@ -435,7 +424,7 @@ public class AlfrescoSolrTrackerIT extends AbstractAlfrescoSolrIT
     private void testIsContentIndexed(Acl acl) throws Exception
     {
         // number of existing documents before running this test
-        final int previousNumberOfDocuments = 3;
+        final int previousNumberOfDocuments = 2;
 
         waitForDocCount(new TermQuery(new Term("content@s___t@{http://www.alfresco.org/model/content/1.0}content", "world")), previousNumberOfDocuments, MAX_WAIT_TIME);
 

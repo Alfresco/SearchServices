@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -36,6 +36,7 @@ import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +66,6 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
     public final static Map<Long, List<Node>> NODE_MAP = Collections.synchronizedMap(new HashMap<>());
     public final static Map<Long, NodeMetaData> NODE_META_DATA_MAP = Collections.synchronizedMap(new HashMap<>());
     public final static Map<Long, Map<QName, String>> NODE_CONTENT_MAP =  Collections.synchronizedMap(new HashMap<>());
-    public final static List<Long> NODE_FAILED_TRANSFORM_LIST = Collections.synchronizedList(new ArrayList<>());
 
     private static boolean throwException;
 
@@ -362,11 +362,6 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
             throw new ConnectException("THROWING EXCEPTION, better be ready!");
         }
 
-        if(NODE_FAILED_TRANSFORM_LIST.contains(nodeId))
-        {
-            return new GetTextContentResponse(new DummyTransformFailedResponse("transformFailed"));
-        }
-
         if(NODE_CONTENT_MAP.containsKey(nodeId))
         {
             return new GetTextContentResponse(new DummyResponse(NODE_CONTENT_MAP.get(nodeId).get(propertyQName)));
@@ -405,50 +400,6 @@ public class SOLRAPIQueueClient extends SOLRAPIClient
         @Override
         public String getHeader(String key)
         {
-            return null;
-        }
-
-        @Override
-        public String getContentType()
-        {
-            return "text/html";
-        }
-    }
-
-    private static class DummyTransformFailedResponse implements Response
-    {
-        private final String text;
-
-        public DummyTransformFailedResponse(String text)
-        {
-            this.text = text;
-        }
-
-        @Override
-        public InputStream getContentAsStream()
-        {
-            return new ByteArrayInputStream(text.getBytes());
-        }
-
-        @Override
-        public int getStatus()
-        {
-            return HttpStatus.SC_NO_CONTENT;
-        }
-
-        @Override
-        public void release()
-        {
-
-        }
-
-        @Override
-        public String getHeader(String key)
-        {
-            if("X-Alfresco-transformStatus".equals(key))
-            {
-                return "transformFailed";
-            }
             return null;
         }
 
