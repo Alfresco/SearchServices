@@ -79,7 +79,6 @@ public class MetadataTracker extends ActivatableTracker
     private static final int DEFAULT_NODE_BATCH_SIZE = 50;
     private static final String DEFAULT_INITIAL_TRANSACTION_RANGE = "0-2000";
     private static final long DEFAULT_METADATA_TRACKER_TIMESTEP = TIME_STEP_1_HR_IN_MS;
-    private static final long INITIAL_MAX_TXN_ID = 2000L;
 
     private int matadataTrackerParallelism;
     private int transactionDocsBatchSize;
@@ -355,8 +354,8 @@ public class MetadataTracker extends ActivatableTracker
             // No firstTransaction checking is required for this case.
             if (minCommitTime != -1L) {
             
-                firstTransactions = client.getTransactions(minCommitTime, 0L,
-                                null, INITIAL_MAX_TXN_ID, 1);
+                firstTransactions = client.getTransactions(minCommitTime, minTxnIdRange.getFirst(),
+                                null, minTxnIdRange.getSecond(), 1);
                 if (!firstTransactions.getTransactions().isEmpty())
                 {
                     Transaction firstTransaction = firstTransactions.getTransactions().get(0);
@@ -1262,8 +1261,8 @@ public class MetadataTracker extends ActivatableTracker
     {
         // DB TX Count
         long firstTransactionCommitTime = 0;
-        Transactions firstTransactions = client.getTransactions(null, 0L,
-                null, INITIAL_MAX_TXN_ID, 1);
+        Transactions firstTransactions = client.getTransactions(null, minTxnIdRange.getFirst(),
+                null, minTxnIdRange.getSecond(), 1);
         if(firstTransactions.getTransactions().size() > 0)
         {
             Transaction firstTransaction = firstTransactions.getTransactions().get(0);
