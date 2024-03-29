@@ -27,11 +27,11 @@ xpp3-1.1.4c.jar http://www.extreme.indiana.edu/dist/java-repository/xpp3/license
 json-20231013.jar https://github.com/stleary/JSON-java
 
 === Apache 2.0 ===
-error_prone_annotations-2.18.0.jar https://github.com/google/error-prone
+error_prone_annotations-2.26.1.jar https://github.com/google/error-prone
 jsr305-3.0.2.jar https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305/1.3.9
 geronimo-jta_1.1_spec-1.1.1.jar https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-jta_1.1_spec/1.1.1
 proj4j-1.1.5.jar https://github.com/locationtech/proj4j
-j2objc-annotations-2.8.jar https://github.com/google/j2objc
+j2objc-annotations-3.0.0.jar https://github.com/google/j2objc
 json-path-2.8.0.jar https://github.com/json-path/JsonPath
 json-simple-1.1.1.jar https://github.com/fangyidong/json-simple
 apiguardian-api-1.1.2.jar https://github.com/apiguardian-team/apiguardian
@@ -56,7 +56,7 @@ cxf-rt-ws-policy-3.4.8.jar https://cxf.apache.org/
 cxf-rt-wsdl-3.4.8.jar https://cxf.apache.org/
 chemistry-opencmis-server-support-1.0.0.jar     http://chemistry.apache.org/
 chemistry-opencmis-server-bindings-1.0.0.jar    http://chemistry.apache.org/
-failureaccess-1.0.1.jar https://mvnrepository.com/artifact/com.google.guava/failureaccess/1.0.1
+failureaccess-1.0.2.jar https://mvnrepository.com/artifact/com.google.guava/failureaccess/1.0.2
 listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar https://mvnrepository.com/artifact/com.google.guava/listenablefuture
 quartz-2.3.2.jar http://quartz-scheduler.org/
 jackson-core-2.15.2.jar https://github.com/FasterXML/jackson
@@ -129,7 +129,7 @@ jibx-run-1.3.3.jar http://jibx.sourceforge.net/
 dom4j-2.1.3.jar https://github.com/dom4j/dom4j/blob/master/LICENSE
 
 === MIT ===
-checker-qual-3.33.0.jar https://checkerframework.org/
+checker-qual-3.42.0.jar https://checkerframework.org/
 
 === Part of Apache Solr (Licenses listed separately) ===
 antlr4-runtime-4.5.1-1.jar
@@ -165,8 +165,7 @@ janino-3.1.10.jar
 curvesapi-1.04.jar
 eigenbase-properties-1.1.5.jar
 gmetric4j-1.0.7.jar
-guava-32.1.1-jre.jar
-guava-31.1-jre.jar
+guava-33.1.0-jre.jar
 hppc-0.7.1.jar
 htrace-core-3.2.0-incubating.jar
 httpclient-4.5.14.jar
