@@ -29,31 +29,30 @@ json-20231013.jar https://github.com/stleary/JSON-java
 === Apache 2.0 ===
 error_prone_annotations-2.26.1.jar https://github.com/google/error-prone
 jsr305-3.0.2.jar https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305/1.3.9
-geronimo-jta_1.1_spec-1.1.1.jar https://mvnrepository.com/artifact/org.apache.geronimo.specs/geronimo-jta_1.1_spec/1.1.1
 proj4j-1.1.5.jar https://github.com/locationtech/proj4j
 j2objc-annotations-3.0.0.jar https://github.com/google/j2objc
 json-path-2.8.0.jar https://github.com/json-path/JsonPath
 json-simple-1.1.1.jar https://github.com/fangyidong/json-simple
 apiguardian-api-1.1.2.jar https://github.com/apiguardian-team/apiguardian
 xml-resolver-1.2.jar    https://github.com/FasterXML/jackson
-neethi-3.1.1.jar http://ws.apache.org/commons/neethi/
+neethi-3.2.0.jar http://ws.apache.org/commons/neethi/
 commons-logging-1.2.jar http://jakarta.apache.org/commons/
 commons-lang3-3.12.0.jar http://jakarta.apache.org/commons/
 commons-compress-1.23.0.jar https://commons.apache.org/proper/commons-compress/
 chemistry-opencmis-commons-impl-1.1.0.jar      http://chemistry.apache.org/
 chemistry-opencmis-commons-api-1.1.0.jar       http://chemistry.apache.org/
-xmlschema-core-2.2.5.jar http://ws.apache.org/commons/XmlSchema/
+xmlschema-core-2.3.1.jar http://ws.apache.org/commons/XmlSchema/
 HikariCP-java7-2.4.13.jar https://github.com/brettwooldridge/HikariCP
-cxf-core-3.4.8.jar https://cxf.apache.org/
-cxf-rt-bindings-soap-3.4.8.jar https://cxf.apache.org/
-cxf-rt-bindings-xml-3.4.8.jar https://cxf.apache.org/
-cxf-rt-databinding-jaxb-3.4.8.jar https://cxf.apache.org/
-cxf-rt-frontend-jaxws-3.4.8.jar https://cxf.apache.org/
-cxf-rt-frontend-simple-3.4.8.jar https://cxf.apache.org/
-cxf-rt-transports-http-3.4.8.jar https://cxf.apache.org/
-cxf-rt-ws-addr-3.4.8.jar https://cxf.apache.org/
-cxf-rt-ws-policy-3.4.8.jar https://cxf.apache.org/
-cxf-rt-wsdl-3.4.8.jar https://cxf.apache.org/
+cxf-core-3.6.3.jar https://cxf.apache.org/
+cxf-rt-bindings-soap-3.6.3.jar https://cxf.apache.org/
+cxf-rt-bindings-xml-3.6.3.jar https://cxf.apache.org/
+cxf-rt-databinding-jaxb-3.6.3.jar https://cxf.apache.org/
+cxf-rt-frontend-jaxws-3.6.3.jar https://cxf.apache.org/
+cxf-rt-frontend-simple-3.6.3.jar https://cxf.apache.org/
+cxf-rt-transports-http-3.6.3.jar https://cxf.apache.org/
+cxf-rt-ws-addr-3.6.3.jar https://cxf.apache.org/
+cxf-rt-ws-policy-3.6.3.jar https://cxf.apache.org/
+cxf-rt-wsdl-3.6.3.jar https://cxf.apache.org/
 chemistry-opencmis-server-support-1.0.0.jar     http://chemistry.apache.org/
 chemistry-opencmis-server-bindings-1.0.0.jar    http://chemistry.apache.org/
 failureaccess-1.0.2.jar https://mvnrepository.com/artifact/com.google.guava/failureaccess/1.0.2
@@ -87,7 +86,7 @@ jetty-servlets-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
 jetty-util-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
 jetty-webapp-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
 jetty-xml-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
-woodstox-core-6.2.8.jar https://github.com/FasterXML/woodstox
+woodstox-core-6.6.0.jar https://github.com/FasterXML/woodstox
 org.restlet-2.3.12.jar https://github.com/restlet/restlet-framework-java/blob/2.3.12/README.md
 org.restlet.ext.servlet-2.3.12.jar https://github.com/restlet/restlet-framework-java/blob/2.3.12/README.md
 xercesImpl-2.11.0-alfresco-patched-20180402.jar http://www.apache.org/licenses/LICENSE-2.0.txt
@@ -112,8 +111,8 @@ jakarta.xml.bind-api-3.0.1.jar https://projects.eclipse.org/projects/ee4j.jaxb
 jakarta.xml.soap-api-1.4.2.jar https://projects.eclipse.org/projects/ee4j.jaxb
 jakarta.xml.ws-api-2.3.3.jar https://projects.eclipse.org/projects/ee4j.jaxb
 istack-commons-runtime-3.0.12.jar https://github.com/eclipse-ee4j/jaxb-istack-commons
-txw2-2.3.4.jar https://eclipse-ee4j.github.io/jaxb-ri
-jaxb-runtime-2.3.4.jar  https://github.com/eclipse-ee4j/jaxb-ri/blob/2.3.4-RI/LICENSE.md
+txw2-2.3.5.jar https://eclipse-ee4j.github.io/jaxb-ri
+jaxb-runtime-2.3.5.jar  https://github.com/eclipse-ee4j/jaxb-ri/blob/2.3.5-RI/LICENSE.md
 
 === Eclipse Public License 1.0 ===
 
