@@ -33,14 +33,13 @@ import java.util.Properties;
 
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.repo.index.shard.ShardState;
-import org.alfresco.solr.InformationServer;
-import org.alfresco.solr.NodeReport;
-import org.alfresco.solr.TrackerState;
+import org.alfresco.solr.*;
 import org.alfresco.solr.client.GetNodesParameters;
 import org.alfresco.solr.client.Node;
 import org.alfresco.solr.client.SOLRAPIClient;
 import org.alfresco.solr.client.Transaction;
 import org.alfresco.solr.client.Transactions;
+import org.alfresco.util.Pair;
 import org.apache.commons.codec.EncoderException;
 import org.json.JSONException;
 import org.junit.Before;
@@ -52,10 +51,9 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_TXCOMMITTIME;
+import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_TXID;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -72,6 +70,9 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class MetadataTrackerTest
 {
+    private static final String DEFAULT_INITIAL_TRANSACTION_RANGE = "0-2000";
+
+    private Pair<Long, Long> minTxnIdRange;
     private final static Long TX_ID = 10000000L;
     private final static Long DB_ID = 999L;
     private MetadataTracker metadataTracker;
@@ -94,6 +95,7 @@ public class MetadataTrackerTest
     @Before
     public void setUp()
     {
+        doReturn("2000-8000").when(props).getProperty("solr.initial.transaction.range");
         doReturn("workspace://SpacesStore").when(props).getProperty("alfresco.stores");
         when(srv.getTrackerStats()).thenReturn(trackerStats);
         String coreName = "theCoreName";
@@ -272,6 +274,39 @@ public class MetadataTrackerTest
         when(trackerState.getLastIndexedTxCommitTime()).thenReturn(lastIndexedTransactionCommitTime);
 
         assertTrue(metadataTracker.isTransactionToBeIndexed(incomingTransaction));
+    }
+
+    @Test
+    public void testCheckRepoAndIndexConsistency() throws AuthenticationException, IOException, JSONException {
+        ModelTracker modelTracker = mock(ModelTracker.class);
+        TrackerState trackerState = mock(TrackerState.class);
+        when(trackerState.getTrackerCycles()).thenReturn(0);
+        when(modelTracker.hasModels()).thenReturn(true);
+        AlfrescoCoreAdminHandler alfrescoCoreAdminHandler = mock(AlfrescoCoreAdminHandler.class);
+        TrackerRegistry trackerRegistry = mock(TrackerRegistry.class);
+        when(this.srv.getAdminHandler()).thenReturn(alfrescoCoreAdminHandler);
+        when(alfrescoCoreAdminHandler.getTrackerRegistry()).thenReturn(trackerRegistry);
+        when(trackerRegistry.getModelTracker()).thenReturn(modelTracker);
+        List<Transaction> txsList = new ArrayList<>();
+        Transaction tx1 = new Transaction();
+        tx1.setCommitTimeMs(1L);
+        tx1.setDeletes(1);
+        tx1.setUpdates(1);
+        txsList.add(tx1);;
+        Transactions txs = new Transactions(txsList, 2000L, 8000L);
+        when(repositoryClient.getTransactions(null, 2000L, null, 8000L, 1)).thenReturn(txs);
+        when(repositoryClient.getTransactions(0L, 2000L, null, 8000L, 1)).thenReturn(txs);
+        when(this.srv.getTxDocsSize("0","1")).thenReturn(1);
+        when(this.srv.getMaxTransactionIdAndCommitTimeInIndex()).thenReturn(tx1);
+        when(repositoryClient.getTransactions(0L, null, 3600000L, null, 2000)).thenReturn(txs);
+        try
+        {
+            this.metadataTracker.doTrack("AnIterationId");
+        }
+        catch (Exception ex)
+        {
+            fail("testCheckRepoAndIndexConsistency test method failed due to " + ex.getMessage());
+        }
     }
 
     private Node getNode()
