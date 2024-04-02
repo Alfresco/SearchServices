@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services E2E Test
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -324,13 +324,13 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     {
         SearchResponse response = query(searchRequest);
 
-        if (restClient.getStatusCode().matches(HttpStatus.OK.toString()))
+        if (restClient.getStatusCode().matches(String.valueOf(HttpStatus.OK.value())))
         {
             return isContentInSearchResponse(response, contentName);
         }
         else
         {
-            throw new RuntimeException("API returned status code:" + restClient.getStatusCode() + " Expected: " + HttpStatus.OK + "; Response body: " + response);
+            throw new RuntimeException("API returned status code:" + restClient.getStatusCode() + " Expected: " + HttpStatus.OK.value() + "; Response body: " + response);
         }
     }
 

@@ -55,7 +55,7 @@
       <license.update.copyright>false</license.update.copyright>
 
       <dependency.alfresco.xml-factory.version>1.3</dependency.alfresco.xml-factory.version>
-      <dependency.alfresco-data-model.version>17.190</dependency.alfresco-data-model.version>
+      <dependency.alfresco-data-model.version>18.20</dependency.alfresco-data-model.version>
 
       <dependency.jackson.version>2.15.2</dependency.jackson.version>
 
@@ -89,9 +89,17 @@
       <dependency.commons-fileupload.version>1.5</dependency.commons-fileupload.version>
       <dependency.commons-io.version>2.15.1</dependency.commons-io.version>
       <dependency.commons-codec.version>1.16.1</dependency.commons-codec.version>
+      <dependency.spring.version>5.3.33</dependency.spring.version>
    </properties>
    <dependencyManagement>
       <dependencies>
+         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-framework-bom</artifactId>
+            <version>${dependency.spring.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
          <dependency>
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>

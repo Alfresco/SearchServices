@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services E2E Test
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -168,8 +168,8 @@ public abstract class AbstractSearchExactTermTest extends AbstractE2EFunctionalT
     {
         queryAsUser(testUser, query);
         Assert.assertTrue(
-            restClient.getStatusCode().equals(String.valueOf(HttpStatus.NOT_IMPLEMENTED)) ||
-            restClient.getStatusCode().equals(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR)), 
+            restClient.getStatusCode().equals(String.valueOf(HttpStatus.NOT_IMPLEMENTED.value())) ||
+            restClient.getStatusCode().equals(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value())),
             "Status code is not as expected.");
     }
 
