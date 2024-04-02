@@ -31,7 +31,7 @@ error_prone_annotations-2.26.1.jar https://github.com/google/error-prone
 jsr305-3.0.2.jar https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305/1.3.9
 proj4j-1.1.5.jar https://github.com/locationtech/proj4j
 j2objc-annotations-3.0.0.jar https://github.com/google/j2objc
-json-path-2.8.0.jar https://github.com/json-path/JsonPath
+json-path-2.9.0.jar https://github.com/json-path/JsonPath
 json-simple-1.1.1.jar https://github.com/fangyidong/json-simple
 apiguardian-api-1.1.2.jar https://github.com/apiguardian-team/apiguardian
 xml-resolver-1.2.jar    https://github.com/FasterXML/jackson
