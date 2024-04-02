@@ -33,6 +33,7 @@ import java.util.Properties;
 
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.repo.index.shard.ShardState;
+import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.NodeReport;
 import org.alfresco.solr.TrackerState;
@@ -56,6 +57,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
