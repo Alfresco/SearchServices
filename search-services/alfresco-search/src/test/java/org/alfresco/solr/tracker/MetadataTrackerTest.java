@@ -51,8 +51,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_TXCOMMITTIME;
-import static org.alfresco.repo.search.adaptor.QueryConstants.FIELD_TXID;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -70,9 +68,6 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class MetadataTrackerTest
 {
-    private static final String DEFAULT_INITIAL_TRANSACTION_RANGE = "0-2000";
-
-    private Pair<Long, Long> minTxnIdRange;
     private final static Long TX_ID = 10000000L;
     private final static Long DB_ID = 999L;
     private MetadataTracker metadataTracker;
