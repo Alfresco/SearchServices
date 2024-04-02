@@ -60,7 +60,7 @@
       <dependency.jackson.version>2.15.2</dependency.jackson.version>
 
       <dependency.google.guava.version>33.1.0-jre</dependency.google.guava.version>
-      <dependency.apache-commons-compress.version>1.23.0</dependency.apache-commons-compress.version>
+      <dependency.apache-commons-compress.version>1.26.1</dependency.apache-commons-compress.version>
       <dependency.apache-commons-lang3.version>3.12.0</dependency.apache-commons-lang3.version>
       <dependency.apache-commons-lang.version>2.6</dependency.apache-commons-lang.version>
       <dependency.jakarta.xml.bind-api.version>3.0.1</dependency.jakarta.xml.bind-api.version>
@@ -87,6 +87,8 @@
       <dependency.jayway.jsonpath.version>2.8.0</dependency.jayway.jsonpath.version>
       <dependency.janino.version>3.1.10</dependency.janino.version>
       <dependency.commons-fileupload.version>1.5</dependency.commons-fileupload.version>
+      <dependency.commons-io.version>2.15.1</dependency.commons-io.version>
+      <dependency.commons-codec.version>1.16.1</dependency.commons-codec.version>
    </properties>
    <dependencyManagement>
       <dependencies>
@@ -94,6 +96,16 @@
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
             <version>${dependency.commons-fileupload.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${dependency.commons-io.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>${dependency.commons-codec.version}</version>
          </dependency>
          <dependency>
             <groupId>org.codehaus.janino</groupId>

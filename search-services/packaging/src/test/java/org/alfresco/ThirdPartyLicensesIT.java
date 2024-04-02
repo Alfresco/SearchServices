@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,10 +26,8 @@
 
 package org.alfresco;
 
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
-
-import static org.junit.Assert.fail;
+import com.google.common.collect.Sets;
+import org.junit.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,9 +37,9 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import com.google.common.collect.Sets;
-
-import org.junit.Test;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+import static org.junit.Assert.fail;
 
 /**
  * Integration tests of the declared third party licenses.
@@ -65,7 +63,7 @@ public class ThirdPartyLicensesIT
     public void testLicensesDeclared() throws Exception
     {
         // Get the path to the target directory.
-        Path targetPath = Paths.get(getClass().getProtectionDomain().getCodeSource().getLocation().getPath(), "..");
+        Path targetPath = Paths.get(getClass().getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
 
         // Try to find the zip file in the target directory.
         Path zipPath = Files.find(targetPath, 1,

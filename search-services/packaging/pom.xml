@@ -160,6 +160,8 @@
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/jackson-annotations-2.5.4.jar" />
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/janino-2.7.6.jar" />
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/commons-compiler-2.7.6.jar" />
+                                <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/commons-io-2.5.jar" />
+                                <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/commons-codec-1.10.jar" />
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/jackson-core-2.5.4.jar" />
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/jackson-databind-2.5.4.jar" />
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/jackson-dataformat-smile-2.5.4.jar" />
