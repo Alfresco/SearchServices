@@ -90,6 +90,7 @@
       <dependency.commons-io.version>2.15.1</dependency.commons-io.version>
       <dependency.commons-codec.version>1.16.1</dependency.commons-codec.version>
       <dependency.spring.version>5.3.33</dependency.spring.version>
+      <dependency.zookeeper.version>3.4.14</dependency.zookeeper.version>
       <dependency.mime4j.version>0.8.11</dependency.mime4j.version>
    </properties>
    <dependencyManagement>
@@ -100,6 +101,17 @@
             <version>${dependency.spring.version}</version>
             <type>pom</type>
             <scope>import</scope>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <version>${dependency.zookeeper.version}</version>
+            <exclusions>
+               <exclusion>
+                  <groupId>com.github.spotbugs</groupId>
+                  <artifactId>spotbugs-annotations</artifactId>
+               </exclusion>
+            </exclusions>
          </dependency>
          <dependency>
             <groupId>commons-fileupload</groupId>

@@ -27,6 +27,7 @@ xpp3-1.1.4c.jar http://www.extreme.indiana.edu/dist/java-repository/xpp3/license
 json-20231013.jar https://github.com/stleary/JSON-java
 
 === Apache 2.0 ===
+audience-annotations-0.5.0.jar https://github.com/apache/yetus
 error_prone_annotations-2.26.1.jar https://github.com/google/error-prone
 jsr305-3.0.2.jar https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305/1.3.9
 proj4j-1.1.5.jar https://github.com/locationtech/proj4j
@@ -230,4 +231,4 @@ t-digest-3.1.jar
 vorbis-java-core-0.8.jar
 vorbis-java-tika-0.8.jar
 xz-1.6.jar
-zookeeper-3.4.10.jar
+zookeeper-3.4.14.jar
