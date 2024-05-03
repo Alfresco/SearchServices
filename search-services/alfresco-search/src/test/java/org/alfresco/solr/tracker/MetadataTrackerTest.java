@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -33,6 +33,7 @@ import java.util.Properties;
 
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.repo.index.shard.ShardState;
+import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.InformationServer;
 import org.alfresco.solr.NodeReport;
 import org.alfresco.solr.TrackerState;
@@ -66,6 +67,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -94,6 +96,7 @@ public class MetadataTrackerTest
     @Before
     public void setUp()
     {
+        doReturn("0-2000").when(props).getProperty("solr.initial.transaction.range");
         doReturn("workspace://SpacesStore").when(props).getProperty("alfresco.stores");
         when(srv.getTrackerStats()).thenReturn(trackerStats);
         String coreName = "theCoreName";
@@ -280,5 +283,35 @@ public class MetadataTrackerTest
         node.setId(DB_ID);
         node.setTxnId(TX_ID);
         return node;
+    }
+
+    @Test
+    public void testCheckRepoAndIndexConsistency() throws AuthenticationException, IOException, JSONException
+    {
+        TrackerState state = new TrackerState();
+        ModelTracker modelTracker = mock(ModelTracker.class);
+        when(modelTracker.hasModels()).thenReturn(true);
+        when(this.metadataTracker.getTrackerState()).thenReturn(state);
+
+        TrackerRegistry registry = new TrackerRegistry();
+        registry.setModelTracker(modelTracker);
+        AlfrescoCoreAdminHandler alfrescoCoreAdminHandler = mock(AlfrescoCoreAdminHandler.class);
+        when(this.srv.getAdminHandler()).thenReturn(alfrescoCoreAdminHandler);
+        when(alfrescoCoreAdminHandler.getTrackerRegistry()).thenReturn(registry);
+
+        List<Transaction> txsList = new ArrayList<>();
+        Transaction tx1 = new Transaction();
+        tx1.setCommitTimeMs(1L);
+        tx1.setDeletes(1);
+        tx1.setUpdates(1);
+        txsList.add(tx1);
+
+        Transactions txs = new Transactions(txsList, 0L, 2000L);
+        when(repositoryClient.getTransactions(null,  0L, null, 2000L, 1)).thenReturn(txs);
+        when(repositoryClient.getTransactions(1L, null, 3600001L, null, 2000)).thenReturn(txs);
+
+        this.metadataTracker.doTrack("AnIterationId");
+
+        verify(this.metadataTracker, times(1)).doTrack("AnIterationId");
     }
 }
