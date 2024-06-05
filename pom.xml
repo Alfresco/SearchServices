@@ -55,7 +55,7 @@
       <license.update.copyright>false</license.update.copyright>
 
       <dependency.alfresco.xml-factory.version>1.3</dependency.alfresco.xml-factory.version>
-      <dependency.alfresco-data-model.version>22.18</dependency.alfresco-data-model.version>
+      <dependency.alfresco-data-model.version>18.20</dependency.alfresco-data-model.version>
 
       <dependency.jackson.version>2.15.2</dependency.jackson.version>
 
@@ -211,12 +211,6 @@
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-xmlfactory</artifactId>
             <version>${dependency.alfresco.xml-factory.version}</version>
-            <exclusions>
-               <exclusion>
-                  <groupId>xerces</groupId>
-                  <artifactId>*</artifactId>
-               </exclusion>
-            </exclusions>
          </dependency>
          <dependency>
             <groupId>commons-lang</groupId>
