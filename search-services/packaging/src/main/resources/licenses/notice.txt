@@ -90,7 +90,7 @@ jetty-xml-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
 woodstox-core-6.6.0.jar https://github.com/FasterXML/woodstox
 org.restlet-2.3.12.jar https://github.com/restlet/restlet-framework-java/blob/2.3.12/README.md
 org.restlet.ext.servlet-2.3.12.jar https://github.com/restlet/restlet-framework-java/blob/2.3.12/README.md
-xercesImpl-2.11.0-alfresco-patched-20180402.jar http://www.apache.org/licenses/LICENSE-2.0.txt
+xercesImpl-2.12.2.jar http://www.apache.org/licenses/LICENSE-2.0.txt
 xml-apis-1.4.01.jar http://www.apache.org/licenses/LICENSE-2.0.txt
 simple-xml-safe-2.7.1.jar https://github.com/carrotsearch/simplexml-safe/blob/release/2.7.1/LICENSE.txt
 reload4j-1.2.18.3.jar http://www.apache.org/licenses/LICENSE-2.0.txt

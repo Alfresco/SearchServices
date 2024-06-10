@@ -36,7 +36,7 @@ services:
       - 61616:61616 # OpenWire
       - 61613:61613 # STOMP
   transform-core-aio:
-    image: alfresco/alfresco-transform-core-aio:2.3.5
+    image: alfresco/alfresco-transform-core-aio:5.1.2
     environment:
       JAVA_OPTS: " -Xms256m -Xmx512m"
       ACTIVEMQ_URL: "nio://activemq:61616"

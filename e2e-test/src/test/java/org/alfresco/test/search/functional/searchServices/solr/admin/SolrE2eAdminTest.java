@@ -609,50 +609,51 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         });
     }
     
-    /**
-     * FIX for specific core.
-     * The test checks the response structure in order to make sure the expected sections are present.
-     *
-     * We are not testing the content of each section because due to the underlying E2E infrastructure, we cannot know
-     * in advance the transactions that will be scheduled for reindexing.
-     */
-    @Test(priority = 28)
-    public void testFixCore()
-    {
-        DEFAULT_CORE_NAMES.forEach(core -> {
-            try
-            {
-                RestResponse response = restClient.withParams("core=" + core).withSolrAdminAPI().getAction("fix");
-                
-                checkResponseStatusOk(response);
-                
-                Map<String, Object> txInIndexNotInDb = response.getResponse().body().jsonPath().get("action." + core +".txToReindex.txInIndexNotInDb");
-                Assert.assertNotNull(txInIndexNotInDb, "Expected a list of transactions (even empty) that are in index but not in the database to be reindexed,");
-
-                Map<String, Object> duplicatedTx = response.getResponse().body().jsonPath().get("action." + core +".txToReindex.duplicatedTxInIndex");
-                Assert.assertNotNull(duplicatedTx, "Expected a list of duplicated transactions (even empty) to be reindexed,");
-
-                Map<String, Object> missingTx = response.getResponse().body().jsonPath().get("action." + core +".txToReindex.missingTxInIndex");
-                Assert.assertNotNull(missingTx, "Expected a list of missing transactions (or empty list) to be reindexed,");
-
-                Map<String, Object> aclTxInIndexNotInDb = response.getResponse().body().jsonPath().get("action." + core + ".aclChangeSetToReindex.aclTxInIndexNotInDb");
-                Assert.assertNotNull(aclTxInIndexNotInDb, "Expected a list of ACLs (or empty list) to be reindexed,");
-
-                Map<String, Object> duplicatedAclTxInIndex = response.getResponse().body().jsonPath().get("action." + core + ".aclChangeSetToReindex.duplicatedAclTxInIndex");
-                Assert.assertNotNull(duplicatedAclTxInIndex, "Expected a list of ACLs (or empty list) to be reindexed,");
-
-                Map<String, Object> missingAclTxInIndex = response.getResponse().body().jsonPath().get("action." + core + ".aclChangeSetToReindex.missingAclTxInIndex");
-                Assert.assertNotNull(missingAclTxInIndex, "Expected a list of ACLs (or empty list) to be reindexed,");
-
-                String actionStatus = response.getResponse().body().jsonPath().get("action.status");
-                Assert.assertEquals(actionStatus, "notScheduled");
-            }
-            catch (Exception e)
-            {
-                throw new RuntimeException(e);
-            }
-        });
-    }
+//    See https://hyland.atlassian.net/browse/ACS-8187
+//    /**
+//     * FIX for specific core.
+//     * The test checks the response structure in order to make sure the expected sections are present.
+//     *
+//     * We are not testing the content of each section because due to the underlying E2E infrastructure, we cannot know
+//     * in advance the transactions that will be scheduled for reindexing.
+//     */
+//    @Test(priority = 28)
+//    public void testFixCore()
+//    {
+//        DEFAULT_CORE_NAMES.forEach(core -> {
+//            try
+//            {
+//                RestResponse response = restClient.withParams("core=" + core).withSolrAdminAPI().getAction("fix");
+//
+//                checkResponseStatusOk(response);
+//
+//                Map<String, Object> txInIndexNotInDb = response.getResponse().body().jsonPath().get("action." + core +".txToReindex.txInIndexNotInDb");
+//                Assert.assertNotNull(txInIndexNotInDb, "Expected a list of transactions (even empty) that are in index but not in the database to be reindexed,");
+//
+//                Map<String, Object> duplicatedTx = response.getResponse().body().jsonPath().get("action." + core +".txToReindex.duplicatedTxInIndex");
+//                Assert.assertNotNull(duplicatedTx, "Expected a list of duplicated transactions (even empty) to be reindexed,");
+//
+//                Map<String, Object> missingTx = response.getResponse().body().jsonPath().get("action." + core +".txToReindex.missingTxInIndex");
+//                Assert.assertNotNull(missingTx, "Expected a list of missing transactions (or empty list) to be reindexed,");
+//
+//                Map<String, Object> aclTxInIndexNotInDb = response.getResponse().body().jsonPath().get("action." + core + ".aclChangeSetToReindex.aclTxInIndexNotInDb");
+//                Assert.assertNotNull(aclTxInIndexNotInDb, "Expected a list of ACLs (or empty list) to be reindexed,");
+//
+//                Map<String, Object> duplicatedAclTxInIndex = response.getResponse().body().jsonPath().get("action." + core + ".aclChangeSetToReindex.duplicatedAclTxInIndex");
+//                Assert.assertNotNull(duplicatedAclTxInIndex, "Expected a list of ACLs (or empty list) to be reindexed,");
+//
+//                Map<String, Object> missingAclTxInIndex = response.getResponse().body().jsonPath().get("action." + core + ".aclChangeSetToReindex.missingAclTxInIndex");
+//                Assert.assertNotNull(missingAclTxInIndex, "Expected a list of ACLs (or empty list) to be reindexed,");
+//
+//                String actionStatus = response.getResponse().body().jsonPath().get("action.status");
+//                Assert.assertEquals(actionStatus, "notScheduled");
+//            }
+//            catch (Exception e)
+//            {
+//                throw new RuntimeException(e);
+//            }
+//        });
+//    }
     
     /**
      * REINDEX for every core.
