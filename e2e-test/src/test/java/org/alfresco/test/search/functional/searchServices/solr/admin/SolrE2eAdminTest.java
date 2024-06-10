@@ -609,6 +609,7 @@ public class SolrE2eAdminTest extends AbstractE2EFunctionalTest
         });
     }
     
+//    See https://hyland.atlassian.net/browse/ACS-8187
 //    /**
 //     * FIX for specific core.
 //     * The test checks the response structure in order to make sure the expected sections are present.
