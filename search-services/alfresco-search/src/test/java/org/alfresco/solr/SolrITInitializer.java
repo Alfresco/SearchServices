@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -100,6 +100,8 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
     protected static final int DEFAULT_CONNECTION_TIMEOUT1 = DEFAULT_CONNECTION_TIMEOUT;
     protected static final int CLIENT_SO_TIMEOUT = 90000;
     protected final static int INDEX_TIMEOUT = 100000;
+    protected static final String JETTY_CONTEXT = "/solr";
+    protected static final String SHARD_NAME_PREFIX = "shard";
 
     private static AtomicInteger nodeCnt;
     protected static boolean useExplicitNodeNames;
@@ -107,16 +109,17 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
     public static Properties DEFAULT_CORE_PROPS = new Properties();
 
     protected static Map<String, JettySolrRunner> jettyContainers;
+    protected static int jettyPort;
     protected static Map<String, SolrClient> solrCollectionNameToStandaloneClient;
     protected static List<JettySolrRunner> solrShards;
     protected static List<SolrClient> clientShards;
     protected static String shards;
     protected static String[] shardsArr;
     protected static File testDir;
-    
+
     //Standalone Tests
     protected static SolrCore defaultCore;
- 
+
 
     protected static final String id = "id";
 
@@ -135,11 +138,11 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
     {
         DEFAULT_CORE_PROPS.setProperty("alfresco.commitInterval", "1000");
         DEFAULT_CORE_PROPS.setProperty("alfresco.newSearcherInterval", "2000");
-        
+
         System.setProperty("alfresco.test", "true");
         System.setProperty("solr.tests.maxIndexingThreads", "10");
         System.setProperty("solr.tests.ramBufferSizeMB", "1024");
-        
+
         testDir = new File(System.getProperty("user.dir") + "/target/jettys");
     }
 
@@ -150,20 +153,24 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
     {
         testClassName = testClassName + "_" + System.currentTimeMillis();
 
+        if (numShards > 0) {
+            jettyPort = getNextAvailablePort();
+        }
         solrcoreProperties = addExplicitShardingProperty(solrcoreProperties);
 
         clientShards = new ArrayList<>();
         solrShards = new ArrayList<>();
         solrCollectionNameToStandaloneClient = new HashMap<>();
         jettyContainers = new HashMap<>();
-        
+
         nodeCnt = new AtomicInteger(0);
 
         //currentTestName = testClassName;
 
         String[] coreNames = new String[]{DEFAULT_TEST_CORENAME};
-        
+
         distribSetUp(testClassName);
+        distribShardsSetUp(numShards);
 
         RandomSupplier.RandVal.uniqueValues = new HashSet<>(); // reset random values
 
@@ -189,7 +196,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
     public static void initSingleSolrServer(String testClassName, Properties solrcoreProperties) throws Throwable
     {
         initSolrServers(0,testClassName,solrcoreProperties);
-        
+
         JettySolrRunner jsr = jettyContainers.get(testClassName);
         CoreContainer coreContainer = jsr.getCoreContainer();
         AlfrescoCoreAdminHandler coreAdminHandler = (AlfrescoCoreAdminHandler)  coreContainer.getMultiCoreHandler();
@@ -229,7 +236,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
             LOGGER.error("Failed to shutdown test properly ", e);
         }
     }
-    
+
     /**
      * Subclasses can override this to change a test's solr home (default is in
      * test-files)
@@ -238,15 +245,34 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
     {
         return System.getProperty("user.dir") + "/target/test-classes/test-files";
     }
-    
+
     public static void distribSetUp(String serverName)
     {
         SolrTestCaseJ4.resetExceptionIgnores(); // ignore anything with
-                                                // ignore_exception in it
+        // ignore_exception in it
         System.setProperty("solr.test.sys.prop1", "propone");
         System.setProperty("solr.test.sys.prop2", "proptwo");
         System.setProperty("solr.directoryFactory", "org.apache.solr.core.MockDirectoryFactory");
         System.setProperty("solr.log.dir", testDir.toPath().resolve(serverName).toString());
+
+    }
+
+    /**
+     * Needed to test fix for CVE-2017-3164
+     * @param numShards
+     */
+    private static void distribShardsSetUp(int numShards){
+        if (numShards <= 0) {
+            return;
+        }
+
+        StringBuilder shardWhitelistBuilder = new StringBuilder();
+        for (int i = 0; i < numShards; i++)
+        {
+            shardWhitelistBuilder.append("127.0.0.1:").append(jettyPort).append(JETTY_CONTEXT).append("/" + SHARD_NAME_PREFIX + i).append(',');
+        }
+        shardWhitelistBuilder.deleteCharAt(shardWhitelistBuilder.length() - 1);
+        System.setProperty("solr.shardsWhitelist", shardWhitelistBuilder.toString());
     }
 
     public static void distribTearDown()
@@ -276,7 +302,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         {
             Path jettySolrHome = testDir.toPath().resolve(jettyKey);
             seedSolrHome(jettySolrHome);
-            return createJetty(jettySolrHome.toFile(), null, null, false, 0, getSchemaFile(), basicAuth);
+            return createJetty(jettySolrHome.toFile(), null, null, false, jettyPort, getSchemaFile(), basicAuth);
         }
     }
 
@@ -365,7 +391,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
             Properties props = new Properties();
             props.putAll(additionalProperties);
 
-            final String shardname = "shard" + i;
+            final String shardname = SHARD_NAME_PREFIX + i;
             props.put("shard.instance", Integer.toString(i));
             props.put("shard.count", Integer.toString(numShards));
 
@@ -469,10 +495,10 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         if(basicAuth)
         {
             LOGGER.info("###### adding basic auth ######");
-            config = JettyConfig.builder().setContext("/solr").setPort(port).withFilter(BasicAuthFilter.class, "/sql/*").stopAtShutdown(true).withSSLConfig(sslConfig).build();
+            config = JettyConfig.builder().setContext(JETTY_CONTEXT).setPort(port).withFilter(BasicAuthFilter.class, "/sql/*").stopAtShutdown(true).withSSLConfig(sslConfig).build();
         } else {
             LOGGER.info("###### no basic auth ######");
-            config = JettyConfig.builder().setContext("/solr").setPort(port).stopAtShutdown(true).withSSLConfig(sslConfig).build();
+            config = JettyConfig.builder().setContext(JETTY_CONTEXT).setPort(port).stopAtShutdown(true).withSSLConfig(sslConfig).build();
         }
 
         return new JettySolrRunner(solrHome.getAbsolutePath(), props, config);
@@ -514,7 +540,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
 
     protected static String buildUrl(int port)
     {
-        return buildUrl(port, "/solr");
+        return buildUrl(port, JETTY_CONTEXT);
     }
 
     protected static String getSolrXml()
@@ -577,7 +603,7 @@ public abstract class SolrITInitializer extends SolrTestCaseJ4
         }
 
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
-            throws IOException, ServletException
+                throws IOException, ServletException
         {
             //Parse the basic auth filter
             String auth = ((HttpServletRequest)request).getHeader("Authorization");
