@@ -74,19 +74,19 @@ spring-tx-5.3.33.jar http://projects.spring.io/spring-framework/
 guessencoding-1.4.jar   http://docs.codehaus.org/display/GUESSENC/
 jug-2.0.0-asl.jar   http://jug.safehaus.org/
 acegi-security-0.8.2_patched.jar        http://sourceforge.net/projects/acegisecurity/
-jetty-continuation-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
-jetty-deploy-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
-jetty-http-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
-jetty-io-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
-jetty-jmx-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
-jetty-rewrite-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
-jetty-security-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
-jetty-server-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
-jetty-servlet-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
-jetty-servlets-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
-jetty-util-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
-jetty-webapp-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
-jetty-xml-9.3.30.v20211001.jar https://www.eclipse.org/jetty/licenses.html
+jetty-continuation-9.4.54.v20240208.jar https://www.eclipse.org/jetty/licenses.html
+jetty-deploy-9.4.54.v20240208.jar https://www.eclipse.org/jetty/licenses.html
+jetty-http-9.4.54.v20240208.jar https://www.eclipse.org/jetty/licenses.html
+jetty-io-9.4.54.v20240208.jar https://www.eclipse.org/jetty/licenses.html
+jetty-jmx-9.4.54.v20240208.jar https://www.eclipse.org/jetty/licenses.html
+jetty-rewrite-9.4.54.v20240208.jar https://www.eclipse.org/jetty/licenses.html
+jetty-security-9.4.54.v20240208.jar https://www.eclipse.org/jetty/licenses.html
+jetty-server-9.4.54.v20240208.jar https://www.eclipse.org/jetty/licenses.html
+jetty-servlet-9.4.54.v20240208.jar https://www.eclipse.org/jetty/licenses.html
+jetty-servlets-9.4.54.v20240208.jar https://www.eclipse.org/jetty/licenses.html
+jetty-util-9.4.54.v20240208.jar https://www.eclipse.org/jetty/licenses.html
+jetty-webapp-9.4.54.v20240208.jar https://www.eclipse.org/jetty/licenses.html
+jetty-xml-9.4.54.v20240208.jar https://www.eclipse.org/jetty/licenses.html
 woodstox-core-6.6.0.jar https://github.com/FasterXML/woodstox
 org.restlet-2.3.12.jar https://github.com/restlet/restlet-framework-java/blob/2.3.12/README.md
 org.restlet.ext.servlet-2.3.12.jar https://github.com/restlet/restlet-framework-java/blob/2.3.12/README.md
@@ -183,28 +183,28 @@ jsonic-1.2.7.jar
 jul-to-slf4j-1.7.7.jar
 juniversalchardet-1.0.3.jar
 langdetect-1.1-20120112.jar
-lucene-analyzers-common-6.6.5-patched.14.jar
-lucene-analyzers-icu-6.6.5-patched.14.jar
-lucene-analyzers-kuromoji-6.6.5-patched.14.jar
-lucene-analyzers-morfologik-6.6.5-patched.14.jar
-lucene-analyzers-phonetic-6.6.5-patched.14.jar
-lucene-analyzers-smartcn-6.6.5-patched.14.jar
-lucene-analyzers-stempel-6.6.5-patched.14.jar
-lucene-backward-codecs-6.6.5-patched.14.jar
-lucene-classification-6.6.5-patched.14.jar
-lucene-codecs-6.6.5-patched.14.jar
-lucene-core-6.6.5-patched.14.jar
-lucene-expressions-6.6.5-patched.14.jar
-lucene-grouping-6.6.5-patched.14.jar
-lucene-highlighter-6.6.5-patched.14.jar
-lucene-join-6.6.5-patched.14.jar
-lucene-memory-6.6.5-patched.14.jar
-lucene-misc-6.6.5-patched.14.jar
-lucene-queries-6.6.5-patched.14.jar
-lucene-queryparser-6.6.5-patched.14.jar
-lucene-sandbox-6.6.5-patched.14.jar
-lucene-spatial-extras-6.6.5-patched.14.jar
-lucene-suggest-6.6.5-patched.14.jar
+lucene-analyzers-common-6.6.5-patched.16.jar
+lucene-analyzers-icu-6.6.5-patched.16.jar
+lucene-analyzers-kuromoji-6.6.5-patched.16.jar
+lucene-analyzers-morfologik-6.6.5-patched.16.jar
+lucene-analyzers-phonetic-6.6.5-patched.16.jar
+lucene-analyzers-smartcn-6.6.5-patched.16.jar
+lucene-analyzers-stempel-6.6.5-patched.16.jar
+lucene-backward-codecs-6.6.5-patched.16.jar
+lucene-classification-6.6.5-patched.16.jar
+lucene-codecs-6.6.5-patched.16.jar
+lucene-core-6.6.5-patched.16.jar
+lucene-expressions-6.6.5-patched.16.jar
+lucene-grouping-6.6.5-patched.16.jar
+lucene-highlighter-6.6.5-patched.16.jar
+lucene-join-6.6.5-patched.16.jar
+lucene-memory-6.6.5-patched.16.jar
+lucene-misc-6.6.5-patched.16.jar
+lucene-queries-6.6.5-patched.16.jar
+lucene-queryparser-6.6.5-patched.16.jar
+lucene-sandbox-6.6.5-patched.16.jar
+lucene-spatial-extras-6.6.5-patched.16.jar
+lucene-suggest-6.6.5-patched.16.jar
 metrics-core-3.2.2.jar
 metrics-ganglia-3.2.2.jar
 metrics-graphite-3.2.2.jar
@@ -218,11 +218,11 @@ protobuf-java-3.23.4.jar
 rome-1.5.1.jar
 slf4j-api-1.7.7.jar
 slf4j-log4j12-1.7.7.jar
-solr-analysis-extras-6.6.5-patched.14.jar
-solr-clustering-6.6.5-patched.14.jar
-solr-core-6.6.5-patched.14.jar
-solr-langid-6.6.5-patched.14.jar
-solr-solrj-6.6.5-patched.14.jar
+solr-analysis-extras-6.6.5-patched.16.jar
+solr-clustering-6.6.5-patched.16.jar
+solr-core-6.6.5-patched.16.jar
+solr-langid-6.6.5-patched.16.jar
+solr-solrj-6.6.5-patched.16.jar
 spatial4j-0.6.jar
 start.jar
 stax2-api-3.1.4.jar
