@@ -219,13 +219,13 @@ $ yo alfresco-docker-compose --acsVersion=6.2 --alfrescoVersion=community --http
 Once the files have been generated, just start Docker Compose.
 
 ```
-$ docker-compose up --build --force-recreate
+$ docker compose up --build --force-recreate
 ```
 
 You can shutdown it at any moment using following command.
 
 ```
-$ docker-compose down
+$ docker compose down
 ```
 
 **Community URLs**

@@ -16,7 +16,7 @@ start-manager: ## 1 - start BM Manager
 	$(helpers)/wait-service-to-start.sh http://localhost:9080/alfresco-bm-manager
 
 start-drivers: ## 2 - start BM Drivers
-	$(dc) -f docker-compose-drivers.yml pull && docker-compose -f docker-compose-manager.yml -f docker-compose-drivers.yml up -d
+	$(dc) -f docker-compose-drivers.yml pull && docker compose -f docker-compose-manager.yml -f docker-compose-drivers.yml up -d
 
 start-all: start-manager start-drivers ## 3 - start BM Manager and Driver
 

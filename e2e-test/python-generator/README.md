@@ -42,5 +42,5 @@ python3 BuildScripts/generator/generator.py --alfresco=quay.io/alfresco/alfresco
 # Starting the containers
 To start the containers you also need to build the images - for example:
 ```
-docker-compose up --build --force-recreate
+docker compose up --build --force-recreate
 ```
