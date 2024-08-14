@@ -3784,7 +3784,13 @@ public class SolrInformationServer implements InformationServer
                         break;
                     }
                 }
-
+                for(long id = iterationStart; id <= batchEndId; id++)
+                {
+                    if(idsInDb.get(id))
+                    {
+                        reporter.reportIdInDbButNotInIndex(id);
+                    }
+                }
                 batchStartId = batchEndId + 1;
                 batchEndId = Math.min(batchStartId + BATCH_FACET_TXS, maxId);
             }
