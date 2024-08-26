@@ -44,16 +44,16 @@ chemistry-opencmis-commons-impl-1.1.0.jar      http://chemistry.apache.org/
 chemistry-opencmis-commons-api-1.1.0.jar       http://chemistry.apache.org/
 xmlschema-core-2.3.1.jar http://ws.apache.org/commons/XmlSchema/
 HikariCP-java7-2.4.13.jar https://github.com/brettwooldridge/HikariCP
-cxf-core-3.6.3.jar https://cxf.apache.org/
-cxf-rt-bindings-soap-3.6.3.jar https://cxf.apache.org/
-cxf-rt-bindings-xml-3.6.3.jar https://cxf.apache.org/
-cxf-rt-databinding-jaxb-3.6.3.jar https://cxf.apache.org/
-cxf-rt-frontend-jaxws-3.6.3.jar https://cxf.apache.org/
-cxf-rt-frontend-simple-3.6.3.jar https://cxf.apache.org/
-cxf-rt-transports-http-3.6.3.jar https://cxf.apache.org/
-cxf-rt-ws-addr-3.6.3.jar https://cxf.apache.org/
-cxf-rt-ws-policy-3.6.3.jar https://cxf.apache.org/
-cxf-rt-wsdl-3.6.3.jar https://cxf.apache.org/
+cxf-core-4.0.5.jar https://cxf.apache.org/
+cxf-rt-bindings-soap-4.0.5.jar https://cxf.apache.org/
+cxf-rt-bindings-xml-4.0.5.jar https://cxf.apache.org/
+cxf-rt-databinding-jaxb-4.0.5.jar https://cxf.apache.org/
+cxf-rt-frontend-jaxws-4.0.5.jar https://cxf.apache.org/
+cxf-rt-frontend-simple-4.0.5.jar https://cxf.apache.org/
+cxf-rt-transports-http-4.0.5.jar https://cxf.apache.org/
+cxf-rt-ws-addr-4.0.5.jar https://cxf.apache.org/
+cxf-rt-ws-policy-4.0.5.jar https://cxf.apache.org/
+cxf-rt-wsdl-4.0.5.jar https://cxf.apache.org/
 chemistry-opencmis-server-support-1.0.0.jar     http://chemistry.apache.org/
 chemistry-opencmis-server-bindings-1.0.0.jar    http://chemistry.apache.org/
 failureaccess-1.0.2.jar https://mvnrepository.com/artifact/com.google.guava/failureaccess/1.0.2
@@ -87,7 +87,7 @@ jetty-servlets-9.4.54.v20240208.jar https://www.eclipse.org/jetty/licenses.html
 jetty-util-9.4.54.v20240208.jar https://www.eclipse.org/jetty/licenses.html
 jetty-webapp-9.4.54.v20240208.jar https://www.eclipse.org/jetty/licenses.html
 jetty-xml-9.4.54.v20240208.jar https://www.eclipse.org/jetty/licenses.html
-woodstox-core-6.6.0.jar https://github.com/FasterXML/woodstox
+woodstox-core-6.6.2.jar https://github.com/FasterXML/woodstox
 org.restlet-2.3.12.jar https://github.com/restlet/restlet-framework-java/blob/2.3.12/README.md
 org.restlet.ext.servlet-2.3.12.jar https://github.com/restlet/restlet-framework-java/blob/2.3.12/README.md
 xercesImpl-2.12.2.jar http://www.apache.org/licenses/LICENSE-2.0.txt
@@ -102,27 +102,31 @@ gson-2.8.9.jar https://github.com/google/gson/blob/gson-parent-2.8.9/LICENSE
 === CDDL 1.1 ===
 jaxb-core-4.0.3.jar http://jaxb.java.net/
 jaxb-xjc-4.0.3.jar http://jaxb.java.net/
+jaxb-core-3.0.2.jar
 
 
 === Eclipse Distribution License 1.0 (BSD) ===
 jakarta.activation-1.2.2.jar https://eclipse-ee4j.github.io/jaf
 jakarta.activation-api-1.2.2.jar https://eclipse-ee4j.github.io/jaf
-jakarta.jws-api-2.1.0.jar https://projects.eclipse.org/projects/ee4j.websocket/releases/1.1.1
+jakarta.jws-api-3.0.0.jar https://projects.eclipse.org/projects/ee4j.websocket/releases/1.1.1
 jakarta.xml.bind-api-3.0.1.jar https://projects.eclipse.org/projects/ee4j.jaxb
-jakarta.xml.soap-api-1.4.2.jar https://projects.eclipse.org/projects/ee4j.jaxb
-jakarta.xml.ws-api-2.3.3.jar https://projects.eclipse.org/projects/ee4j.jaxb
-istack-commons-runtime-3.0.12.jar https://github.com/eclipse-ee4j/jaxb-istack-commons
-txw2-2.3.5.jar https://eclipse-ee4j.github.io/jaxb-ri
-jaxb-runtime-2.3.5.jar  https://github.com/eclipse-ee4j/jaxb-ri/blob/2.3.5-RI/LICENSE.md
+jakarta.xml.soap-api-2.0.1.jar https://projects.eclipse.org/projects/ee4j.jaxb
+jakarta.xml.ws-api-3.0.1.jar https://projects.eclipse.org/projects/ee4j.jaxb
+istack-commons-runtime-4.0.1.jar https://github.com/eclipse-ee4j/jaxb-istack-commons
+txw2-3.0.2.jar https://eclipse-ee4j.github.io/jaxb-ri
+jaxb-runtime-3.0.2.jar  https://github.com/eclipse-ee4j/jaxb-ri/blob/2.3.5-RI/LICENSE.md
+angus-activation-2.0.2.jar
+angus-mail-1.0.0.jar
 
 === Eclipse Public License 1.0 ===
 
 
 === Eclipse Public License 2.0 ===
-jakarta.annotation-api-1.3.5.jar https://projects.eclipse.org/projects/ee4j.ca
+jakarta.annotation-api-2.1.1.jar https://projects.eclipse.org/projects/ee4j.ca
 jakarta.transaction-api-1.3.3.jar https://projects.eclipse.org/projects/ee4j.jta
 jts-io-common-1.19.0.jar https://locationtech.github.io/jts/
 jts-core-1.19.0.jar https://locationtech.github.io/jts/
+jakarta.mail-api-2.1.0.jar
 
 === BSD ===
 jibx-run-1.3.3.jar http://jibx.sourceforge.net/
