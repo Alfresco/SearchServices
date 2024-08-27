@@ -121,6 +121,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.LongStream;
 import java.util.zip.GZIPInputStream;
 
 import com.carrotsearch.hppc.IntArrayList;
@@ -3784,6 +3785,9 @@ public class SolrInformationServer implements InformationServer
                         break;
                     }
                 }
+                LongStream.rangeClosed(iterationStart, batchEndId)
+                        .filter(id -> idsInDb.get(id))
+                        .forEach(reporter::reportIdInDbButNotInIndex);
 
                 batchStartId = batchEndId + 1;
                 batchEndId = Math.min(batchStartId + BATCH_FACET_TXS, maxId);
