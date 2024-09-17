@@ -50,7 +50,7 @@ cxf-rt-bindings-xml-3.6.3.jar https://cxf.apache.org/
 cxf-rt-databinding-jaxb-3.6.3.jar https://cxf.apache.org/
 cxf-rt-frontend-jaxws-3.6.3.jar https://cxf.apache.org/
 cxf-rt-frontend-simple-3.6.3.jar https://cxf.apache.org/
-cxf-rt-transports-http-3.6.3.jar https://cxf.apache.org/
+cxf-rt-transports-http-4.0.5.jar https://cxf.apache.org/
 cxf-rt-ws-addr-3.6.3.jar https://cxf.apache.org/
 cxf-rt-ws-policy-3.6.3.jar https://cxf.apache.org/
 cxf-rt-wsdl-3.6.3.jar https://cxf.apache.org/
