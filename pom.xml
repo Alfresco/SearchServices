@@ -90,6 +90,7 @@
       <dependency.commons-io.version>2.15.1</dependency.commons-io.version>
       <dependency.commons-codec.version>1.16.1</dependency.commons-codec.version>
       <dependency.spring.version>5.3.33</dependency.spring.version>
+      <dependency.spring-expression.version>6.1.12</dependency.spring-expression.version>
       <dependency.zookeeper.version>3.4.14</dependency.zookeeper.version>
       <dependency.mime4j.version>0.8.11</dependency.mime4j.version>
    </properties>
@@ -102,6 +103,11 @@
             <type>pom</type>
             <scope>import</scope>
          </dependency>
+          <dependency>
+              <groupId>org.springframework</groupId>
+              <artifactId>spring-expression</artifactId>
+              <version>${dependency.spring-expression.version}</version>
+          </dependency>
          <dependency>
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>

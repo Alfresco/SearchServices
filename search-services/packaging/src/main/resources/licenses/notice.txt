@@ -67,7 +67,7 @@ spring-aop-5.3.33.jar http://projects.spring.io/spring-framework/
 spring-beans-5.3.33.jar http://projects.spring.io/spring-framework/
 spring-context-5.3.33.jar http://projects.spring.io/spring-framework/
 spring-core-5.3.33.jar http://projects.spring.io/spring-framework/
-spring-expression-5.3.33.jar http://projects.spring.io/spring-framework/
+spring-expression-6.1.12.jar http://projects.spring.io/spring-framework/
 spring-jdbc-5.3.33.jar http://projects.spring.io/spring-framework/
 spring-orm-5.3.33.jar http://projects.spring.io/spring-framework/
 spring-tx-5.3.33.jar http://projects.spring.io/spring-framework/
