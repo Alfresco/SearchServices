@@ -214,7 +214,7 @@ morfologik-fsa-2.1.1.jar
 morfologik-polish-2.1.1.jar
 morfologik-stemming-2.1.1.jar
 noggit-0.6.jar
-protobuf-java-3.23.4.jar
+protobuf-java-3.25.5.jar
 rome-1.5.1.jar
 slf4j-api-1.7.7.jar
 slf4j-log4j12-1.7.7.jar
