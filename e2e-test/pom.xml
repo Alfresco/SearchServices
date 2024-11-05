@@ -50,6 +50,17 @@
          </plugin>
       </plugins>
    </build>
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-framework-bom</artifactId>
+            <version>${dependency.spring-e2e-test.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
    <dependencies>
       <dependency>
          <groupId>org.alfresco</groupId>
