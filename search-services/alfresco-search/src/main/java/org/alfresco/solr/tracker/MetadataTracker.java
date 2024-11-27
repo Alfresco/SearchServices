@@ -789,6 +789,13 @@ public class MetadataTracker extends ActivatableTracker
                             Thread.currentThread().getId(), coreName, startTime, nextTxCommitTime);
                     transactions = client.getTransactions(nextTxCommitTime, null,
                             nextTxCommitTime + timeStep, null, maxResults);
+                    // advance for next iteration in case alreadyFoundTransactions() yields true
+                    startTime = nextTxCommitTime + timeStep;
+                }
+                else
+                {
+                    // no point in additional iterations when there is no newer transaction
+                    break;
                 }
             }
 
