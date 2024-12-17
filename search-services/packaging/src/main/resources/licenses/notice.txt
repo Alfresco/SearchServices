@@ -67,6 +67,7 @@ spring-beans-6.1.14.jar http://projects.spring.io/spring-framework/
 spring-context-6.1.14.jar http://projects.spring.io/spring-framework/
 spring-core-6.1.14.jar http://projects.spring.io/spring-framework/
 spring-expression-6.1.14.jar http://projects.spring.io/spring-framework/
+spring-tx-6.1.14.jar http://projects.spring.io/spring-framework/
 guessencoding-1.4.jar   http://docs.codehaus.org/display/GUESSENC/
 jug-2.0.0-asl.jar   http://jug.safehaus.org/
 acegi-security-0.8.2_patched.jar        http://sourceforge.net/projects/acegisecurity/
