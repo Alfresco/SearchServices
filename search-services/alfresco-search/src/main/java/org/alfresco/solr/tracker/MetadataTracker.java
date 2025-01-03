@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Search Services
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -543,7 +543,7 @@ public class MetadataTracker extends ActivatableTracker
                     gnp.setStoreIdentifier(storeRef.getIdentifier());
                     gnp.setCoreName(coreName);
                     List<Node> nodes =   client.getNodes(gnp, (int) info.getUpdates());
-                    for (Node node : nodes)
+                    for (Node node : filterNodes(nodes))
                     {
                         docCount++;
                         if (LOGGER.isDebugEnabled())
