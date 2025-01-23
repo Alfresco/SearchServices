@@ -352,12 +352,15 @@ public class AlfrescoSolrHighlighter extends DefaultSolrHighlighter implements P
 		if (highlightFieldEntry.getValue() instanceof String[])
 		{
 			String [] snippets = (String[])highlightFieldEntry.getValue();
-			if (snippets.length > 0)
+			if (snippets != null && snippets.length > 0 && snippets[0] != null)
 			{
                 if (snippets[0].charAt(0) == '\u0000')
                 {
                     int pos = snippets[0].indexOf('\u0000',1);
-                    snippets[0] = snippets[0].substring(pos + 1);
+                    if(pos != -1)
+                    {
+                        snippets[0] = snippets[0].substring(pos + 1);
+                    }
                 }
 			}
 		}
