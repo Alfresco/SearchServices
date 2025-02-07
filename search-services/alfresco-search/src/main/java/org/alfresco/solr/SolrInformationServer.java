@@ -3747,7 +3747,7 @@ public class SolrInformationServer implements InformationServer
                 long iterationStart = batchStartId;
                 NamedList<Integer> idCounts = this.getFacets(request,
                         field + ":[" + batchStartId + " TO " + batchEndId + "]",
-                        field, 1); // Min count of 1 ensures that the id returned is in the index
+                        field, 1, maxId); // Min count of 1 ensures that the id returned is in the index
                 for (Map.Entry<String, Integer> idCount : idCounts)
                 {
                     idInIndex = Long.parseLong(idCount.getKey());
@@ -3840,6 +3840,24 @@ public class SolrInformationServer implements InformationServer
                         .set(FacetParams.FACET, true)
                         .set(FacetParams.FACET_FIELD, field)
                         .set(FacetParams.FACET_LIMIT, statsFacetLimit)
+                        .set(FacetParams.FACET_MINCOUNT, minCount);
+
+        SolrQueryResponse response = cloud.getResponse(nativeRequestHandler, request, params);
+        NamedList facetCounts = (NamedList) response.getValues().get("facet_counts");
+        NamedList facetFields = (NamedList) facetCounts.get("facet_fields");
+        return (NamedList) facetFields.get(field);
+    }
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private NamedList<Integer> getFacets(SolrQueryRequest request, String query, String field, int minCount, long maxCount)
+    {
+        ModifiableSolrParams params =
+                new ModifiableSolrParams(request.getParams())
+                        .set(CommonParams.Q, query)
+                        .set(CommonParams.ROWS, 0)
+                        .set(FacetParams.FACET, true)
+                        .set(FacetParams.FACET_FIELD, field)
+                        .set(FacetParams.FACET_LIMIT, (int)maxCount)
                         .set(FacetParams.FACET_MINCOUNT, minCount);
 
         SolrQueryResponse response = cloud.getResponse(nativeRequestHandler, request, params);
