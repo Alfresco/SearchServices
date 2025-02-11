@@ -70,7 +70,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -534,8 +533,8 @@ public class SolrInformationServerTest
     }
     
 	@Test
-	public void testGetFacets() {
-
+	public void testGetFacets() 
+	{
 		SimpleOrderedMap<Object> responseContent = new SimpleOrderedMap<>();
 		// Create facet_fields (TXID) as SimpleOrderedMap with Integer as value type
 		SimpleOrderedMap<Object> txidFacet = new SimpleOrderedMap<>();
