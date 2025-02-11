@@ -3849,7 +3849,8 @@ public class SolrInformationServer implements InformationServer
     }
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private NamedList<Integer> getFacets(SolrQueryRequest request, String query, String field, int minCount, long maxCount)
+     NamedList<Integer> getFacets(SolrQueryRequest request, String query, String field, int minCount, 
+    		long maxCount)
     {
         ModifiableSolrParams params =
                 new ModifiableSolrParams(request.getParams())
@@ -3857,7 +3858,7 @@ public class SolrInformationServer implements InformationServer
                         .set(CommonParams.ROWS, 0)
                         .set(FacetParams.FACET, true)
                         .set(FacetParams.FACET_FIELD, field)
-                        .set(FacetParams.FACET_LIMIT, (int)maxCount)
+                        .set(FacetParams.FACET_LIMIT, Math.toIntExact(Math.min(maxCount, Integer.MAX_VALUE)))
                         .set(FacetParams.FACET_MINCOUNT, minCount);
 
         SolrQueryResponse response = cloud.getResponse(nativeRequestHandler, request, params);
