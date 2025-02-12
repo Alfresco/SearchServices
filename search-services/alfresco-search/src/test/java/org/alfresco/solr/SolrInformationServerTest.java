@@ -557,7 +557,7 @@ public class SolrInformationServerTest
 			return null;
 		}).when(handler).handleRequest(any(SolrQueryRequest.class), any(SolrQueryResponse.class));
 		NamedList<Integer> actualResult = infoServer.getFacets(request, "TXID:[1 TO 411]", "TXID", 1, 3);
-		assertEquals(new NamedList<>() {
+		assertEquals(new NamedList<Integer>() {
 			{
 				add("1", 1);
 				add("2", 1);
