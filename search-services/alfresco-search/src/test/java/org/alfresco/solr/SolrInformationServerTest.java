@@ -556,13 +556,14 @@ public class SolrInformationServerTest
 			solrQueryResponse.setAllValues(responseContent);
 			return null;
 		}).when(handler).handleRequest(any(SolrQueryRequest.class), any(SolrQueryResponse.class));
-		NamedList<Integer> actualResult = infoServer.getFacets(request, "TXID:[1 TO 411]", "TXID", 1, 3);
-		assertEquals(new NamedList<Integer>() {
+		NamedList<Integer> actualResult = infoServer.getFacets(request, "TXID:[1 TO 3]", "TXID", 1, 3);
+		NamedList<Integer> expectedResult = new NamedList<Integer>() {
 			{
 				add("1", 1);
 				add("2", 1);
 				add("3", 1);
 			}
-		}, actualResult);
+		};
+		assertEquals(expectedResult, actualResult);
 	}
 }
