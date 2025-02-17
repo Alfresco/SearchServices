@@ -119,6 +119,7 @@ import org.apache.solr.handler.component.ShardHandlerFactory;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.DocsStreamer;
 import org.apache.solr.schema.IndexSchema;
+import org.apache.solr.schema.NumberType;
 import org.apache.solr.schema.SchemaField;
 import org.apache.solr.search.SolrIndexSearcher;
 import org.apache.solr.update.UpdateShardHandlerConfig;
@@ -1517,26 +1518,16 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         // make sure the field exists or return a dummy query so we have no
         // error ....ACE-3231
         SchemaField schemaField = schema.getFieldOrNull(field);
-        boolean isNumeric = false;
-        if (schemaField == null)
+
+        if (schemaField == null || schemaField.getType() == null)
         {
             return new TermQuery(new Term("_dummy_", "_miss_"));
-        } 
-        else
+        }
+
+        NumberType schemaFieldNumberType = schemaField.getType().getNumberType();
+        if (isNonParsableNumberType(schemaFieldNumberType, queryText))
         {
-            isNumeric = (schemaField.getType().getNumericType() != null);
-            if (isNumeric)
-            {
-                //Check to see if queryText is numeric or else it will fail.
-                try
-                {
-                    Double.valueOf(queryText);
-                }
-                catch (NumberFormatException e)
-                {
-                    return new TermQuery(new Term("_dummy_", "_miss_"));
-                }
-            }
+            return new TermQuery(new Term("_dummy_", "_miss_"));
         }
 
         // Use the analyzer to get all the tokens, and then build a TermQuery,
@@ -2357,7 +2348,8 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
         {
             nextToken = list.get(0);
             String termText = nextToken.toString();
-            if (!isNumeric && (termText.contains("*") || termText.contains("?")))
+            boolean isNotNumberType = schemaFieldNumberType == null;
+            if (isNotNumberType && (termText.contains("*") || termText.contains("?")))
             {
                 return newWildcardQuery(new Term(field, termText));
             } 
@@ -2640,6 +2632,24 @@ public class Solr4QueryParser extends QueryParser implements QueryConstants
                 }
             }
         }
+    }
+
+    private boolean isNonParsableNumberType(NumberType schemaFieldNumberType, String queryText)
+    {
+        boolean isNumberType = schemaFieldNumberType != null;
+        boolean isNotDate = schemaFieldNumberType != NumberType.DATE;
+        if (isNumberType && isNotDate)
+        {
+            try
+            {
+                Double.parseDouble(queryText);
+            }
+            catch (NumberFormatException e)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

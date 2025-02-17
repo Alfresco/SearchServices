@@ -92,4 +92,18 @@ public class MNTIT extends AbstractRequestHandlerIT
       assertResponseCardinality("\"AnalystName\" AND !\"AnalystName Craig\"", 1);
       assertResponseCardinality("cm:name:\"BASF*.txt\"", 4);
     }
+
+    @Test
+    public void mnt24377()
+    {
+        assertResponseCardinality("acme:date:*", 2); // sanity check to make sure test nodes are indexed
+
+        assertResponseCardinality("acme:date:NOW/DAY+1DAY", 0);
+        assertResponseCardinality("acme:date:NOW/DAY", 1);
+        assertResponseCardinality("acme:date:NOW/DAY-1DAY", 1);
+        assertResponseCardinality("acme:date:NOW/DAY-2DAY", 0);
+
+        assertResponseCardinality("acme:date:TODAY", 1);
+        assertResponseCardinality("acme:date:NOW", 0);
+    }
 }

@@ -60,10 +60,11 @@ import org.alfresco.solr.client.PropertyValue;
 import org.alfresco.solr.client.StringPropertyValue;
 import org.alfresco.solr.client.Transaction;
 import org.alfresco.util.ISO9075;
-import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.util.TestHarness;
 
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.AbstractMap;
 import java.util.Date;
 import java.util.HashMap;
@@ -814,6 +815,26 @@ public class TestDataProvider implements AlfrescoSolrConstants
         QName n32QName = QName.createQName(CONTENT_MODEL_1_0_URI, "thirtytwo");
         ChildAssociationRef n32CAR = new ChildAssociationRef(ASSOC_CONTAINS, rootNodeRef, n32QName, n32NodeRef, true, 0);
         addNode(core, dataModel, 1, 32, 1,  TYPE_CONTENT, null, properties32, null, "system", new ChildAssociationRef[] {n32CAR}, new NodeRef[] {rootNodeRef}, new String[] { "/" + n32QName.toString() }, n32NodeRef, true);
+
+        String acmeNamespaceURI = "http://www.acme.org/model/content/1.0";
+        QName propertyQname = QName.createQName(acmeNamespaceURI, "date");
+        QName acmeDocumentQName = QName.createQName(acmeNamespaceURI, "document");
+
+        Map<QName, PropertyValue> properties33 = new HashMap<>();
+        String todayStartOfDay = LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC).toString();
+        properties33.put(propertyQname, value(todayStartOfDay));
+        NodeRef n33NodeRef = newNodeRef();
+        QName n33QName = QName.createQName(acmeNamespaceURI, "thirtythree");
+        ChildAssociationRef n33CAR = new ChildAssociationRef(ASSOC_CONTAINS, rootNodeRef, n33QName, n33NodeRef, true, 0);
+        addNode(core, dataModel, 1, 33, 1,  acmeDocumentQName, null, properties33, null, "system", new ChildAssociationRef[] {n33CAR}, new NodeRef[] {rootNodeRef}, new String[] { "/" + n33QName.toString() }, n33NodeRef, true);
+
+        Map<QName, PropertyValue> properties34 = new HashMap<>();
+        String yesterdayStartOfDay = LocalDate.now().atStartOfDay().minusDays(1).toInstant(ZoneOffset.UTC).toString();
+        properties34.put(propertyQname, value(yesterdayStartOfDay));
+        NodeRef n34NodeRef = newNodeRef();
+        QName n34QName = QName.createQName(acmeNamespaceURI, "thirtyfour");
+        ChildAssociationRef n34CAR = new ChildAssociationRef(ASSOC_CONTAINS, rootNodeRef, n34QName, n34NodeRef, true, 0);
+        addNode(core, dataModel, 1, 34, 1,  acmeDocumentQName, null, properties34, null, "system", new ChildAssociationRef[] {n34CAR}, new NodeRef[] {rootNodeRef}, new String[] { "/" + n34QName.toString() }, n34NodeRef, true);
     }
 
     private Map<QName, PropertyValue> getOrderProperties()
