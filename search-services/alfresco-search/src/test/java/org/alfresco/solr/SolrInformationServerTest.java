@@ -27,7 +27,6 @@
 package org.alfresco.solr;
 
 import static java.util.Optional.ofNullable;
-
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.ANY;
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.ASSOC_REF;
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.BOOLEAN;
@@ -75,7 +74,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -533,5 +531,39 @@ public class SolrInformationServerTest
         // verifies if the method was called
         verify(updateRequestProcessor).processAdd(any());
     }
-
+    
+	@Test
+	public void testGetFacets() 
+	{
+		SimpleOrderedMap<Object> responseContent = new SimpleOrderedMap<>();
+		// Create facet_fields (TXID) as SimpleOrderedMap with Integer as value type
+		SimpleOrderedMap<Object> txidFacet = new SimpleOrderedMap<>();
+		txidFacet.add("1", 1);
+		txidFacet.add("2", 1);
+		txidFacet.add("3", 1);
+		// Create and populate the NamedList to simulate facet_counts
+		NamedList<Object> facetCounts = new NamedList<>();
+		facetCounts.add("facet_queries", new SimpleOrderedMap<>());
+		facetCounts.add("facet_fields", new SimpleOrderedMap<>());
+		// Add TXID facet to facet_fields
+		SimpleOrderedMap<Object> facetFields = (SimpleOrderedMap<Object>) facetCounts.get("facet_fields");
+		facetFields.add("TXID", txidFacet);
+		// Add the facet_counts to the main facetMap
+		responseContent.add("facet_counts", facetCounts);
+		// Set up the request handler to return the fake response.
+		doAnswer(invocation -> {
+			SolrQueryResponse solrQueryResponse = invocation.getArgument(1);
+			solrQueryResponse.setAllValues(responseContent);
+			return null;
+		}).when(handler).handleRequest(any(SolrQueryRequest.class), any(SolrQueryResponse.class));
+		NamedList<Integer> actualResult = infoServer.getFacets(request, "TXID:[1 TO 3]", "TXID", 1, 3);
+		NamedList<Integer> expectedResult = new NamedList<Integer>() {
+			{
+				add("1", 1);
+				add("2", 1);
+				add("3", 1);
+			}
+		};
+		assertEquals(expectedResult, actualResult);
+	}
 }
