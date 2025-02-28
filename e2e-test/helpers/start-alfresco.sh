@@ -15,6 +15,6 @@ export COMPOSE_HTTP_TIMEOUT=120
 
 # Build the images and call docker compose.
 cd "$DOCKER_RESOURCE_FOLDER"
-docker compose up --build --force-recreate &
+docker compose up -d --build --force-recreate
 
 $SCRIPT_DIR/wait-service-to-start.sh
