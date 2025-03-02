@@ -323,6 +323,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     private boolean isContentFoundWithRequest(SearchRequest searchRequest, String contentName)
     {
         SearchResponse response = query(searchRequest);
+        final String responseBody = restClient.onResponse().getResponse().body().prettyPrint();
 
         if (restClient.getStatusCode().matches(String.valueOf(HttpStatus.OK.value())))
         {
@@ -330,7 +331,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         }
         else
         {
-            throw new RuntimeException("API returned status code:" + restClient.getStatusCode() + " Expected: " + HttpStatus.OK.value() + "; Response body: " + response);
+            throw new RuntimeException("API returned status code:" + restClient.getStatusCode() + " Expected: " + HttpStatus.OK.value() + "; Response body: " + responseBody);
         }
     }
 
