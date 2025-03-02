@@ -299,6 +299,8 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
 
         SearchRequest searchRequest = createQuery(userQuery);
 
+        final int ignoreRuntimeExceptionThreshold = SEARCH_MAX_ATTEMPTS / 10 + 1;
+
         // Repeat search until the query results are as expected or Search Retry count is hit
         for (int searchCount = 0; searchCount < SEARCH_MAX_ATTEMPTS; searchCount++)
         {
@@ -308,12 +310,25 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
                 {
                     return true;
                 }
-
-                // Wait for the solr indexing (eventual consistency).
-                Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing. Retry Attempt: " + (searchCount + 1));
             }
             catch (EmptyJsonResponseException ignore)
             {
+            }
+            catch (RuntimeException runtimeException)
+            {
+                if (searchCount > ignoreRuntimeExceptionThreshold)
+                {
+                    throw runtimeException;
+                }
+                else
+                {
+                    LOGGER.warn("Ignoring initial Search API failure.", runtimeException);
+                }
+            }
+            finally
+            {
+                // Wait for the solr indexing (eventual consistency).
+                Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing. Retry Attempt: " + (searchCount + 1));
             }
         }
 
@@ -323,7 +338,6 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     private boolean isContentFoundWithRequest(SearchRequest searchRequest, String contentName)
     {
         SearchResponse response = query(searchRequest);
-        final String responseBody = restClient.onResponse().getResponse().body().prettyPrint();
 
         if (restClient.getStatusCode().matches(String.valueOf(HttpStatus.OK.value())))
         {
@@ -331,6 +345,7 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
         }
         else
         {
+            final String responseBody = restClient.onResponse().getResponse().body().prettyPrint();
             throw new RuntimeException("API returned status code:" + restClient.getStatusCode() + " Expected: " + HttpStatus.OK.value() + "; Response body: " + responseBody);
         }
     }
