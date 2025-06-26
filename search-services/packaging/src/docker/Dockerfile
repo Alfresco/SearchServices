@@ -15,9 +15,6 @@ ENV SOLR_SOLR_MODEL_DIR=${SOLR_SOLR_MODEL_DIR:-$DIST_DIR/data/alfrescoModels}
 ARG USERNAME=solr
 ARG USERID=33007
 
-# YourKit Java Profiler
-ARG JAVA_PROFILER=YourKit-JavaProfiler-2019.8-b142-docker
-
 COPY "$SOLR_ZIP" .
 
 RUN set -x \
@@ -54,21 +51,6 @@ VOLUME $DIST_DIR/keystores
 
 # SOLR Service Port
 EXPOSE 8983
-
-# YourKit - Requires additional setting for the agent in JVM to be used
-# For Docker Compose solr6 service, add the following lines:
-#    SOLR_OPTS: "
-#        -agentpath:/usr/local/YourKit-JavaProfiler-2019.8/bin/linux-x86-64/libyjpagent.so=port=10001,listen=all
-#    "
-#    ports:
-#        - 10001:10001
-RUN wget https://archive.yourkit.com/yjp/2019.8/${JAVA_PROFILER}.zip -P /tmp/ && \
-  unzip /tmp/${JAVA_PROFILER}.zip -d /usr/local && \
-  rm /tmp/${JAVA_PROFILER}.zip && \
-  cp /usr/local/YourKit-JavaProfiler*/license-redist.txt /licenses/3rd-party/YourKit-license-redist.txt
-
-# YourKit Profiling Port
-EXPOSE 10001
 
 USER ${USERNAME}
 CMD $DIST_DIR/solr/bin/search_config_setup.sh "$DIST_DIR/solr/bin/solr start -f"
