@@ -86,7 +86,7 @@
       <dependency.protobuf.version>3.25.5</dependency.protobuf.version>
       <dependency.jayway.jsonpath.version>2.9.0</dependency.jayway.jsonpath.version>
       <dependency.janino.version>3.1.10</dependency.janino.version>
-      <dependency.commons-fileupload.version>1.5</dependency.commons-fileupload.version>
+      <dependency.commons-fileupload.version>1.6.0</dependency.commons-fileupload.version>
       <dependency.commons-io.version>2.15.1</dependency.commons-io.version>
       <dependency.commons-codec.version>1.16.1</dependency.commons-codec.version>
       <dependency.spring.version>6.1.14</dependency.spring.version>
