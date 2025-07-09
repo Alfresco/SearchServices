@@ -127,8 +127,9 @@ public abstract class AbstractSearchExactTermTest extends AbstractE2EFunctionalT
                     createdFileModels.add(fileModel);
                     
                 });
-
-        createdFileModels.forEach(m -> waitForContentIndexing(m.getName(), true));
+        
+        waitForContentIndexing(createdFileModels.get(createdFileModels.size() - 1).getName(), true);
+        
     }
     
     @BeforeClass(alwaysRun = true)
