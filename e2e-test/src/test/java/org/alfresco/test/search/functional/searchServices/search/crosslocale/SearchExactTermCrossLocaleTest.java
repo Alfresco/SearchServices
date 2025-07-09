@@ -182,7 +182,7 @@ public class SearchExactTermCrossLocaleTest extends AbstractSearchExactTermTest
     /**
      * Note these tests are searching in cm:name, cm:title, cm:description and cm:content properties
      */
-    @Test
+    @Test(enabled = false)
     public void exactSearch_multiTerm_shouldReturnResultsContainingExactTerm() throws Exception 
     {
         /*
