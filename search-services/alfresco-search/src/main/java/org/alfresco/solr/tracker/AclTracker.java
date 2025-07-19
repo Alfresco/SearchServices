@@ -716,6 +716,17 @@ public class AclTracker extends ActivatableTracker
                 getWriteLock().acquire();
 
                 /*
+                 * When this tracker is forcing a rollback due to a previous error, there is no point in tracking
+                 * until the rollback has been processed by the CommitTracker.
+                 */
+                if (getRollback())
+                {
+                    LOGGER.info("{}-[CORE {}] Aborting ACL tracker execution due to pending rollback",
+                            Thread.currentThread().getId(), coreName);
+                    return;
+                }
+
+                /*
                 * We acquire the tracker state again here and set it globally. This is because the
                 * tracker state could have been invalidated due to a rollback by the CommitTracker.
                 * In this case the state will revert to the last transaction state record in the index.
