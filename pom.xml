@@ -43,7 +43,7 @@
    <properties>
       <maven.build.sourceVersion>11</maven.build.sourceVersion>
       <solr.base.version>6.6.5</solr.base.version>
-      <solr.version>${solr.base.version}-patched.21</solr.version>
+      <solr.version>${solr.base.version}-patched.22</solr.version>
       <!-- The location to download the solr zip file from. -->
       <!-- <solr.zip>https://archive.apache.org/dist/lucene/solr/${solr.version}/solr-${solr.version}.zip</solr.zip> -->
       <!-- Solr startup scripts do not work with any Java version higher than 9 so the scripts have been patched -->
@@ -61,8 +61,7 @@
 
       <dependency.google.guava.version>33.1.0-jre</dependency.google.guava.version>
       <dependency.apache-commons-compress.version>1.26.1</dependency.apache-commons-compress.version>
-      <dependency.apache-commons-lang3.version>3.12.0</dependency.apache-commons-lang3.version>
-      <dependency.apache-commons-lang.version>2.6</dependency.apache-commons-lang.version>
+      <dependency.apache-commons-lang3.version>3.18.0</dependency.apache-commons-lang3.version>
       <dependency.jakarta.xml.bind-api.version>3.0.1</dependency.jakarta.xml.bind-api.version>
       <dependency.restlet.version>2.3.12</dependency.restlet.version>
       <dependency.httpclient.version>4.5.14</dependency.httpclient.version>
@@ -217,11 +216,6 @@
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-xmlfactory</artifactId>
             <version>${dependency.alfresco.xml-factory.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>${dependency.apache-commons-lang.version}</version>
          </dependency>
          <dependency>
             <groupId>org.apache.cxf</groupId>

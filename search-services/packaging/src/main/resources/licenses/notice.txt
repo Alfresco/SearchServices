@@ -38,7 +38,7 @@ apiguardian-api-1.1.2.jar https://github.com/apiguardian-team/apiguardian
 xml-resolver-1.2.jar    https://github.com/FasterXML/jackson
 neethi-3.2.1.jar http://ws.apache.org/commons/neethi/
 commons-logging-1.2.jar http://jakarta.apache.org/commons/
-commons-lang3-3.12.0.jar http://jakarta.apache.org/commons/
+commons-lang3-3.18.0.jar http://jakarta.apache.org/commons/
 commons-compress-1.26.1.jar https://commons.apache.org/proper/commons-compress/
 chemistry-opencmis-commons-impl-1.1.0.jar      http://chemistry.apache.org/
 chemistry-opencmis-commons-api-1.1.0.jar       http://chemistry.apache.org/
@@ -152,7 +152,6 @@ calcite-core-1.32.0.jar
 calcite-linq4j-1.32.0.jar
 avatica-core-1.22.0.jar
 avatica-metrics-1.22.0.jar
-commons-lang-2.6.jar
 commons-math3-3.4.1.jar
 curator-client-2.8.0.jar
 curator-framework-2.8.0.jar
@@ -180,28 +179,28 @@ jsonic-1.2.7.jar
 jul-to-slf4j-1.7.7.jar
 juniversalchardet-1.0.3.jar
 langdetect-1.1-20120112.jar
-lucene-analyzers-common-6.6.5-patched.21.jar
-lucene-analyzers-icu-6.6.5-patched.21.jar
-lucene-analyzers-kuromoji-6.6.5-patched.21.jar
-lucene-analyzers-morfologik-6.6.5-patched.21.jar
-lucene-analyzers-phonetic-6.6.5-patched.21.jar
-lucene-analyzers-smartcn-6.6.5-patched.21.jar
-lucene-analyzers-stempel-6.6.5-patched.21.jar
-lucene-backward-codecs-6.6.5-patched.21.jar
-lucene-classification-6.6.5-patched.21.jar
-lucene-codecs-6.6.5-patched.21.jar
-lucene-core-6.6.5-patched.21.jar
-lucene-expressions-6.6.5-patched.21.jar
-lucene-grouping-6.6.5-patched.21.jar
-lucene-highlighter-6.6.5-patched.21.jar
-lucene-join-6.6.5-patched.21.jar
-lucene-memory-6.6.5-patched.21.jar
-lucene-misc-6.6.5-patched.21.jar
-lucene-queries-6.6.5-patched.21.jar
-lucene-queryparser-6.6.5-patched.21.jar
-lucene-sandbox-6.6.5-patched.21.jar
-lucene-spatial-extras-6.6.5-patched.21.jar
-lucene-suggest-6.6.5-patched.21.jar
+lucene-analyzers-common-6.6.5-patched.22.jar
+lucene-analyzers-icu-6.6.5-patched.22.jar
+lucene-analyzers-kuromoji-6.6.5-patched.22.jar
+lucene-analyzers-morfologik-6.6.5-patched.22.jar
+lucene-analyzers-phonetic-6.6.5-patched.22.jar
+lucene-analyzers-smartcn-6.6.5-patched.22.jar
+lucene-analyzers-stempel-6.6.5-patched.22.jar
+lucene-backward-codecs-6.6.5-patched.22.jar
+lucene-classification-6.6.5-patched.22.jar
+lucene-codecs-6.6.5-patched.22.jar
+lucene-core-6.6.5-patched.22.jar
+lucene-expressions-6.6.5-patched.22.jar
+lucene-grouping-6.6.5-patched.22.jar
+lucene-highlighter-6.6.5-patched.22.jar
+lucene-join-6.6.5-patched.22.jar
+lucene-memory-6.6.5-patched.22.jar
+lucene-misc-6.6.5-patched.22.jar
+lucene-queries-6.6.5-patched.22.jar
+lucene-queryparser-6.6.5-patched.22.jar
+lucene-sandbox-6.6.5-patched.22.jar
+lucene-spatial-extras-6.6.5-patched.22.jar
+lucene-suggest-6.6.5-patched.22.jar
 metrics-core-3.2.2.jar
 metrics-ganglia-3.2.2.jar
 metrics-graphite-3.2.2.jar
@@ -215,11 +214,11 @@ protobuf-java-3.25.5.jar
 rome-1.5.1.jar
 slf4j-api-1.7.7.jar
 slf4j-log4j12-1.7.7.jar
-solr-analysis-extras-6.6.5-patched.21.jar
-solr-clustering-6.6.5-patched.21.jar
-solr-core-6.6.5-patched.21.jar
-solr-langid-6.6.5-patched.21.jar
-solr-solrj-6.6.5-patched.21.jar
+solr-analysis-extras-6.6.5-patched.22.jar
+solr-clustering-6.6.5-patched.22.jar
+solr-core-6.6.5-patched.22.jar
+solr-langid-6.6.5-patched.22.jar
+solr-solrj-6.6.5-patched.22.jar
 spatial4j-0.6.jar
 start.jar
 stax2-api-3.1.4.jar
