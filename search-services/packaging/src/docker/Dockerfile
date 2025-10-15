@@ -1,7 +1,7 @@
 # Alfresco Search Services ${project.version} Docker Image
 
 # More infos about this image: https://github.com/Alfresco/alfresco-docker-base-java
-FROM alfresco/alfresco-base-java:jre17-rockylinux9@sha256:1822d68b272c1b34e0877bed3eb04b34c50500cd5e09bdaf345df31cacd59af7
+FROM alfresco/alfresco-base-java:jre17-rockylinux9@sha256:16692e52ef8c3d60606d5c27d95eada9266f9fad8b70f38ad5674a7cbe24e49e
 LABEL creator="Alfresco" maintainer="Alfresco"
 
 ENV DIST_DIR /opt/alfresco-search-services
