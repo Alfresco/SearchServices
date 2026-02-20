@@ -59,6 +59,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -918,6 +919,7 @@ public class MetadataTracker extends ActivatableTracker
         int totalUpdatedDocs = 0;
 
         LOGGER.info("{}-[CORE {}] Starting metadata tracker execution", Thread.currentThread().getId(), coreName);
+        boolean reachedLagBoundary = false;
 
         do
         {
@@ -950,6 +952,8 @@ public class MetadataTracker extends ActivatableTracker
                 }
 
                 long idTrackerCycle = System.currentTimeMillis();
+                long lagCutoff = state.getTimeToStopIndexing();
+                AtomicBoolean hitLagBoundary = new AtomicBoolean(false);
                 if (transactions.getTransactions().size() > 0)
                 {
                     LOGGER.info("{}:{}-[CORE {}] Found {} transactions after lastTxCommitTime {}, transactions from {} to {}",
@@ -971,26 +975,62 @@ public class MetadataTracker extends ActivatableTracker
                                     : state.getLastIndexedTxCommitTime()));
                 }
 
-                // Make sure we do not go ahead of where we started - we will check the holes here
-                // correctly next time
-                if (transactions.getTransactions()
-                        .stream()
-                        .anyMatch(transaction -> transaction.getCommitTimeMs() > state.getTimeToStopIndexing()))
+                final AtomicInteger counterTransaction = new AtomicInteger();
+
+                List<Transaction> deferredTransactions = transactions.getTransactions().stream()
+                        .filter(transaction -> transaction.getCommitTimeMs() > lagCutoff)
+                        .collect(Collectors.toList());
+
+                if (!deferredTransactions.isEmpty() && LOGGER.isDebugEnabled())
                 {
-                    break;
+                    deferredTransactions.forEach(transaction -> LOGGER.debug("{}:{}-[CORE {}] Deferring transaction {} at {} past lag cutoff {}",
+                            Thread.currentThread().getId(),
+                            idTrackerCycle,
+                            coreName,
+                            transaction.getId(),
+                            transaction.getCommitTimeMs(),
+                            lagCutoff));
                 }
 
-                final AtomicInteger counterTransaction = new AtomicInteger();
-                Collection<List<Transaction>> txBatches = transactions.getTransactions().stream()
-                        .peek(txnsFound::add)
+                List<Transaction> lagEligibleTransactions = transactions.getTransactions().stream()
+                        .filter(transaction -> transaction.getCommitTimeMs() <= lagCutoff)
                         .filter(this::isTransactionToBeIndexed)
+                        .peek(txnsFound::add)
+                        .collect(Collectors.toList());
+
+                hitLagBoundary.set(!deferredTransactions.isEmpty());
+
+                Collection<List<Transaction>> eligibleTransactionBatches = lagEligibleTransactions.stream()
                         .collect(Collectors.groupingBy(transaction -> counterTransaction.getAndAdd(
                                 (int) (transaction.getDeletes() + transaction.getUpdates())) / transactionDocsBatchSize))
                         .values();
 
+                if (eligibleTransactionBatches.isEmpty())
+                {
+                    if (hitLagBoundary.get())
+                    {
+                        if(LOGGER.isDebugEnabled())
+                        {
+                            LOGGER.debug("{}:{}-[CORE {}] Reached lag cutoff {}, deferring newer transactions",
+                                    Thread.currentThread().getId(),
+                                    idTrackerCycle,
+                                    coreName,
+                                    lagCutoff);
+                        }
+                        reachedLagBoundary = true;
+                    }
+                    else
+                    {
+                        // Nothing left to index in this cycle — all fetched transactions are already indexed.
+                        // Advance the tracker state and stop.
+                        setLastTxCommitTimeAndTxIdInTrackerState(transactions);
+                        break;
+                    }
+                }
+
                 // Index batches of transactions and the nodes updated or deleted within the transaction
                 List<List<Node>> nodeBatches = new ArrayList<>();
-                for (List<Transaction> batch : txBatches)
+                for (List<Transaction> batch : eligibleTransactionBatches)
                 {
 
                     // Index nodes contained in the transactions
@@ -1014,19 +1054,38 @@ public class MetadataTracker extends ActivatableTracker
                             return batch.size();
                         }).reduce(0, Integer::sum)).get();
 
-                for (List<Transaction> batch : txBatches)
+                for (List<Transaction> batch : eligibleTransactionBatches)
                 {
-                    // Add the transactions as found to avoid processing them again in the next iteration
-                    batch.forEach(txnsFound::add);
-    
                     // Index the transactions
                     indexTransactionsAfterWorker(batch);
                     long endElapsed = System.nanoTime();
                     trackerStats.addElapsedNodeTime(totalUpdatedDocs, endElapsed - startElapsed);
                     startElapsed = endElapsed;
                 }
-                
-                setLastTxCommitTimeAndTxIdInTrackerState(transactions);
+
+                // Set the tracker state only for transactions we actually indexed in this cycle
+                List<Transaction> indexedTransactions = eligibleTransactionBatches.stream()
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toList());
+                if (!indexedTransactions.isEmpty())
+                {
+                    long maxIndexedCommitTime = indexedTransactions.stream()
+                        .mapToLong(Transaction::getCommitTimeMs)
+                        .max()
+                        .orElse(state.getLastTxCommitTimeOnServer());
+
+                    long maxIndexedTxId = indexedTransactions.stream()
+                        .mapToLong(Transaction::getId)
+                        .max()
+                        .orElse(state.getLastTxIdOnServer());
+
+                    setLastTxCommitTimeAndTxIdInTrackerState(new Transactions(indexedTransactions, maxIndexedCommitTime, maxIndexedTxId));
+                }
+
+                if (hitLagBoundary.get())
+                {
+                    reachedLagBoundary = true;
+                }
             }
             catch(Exception e)
             {
@@ -1038,7 +1097,7 @@ public class MetadataTracker extends ActivatableTracker
             }
         
         }
-        while ((transactions.getTransactions().size() > 0));
+        while (!reachedLagBoundary && (transactions.getTransactions().size() > 0));
 
         LOGGER.info("{}-[CORE {}] Tracked {} DOCs", Thread.currentThread().getId(), coreName, totalUpdatedDocs);
     }

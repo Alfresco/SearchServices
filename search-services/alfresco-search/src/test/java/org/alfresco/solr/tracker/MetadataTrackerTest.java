@@ -28,6 +28,7 @@ package org.alfresco.solr.tracker;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -58,6 +59,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -275,6 +277,95 @@ public class MetadataTrackerTest
         when(trackerState.getLastIndexedTxCommitTime()).thenReturn(lastIndexedTransactionCommitTime);
 
         assertTrue(metadataTracker.isTransactionToBeIndexed(incomingTransaction));
+    }
+
+    @Test
+    public void lastIndexedTransactionUsesCommitTimeThenIdOrdering() throws Exception
+    {
+        TrackerState state = new TrackerState();
+        state.setTimeToStopIndexing(1000L);
+        state.setLastIndexedTxCommitTime(0L);
+        state.setLastIndexedTxId(0L);
+
+        metadataTracker.state = state;
+        when(metadataTracker.getTrackerState()).thenReturn(state);
+
+        Transaction tx1 = new Transaction();
+        tx1.setId(1L);
+        tx1.setCommitTimeMs(100L);
+        tx1.setUpdates(1);
+
+        Transaction tx2 = new Transaction();
+        tx2.setId(2L);
+        tx2.setCommitTimeMs(100L);
+        tx2.setUpdates(1);
+
+        Transaction tx3 = new Transaction();
+        tx3.setId(3L);
+        tx3.setCommitTimeMs(90L);
+        tx3.setUpdates(1);
+
+        Transactions transactions = new Transactions(List.of(tx1, tx3, tx2));
+        when(repositoryClient.getTransactions(anyLong(), isNull(), anyLong(), isNull(), anyInt()))
+            .thenReturn(transactions)
+            .thenReturn(new Transactions(Collections.emptyList()));
+
+        metadataTracker.trackTransactions();
+
+        assertEquals(100L, state.getLastIndexedTxCommitTime());
+        assertEquals(2L, state.getLastIndexedTxId());
+        // Verify all eligible transactions were indexed by the tracker
+        verify(srv, times(1)).indexTransaction(eq(tx1), eq(true));
+        verify(srv, times(1)).indexTransaction(eq(tx2), eq(true));
+        // Ordering is not asserted here; only eligibility and lastIndexed* logic are.
+        verify(srv, times(1)).indexTransaction(eq(tx3), eq(true));
+        verify(trackerStats, times(3)).addTxDocs(1);
+    }
+
+    @Test
+    public void lagCutoffFiltersDeferredTransactionsBeforeBatching() throws Exception
+    {
+        TrackerState state = new TrackerState();
+        state.setTimeToStopIndexing(100L);
+        state.setLastIndexedTxCommitTime(0L);
+        state.setLastIndexedTxId(0L);
+
+        metadataTracker.state = state;
+        when(metadataTracker.getTrackerState()).thenReturn(state);
+
+        Transaction oldTx = new Transaction();
+        oldTx.setId(10L);
+        oldTx.setCommitTimeMs(90L);
+        oldTx.setUpdates(1);
+
+        Transaction boundaryTx = new Transaction();
+        boundaryTx.setId(11L);
+        boundaryTx.setCommitTimeMs(100L);
+        boundaryTx.setUpdates(1);
+
+        Transaction newTx = new Transaction();
+        newTx.setId(12L);
+        newTx.setCommitTimeMs(110L);
+        newTx.setUpdates(1);
+
+        Transactions transactions = new Transactions(List.of(oldTx, boundaryTx, newTx));
+        when(repositoryClient.getTransactions(anyLong(), isNull(), anyLong(), isNull(), anyInt()))
+            .thenReturn(transactions)
+            .thenReturn(new Transactions(Collections.emptyList()));
+
+        metadataTracker.trackTransactions();
+
+        // Verify only lag-eligible transactions were indexed
+        verify(srv, times(1)).indexTransaction(eq(oldTx), eq(true));
+        verify(srv, times(1)).indexTransaction(eq(boundaryTx), eq(true));
+        verify(srv, never()).indexTransaction(eq(newTx), anyBoolean());
+
+        // Verify we stop after hitting the lag boundary
+        verify(repositoryClient, times(1)).getTransactions(anyLong(), isNull(), anyLong(), isNull(), anyInt());
+        verify(trackerStats, times(2)).addTxDocs(1);
+
+        assertEquals(100L, state.getLastIndexedTxCommitTime());
+        assertEquals(11L, state.getLastIndexedTxId());
     }
 
     private Node getNode()
