@@ -315,7 +315,17 @@ public abstract class AbstractTracker implements Tracker
 
     private void continueState()
     {
-        infoSrv.continueState(state);
+
+        /*
+         * If a rollback is pending then skip advancing the tracker state to avoid
+         * continueState() jumping the commit time forward and skipping historical
+         * transactions. We still increment trackerCycles so the checkRepoAndIndexConsistency where initial repo/index consistency
+         * check is not triggered again after every rollback.
+         */
+        if (!this.rollback)
+        {
+            infoSrv.continueState(state);
+        }
         state.incrementTrackerCycles();
     }
 

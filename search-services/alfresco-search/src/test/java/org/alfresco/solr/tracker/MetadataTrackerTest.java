@@ -405,4 +405,17 @@ public class MetadataTrackerTest
 
         verify(this.metadataTracker, times(1)).doTrack("AnIterationId");
     }
+
+    @Test
+    public void trackDoesNotAdvanceStateWhenRollbackIsPending() throws Exception
+    {
+        TrackerState state = new TrackerState();
+        metadataTracker.state = state;
+        metadataTracker.setRollback(true, new RuntimeException("simulated 403 error"));
+
+        metadataTracker.track();
+
+        verify(srv, never()).continueState(any());
+        assertEquals(1L, state.getTrackerCycles());
+    }
 }
