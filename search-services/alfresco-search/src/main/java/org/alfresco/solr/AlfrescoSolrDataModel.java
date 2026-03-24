@@ -253,6 +253,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
     private final Set<QName> crossLocaleSearchDataTypes = new HashSet<>();
     private final Set<QName> crossLocaleSearchProperties = new HashSet<>();
     private final Set<QName> identifierProperties = new HashSet<>();
+    private final Set<QName> tokeniseProperties = new HashSet<>();
     private final ThreadPoolExecutor threadPool;
 
     public void close() {
@@ -317,6 +318,11 @@ public class AlfrescoSolrDataModel implements QueryConstants
             {
                 QName qName = QName.createQName(props.getProperty(stringKey));
                 identifierProperties.add(qName);
+            }
+            else if (stringKey.startsWith("alfresco.tokenise.property."))
+            {
+                QName qName = QName.createQName(props.getProperty(stringKey));
+                tokeniseProperties.add(qName);
             }
         }
 
@@ -788,7 +794,8 @@ public class AlfrescoSolrDataModel implements QueryConstants
      */
     private void addCompletionFields(PropertyDefinition propertyDefinition, IndexedField indexedField)
     {
-        if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
+        IndexTokenisationMode tokenisationMode = getIndexTokenisationMode(propertyDefinition);
+        if ((tokenisationMode == IndexTokenisationMode.BOTH))
         {
             if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
             {
@@ -799,7 +806,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
                 indexedField.addField(getFieldForText(true, true, false, propertyDefinition), false, false);
             }
         }
-        else if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE))
+        else if ((tokenisationMode == IndexTokenisationMode.TRUE))
         {
             if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
             {
@@ -810,7 +817,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
                 indexedField.addField(getFieldForText(true, true, false, propertyDefinition), false, false);
             }
         }
-        else if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE))
+        else if ((tokenisationMode == IndexTokenisationMode.FALSE))
         {
             indexedField.addField(getFieldForText(false, false, false, propertyDefinition), false, false);
         }
@@ -822,8 +829,9 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     private void addFullTextSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
     {
-        if (((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE)
-                || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
+        IndexTokenisationMode tokenisationMode = getIndexTokenisationMode(propertyDefinition);
+        if (((tokenisationMode == IndexTokenisationMode.TRUE)
+                || (tokenisationMode == IndexTokenisationMode.BOTH))
                 && !isIdentifierTextProperty(propertyDefinition.getName()))
         {
             indexedField.addField(getFieldForText(true, true, false, propertyDefinition), true, false);
@@ -867,8 +875,8 @@ public class AlfrescoSolrDataModel implements QueryConstants
      */
     private void addIdentifierSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
     {
-        if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
-                || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
+        IndexTokenisationMode tokenisationMode = getIndexTokenisationMode(propertyDefinition);
+        if ((tokenisationMode == IndexTokenisationMode.FALSE) || (tokenisationMode == IndexTokenisationMode.BOTH))
         {
 
             indexedField.addField(getFieldForText(true, false, false, propertyDefinition), true, false);
@@ -890,7 +898,8 @@ public class AlfrescoSolrDataModel implements QueryConstants
      */
     private void addExactSearchFields(PropertyDefinition propertyDefinition, IndexedField indexedField)
     {
-        if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE))
+        IndexTokenisationMode tokenisationMode = getIndexTokenisationMode(propertyDefinition);
+        if ((tokenisationMode == IndexTokenisationMode.FALSE))
         {
 
             indexedField.addField(getFieldForText(true, false, false, propertyDefinition), true, false);
@@ -917,6 +926,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
      */
     private void addFacetSearchFields(PropertyDefinition propertyDefinition, IndexedField indexedField)
     {
+        IndexTokenisationMode tokenisationMode = getIndexTokenisationMode(propertyDefinition);
         if(propertyDefinition.getDataType().getName().equals(DataTypeDefinition.TEXT))
         {
             if (!isIdentifierTextProperty(propertyDefinition.getName()))
@@ -929,8 +939,8 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
 
 
-        if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
-                || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH)
+        if ((tokenisationMode == IndexTokenisationMode.FALSE)
+                || (tokenisationMode == IndexTokenisationMode.BOTH)
                 || isIdentifierTextProperty(propertyDefinition.getName()))
         {
 
@@ -951,8 +961,9 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     private void addMultiSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
     {
-        if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
-                || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH)
+        IndexTokenisationMode tokenisationMode = getIndexTokenisationMode(propertyDefinition);
+        if ((tokenisationMode == IndexTokenisationMode.FALSE)
+                || (tokenisationMode == IndexTokenisationMode.BOTH)
                 || isIdentifierTextProperty(propertyDefinition.getName()))
         {
 
@@ -978,14 +989,15 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     private void addSortSearchFields( PropertyDefinition propertyDefinition , IndexedField indexedField)
     {
+        IndexTokenisationMode tokenisationMode = getIndexTokenisationMode(propertyDefinition);
         // Can only order on single valued fields
         DataTypeDefinition dataTypeDefinition = propertyDefinition.getDataType();
         if(dataTypeDefinition.getName().equals(DataTypeDefinition.TEXT))
         {
             if(!propertyDefinition.isMultiValued())
             {
-                if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
-                        || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
+                if ((tokenisationMode == IndexTokenisationMode.FALSE)
+                        || (tokenisationMode == IndexTokenisationMode.BOTH))
                 {
                     indexedField.addField(getFieldForText(false, false, true, propertyDefinition), false, true);
                 }
@@ -1011,8 +1023,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
         {
             if(!propertyDefinition.isMultiValued())
             {
-                if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
-                        || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
+                if ((tokenisationMode == IndexTokenisationMode.FALSE) || (tokenisationMode == IndexTokenisationMode.BOTH))
                 {
                     indexedField.addField(getFieldForText(false, false, true, propertyDefinition), false, true);
                 }
@@ -1040,22 +1051,23 @@ public class AlfrescoSolrDataModel implements QueryConstants
     public String getStoredTextField(QName propertyQName, String suffix)
     {
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
+        IndexTokenisationMode tokenisationMode = getIndexTokenisationMode(propertyDefinition);
 
         StringBuilder sb = new StringBuilder();
         sb.append("text@" + (propertyDefinition.isMultiValued()? "m" : "s") + "_stored_");
 
-        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE ||
-            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH)? "t" : "_");
+        sb.append((tokenisationMode == IndexTokenisationMode.TRUE ||
+            tokenisationMode == IndexTokenisationMode.BOTH)? "t" : "_");
 
-        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE ||
-            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH ||
+        sb.append((tokenisationMode == IndexTokenisationMode.FALSE ||
+            tokenisationMode == IndexTokenisationMode.BOTH ||
             isIdentifierTextProperty(propertyDefinition.getName()))? "s" : "_");
 
         sb.append((crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) ||
             crossLocaleSearchProperties.contains(propertyDefinition.getName())) ? "c" : "_");
 
-        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE ||
-            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH ||
+        sb.append((tokenisationMode == IndexTokenisationMode.FALSE ||
+            tokenisationMode == IndexTokenisationMode.BOTH ||
             isIdentifierTextProperty(propertyDefinition.getName())) && !propertyDefinition.isMultiValued()? "s" : "_");
 
         sb.append(isSuggestable(propertyQName)? "s": "_");
@@ -1080,15 +1092,16 @@ public class AlfrescoSolrDataModel implements QueryConstants
     public String getStoredMLTextField(QName propertyQName, String suffix)
     {
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
+        IndexTokenisationMode tokenisationMode = getIndexTokenisationMode(propertyDefinition);
 
         StringBuilder sb = new StringBuilder();
         sb.append("mltext@m_stored_");
 
-        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE ||
-            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH)? "t" : "_");
+        sb.append((tokenisationMode == IndexTokenisationMode.TRUE ||
+            tokenisationMode == IndexTokenisationMode.BOTH)? "t" : "_");
 
-        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE ||
-            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH ||
+        sb.append((tokenisationMode == IndexTokenisationMode.FALSE ||
+            tokenisationMode == IndexTokenisationMode.BOTH ||
             isIdentifierTextProperty(propertyDefinition.getName()))? "s" : "_");
 
         sb.append((crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) ||
@@ -1118,15 +1131,16 @@ public class AlfrescoSolrDataModel implements QueryConstants
     public String getStoredContentField(QName propertyQName, String suffix)
     {
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
+        IndexTokenisationMode tokenisationMode = getIndexTokenisationMode(propertyDefinition);
 
         StringBuilder sb = new StringBuilder();
         sb.append("content@s_stored_");
 
-        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE ||
-            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH)? "t" : "_");
+        sb.append((tokenisationMode == IndexTokenisationMode.TRUE ||
+            tokenisationMode == IndexTokenisationMode.BOTH)? "t" : "_");
 
-        sb.append((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE ||
-            propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH ||
+        sb.append((tokenisationMode == IndexTokenisationMode.FALSE ||
+            tokenisationMode == IndexTokenisationMode.BOTH ||
             isIdentifierTextProperty(propertyDefinition.getName()))? "s" : "_");
 
         sb.append((crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) ||
@@ -1194,6 +1208,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
         IndexedField indexedField = new IndexedField();
         PropertyDefinition propertyDefinition = getPropertyDefinition(propertyQName);
+
         if((propertyDefinition == null))
         {
             return indexedField;
@@ -1204,10 +1219,11 @@ public class AlfrescoSolrDataModel implements QueryConstants
         }
 
         DataTypeDefinition dataTypeDefinition = propertyDefinition.getDataType();
+        IndexTokenisationMode tokenisationMode = getIndexTokenisationMode(propertyDefinition);
         if(isTextField(propertyDefinition))
         {
-            if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE)
-                    || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
+            if ((tokenisationMode == IndexTokenisationMode.TRUE)
+                    || (tokenisationMode == IndexTokenisationMode.BOTH))
             {
                 indexedField.addField(getFieldForText(true, true, false, propertyDefinition), true, false);
                 if(crossLocaleSearchDataTypes.contains(propertyDefinition.getDataType().getName()) || crossLocaleSearchProperties.contains(propertyDefinition.getName()))
@@ -1216,8 +1232,8 @@ public class AlfrescoSolrDataModel implements QueryConstants
                 }
             }
 
-            if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
-                    || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH
+            if ((tokenisationMode == IndexTokenisationMode.FALSE)
+                    || (tokenisationMode == IndexTokenisationMode.BOTH
                     || isIdentifierTextProperty(propertyDefinition.getName())))
             {
                 indexedField.addField(getFieldForText(true, false, false, propertyDefinition), true, false);
@@ -1226,8 +1242,8 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
             if(dataTypeDefinition.getName().equals(DataTypeDefinition.TEXT))
             {
-                if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
-                        || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
+                if ((tokenisationMode == IndexTokenisationMode.FALSE)
+                        || (tokenisationMode == IndexTokenisationMode.BOTH))
                 {
                     if(!propertyDefinition.isMultiValued())
                     {
@@ -1245,8 +1261,8 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
             if(dataTypeDefinition.getName().equals(DataTypeDefinition.MLTEXT))
             {
-                if ((propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.FALSE)
-                        || (propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.BOTH))
+                if ((tokenisationMode == IndexTokenisationMode.FALSE)
+                        || (tokenisationMode == IndexTokenisationMode.BOTH))
                 {
                     if(!propertyDefinition.isMultiValued())
                     {
@@ -1271,6 +1287,19 @@ public class AlfrescoSolrDataModel implements QueryConstants
     private boolean isIdentifierTextProperty(QName propertyQName)
     {
         return identifierProperties.contains(propertyQName);
+    }
+
+    /*
+     * Override the model index tokenization mode as tokenised=TRUE if the property is configured in alfresco.tokenise.property in the
+     * shared properties file.
+     */
+    private IndexTokenisationMode getIndexTokenisationMode(PropertyDefinition propertyDefinition)
+    {
+        if (tokeniseProperties.contains(propertyDefinition.getName()))
+        {
+            return IndexTokenisationMode.TRUE;
+        }
+        return propertyDefinition.getIndexTokenisationMode();
     }
 
     public boolean isTextField(PropertyDefinition propertyDefinition)
@@ -1298,7 +1327,6 @@ public class AlfrescoSolrDataModel implements QueryConstants
 
     private boolean hasDocValues(PropertyDefinition propertyDefinition)
     {
-
         if(isTextField(propertyDefinition))
         {
             // We only call this if text is untokenised and localised
@@ -1316,7 +1344,7 @@ public class AlfrescoSolrDataModel implements QueryConstants
             }
             else
             {
-                if(propertyDefinition.getIndexTokenisationMode() == IndexTokenisationMode.TRUE)
+                if(getIndexTokenisationMode(propertyDefinition) == IndexTokenisationMode.TRUE)
                 {
                     return false;
                 }

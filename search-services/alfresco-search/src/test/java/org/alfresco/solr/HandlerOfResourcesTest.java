@@ -62,6 +62,10 @@ public class HandlerOfResourcesTest
         assertFalse(HandlerOfResources.allowedProperties(props, HandlerOfResources.DISALLOWED_SHARED_UPDATES));
         props.remove("alfresco.identifier.property.0");
 
+        props.setProperty("alfresco.tokenise.property.0", "xy");
+        assertFalse(HandlerOfResources.allowedProperties(props, HandlerOfResources.DISALLOWED_SHARED_UPDATES));
+        props.remove("alfresco.tokenise.property.0");
+
         props.setProperty("alfresco.suggestable.property.1", "xy");
         assertFalse(HandlerOfResources.allowedProperties(props, HandlerOfResources.DISALLOWED_SHARED_UPDATES));
         props.remove("alfresco.suggestable.property.1");

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model xmlns="http://www.alfresco.org/model/dictionary/1.0" name="custom:tokenisationOverrideTest">
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+    </imports>
+    <namespaces>
+        <namespace uri="custom" prefix="custom"/>
+    </namespaces>
+    <data-types/>
+    <constraints/>
+    <types/>
+    <aspects>
+        <aspect name="custom:tokenisationOverrideTestAspect">
+            <title>Tokenisation Override Test Aspect</title>
+            <properties>
+                <property name="custom:untokenisedProp">
+                    <title>Untokenised Property</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>FALSE</tokenised>
+                    </index>
+                </property>
+                <property name="custom:untokenisedPropOverride">
+                    <title>Untokenised Property (to be overridden)</title>
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="true">
+                        <tokenised>FALSE</tokenised>
+                    </index>
+                </property>
+            </properties>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </aspect>
+    </aspects>
+</model>

@@ -46,6 +46,7 @@ import org.apache.solr.common.params.SolrParams;
 public class HandlerOfResources {
 
     protected static final List<String> DISALLOWED_SHARED_UPDATES = Arrays.asList("alfresco.identifier.property.",
+            "alfresco.tokenise.property.",
             "alfresco.suggestable.property.",
             "alfresco.cross.locale.property.",
             "alfresco.cross.locale.datatype.");
