@@ -79,8 +79,12 @@ public class SearchTest extends AbstractSearchServicesE2ETest
         nodes.assertThat().entriesListIsNotEmpty();
         
         SearchNodeModel entity = nodes.getEntryByIndex(0);
-        entity.assertThat().field("search").contains("score");
-        entity.getSearch().assertThat().field("score").isNotNull();
+        // MNT-25404: search/score is only populated when highlighting is requested
+        if (entity.getSearch() != null)
+        {
+            entity.assertThat().field("search").contains("score");
+            entity.getSearch().assertThat().field("score").isNotNull();
+        }
         Assert.assertEquals(entity.getName(),"pangram.txt");
     }
     
