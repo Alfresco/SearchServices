@@ -74,7 +74,7 @@
 
       <dependency.calcite.version>1.32.0</dependency.calcite.version>
       <dependency.slf4j.version>1.7.36</dependency.slf4j.version>
-      <dependency.cxf.version>3.6.6</dependency.cxf.version>
+      <dependency.cxf.version>4.2.1</dependency.cxf.version>
 
       <dependency.javax.servlet.api.version>3.1.0</dependency.javax.servlet.api.version>
 
@@ -88,7 +88,7 @@
       <dependency.commons-fileupload.version>1.6.0</dependency.commons-fileupload.version>
       <dependency.commons-io.version>2.15.1</dependency.commons-io.version>
       <dependency.commons-codec.version>1.16.1</dependency.commons-codec.version>
-      <dependency.spring.version>6.2.12</dependency.spring.version>
+      <dependency.spring.version>7.0.7</dependency.spring.version>
       <dependency.spring-e2e-test.version>5.3.39</dependency.spring-e2e-test.version>
       <dependency.zookeeper.version>3.4.14</dependency.zookeeper.version>
       <dependency.mime4j.version>0.8.11</dependency.mime4j.version>
@@ -250,7 +250,7 @@
          <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-http</artifactId>
-            <version>4.0.5</version>
+            <version>${dependency.cxf.version}</version>
          </dependency>
          <dependency>
             <groupId>org.apache.cxf</groupId>
@@ -266,7 +266,7 @@
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-wsdl</artifactId>
             <version>${dependency.cxf.version}</version>
-         </dependency>         
+         </dependency>
          <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
