@@ -111,7 +111,8 @@
                                     <outputDirectory>${project.build.directory}/solr-libs</outputDirectory>
                                     <excludes>**/jackson-dataformat-smile-*.jar,**/asm-3.3.1.jar,**/jackson-core-asl-*.jar,**/jackson-mapper-asl-*.jar,**/dom4j-1.6.1.jar,
                                         **/annotations-1.0.0.jar,**/spring-context-support-*.jar,**/spring-web-*.jar,**/woodstox-core-asl-4.4.1.jar, **/isoparser-1.1.18.jar,
-                                        **/metadata-extractor-2.9.1.jar,**/org.restlet.ext.servlet-2.3.0.jar,**/reload4j-*.jar
+                                        **/metadata-extractor-2.9.1.jar,**/org.restlet.ext.servlet-2.3.0.jar,**/reload4j-*.jar,
+                                        **/htrace-core-*-incubating.jar
                                     </excludes>
                                 </artifactItem>
                             </artifactItems>
@@ -180,6 +181,12 @@
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/hadoop-common-2.10.1.jar" />
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/hadoop-hdfs-2.10.1.jar" />
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/hadoop-hdfs-client-2.10.1.jar" />
+                                <!-- Remove retired Apache HTrace incubator JAR. It ships shaded copies of jackson-core/databind 2.4.0 with
+                                     ~50 CVEs (CVSS up to 9.8) and cannot be patched via dependencyManagement. Its only consumers in this
+                                     distribution were the hadoop-*-2.10.1.jar files removed above, so it is safe to delete. -->
+                                <delete>
+                                    <fileset dir="${project.build.directory}/solr-${solr.version}" includes="**/htrace-core-*-incubating.jar" />
+                                </delete>
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/avatica-core-1.9.0.jar" />
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/org.restlet-2.3.0.jar" />
                                 <delete file="${project.build.directory}/solr-${solr.version}/server/solr-webapp/webapp/WEB-INF/lib/org.restlet.ext.servlet-2.3.0.jar" />

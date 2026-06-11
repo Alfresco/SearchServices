@@ -75,6 +75,11 @@
                     <artifactId>*</artifactId>
                 </exclusion>
                 <exclusion>
+                    <!-- htrace deprecated; ships shaded Jackson 2.4.0; not used by Alfresco -->
+                    <groupId>org.apache.htrace</groupId>
+                    <artifactId>htrace-core</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>jdk.tools</groupId>
                     <artifactId>jdk.tools</artifactId>
                 </exclusion>
@@ -133,6 +138,11 @@
                 <exclusion>
                     <groupId>org.apache.hadoop</groupId>
                     <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <!-- htrace deprecated; ships shaded Jackson 2.4.0; not used by Alfresco -->
+                    <groupId>org.apache.htrace</groupId>
+                    <artifactId>htrace-core</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>commons-configuration</groupId>
@@ -199,6 +209,11 @@
                     <artifactId>*</artifactId>
                 </exclusion>
                 <exclusion>
+                    <!-- htrace deprecated; ships shaded Jackson 2.4.0; not used by Alfresco -->
+                    <groupId>org.apache.htrace</groupId>
+                    <artifactId>htrace-core</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
                 </exclusion>
@@ -257,6 +272,11 @@
                 <exclusion>
                     <groupId>org.apache.hadoop</groupId>
                     <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <!-- htrace deprecated; ships shaded Jackson 2.4.0; not used by Alfresco -->
+                    <groupId>org.apache.htrace</groupId>
+                    <artifactId>htrace-core</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.simpleframework</groupId>
@@ -425,6 +445,11 @@
                 <exclusion>
                     <groupId>org.apache.hadoop</groupId>
                     <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <!-- htrace deprecated; ships shaded Jackson 2.4.0; not used by Alfresco -->
+                    <groupId>org.apache.htrace</groupId>
+                    <artifactId>htrace-core</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>log4j</groupId>
