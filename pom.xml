@@ -57,14 +57,15 @@
       <dependency.alfresco.xml-factory.version>1.3</dependency.alfresco.xml-factory.version>
       <dependency.alfresco-data-model.version>18.20</dependency.alfresco-data-model.version>
 
-      <!-- 2.18.6 fixes GHSA-72hv-8253-57qq (jackson-core async parser maxNumberLength bypass, MEDIUM).
+      <!-- 2.22.1 supersedes 2.18.6, which was the first release to fix GHSA-72hv-8253-57qq
+           (jackson-core async parser maxNumberLength bypass, MEDIUM); do not downgrade below 2.18.6.
            NOTE: htrace-core 3.2.0-incubating shades Jackson 2.4.0 internally; this property cannot
            override the shaded copy. The shaded JAR is physically removed in:
              - search-services/packaging/pom.xml (unpack exclude + antrun delete)
              - insight-engine/alfresco-insight-zeppelin/pom.xml (unpack exclude)
            The alfresco-insight-jdbc shaded jar uses an explicit <includes> list so htrace is not shaded in. -->
-      <dependency.jackson.version>2.18.6</dependency.jackson.version>
-
+      <dependency.jackson.version>2.22.1</dependency.jackson.version>
+      <dependency.jackson-annotations.version>2.22</dependency.jackson-annotations.version>
       <dependency.google.guava.version>33.1.0-jre</dependency.google.guava.version>
       <dependency.apache-commons-compress.version>1.26.1</dependency.apache-commons-compress.version>
       <dependency.apache-commons-lang3.version>3.18.0</dependency.apache-commons-lang3.version>
@@ -164,7 +165,7 @@
          <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>${dependency.jackson.version}</version>
+            <version>${dependency.jackson-annotations.version}</version>
          </dependency>
 
          <dependency>
