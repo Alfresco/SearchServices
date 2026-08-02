@@ -911,7 +911,7 @@
           This value marks a document/node as updated.
     -->
     <field name="LATEST_APPLIED_CONTENT_VERSION_ID" type="long_without_precision_step"/>
-    <field name="LAST_INCOMING_CONTENT_VERSION_ID" type="long_without_precision_step" default="-10"/>
+    <field name="LAST_INCOMING_CONTENT_VERSION_ID" type="long_without_precision_step"/>
 
     <!--
       Used to store the last transaction and acl transaction for real time get
