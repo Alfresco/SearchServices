@@ -64,11 +64,11 @@ jackson-core-2.22.3.jar https://github.com/FasterXML/jackson
 jackson-annotations-2.22.jar https://github.com/FasterXML/jackson
 jackson-databind-2.22.3.jar https://github.com/FasterXML/jackson
 commons-httpclient-3.1-HTTPCLIENT-1265.jar http://jakarta.apache.org/commons/
-spring-beans-7.0.8.jar http://projects.spring.io/spring-framework/
-spring-context-7.0.8.jar http://projects.spring.io/spring-framework/
-spring-core-7.0.8.jar http://projects.spring.io/spring-framework/
-spring-expression-7.0.8.jar http://projects.spring.io/spring-framework/
-spring-tx-7.0.8.jar http://projects.spring.io/spring-framework/
+spring-beans-7.0.9.jar http://projects.spring.io/spring-framework/
+spring-context-7.0.9.jar http://projects.spring.io/spring-framework/
+spring-core-7.0.9.jar http://projects.spring.io/spring-framework/
+spring-expression-7.0.9.jar http://projects.spring.io/spring-framework/
+spring-tx-7.0.9.jar http://projects.spring.io/spring-framework/
 guessencoding-1.4.jar   http://docs.codehaus.org/display/GUESSENC/
 jug-2.0.0-asl.jar   http://jug.safehaus.org/
 acegi-security-0.8.2_patched.jar        http://sourceforge.net/projects/acegisecurity/
