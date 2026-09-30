@@ -79,7 +79,9 @@
       <dependency.jaxen.version>1.2.0</dependency.jaxen.version>
       <dependency.jaxb-xjc.version>4.0.3</dependency.jaxb-xjc.version>
 
-      <dependency.calcite.version>1.32.0</dependency.calcite.version>
+      <dependency.calcite.version>1.42.0</dependency.calcite.version>
+      <dependency.avatica.version>1.29.0</dependency.avatica.version>
+      <dependency.commons-text.version>1.15.0</dependency.commons-text.version>
       <dependency.slf4j.version>1.7.36</dependency.slf4j.version>
       <dependency.cxf.version>4.2.3</dependency.cxf.version>
 
@@ -193,6 +195,31 @@
             <groupId>org.apache.calcite</groupId>
             <artifactId>calcite-core</artifactId>
             <version>${dependency.calcite.version}</version>
+         </dependency>
+         <!-- Overrides the avatica-core/avatica-metrics versions calcite-core 1.42.0 pulls transitively
+              (1.28.0) to pick up CVE-2026-70410 (unsafe reflection in plugin instantiation, CVSS 8.8) and
+              CALCITE-7715, which removes BuiltInConnectionProperty's eager dependency on httpcore5's Timeout -->
+         <dependency>
+            <groupId>org.apache.calcite.avatica</groupId>
+            <artifactId>avatica-core</artifactId>
+            <version>${dependency.avatica.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.calcite.avatica</groupId>
+            <artifactId>avatica-metrics</artifactId>
+            <version>${dependency.avatica.version}</version>
+         </dependency>
+         <!-- calcite-core 1.42.0 pulls this in as a runtime-scoped transitive dependency: SqlFunctions'
+              static initializer eagerly constructs a LevenshteinDistance instance, so any query that
+              touches it (e.g. via AggregateRemoveRule) needs commons-text on the classpath even though
+              no SQL string-similarity function is actually used. Pinned to the latest release (no CVE
+              affects 1.10.0+; the pulled-in 1.11.0 was already safe from CVE-2022-42889/CVE-2025-46295,
+              which only affect versions before 1.10.0). -->
+         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>${dependency.commons-text.version}</version>
+            <scope>compile</scope>
          </dependency>
          <dependency>
             <groupId>com.sun.xml.bind</groupId>
