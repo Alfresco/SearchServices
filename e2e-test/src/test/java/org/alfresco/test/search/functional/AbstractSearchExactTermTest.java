@@ -127,9 +127,30 @@ public abstract class AbstractSearchExactTermTest extends AbstractE2EFunctionalT
                     createdFileModels.add(fileModel);
                     
                 });
-        
-        waitForContentIndexing(createdFileModels.get(createdFileModels.size() - 1).getName(), true);
-        
+
+        /*
+         * Wait until every document's content has been indexed.
+         *
+         * Waiting only for the last document is not sufficient: the wait query was built from the
+         * document *name*, which is not necessarily present in that document's own *content*
+         * (e.g. document #5 is named "Running jumping" but its content is "run is Good as jump").
+         * Since isContentInSearchResults() accepts any non-empty result set when no document name
+         * is supplied, the wait could be satisfied by a different document whose content happened
+         * to match first, letting assertions run before the remaining content was indexed.
+         *
+         * Querying by content and verifying the expected document name appears makes the wait
+         * deterministic for each document individually.
+         */
+        range(0, exactSearchData.size())
+                .forEach(id -> {
+
+                    String content = exactSearchData.get(id).get("content");
+                    String name = createdFileModels.get(id).getName();
+
+                    Assert.assertTrue(
+                                isContentInSearchResults(String.format("cm:content:'%s'", content), name, true),
+                                String.format("Content of document '%s' was not indexed in time.", name));
+                });
     }
     
     @BeforeClass(alwaysRun = true)

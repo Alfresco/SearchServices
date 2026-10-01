@@ -27,7 +27,7 @@ xpp3-1.1.4c.jar http://www.extreme.indiana.edu/dist/java-repository/xpp3/license
 json-20231013.jar https://github.com/stleary/JSON-java
 
 === Apache 2.0 ===
-audience-annotations-0.5.0.jar https://github.com/apache/yetus
+audience-annotations-0.12.0.jar https://github.com/apache/yetus
 error_prone_annotations-2.26.1.jar https://github.com/google/error-prone
 jsr305-3.0.2.jar https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305/1.3.9
 proj4j-1.2.2.jar https://github.com/locationtech/proj4j
@@ -95,6 +95,13 @@ reload4j-1.2.18.3.jar http://www.apache.org/licenses/LICENSE-2.0.txt
 jackson-core-asl-1.9.14-atlassian-6.jar http://www.apache.org/licenses/LICENSE-2.0.txt
 jackson-mapper-asl-1.9.14-atlassian-6.jar http://www.apache.org/licenses/LICENSE-2.0.txt
 gson-2.8.9.jar https://github.com/google/gson/blob/gson-parent-2.8.9/LICENSE
+netty-buffer-4.1.137.Final.jar https://github.com/netty/netty/blob/netty-4.1.137.Final/LICENSE.txt
+netty-codec-4.1.137.Final.jar https://github.com/netty/netty/blob/netty-4.1.137.Final/LICENSE.txt
+netty-common-4.1.137.Final.jar https://github.com/netty/netty/blob/netty-4.1.137.Final/LICENSE.txt
+netty-handler-4.1.137.Final.jar https://github.com/netty/netty/blob/netty-4.1.137.Final/LICENSE.txt
+netty-resolver-4.1.137.Final.jar https://github.com/netty/netty/blob/netty-4.1.137.Final/LICENSE.txt
+netty-transport-4.1.137.Final.jar https://github.com/netty/netty/blob/netty-4.1.137.Final/LICENSE.txt
+netty-transport-native-unix-common-4.1.137.Final.jar https://github.com/netty/netty/blob/netty-4.1.137.Final/LICENSE.txt
 
 
 === CDDL 1.1 ===
@@ -232,4 +239,5 @@ t-digest-3.1.jar
 vorbis-java-core-0.8.jar
 vorbis-java-tika-0.8.jar
 xz-1.6.jar
-zookeeper-3.4.14.jar
+zookeeper-3.9.4.jar
+zookeeper-jute-3.9.4.jar
