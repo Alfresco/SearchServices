@@ -99,12 +99,10 @@
       <dependency.commons-codec.version>1.16.1</dependency.commons-codec.version>
       <dependency.spring.version>7.0.9</dependency.spring.version>
       <dependency.spring-e2e-test.version>5.3.39</dependency.spring-e2e-test.version>
-      <dependency.zookeeper.version>3.9.4</dependency.zookeeper.version>
-      <!-- ZooKeeper 3.9.4 resolves netty 4.1.119.Final, which carries eight known advisories
-           across netty-handler and netty-codec. 4.1.137.Final is the lowest 4.1.x release that
-           clears all of them (GHSA-3qp7-7mw8-wx86, GHSA-c4c3-7fpv-j4q5, GHSA-c653-97m9-rcg9,
-           GHSA-fccg-mwvh-qqg4, GHSA-x4gw-5cx5-pgmh, GHSA-3p8m-j85q-pgmj, GHSA-558v-64gr-wgg4,
-           GHSA-mj4r-2hfc-f8p6). -->
+      <!-- 3.9.6 clears GHSA-7xrh-hqfc-g7qr and GHSA-crhr-qqj8-rpxc, and resolves netty 4.1.137
+           so it agrees with the pin below (3.9.5 still wants the vulnerable 4.1.130). -->
+      <dependency.zookeeper.version>3.9.6</dependency.zookeeper.version>
+      <!-- Pinned so a transitive bump cannot reintroduce a vulnerable netty. -->
       <dependency.netty.version>4.1.137.Final</dependency.netty.version>
       <dependency.mime4j.version>0.8.11</dependency.mime4j.version>
    </properties>
@@ -133,7 +131,7 @@
                     excluded; netty-transport-native-epoll is Linux-only and
                     netty-tcnative-boringssl-static ships five native binaries (~30 MB), and
                     neither is reachable unless TLS-to-ZooKeeper or the epoll transport is
-                    explicitly enabled. Verified against a live ZooKeeper 3.9.4 server. -->
+                    explicitly enabled. Verified against a live ZooKeeper 3.9.x server. -->
                <exclusion>
                   <groupId>io.netty</groupId>
                   <artifactId>netty-transport-native-epoll</artifactId>

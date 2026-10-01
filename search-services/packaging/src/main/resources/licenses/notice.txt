@@ -239,5 +239,5 @@ t-digest-3.1.jar
 vorbis-java-core-0.8.jar
 vorbis-java-tika-0.8.jar
 xz-1.6.jar
-zookeeper-3.9.4.jar
-zookeeper-jute-3.9.4.jar
+zookeeper-3.9.6.jar
+zookeeper-jute-3.9.6.jar
