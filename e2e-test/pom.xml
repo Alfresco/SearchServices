@@ -59,6 +59,12 @@
             <type>pom</type>
             <scope>import</scope>
          </dependency>
+         <!-- org.alfresco.tas:utility pulls mysql-connector-java 5.1.18, which is quarantined (license block) -->
+         <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.33</version>
+         </dependency>
       </dependencies>
    </dependencyManagement>
    <dependencies>

@@ -86,8 +86,8 @@ jetty-webapp-9.4.57.v20241219.jar https://www.eclipse.org/jetty/licenses.html
 jetty-xml-9.4.57.v20241219.jar https://www.eclipse.org/jetty/licenses.html
 jetty-http-9.4.57.v20241219.jar https://www.eclipse.org/jetty/licenses.html
 woodstox-core-7.2.1.jar https://github.com/FasterXML/woodstox
-org.restlet-2.3.12.jar https://github.com/restlet/restlet-framework-java/blob/2.3.12/README.md
-org.restlet.ext.servlet-2.3.12.jar https://github.com/restlet/restlet-framework-java/blob/2.3.12/README.md
+org.restlet-2.5.2.jar https://github.com/restlet/restlet-framework-java/blob/2.5.2/readme.md
+org.restlet.ext.servlet-2.5.2.jar https://github.com/restlet/restlet-framework-java/blob/2.5.2/readme.md
 xercesImpl-2.12.2.jar http://www.apache.org/licenses/LICENSE-2.0.txt
 xml-apis-1.4.01.jar http://www.apache.org/licenses/LICENSE-2.0.txt
 simple-xml-safe-2.7.1.jar https://github.com/carrotsearch/simplexml-safe/blob/release/2.7.1/LICENSE.txt

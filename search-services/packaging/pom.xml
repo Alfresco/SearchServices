@@ -133,7 +133,7 @@
                                     <outputDirectory>${project.build.directory}/solr-libs/libs</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
-                                    <groupId>org.restlet.jee</groupId>
+                                    <groupId>org.restlet</groupId>
                                     <artifactId>org.restlet.ext.servlet</artifactId>
                                     <version>${dependency.restlet.version}</version>
                                     <outputDirectory>${project.build.directory}/solr-libs/libs</outputDirectory>

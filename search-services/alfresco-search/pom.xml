@@ -29,6 +29,18 @@
         </dependency>
 
         <!-- provided dependencies -->
+        <!-- Restlet replaces the org.restlet.jee jars excluded from solr-core (see root pom); provided-scope deps
+             are bundled into the "libs" classifier, which is how they reach the Solr webapp. -->
+        <dependency>
+            <groupId>org.restlet</groupId>
+            <artifactId>org.restlet</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.restlet</groupId>
+            <artifactId>org.restlet.ext.servlet</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers-common</artifactId>
@@ -42,6 +54,15 @@
             <version>${solr.version}</version>
             <scope>provided</scope>
             <exclusions>
+                <!-- Not on Maven Central; jackson-*-asl ship inside the patched Solr zip, Restlet comes from org.restlet -->
+                <exclusion>
+                    <groupId>org.restlet.jee</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-core</artifactId>
@@ -99,6 +120,15 @@
             <version>${solr.version}</version>
             <scope>provided</scope>
             <exclusions>
+                <!-- Not on Maven Central; jackson-*-asl ship inside the patched Solr zip, Restlet comes from org.restlet -->
+                <exclusion>
+                    <groupId>org.restlet.jee</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-core</artifactId>
@@ -156,6 +186,15 @@
             <version>${solr.version}</version>
             <scope>provided</scope>
             <exclusions>
+                <!-- Not on Maven Central; jackson-*-asl ship inside the patched Solr zip, Restlet comes from org.restlet -->
+                <exclusion>
+                    <groupId>org.restlet.jee</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-core</artifactId>
@@ -241,6 +280,15 @@
             <version>${solr.version}</version>
             <scope>provided</scope>
             <exclusions>
+                <!-- Not on Maven Central; jackson-*-asl ship inside the patched Solr zip, Restlet comes from org.restlet -->
+                <exclusion>
+                    <groupId>org.restlet.jee</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-core</artifactId>
@@ -414,6 +462,15 @@
             <version>${solr.version}</version>
             <scope>test</scope>
             <exclusions>
+                <!-- Not on Maven Central; jackson-*-asl ship inside the patched Solr zip, Restlet comes from org.restlet -->
+                <exclusion>
+                    <groupId>org.restlet.jee</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.jackson</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-core</artifactId>

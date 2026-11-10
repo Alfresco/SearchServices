@@ -64,4 +64,4 @@ Although the build results are not visible externally, it should be possible to 
 the tests locally.  We have divided our tests into unit tests, integration tests and
 end-to-end tests.  The unit and integration tests can be run using the maven `test` and
 `verify` goals respectively.  The end-to-end tests cannot currently be run externally as
-they require some dependencies stored in our internal Nexus.
+they require some dependencies stored in our internal Maven repository.

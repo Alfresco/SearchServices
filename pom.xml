@@ -20,20 +20,6 @@
          <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-snapshots/</url>
       </snapshotRepository>
    </distributionManagement>
-   <repositories>
-       <repository>
-           <id>atlassian</id>
-           <url>https://packages.atlassian.com/maven-3rdparty/</url>
-           <snapshots>
-               <enabled>false</enabled>
-               <checksumPolicy>warn</checksumPolicy>
-           </snapshots>
-           <releases>
-               <enabled>true</enabled>
-               <checksumPolicy>warn</checksumPolicy>
-           </releases>
-       </repository>
-   </repositories>
     <scm>
       <connection>scm:git:https://github.com/Alfresco/InsightEngine.git</connection>
       <developerConnection>scm:git:https://github.com/Alfresco/InsightEngine.git</developerConnection>
@@ -70,9 +56,10 @@
       <dependency.apache-commons-compress.version>1.26.1</dependency.apache-commons-compress.version>
       <dependency.apache-commons-lang3.version>3.18.0</dependency.apache-commons-lang3.version>
       <dependency.jakarta.xml.bind-api.version>3.0.1</dependency.jakarta.xml.bind-api.version>
-      <dependency.restlet.version>2.3.12</dependency.restlet.version>
+      <!-- Restlet 2.5.x is the last line on javax.servlet (2.6+ is jakarta) and is published to Maven Central
+           under the org.restlet groupId, replacing org.restlet.jee 2.3.x from maven.restlet.talend.com. -->
+      <dependency.restlet.version>2.5.2</dependency.restlet.version>
       <dependency.httpclient.version>4.5.14</dependency.httpclient.version>
-      <dependency.codehaus.jackson.version>1.9.14-atlassian-6</dependency.codehaus.jackson.version>
       <dependency.carrotsearch.thirdpaty.simple-xml-safe.version>2.7.1</dependency.carrotsearch.thirdpaty.simple-xml-safe.version>
 
       <dependency.xpp3.version>1.1.4c</dependency.xpp3.version>
@@ -365,12 +352,12 @@
             <version>${dependency.jakarta.xml.bind-api.version}</version>
          </dependency>
          <dependency>
-            <groupId>org.restlet.jee</groupId>
+            <groupId>org.restlet</groupId>
             <artifactId>org.restlet</artifactId>
             <version>${dependency.restlet.version}</version>
          </dependency>
          <dependency>
-            <groupId>org.restlet.jee</groupId>
+            <groupId>org.restlet</groupId>
             <artifactId>org.restlet.ext.servlet</artifactId>
             <version>${dependency.restlet.version}</version>
          </dependency>
@@ -379,16 +366,6 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>${dependency.httpclient.version}</version>
-         </dependency>
-         <dependency>
-             <groupId>org.codehaus.jackson</groupId>
-             <artifactId>jackson-core-asl</artifactId>
-             <version>${dependency.codehaus.jackson.version}</version>
-         </dependency>
-         <dependency>
-             <groupId>org.codehaus.jackson</groupId>
-             <artifactId>jackson-mapper-asl</artifactId>
-             <version>${dependency.codehaus.jackson.version}</version>
          </dependency>
          <dependency>
             <groupId>junit</groupId>
