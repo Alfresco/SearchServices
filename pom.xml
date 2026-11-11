@@ -12,13 +12,11 @@
    <name>Alfresco Search And Insight Engine</name>
    <distributionManagement>
       <repository>
-         <id>alfresco-enterprise-releases</id>
-         <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-releases/</url>
+         <id>alfresco-releases</id>
+         <name>Alfresco Enterprise Releases</name>
+         <!-- TODO: switch to maven.artifacts.hyland.dev once its DNS record exists -->
+         <url>https://maven.cloudsmith.io/hyland/alfresco-enterprise-releases/</url>
       </repository>
-      <snapshotRepository>
-         <id>alfresco-enterprise-snapshots</id>
-         <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-snapshots/</url>
-      </snapshotRepository>
    </distributionManagement>
     <scm>
       <connection>scm:git:https://github.com/Alfresco/InsightEngine.git</connection>
@@ -33,7 +31,7 @@
       <!-- The location to download the solr zip file from. -->
       <!-- <solr.zip>https://archive.apache.org/dist/lucene/solr/${solr.version}/solr-${solr.version}.zip</solr.zip> -->
       <!-- Solr startup scripts do not work with any Java version higher than 9 so the scripts have been patched -->
-      <solr.zip>https://artifacts.alfresco.com/nexus/content/repositories/public/org/apache/solr/solr/solr-${solr.version}/solr-solr-${solr.version}.zip</solr.zip>
+      <solr.zip>https://artifacts.hyland.dev/public/alfresco-public/maven/org/apache/solr/solr/solr-${solr.version}/solr-solr-${solr.version}.zip</solr.zip>
       <solr.directory>${project.build.directory}/solr-${solr.version}</solr.directory>
       <license-maven-plugin.version>2.0.1</license-maven-plugin.version>
       <licenseName>enterprise</licenseName>
@@ -524,6 +522,17 @@
       </dependency>
    </dependencies>
    <profiles>
+      <profile>
+         <id>prerelease</id>
+         <distributionManagement>
+            <repository>
+               <id>alfresco-releases</id>
+               <name>Alfresco Internal Releases</name>
+               <!-- TODO: switch to maven.artifacts.hyland.dev once its DNS record exists -->
+               <url>https://maven.cloudsmith.io/hyland/alfresco-internal-releases/</url>
+            </repository>
+         </distributionManagement>
+      </profile>
       <profile>
          <id>release</id>
          <build>

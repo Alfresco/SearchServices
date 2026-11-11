@@ -167,47 +167,17 @@
     <repositories>
         <repository>
             <id>alfresco-enterprise-releases</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-releases</url>
+            <url>https://artifacts.hyland.dev/basic/alfresco-enterprise-releases/maven/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
             <snapshots>
                 <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>alfresco-enterprise-snapshots</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-snapshots</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
             </snapshots>
         </repository>
         <repository>
             <id>alfresco-public-releases</id>
-            <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>alfresco-public-snapshots</id>
-            <url>https://artifacts.alfresco.com/nexus/content/groups/public-snapshots</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>alfresco-hotfix</id>
-            <url>https://artifacts.alfresco.com/nexus/content/groups/hotfix</url>
+            <url>https://artifacts.hyland.dev/public/alfresco-public/maven/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
