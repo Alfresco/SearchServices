@@ -96,18 +96,6 @@ public class MetadataTracker extends ActivatableTracker
     private final ConcurrentLinkedQueue<String> queriesToReindex = new ConcurrentLinkedQueue<>();
     private ForkJoinPool forkJoinPool;
 
-    // Counts how many cycles ended with non-empty transactions all already indexed.
-    // After ALL_INDEXED_CYCLE_COUNT_THRESHOLD, getTxFromCommitTime() uses
-    // lastProcessedTxCommitTime to skip past the stale block.
-    // Reset when getTxFromCommitTime() sees non-empty txnsFound, or on invalidateState().
-    private volatile int allIndexedCycleCount = 0;
-
-    private static final int ALL_INDEXED_CYCLE_COUNT_THRESHOLD = 3;
-
-    // Highest commit time we saw in an all-already-indexed batch.
-    // Used in getTxFromCommitTime() once the threshold is reached.
-    private volatile long lastProcessedTxCommitTime = 0;
-
     // Share run and write locks across all MetadataTracker threads
     private static final Map<String, Semaphore> RUN_LOCK_BY_CORE = new ConcurrentHashMap<>();
     private static final Map<String, Semaphore> WRITE_LOCK_BY_CORE = new ConcurrentHashMap<>();
@@ -741,15 +729,7 @@ public class MetadataTracker extends ActivatableTracker
     protected Long getTxFromCommitTime(BoundedDeque<Transaction> txnsFound, long lastGoodTxCommitTimeInIndex) {
         if (txnsFound.size() > 0)
         {
-            // Previous do-while iteration indexed real transactions.
-            // Reset stuck counter so the bookmark doesn't activate prematurely.
-            allIndexedCycleCount = 0;
             return txnsFound.getLast().getCommitTimeMs();
-        }
-        else if (allIndexedCycleCount >= ALL_INDEXED_CYCLE_COUNT_THRESHOLD
-                && lastProcessedTxCommitTime > lastGoodTxCommitTimeInIndex)
-        {
-            return lastProcessedTxCommitTime;
         }
         else
         {
@@ -935,7 +915,9 @@ public class MetadataTracker extends ActivatableTracker
         long startElapsed = System.nanoTime();
 
         Transactions transactions;
-        BoundedDeque<Transaction> txnsFound = new BoundedDeque<>(METADATA_TRANSACTIONS_FOUND_QUEUE_SIZE);
+        // Must hold a full repository page, or getSomeTransactions() cannot recognise a page it has already seen.
+        BoundedDeque<Transaction> txnsFound = new BoundedDeque<>(
+                Math.max(METADATA_TRANSACTIONS_FOUND_QUEUE_SIZE, maxNumberOfTransactions));
         int totalUpdatedDocs = 0;
 
         LOGGER.info("{}-[CORE {}] Starting metadata tracker execution", Thread.currentThread().getId(), coreName);
@@ -1014,8 +996,8 @@ public class MetadataTracker extends ActivatableTracker
 
                 List<Transaction> lagEligibleTransactions = transactions.getTransactions().stream()
                         .filter(transaction -> transaction.getCommitTimeMs() <= lagCutoff)
-                        .filter(this::isTransactionToBeIndexed)
                         .peek(txnsFound::add)
+                        .filter(this::isTransactionToBeIndexed)
                         .collect(Collectors.toList());
 
                 hitLagBoundary.set(!deferredTransactions.isEmpty());
@@ -1038,20 +1020,6 @@ public class MetadataTracker extends ActivatableTracker
                                     lagCutoff);
                         }
                         reachedLagBoundary = true;
-                    }
-                    else if (!transactions.getTransactions().isEmpty())
-                    {
-                        // Everything was already indexed. Save a bookmark and count the cycle.
-                        // After enough consecutive stuck cycles, getTxFromCommitTime() will
-                        // use the bookmark to skip past this block.
-                        long maxBatchCommitTime = transactions.getTransactions().stream()
-                                .mapToLong(Transaction::getCommitTimeMs)
-                                .max()
-                                .orElse(lastProcessedTxCommitTime);
-                        setLastTxCommitTimeAndTxIdInTrackerState(transactions);
-                        lastProcessedTxCommitTime = Math.max(lastProcessedTxCommitTime, maxBatchCommitTime);
-                        allIndexedCycleCount++;
-                        break;
                     }
                 }
 
@@ -1090,23 +1058,10 @@ public class MetadataTracker extends ActivatableTracker
                     startElapsed = endElapsed;
                 }
 
-                // Set the tracker state only for transactions we actually indexed in this cycle
-                List<Transaction> indexedTransactions = eligibleTransactionBatches.stream()
-                    .flatMap(Collection::stream)
-                    .collect(Collectors.toList());
-                if (!indexedTransactions.isEmpty())
+                // "On server" values are reporting-only and come from the repository response, not the indexed subset.
+                if (!transactions.getTransactions().isEmpty())
                 {
-                    long maxIndexedCommitTime = indexedTransactions.stream()
-                        .mapToLong(Transaction::getCommitTimeMs)
-                        .max()
-                        .orElse(state.getLastTxCommitTimeOnServer());
-
-                    long maxIndexedTxId = indexedTransactions.stream()
-                        .mapToLong(Transaction::getId)
-                        .max()
-                        .orElse(state.getLastTxIdOnServer());
-
-                    setLastTxCommitTimeAndTxIdInTrackerState(new Transactions(indexedTransactions, maxIndexedCommitTime, maxIndexedTxId));
+                    setLastTxCommitTimeAndTxIdInTrackerState(transactions);
                 }
 
                 if (hitLagBoundary.get())
@@ -1365,7 +1320,8 @@ public class MetadataTracker extends ActivatableTracker
         Long minTxId = null;
 
         Transactions transactions;
-        BoundedDeque<Transaction> txnsFound = new BoundedDeque<>(METADATA_TRANSACTIONS_FOUND_QUEUE_SIZE);
+        BoundedDeque<Transaction> txnsFound = new BoundedDeque<>(
+                Math.max(METADATA_TRANSACTIONS_FOUND_QUEUE_SIZE, maxNumberOfTransactions));
         long endTime = System.currentTimeMillis() + infoSrv.getHoleRetention();
         DO: do
         {
@@ -1453,8 +1409,6 @@ public class MetadataTracker extends ActivatableTracker
 
     public void invalidateState() {
         super.invalidateState();
-        lastProcessedTxCommitTime = 0;
-        allIndexedCycleCount = 0;
         infoSrv.clearProcessedTransactions();
     }
 
